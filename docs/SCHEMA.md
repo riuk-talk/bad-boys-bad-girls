@@ -1,7 +1,7 @@
-# Schéma de base — proposition Phase 0
+# Schéma de base — v1 validée (Phase 0)
 
-> À valider avant toute migration. Postgres 15+ (Supabase). Tous les horodatages en `timestamptz` (UTC).
-> Les choix marqués **(Rxx)** renvoient aux questions ouvertes de [`PHASE0.md`](./PHASE0.md) : ils peuvent changer selon ta réponse.
+> **Validé** par le porteur du projet avec les corrections de `docs/PHASE0-DECISIONS.md` §B, intégrées ci-dessous. Postgres 15+ (Supabase). Tous les horodatages en `timestamptz` (UTC).
+> Les renvois **(Rxx)** pointent vers [`PHASE0.md`](./PHASE0.md) et **(Bx)** vers les corrections de [`PHASE0-DECISIONS.md`](./PHASE0-DECISIONS.md).
 
 ## 0. Principes transverses
 
@@ -74,9 +74,10 @@ RLS : **S** `authenticated` ; I/U/D —.
 | `opened_at` | `timestamptz` | |
 
 RLS : **S** `authenticated` (nom, statut, seuils — la jauge est servie par `zone_progress()`) ; écriture via fonctions admin.
+**(B1)** `admin_upsert_zone` recalcule `profiles.zone_id` de tous les membres dont la commune est dans l'ancien ou le nouveau périmètre (requête ensembliste unique), puis rafraîchit la jauge.
 
 #### `app_settings` — ligne unique
-`id boolean PK check (id)`, `launch_mode launch_mode default 'zones'`, `ban_hash_retention_months smallint default 12`, `email_daily_quota smallint default 300`, `email_auth_reserve smallint default 100` (part du quota réservée aux e-mails d'auth), `hearing_max_appearances_per_day smallint default 20` (R20), `updated_at`.
+`id boolean PK check (id)`, `launch_mode launch_mode default 'zones'`, `ban_hash_retention_months smallint default 12`, `email_daily_quota smallint default 300`, `email_auth_reserve smallint default 100` (part du quota réservée aux e-mails d'auth), `hearing_max_appearances_per_day smallint default 10` (R20, décision 12), `storage_alert_mb integer default 700`, `egress_alert_gb numeric default 3.5` (R1), `updated_at`.
 RLS : — (lu par les fonctions ; modifié par fonction admin).
 
 #### `tribes` — signes distinctifs
@@ -115,6 +116,7 @@ RLS : — (utilisé par trigger `security definer` ; géré par fonctions admin)
 | `suspended_until` | `timestamptz` | **protégé** |
 | `banned_at` | `timestamptz` | **protégé** |
 | `is_paused` | `boolean` | modifiable |
+| `paused_at` | `timestamptz` | maintenu par trigger — **protégé** ; > 30 j ⇒ rotation des chemins photo (R2) |
 | `pleas_cap` | `smallint` | défaut 15, check 5–50, modifiable |
 | `pleas_closed_manual` | `boolean` | « Parloir complet » manuel, modifiable |
 | `pending_pleas_count` | `integer` | maintenu par trigger — **protégé** |
@@ -147,7 +149,7 @@ RLS : **S/I/U/D** propriétaire. Lecture par les autres via `get_fiche`.
 | `position` | `smallint` | 0–5 (0 = photo d'identité) ; unique (`owner_id`, `position`) `deferrable initially deferred` |
 | `status` | `moderation_status` | défaut `pending` |
 | `pending_path` | `text` | chemin dans `photos-pending` (privé) ; null après décision |
-| `public_path_large`, `public_path_small` | `text` | chemin UUID dans `photos` (public), rempli à la validation |
+| `public_path_large`, `public_path_small` | `text` | chemin UUID dans `photos` (public), rempli à la validation ; **renouvelé** (nouvel UUID, ancien fichier supprimé) après 30 j de pause et au bannissement (R2) |
 | `width`, `height` | `smallint` | |
 | `rejection_reason` | `text` | |
 | `reviewed_by`, `reviewed_at` | `uuid`, `timestamptz` | |
@@ -155,9 +157,10 @@ RLS : **S/I/U/D** propriétaire. Lecture par les autres via `get_fiche`.
 
 Index : (`status`, `created_at`) pour la file admin ; (`owner_id`, `position`).
 RLS : **S** propriétaire ; **I** propriétaire, `status = 'pending'` imposé, 6 max (trigger) ; **U** — (réordonner via `reorder_photos()`) ; **D** propriétaire (trigger : suppression du fichier via file de purge).
-Storage : `photos-pending` privé — écriture dans `{auth.uid()}/…` par le propriétaire uniquement, lecture propriétaire + admin ; `photos` public — écriture uniquement par la clé secrète (validation admin côté serveur, qui vérifie aussi l'absence d'EXIF).
+Tailles : grande ≤ 180 Ko, vignette ≤ 30 Ko (R1). Fichiers `photos-pending` supprimés dès la décision.
+Storage : `photos-pending` privé — écriture dans `{auth.uid()}/…` par le propriétaire uniquement, lecture propriétaire + admin ; `photos` public — écriture uniquement par la clé secrète (validation admin côté serveur, qui vérifie aussi l'absence d'EXIF) ; `Cache-Control: public, max-age=31536000, immutable`.
 
-#### `casiers` — le Casier
+#### `casier_charges` — le Casier
 | Colonne | Type | Contraintes |
 |---|---|---|
 | `profile_id` | `uuid` | PK → `profiles on delete cascade` |
@@ -183,7 +186,7 @@ RLS : aucune politique (ni lecture ni écriture). `is_admin()` (`security define
 
 #### `banned_email_hashes`
 `hash bytea PK` (HMAC-SHA256, R18), `banned_at`, `expires_at`.
-RLS : —. Contrôlée par un trigger `before insert on auth.users` (`security definer`) qui refuse l'inscription si l'empreinte existe et n'a pas expiré.
+RLS : —. **(B4)** Contrôlée par le **hook d'authentification Supabase « Before User Created »** (disponible sur l'offre Free, vérifié le 2026-10-01 dans la doc officielle des Auth Hooks), implémenté en fonction Postgres `public.hook_before_user_created(event jsonb)` : `execute` accordé uniquement à `supabase_auth_admin`, refus avec `{"error":{"http_code":403,"message":…}}`. **Aucun trigger sur `auth.users`.** À vérifier en Phase 2 sur le projet de dev : le hook s'exécute aussi pour une inscription par lien magique (la doc ne le dit pas explicitement).
 
 ### 2.3 Interactions
 
@@ -207,7 +210,7 @@ RLS : **S/D** bloqueur ; **I** — (via `block_user()` qui annule les plaidoirie
 | `created_at`, `decided_at` | `timestamptz` | |
 | `conversation_id` | `uuid` → `conversations` | |
 
-Index : unique partiel (`sender_id`, `recipient_id`) `where status = 'pending'` ; (`recipient_id`, `status`, `created_at`) ; (`sender_id`, `created_at desc`) (limite 24 h) ; (`status`, `created_at`) partiel `pending` (expiration) ; GIN trigramme `message_normalized` partiel `where message_normalized <> ''`.
+Index : unique partiel (`sender_id`, `recipient_id`) `where status = 'pending'` ; (`recipient_id`, `status`, `created_at`) ; (`sender_id`, `created_at desc`) (limite 24 h **et** anti-arnaque sur 7 jours, B6) ; (`status`, `created_at`) partiel `pending` (expiration). Pas d'index trigramme global (B6) : la similarité est calculée sur les seules plaidoiries du même expéditeur.
 RLS : **S** expéditeur ou destinataire, et pas de blocage (le destinataire voit `casier_snapshot` ; l'expéditeur aussi — le faux est révélé après l'envoi) ; **I/U/D** —.
 
 #### `conversations`
@@ -228,13 +231,14 @@ Index : unique partiel (`least`, `greatest`) des deux utilisateurs `where status
 RLS : **S** membre (`auth.uid() in (user_a, user_b)`) ; **I/U/D** — (via fonctions).
 
 #### `messages`
-`id bigint identity PK`, `conversation_id → conversations on delete cascade`, `sender_id uuid → profiles on delete set null`, `body varchar(1000) not null` (masqué à l'insertion tant que `contacts_unmasked_at` est null), `created_at`.
+`id bigint identity PK`, `conversation_id → conversations on delete cascade`, `sender_id uuid → profiles on delete set null`, `body varchar(1000)` (masqué à l'insertion tant que `contacts_unmasked_at` est null ; **mis à `null`** à la suppression du compte de l'expéditeur, R8 option stricte), `sender_deleted boolean default false`, `created_at`. Check : `body is not null or sender_deleted`.
+À la suppression d'un compte, un trigger `before delete on profiles` efface le texte de ses messages (`body = null, sender_deleted = true`) avant la mise à `null` de `sender_id` ; l'UI affiche « Message supprimé ».
 Index : (`conversation_id`, `id desc`) ; (`sender_id`, `created_at desc`) pour l'anti-spam.
 RLS : **S** membre de la conversation **et** aucun blocage entre les deux ; **I/U/D** — (via `send_message`).
-Realtime : publication `supabase_realtime` sur `messages` (Postgres Changes, la RLS s'applique à chaque abonné), abonnement filtré `conversation_id=eq.<id>`, ouvert uniquement sur la conversation affichée.
+Realtime : publication `supabase_realtime` sur `messages` (Postgres Changes, la RLS s'applique à chaque abonné), abonnement filtré `conversation_id=eq.<id>`, ouvert uniquement sur la conversation affichée. **(B7)** Postgres Changes vérifie la RLS pour chaque abonné à chaque changement : acceptable au lancement ; bascule vers Realtime Broadcast (canaux privés) si les mesures de la Phase 7 le justifient.
 
 #### `date_proposals` — la Cavale
-`id uuid PK`, `conversation_id → conversations on delete cascade`, `proposer_id`, `venue_type venue_type`, `venue_name varchar(120)`, `starts_at timestamptz` (check futur à la création), `status date_proposal_status`, `parent_id → date_proposals` (contre-proposition), `private_place_warning boolean`, `responded_at`, `created_at`.
+`id uuid PK`, `conversation_id → conversations on delete cascade`, `proposer_id`, `venue_type venue_type`, `venue_name varchar(120)`, `starts_at timestamptz` (**pas** de `CHECK` avec `now()` — non immuable ; la date future est contrôlée dans `propose_date` / `respond_date`, B5), `status date_proposal_status`, `parent_id → date_proposals` (contre-proposition), `private_place_warning boolean`, `responded_at`, `created_at`.
 Index : unique partiel (`conversation_id`) `where status = 'pending'` ; (`conversation_id`, `created_at desc`).
 RLS : **S** membres de la conversation ; **I/U/D** — (via `propose_date`, `respond_date`).
 
@@ -292,7 +296,9 @@ RLS : —.
 | `is_blocked_between(a, b)` | blocage dans un sens ou l'autre |
 | `is_profile_active(p)` | onboarding terminé, photo principale validée, non banni, non suspendu, non masqué |
 | `criteria_match(a, b)` | genre de B ∈ recherchés de A, âge de B dans la tranche de A, **et réciproquement** |
-| `can_view_profile(viewer, target)` | actif, non bloqué, réciprocité, zone ouverte (sauf `launch_mode = open`), cible non en pause |
+| `can_view_profile(viewer, target)` | actif, non bloqué, réciprocité, zone ouverte (sauf `launch_mode = open`), cible non en pause et active < 90 j |
+| `has_open_relation(viewer, target)` | conversation ou plaidoirie en cours entre les deux (B2) |
+| `can_unmask(conversation)` | Cavale acceptée **ou** 10/10 messages, **et** les deux comptes ont > 7 jours **et** aucun signalement `open` entre eux ni contre l'un d'eux (R7) |
 | `pair_cooldown_until(a, b)` | fin du délai de 30 jours (R13/R14) |
 | `touch_activity()` | met à jour `last_seen_at` et `activity_days` (appelé par le layout de l'app, 1×/h max) |
 
@@ -303,7 +309,7 @@ RLS : —.
 | `complete_onboarding()` | vérifie les 6 étapes (consentements présents, 1 photo, Casier, 10 réponses `core`) |
 | `complicity_score(a, b)` → `(score smallint, common_count int, capped bool)` | §9 ; `null` si < 5 questions communes ; calcul en entiers ; plafond à 50 si un « indispensable » n'est pas satisfait ; miroir `lib/complicity.ts` |
 | `common_points(a, b, n default 3)` | réponses identiques triées par importance cumulée (R29) |
-| `get_fiche(target)` | Fiche publique : pseudo, âge, ville, photos validées, bio, signes + précisions, Casier sans le faux, « Casier modifié depuis » si plaidoirie en cours, indice + 3 points communs, Réglo, `pleas_open`, plaidoirie déjà en cours ou délai |
+| `get_fiche(target)` | autorisée si `can_view_profile` **ou** `has_open_relation` (B2 : Fiche d'un interlocuteur en pause ou inactif) ; refusée en cas de blocage dans tous les cas. Fiche publique : pseudo, âge, ville, photos validées, bio, signes + précisions, Casier sans le faux, « Casier modifié depuis » si plaidoirie en cours, indice + 3 points communs, Réglo, `pleas_open`, plaidoirie déjà en cours ou délai |
 | `discover_profiles(age_min, age_max, max_km, tribe_ids, reglo_only, recently_active, cursor, limit default 24)` | §12 bis, une seule requête, curseur `(sort_key, id)` ; « Parloir complet » et inactifs 21 j en fin de liste |
 | `get_my_hearing()` | sélection du jour visible (`visible_from <= now() < visible_until`), + heure de la prochaine audience |
 | `mark_hearing_seen(profile_id)` | |
@@ -312,11 +318,11 @@ RLS : —.
 | `set_pleas_settings(cap, closed_manual)` | |
 | `block_user(target)` / `unblock_user(target)` | atomique : annule les plaidoiries en attente, ferme la conversation (`blocked`) |
 | `report(target_type, target_id, category, comment)` | crée le signalement ; signalement « mineur » : priorité 0, masquage auto si 2 signaleurs distincts ou 1 signaleur Réglo |
-| `send_message(conversation_id, body)` | membre, conversation ouverte, pas de blocage, ≤ 30 messages/min, masquage tant que non levé, levée automatique à 10/10 (R7) |
+| `send_message(conversation_id, body)` | membre, conversation ouverte, pas de blocage, ≤ 30 messages/min, masquage tant que `can_unmask` est faux |
 | `mark_conversation_read(conversation_id)` | |
 | `get_counters()` | non-lus, plaidoiries en attente, notifications non lues (interrogé toutes les 60 s) |
 | `propose_date(conversation_id, venue_type, venue_name, starts_at)` | une seule en attente ; détection « chez moi/chez toi »/adresse → `private_place_warning` |
-| `respond_date(proposal_id, response, counter jsonb)` | accepter (lève le masquage) / contre-proposer / pas encore |
+| `respond_date(proposal_id, response, counter jsonb)` | accepter (lève le masquage si `can_unmask`) / contre-proposer (date future contrôlée) / pas encore |
 | `close_conversation(conversation_id)` | message prédéfini, plus d'envoi, délai 30 j dans les deux sens |
 | `reorder_photos(photo_ids uuid[])` | |
 | `zone_progress()` | jauge de la zone du membre : Fiches complètes / seuil, % de femmes |
@@ -331,26 +337,27 @@ RLS : —.
 4. Limite : 5 plaidoiries / 24 h glissantes ; 2 si le compte a moins de 24 h.
 5. **Croisement** : s'il existe une plaidoirie `pending` B→A → les deux passent `accepted`, `is_crossed = true`, conversation créée, notifications « Coupables tous les deux ». (Contrôle du plafond ignoré, R9.)
 6. Sinon : `pleas_open` du destinataire doit être vrai ; insertion avec copie du Casier et calcul de `guess_correct` ; trigger qui incrémente `pending_pleas_count` et recalcule `pleas_open`.
-7. Anti-arnaque : si ≥ 3 messages normalisés quasi identiques (R19) → `flagged_texts` / signalement automatique (n'empêche pas l'envoi).
+7. Anti-arnaque : parmi les plaidoiries **du même expéditeur** sur 7 jours (index `sender_id, created_at`), si ≥ 3 messages normalisés ont une similarité trigramme ≥ 0,9 (R19, B6) → signalement automatique (n'empêche pas l'envoi).
 8. Notification au destinataire + mise en file du récapitulatif e-mail du jour.
 
 ### 3.4 Admin (`security definer`, contrôle `is_admin()` en première ligne)
-`admin_review_photo(photo_id, approve, reason)` (la copie de fichier vers `photos` se fait côté serveur avant l'appel), `admin_decide_report(report_id, upheld, reason, action)`, `admin_sanction(user, action, reason, until)` (bannissement : insère l'empreinte e-mail, ferme les conversations, retire Réglo), `admin_resolve_flag(id, action, reason)`, `admin_upsert_zone(...)`, `admin_open_zone(zone_id)`, `admin_upsert_tribe/question/keyword(...)`, `admin_search_users(q)`, `admin_zone_health(zone_id, from, to)` (indicateurs §15, `is_seed` exclus).
+`admin_review_photo(photo_id, approve, reason)` (la copie de fichier vers `photos` se fait côté serveur avant l'appel), `admin_decide_report(report_id, upheld, reason, action)`, `admin_sanction(user, action, reason, until)` (bannissement : insère l'empreinte e-mail, ferme les conversations, retire Réglo), `admin_resolve_flag(id, action, reason)`, `admin_upsert_zone(...)` (recalcule `zone_id` des membres concernés, B1), `admin_open_zone(zone_id)`, `admin_storage_usage()` (somme des tailles dans `storage.objects` ; l'egress n'est pas lisible en SQL, voir PROGRESS), `admin_upsert_tribe/question/keyword(...)`, `admin_search_users(q)`, `admin_zone_health(zone_id, from, to)` (indicateurs §15, `is_seed` exclus).
 
 ### 3.5 Jobs (exécutables par `postgres` uniquement)
 `run_hearings_due()` → `build_daily_hearing(zone_id, local_date)`, `expire_pleas()`, `compute_reglo()`, `process_inactive_profiles()`, `auto_open_zones()`, `cleanup()`, `enqueue_*_emails()`.
+Les purges qui touchent des fichiers ou `auth.users` (comptes sans onboarding terminé après 30 jours, rotation des chemins photo) passent par la route serveur `/api/cron/cleanup` (clé secrète + API Storage/Auth Admin), appelée par `pg_net`.
 
-`build_daily_hearing` : pour chaque membre actif non en pause de la zone, candidats = `can_view_profile` réciproque, `pleas_open`, actifs < 21 j, aucune plaidoirie ni conversation passée entre eux, non proposés dans les 14 derniers jours, sous le plafond d'apparitions du jour ; classement = complicité (0–100, 0 si inconnue) + bonus d'activité (0–20) × 0,5 si plaidoiries en attente > 50 % du plafond (R20) ; top 5, sans remplissage.
+`build_daily_hearing` (**B3 : SQL ensembliste**, pas de boucle par paire — agrégation des réponses une seule fois par membre, jointure candidats × spectateurs pré-filtrée par zone/genre/âge, `row_number()` pour le top 5 et pour le plafond d'apparitions ; critère : 5 000 membres de seed dans une même zone en moins de 5 minutes) : pour chaque membre actif non en pause de la zone, candidats = `can_view_profile` réciproque, `pleas_open`, actifs < 21 j, aucune plaidoirie ni conversation passée entre eux, non proposés dans les 14 derniers jours, sous le plafond d'apparitions du jour (10 par défaut) ; classement = complicité (0–100, 0 si inconnue) + bonus d'activité (0–20) × 0,5 si plaidoiries en attente > 50 % du plafond (R20) ; top 5, sans remplissage.
 
 ## 4. Triggers
 
 | Table | Trigger |
 |---|---|
-| `auth.users` | `before insert` : refus si empreinte e-mail bannie ; `after insert` : crée `notification_preferences` (la Fiche est créée à l'étape 1 de l'onboarding) |
-| `profiles` | âge ≥ 18 ; validation pseudo ; colonnes protégées remises à l'ancienne valeur si modifiées hors fonction ; `place_id` → `lat/lng/zone_id` ; `updated_at` ; mots-clés sur `bio`/`pseudo` |
+| `auth.users` | **aucun trigger** (B4). Empreintes bannies : hook « Before User Created ». `notification_preferences` est créée avec la Fiche à l'étape 1 de l'onboarding |
+| `profiles` | `before delete` : efface le texte des messages de la personne (R8) ; `paused_at` ; âge ≥ 18 ; validation pseudo ; colonnes protégées remises à l'ancienne valeur si modifiées hors fonction ; `place_id` → `lat/lng/zone_id` ; `updated_at` ; mots-clés sur `bio`/`pseudo` |
 | `profile_tribes` | max 5 ; masquage + mots-clés sur `detail` |
 | `photos` | max 6 ; statut `pending` imposé à l'insertion |
-| `casiers` | masquage ; mots-clés ; `profiles.casier_updated_at` |
+| `casier_charges` | masquage ; mots-clés ; `profiles.casier_updated_at` |
 | `pleas` | maintien de `pending_pleas_count` / `pleas_open` ; `consecutive_dismissals` |
 | `conversations`, `messages` | `last_message_at`, compteurs par personne, levée du masquage |
 | `consents`, `moderation_actions` | refus de tout `update`/`delete` (append-only) |
@@ -363,4 +370,9 @@ RLS : —.
 - Aucune lecture/écriture sur `admin_users`, `banned_email_hashes`, `app_settings`, `email_outbox` depuis `authenticated` ou `anon`.
 - `anon` ne lit aucune table applicative.
 - Tous les critères de la Phase 4 et de la Phase 5 (6e plaidoirie refusée, 30 jours, plafond, croisement, blocage invisible partout, tiers sans accès à une conversation).
+- **(B1)** Créer ou agrandir une zone rattache les membres déjà inscrits dont la commune entre dans le rayon ; la réduire les détache.
+- **(B2)** La Fiche d'un interlocuteur en pause ou inactif reste lisible depuis une conversation ou une plaidoirie en cours ; jamais en cas de blocage.
+- **(B4)** Une inscription normale passe le hook ; une inscription avec un e-mail banni non expiré est refusée ; une empreinte expirée ne bloque plus.
+- **(R8)** Après suppression d'un compte, ses messages n'ont plus de texte en base.
+- **(R7)** Pas de levée du masquage si un compte a moins de 7 jours ou si un signalement est ouvert.
 - Test générique : toute table du schéma `public` a `rowsecurity = true`.

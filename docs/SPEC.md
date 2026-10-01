@@ -1,4 +1,6 @@
-# SPEC — Bad Boys & Bad Girls (v6)
+# SPEC — Bad Boys & Bad Girls (v6.1)
+
+> v6.1 : intègre les décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). Nom de domaine provisoire : `[DOMAINE]`.
 
 ## 0. Priorités
 
@@ -35,6 +37,8 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 - Configuration `launch_zones` (admin) : chaque zone = une ville + un rayon + un fuseau horaire, un statut `waitlist` ou `open`, un seuil d'ouverture (ex. 150 Fiches complètes, dont au moins 40 % de femmes : paramétrable).
 - Hors zone ouverte : l'inscription et la Fiche fonctionnent, mais l'utilisateur voit une page **« Ta ville ouvre bientôt »** avec la jauge de progression de sa ville (nombre de Fiches / seuil) et son **lien de parrainage** (« Fais entrer tes complices »).
+- **Fiche complète** (pour le seuil) = onboarding terminé **et** photo principale validée par la modération.
+- La zone d'un membre est déterminée par sa ville (zone la plus proche dont le rayon contient la commune). Quand l'admin crée ou modifie une zone (centre, rayon), la zone de **tous les membres concernés est recalculée**.
 - Quand le seuil est atteint : l'admin ouvre la zone (ou ouverture auto si l'option est activée) et un e-mail prévient les membres de la zone.
 - Mode `launch_mode = open` global disponible pour désactiver ce mécanisme.
 - Parrainage : lien unique par membre, compteur visible sur son profil (« 3 complices recrutés »), aucune récompense financière.
@@ -50,7 +54,8 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
    4. 1 photo minimum (visage visible)
    5. Le Casier
    6. **10 questions** du QCM (le socle, voir §9)
-4. La Fiche est « en attente de modération » jusqu'à la validation de la photo principale. En attendant, l'utilisateur peut compléter sa Fiche (présentation, signes distinctifs, autres photos, 10 questions restantes) : une jauge « Fiche complète à X % » l'y encourage.
+   - La contrainte 18+ porte sur la **Fiche** : le compte d'authentification existe avant la saisie de la date de naissance, mais une Fiche sans date de naissance valide (≥ 18 ans, vérifiée en base) n'est visible nulle part et ne peut rien faire. Les comptes dont l'onboarding n'est pas terminé sont supprimés après 30 jours.
+4. La Fiche est « en attente de modération » jusqu'à la validation de la photo principale. En attendant, l'utilisateur peut compléter sa Fiche (présentation, signes distinctifs, autres photos, 10 questions restantes) : une jauge « Fiche complète à X % » l'y encourage. Une Fiche en attente de modération **ne peut pas plaider** et n'apparaît nulle part.
 5. **L'Audience du soir** (et la Découverte en secondaire) → Fiche publique → **Plaidoirie** → la personne **libère** ou **classe l'affaire** → **Parloir**.
 
 ## 5. La Fiche
@@ -68,7 +73,8 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - Badges : **Réglo**, **[P1]** « Complices recrutés ».
 - Actions : **Plaider**, **Signaler**, **Bloquer**.
 - Statut de disponibilité réglé par le propriétaire (§7) : « Ouvert aux plaidoiries » / « Parloir complet ».
-- **Mettre ma Fiche en pause** : la Fiche disparaît de l'Audience et de la Découverte, les plaidoiries en attente restent, les conversations continuent. Réactivation en un clic.
+- **Mettre ma Fiche en pause** : la Fiche disparaît de l'Audience et de la Découverte, les plaidoiries en attente restent, les conversations continuent. En pause, on **ne plaide pas** et on **ne reçoit pas d'Audience** ; on peut traiter ses plaidoiries reçues et utiliser le Parloir. Réactivation en un clic. Après 30 jours de pause, les chemins des photos publiques sont renouvelés (voir §11).
+- **Exception de visibilité** : on peut toujours ouvrir la Fiche d'une personne avec qui on a une conversation ou une plaidoirie en cours, même si elle est en pause ou inactive. Le blocage reste prioritaire.
 - **Fiches inactives** : sans connexion depuis 21 jours → retirée de l'Audience et affichée en fin de Découverte ; depuis 90 jours → masquée partout, e-mail « Ta Fiche est en veille » avec lien de réactivation. Plaider auprès de fantômes est la frustration à éviter.
 
 ## 6. Le Casier
@@ -97,20 +103,21 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 ### Limites appliquées en base (fonction SQL `send_plea`, jamais seulement côté client)
 - **Expéditeur** : 5 plaidoiries par 24 h glissantes.
-- **Couple** : 1 plaidoirie en cours maximum par expéditeur → destinataire ; 30 jours d'attente après un classement.
+- **Couple** : 1 plaidoirie en cours maximum par expéditeur → destinataire ; 30 jours d'attente après un classement, **dans le sens expéditeur → destinataire uniquement** (le destinataire reste libre de plaider auprès de l'expéditeur). Le classement automatique à 7 jours compte pour ce délai.
 - **Destinataire** : chaque membre fixe un plafond de plaidoiries en attente (défaut 15, réglable de 5 à 50). Plafond atteint → sa Fiche passe automatiquement en « Parloir complet » : elle reste visible, mais le bouton Plaider est désactivé jusqu'à ce qu'il/elle traite ses plaidoiries. Il/elle peut aussi se mettre en « Parloir complet » manuellement.
-- Refus si : blocage dans un sens ou dans l'autre, Fiche du destinataire non visible, critères de genre et d'âge non réciproques.
-- **Anti-arnaque** : 3 messages d'accroche identiques ou quasi identiques (après normalisation) envoyés par le même compte → signalement automatique à la modération ; compte de moins de 24 h limité à 2 plaidoiries.
+- Refus si : expéditeur dont la photo principale n'est pas validée ou dont la Fiche est en pause, blocage dans un sens ou dans l'autre, Fiche du destinataire non visible, critères de genre et d'âge non réciproques.
+- **Anti-arnaque** : 3 messages d'accroche identiques ou quasi identiques envoyés par le même compte sur 7 jours → signalement automatique à la modération (sans blocage). Normalisation : minuscules, sans accents ni ponctuation, espaces réduits, coordonnées masquées ; « quasi identique » = similarité trigramme ≥ 0,9 ; messages vides exclus. Compte de moins de 24 h limité à 2 plaidoiries.
 
 ### Plaidoiries croisées
 - Si A plaide auprès de B alors que B a déjà une plaidoirie en attente auprès de A → **libération automatique mutuelle**, animation spéciale « Coupables tous les deux », ouverture directe du Parloir.
+- Une plaidoirie croisée passe **même si B est en « Parloir complet »** (elle libère au lieu d'ajouter une plaidoirie en attente). Les autres limites (5/24 h, blocage, réciprocité, délai de 30 jours) s'appliquent.
 
 ### Réception
 - Onglet « Le Juge, c'est toi » (plaidoiries reçues) : Fiche de l'expéditeur, indice de complicité, bonne/mauvaise réponse, message.
 - **Libérer** → crée la conversation, animation tampon « LIBÉRÉ·E », notification à l'expéditeur.
 - **Affaire classée** → l'expéditeur reçoit un message neutre et respectueux prédéfini (« Affaire classée. Pas de suite cette fois — bonne route. »). Jamais de silence.
 - Sans réponse sous 7 jours → classement automatique avec le même message.
-- **Conseils après 3 affaires classées de suite** : l'expéditeur voit des conseils concrets tirés de sa propre Fiche (photo principale seule, Casier court, QCM incomplet, plaidoiries sans message), jamais de reproche. Les statistiques des autres membres ne sont jamais montrées.
+- **Conseils après 3 affaires classées de suite** (les classements automatiques à 7 jours ne comptent pas) : l'expéditeur voit des conseils concrets tirés de sa propre Fiche (photo principale seule, Casier court, QCM incomplet, plaidoiries sans message), jamais de reproche. Les statistiques des autres membres ne sont jamais montrées.
 
 ## 8. Le Souffleur
 
@@ -162,6 +169,8 @@ Les **10 premières** sont demandées à l'inscription (le socle) ; les 10 suiva
 19. Les animaux ? — J'en ai / J'adore, mais pas chez moi / Pas fan / Indifférent·e
 20. On te dit « t'es trop bad pour moi ». Tu réponds… — « Tant mieux. » / Je montre mon côté tendre / Je passe à autre chose / J'éclate de rire
 
+Visibilité : les réponses d'un membre ne sont jamais affichées en liste complète ; seuls les 3 points communs (réponses identiques, triées par importance cumulée) et les réponses utilisées par le Souffleur sont montrés, à un visiteur connecté autorisé à voir la Fiche.
+
 UI : une question par écran, réponse en un tap, « acceptées » et « importance » repliés sous un lien « Affiner » (valeurs par défaut sinon). Tables : `questions`, `question_options`, `answers`. Libellés traduits en JSON `{fr, en}`. Banc de questions optionnelles gérable par l'admin.
 
 ## 10. Conformité, sécurité, vie privée
@@ -169,7 +178,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 > Les textes juridiques générés sont des **modèles** marqués `[À FAIRE VALIDER PAR UN JURISTE]`. Ne jamais les présenter comme définitifs.
 
 ### Âge (18+)
-- Date de naissance obligatoire ; refus si < 18 ans **par contrainte/trigger Postgres**, pas seulement côté client.
+- Date de naissance obligatoire ; refus si < 18 ans **par contrainte/trigger Postgres**, pas seulement côté client. Critère : impossible d'avoir une Fiche utilisable avec un âge < 18 ans, même via l'API (voir §4).
 - Attestation « J'ai 18 ans ou plus » obligatoire, horodatée.
 - Signalement « mineur » : traitement prioritaire. Masquage automatique immédiat si **2 signalements distincts** ou 1 signalement d'un membre Réglo (évite qu'un seul signalement malveillant suffise à masquer quelqu'un).
 
@@ -177,12 +186,13 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - **Genres recherchés = donnée révélant l'orientation sexuelle (art. 9)** : case de consentement explicite, séparée, non pré-cochée, sur l'écran « Qui tu cherches », avec un texte clair sur l'usage (proposer des profils compatibles, rien d'autre). Sans ce consentement, le service ne peut pas fonctionner : l'expliquer honnêtement. Retrait = suppression du compte proposée.
 - Table `consents` historisée (type, version du texte, date, IP tronquée ; jamais écrasée).
 - Pages : Politique de confidentialité, CGU, Mentions légales (éditeur et hébergeurs), Charte « Bad, pas toxique ». Placeholders `[À COMPLÉTER]`.
-- Paramètres : **export de mes données** (JSON) et **suppression du compte** (suppression réelle en cascade + fichiers Storage, confirmation par mot de passe ou lien e-mail).
-- Conservation après bannissement : uniquement l'empreinte (hash salé) de l'e-mail, pour empêcher la réinscription, durée paramétrable (défaut 12 mois) `[À FAIRE VALIDER PAR UN JURISTE]`.
+- Paramètres : **export de mes données** (JSON : ses propres messages sans le texte de l'autre personne, ses plaidoiries envoyées/reçues avec le seul pseudo de l'autre, ses réponses QCM, consentements, signalements faits sans données de la cible, notifications) et **suppression du compte** (suppression réelle en cascade + fichiers Storage, confirmation par mot de passe ou lien e-mail).
+- Suppression du compte : les messages de la personne supprimée sont **effacés en base** et remplacés par « Message supprimé » ; la conversation reste visible pour l'autre avec « Ce compte a été supprimé ».
+- Conservation après bannissement : uniquement l'empreinte (HMAC-SHA256 avec poivre secret, e-mail en minuscules sans espaces, sans normalisation des alias `+` ni des points) de l'e-mail, vérifiée par le hook d'authentification « Before User Created », pour empêcher la réinscription, durée paramétrable (défaut 12 mois) `[À FAIRE VALIDER PAR UN JURISTE]`.
 - Pas de traceur tiers ni d'analytics externe → cookies strictement nécessaires uniquement, pas de bandeau (le préciser dans la politique).
 - Localisation : ville seulement ; distance calculée depuis le centre de la commune (référentiel communes FR en seed ; structure `places` prête pour d'autres pays). Jamais de GPS appareil.
 - Photos : **suppression des métadonnées EXIF** (dont la position GPS) par ré-encodage côté client **et** contrôle côté serveur.
-- `noindex, nofollow` + `robots.txt` sur tout sauf la landing et les pages légales ; aucune Fiche accessible sans session.
+- `noindex, nofollow` + `robots.txt` sur tout sauf la landing, les pages légales et la Charte ; aucune Fiche accessible sans session.
 
 ### DSA / modération
 - **Signaler** sur Fiche, photo, Casier et message ; catégories : faux profil, mineur, harcèlement, contenu sexuel, violence ou menace, arnaque, autre ; commentaire optionnel.
@@ -198,13 +208,16 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - En-têtes : CSP stricte, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` restrictive.
 - Turnstile à l'inscription et à la connexion.
 - Pseudo, présentation, Casier, plaidoiries : e-mails, numéros de téléphone et liens masqués (anti-arnaque).
-- Dans le Parloir, le masquage est **levé** dès qu'une Cavale est acceptée ou que les deux personnes ont chacune envoyé au moins 10 messages : échanger son numéro doit rester possible pour se voir. À ce moment, un encart rappelle : « Ne partage jamais d'argent ni de codes. »
+- Dans le Parloir, le masquage est **levé** dès qu'une Cavale est acceptée ou que les deux personnes ont chacune envoyé au moins 10 messages, **à condition** que les deux comptes aient plus de 7 jours et qu'aucun signalement ne soit ouvert entre eux ni contre l'un d'eux : échanger son numéro doit rester possible pour se voir. À ce moment, un encart rappelle : « Ne partage jamais d'argent ni de codes. »
 - Aucune clé secrète dans le client ; `.env.example` documenté.
 
 ## 11. Photos et modération d'images
 
-- Compression côté client avant envoi : WebP, deux tailles (1200 px et 400 px), environ 250 Ko max. Bibliothèque chargée en `dynamic import` sur l'écran d'upload uniquement.
+- Compression côté client avant envoi : WebP, deux tailles (1200 px ≈ 180 Ko max, 400 px ≈ 30 Ko max). Vignettes partout sauf sur la Fiche ouverte. Bibliothèque chargée en `dynamic import` sur l'écran d'upload uniquement.
 - Upload dans le bucket **privé** `photos-pending` → **file de validation admin** (critères : adulte, visage visible sur la photo principale, pas de nudité, pas de coordonnées) → copie vers le bucket **public** `photos` sous un chemin UUID non devinable. Refus → suppression + motif notifié.
+- Les fichiers de `photos-pending` sont supprimés dès la décision. Fichiers publics servis avec un `Cache-Control` long (chemins immuables).
+- **Rotation de chemin** (nouvel UUID, ancien fichier supprimé) à la suppression d'une photo, après 30 jours de pause, au bannissement ; purge totale à la suppression du compte. Mentionné dans la politique de confidentialité.
+- **Seuil de bascule** : alerte dans le tableau de bord admin quand le stockage dépasse 700 Mo ou l'egress dépasse 3,5 Go/mois deux mois de suite. La décision de payer reste humaine.
 - Pas de détection automatique au MVP (un modèle côté client est lourd et contournable ; la validation humaine fait foi au volume du lancement). Prévoir l'emplacement d'un contrôle automatique pour plus tard.
 - Notification admin (e-mail groupé) dès qu'il y a des photos en attente ; objectif de validation < 12 h, affiché à l'utilisateur.
 - Pas d'optimisation d'image Vercel (quota limité en Hobby) : `next/image` avec `unoptimized`, `width`, `height`, `sizes`, `loading="lazy"` hors de la zone visible.
@@ -216,15 +229,17 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - Sélection (fonction SQL `build_daily_hearing`, exécutée par la tâche planifiée) :
   - Fiche validée par la modération, ni en pause ni inactive, pas en « Parloir complet », réciprocité genre/âge, zone ouverte, pas de blocage, pas de plaidoirie ni conversation déjà échangée, pas déjà proposée dans les 14 derniers jours ;
   - classement : indice de complicité, activité récente, puis **répartition de l'attention** : une Fiche déjà très sollicitée (plaidoiries en attente > 50 % de son plafond) apparaît dans moins de sélections, pour que l'attention se répartisse ;
+  - formule : score = indice de complicité (0–100, 0 si inconnu) + bonus d'activité (0–20), multiplié par 0,5 au-delà de 50 % du plafond ; une Fiche apparaît dans **au plus 10 Audiences par jour** (paramétrable) ;
   - s'il y a moins de 5 candidats, afficher ceux qui existent, sans remplissage.
 - **Génération à l'avance, révélation à l'heure** : la tâche planifiée tourne dans l'heure qui précède (les tâches planifiées gratuites ne sont pas précises à la minute) et enregistre les sélections avec `visible_from = 21:00` ; l'application ne les montre qu'à partir de cette heure. Un membre inscrit après la génération reçoit sa première sélection à la génération suivante (en attendant : la Découverte).
+- Calcul en SQL ensembliste (pas de boucle par paire). Critère : génération pour 5 000 membres dans une même zone en moins de 5 minutes.
 - Heure calculée avec le fuseau horaire de la zone (`launch_zones.timezone`), dates stockées en UTC.
 - La sélection reste disponible jusqu'au lendemain 21 h. Notification « L'audience est ouverte » in-app. **Pas d'e-mail quotidien** (le quota SMTP gratuit ne le permet pas) : e-mail hebdomadaire facultatif, désactivé par défaut.
 - Le compte à rebours jusqu'à la prochaine audience est affiché quand la sélection du jour est vue en entier.
 
 ## 12 bis. Découverte (secondaire)
 
-- Accessible uniquement connecté, dans une zone ouverte, depuis un onglet secondaire. L'Audience du soir reste l'expérience principale.
+- Accessible uniquement connecté, dans une zone ouverte, depuis un onglet secondaire. Montre les Fiches de **toutes les zones ouvertes**, filtrées par distance (« France » = toutes). L'Audience du soir reste l'expérience principale.
 - Grille de Fiches, filtres : tranche d'âge, distance (10/25/50/100 km/France), signes distinctifs, « Réglo uniquement », « actif récemment ».
 - Réciprocité obligatoire (genre + âge dans les deux sens).
 - Tri par défaut : indice de complicité, puis activité récente. Les Fiches « Parloir complet » sont affichées en fin de liste.
@@ -242,7 +257,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - Indicateur « lu », liste triée par activité, compteur de non-lus.
 - Anti-spam : 30 messages par minute max (fonction SQL).
 - « Classer l'affaire » : termine la conversation avec le message neutre prédéfini ; plus d'envoi possible ; même délai de 30 jours avant une nouvelle plaidoirie entre ces deux personnes.
-- Compte supprimé : la conversation reste visible pour l'autre personne, avec « Ce compte a été supprimé », sans pseudo ni photo.
+- Compte supprimé : la conversation reste visible pour l'autre personne, avec « Ce compte a été supprimé », sans pseudo ni photo ; ses messages sont effacés en base et affichés « Message supprimé ».
 - Signaler / Bloquer dans l'en-tête de la conversation.
 - Encart discret « Premier rendez-vous : lieu public, préviens un proche » avec lien vers la page Conseils sécurité.
 
