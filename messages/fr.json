@@ -1,0 +1,432 @@
+{
+  "Meta": {
+    "siteName": "Bad Boys & Bad Girls",
+    "shortName": "BB&BG",
+    "defaultTitle": "Bad Boys & Bad Girls — Coupables de charme…",
+    "titleTemplate": "%s · Bad Boys & Bad Girls",
+    "description": "Le site de rencontre pour ceux qu'on a toujours trouvés trop. Tatoué·es, motards, noctambules, francs du collier. Bad, pas toxique.",
+    "ogAlt": "Logo Bad Boys & Bad Girls : un B doré couronné et un B rouge à cornes de diable, avec la signature « Coupables de charme… »"
+  },
+  "Common": {
+    "brand": "Bad Boys & Bad Girls",
+    "signature": "Coupables de charme…",
+    "promise": "Bad, pas toxique.",
+    "forWho": "Pour ceux qu'on a toujours trouvés trop.",
+    "judge": "Ici, c'est toi le juge.",
+    "signup": "S'inscrire",
+    "login": "Se connecter",
+    "backHome": "Retour à l'accueil",
+    "skipToContent": "Aller au contenu",
+    "loading": "Chargement…",
+    "close": "Fermer",
+    "menu": "Menu",
+    "offline": "Tu es hors ligne. On réessaie dès que la connexion revient.",
+    "retry": "Réessayer",
+    "draftNotice": "Modèle de document : ce texte n'est pas définitif.",
+    "lastUpdated": "Dernière mise à jour : {date}",
+    "languageSwitch": "Langue",
+    "languageNames": {
+      "fr": "Français",
+      "en": "English"
+    }
+  },
+  "Nav": {
+    "mainLabel": "Navigation principale",
+    "homeLabel": "Bad Boys & Bad Girls, accueil"
+  },
+  "Footer": {
+    "label": "Pied de page",
+    "legalTitle": "Le cadre",
+    "charter": "Charte « Bad, pas toxique »",
+    "safety": "Conseils sécurité",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Confidentialité",
+    "notice": "Mentions légales",
+    "contact": "Contact : [À COMPLÉTER : adresse e-mail de contact]",
+    "adultsOnly": "Réservé aux personnes majeures (18 ans et plus).",
+    "copyright": "© {year} Bad Boys & Bad Girls"
+  },
+  "Landing": {
+    "heroEyebrow": "Site de rencontre · 18+",
+    "heroTitle": "Pour ceux qu'on a toujours trouvés trop.",
+    "heroLead": "Trop francs, trop tatoués, trop libres, trop nocturnes, trop entiers. Ici, on ne glisse pas sur des photos : on plaide sur ton Casier.",
+    "heroCtaPrimary": "Ouvrir mon dossier",
+    "heroCtaSecondary": "J'ai déjà un dossier",
+    "logoAlt": "Bad Boys & Bad Girls, Coupables de charme…",
+    "stepsTitle": "Trois étapes, zéro baratin",
+    "steps": [
+      {
+        "title": "Remplis ta Fiche",
+        "body": "Ta photo sur la toise, tes signes distinctifs, et ton Casier : trois aveux sur ta vie, dont un faux."
+      },
+      {
+        "title": "Plaide",
+        "body": "Une Fiche te plaît ? Devine lequel de ses aveux est faux et écris ton accroche. Le premier message a toujours du fond."
+      },
+      {
+        "title": "Le Parloir",
+        "body": "Si l'autre te libère, la conversation s'ouvre. Et quand le courant passe, propose une Cavale : un vrai rendez-vous."
+      }
+    ],
+    "judgeTitle": "Ici, c'est toi le juge.",
+    "judgeBody": "Tu reçois une plaidoirie ? Tu décides seul·e. Libérer ou classer l'affaire, fermer ton Parloir quand tu veux, fixer toi-même combien de plaidoiries tu acceptes en attente. Personne ne t'écrit sans ton accord.",
+    "judgePoints": [
+      "Personne ne peut t'écrire tant que tu ne l'as pas libéré·e.",
+      "Tu fixes ton plafond de plaidoiries : au-delà, ton Parloir affiche complet.",
+      "Classer une affaire envoie un message neutre et respectueux. Jamais de silence, jamais de justification."
+    ],
+    "hearingTitle": "L'Audience du soir",
+    "hearingBody": "Chaque soir à 21 h, cinq Fiches choisies pour toi. Pas un catalogue sans fin : une sélection, avec soin.",
+    "charterTitle": "Bad, pas toxique.",
+    "charterLead": "« Bad », c'est une attitude et une esthétique. Jamais une excuse.",
+    "charterPoints": [
+      "La franchise, oui. Le mépris, non.",
+      "L'audace, oui. L'insistance, non.",
+      "La liberté, oui. Le contrôle, non."
+    ],
+    "charterLink": "Lire la Charte",
+    "citiesTitle": "On ouvre ville par ville",
+    "citiesBody": "Un site de rencontre vide ne sert à rien. On commence par le Var et les Alpes-Maritimes, et chaque ville ouvre quand elle compte assez de membres. Ailleurs, inscris-toi : tu suivras la progression de ta ville et tu pourras y faire entrer tes complices.",
+    "finalTitle": "Coupables de charme…",
+    "finalBody": "Ton dossier t'attend."
+  },
+  "Auth": {
+    "loginTitle": "Se connecter",
+    "loginLead": "Content de te revoir.",
+    "signupTitle": "Ouvrir mon dossier",
+    "signupLead": "Un e-mail, un mot de passe, et c'est parti. Moins de cinq minutes pour remplir ta Fiche ensuite.",
+    "forgotTitle": "Mot de passe oublié",
+    "forgotLead": "Indique ton e-mail : on t'envoie un lien pour en choisir un nouveau.",
+    "email": "E-mail",
+    "emailHint": "Il ne sera jamais affiché sur ton profil.",
+    "password": "Mot de passe",
+    "passwordHint": "12 caractères minimum.",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "modePassword": "Avec mot de passe",
+    "modeMagicLink": "Par lien magique",
+    "modeLabel": "Méthode de connexion",
+    "magicLinkHint": "On t'envoie un lien de connexion par e-mail. Pas de mot de passe à retenir.",
+    "submitLogin": "Se connecter",
+    "submitMagicLink": "Recevoir mon lien",
+    "submitSignup": "Créer mon compte",
+    "submitForgot": "Envoyer le lien",
+    "forgotLink": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de dossier ?",
+    "hasAccount": "Déjà un dossier ?",
+    "adultNotice": "Réservé aux personnes de 18 ans et plus. Ta date de naissance sera vérifiée à l'étape suivante.",
+    "termsNotice": "En créant un compte, tu acceptes les <terms>Conditions d'utilisation</terms> et la <charter>Charte</charter>, et tu reconnais avoir lu la <privacy>Politique de confidentialité</privacy>.",
+    "captchaLabel": "Vérification anti-robot",
+    "captchaPending": "La vérification anti-robot sera active à l'ouverture des inscriptions.",
+    "notYetOpen": "Les inscriptions ne sont pas encore ouvertes. Reviens très vite.",
+    "errors": {
+      "emailInvalid": "Cet e-mail ne semble pas valide.",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 12 caractères.",
+      "required": "Ce champ est obligatoire."
+    }
+  },
+  "Errors": {
+    "notFoundStamp": "Affaire classée",
+    "notFoundTitle": "Cette page n'existe pas.",
+    "notFoundBody": "Le dossier que tu cherches a été classé, ou n'a jamais été ouvert.",
+    "errorStamp": "Vice de procédure",
+    "errorTitle": "Quelque chose a déraillé.",
+    "errorBody": "Une erreur inattendue est survenue. Réessaie dans un instant ; si ça persiste, préviens-nous."
+  },
+  "Components": {
+    "stamps": {
+      "guilty": "COUPABLE",
+      "released": "LIBÉRÉ·E",
+      "releasedAria": "Libéré ou libérée",
+      "dismissed": "AFFAIRE CLASSÉE",
+      "reglo": "RÉGLO"
+    },
+    "fiche": {
+      "caseNumber": "Dossier {number}",
+      "age": "{age} ans",
+      "distinctiveSigns": "Signes distinctifs",
+      "charges": "Chefs d'accusation",
+      "bio": "Bio",
+      "photoAlt": "Photo d'identité de {pseudo}"
+    },
+    "toise": {
+      "label": "Toise"
+    },
+    "toast": {
+      "dismiss": "Fermer la notification",
+      "region": "Notifications"
+    },
+    "select": {
+      "placeholder": "Choisis une option"
+    },
+    "empty": {
+      "defaultTitle": "Rien pour l'instant",
+      "defaultBody": "Reviens un peu plus tard."
+    }
+  },
+  "Design": {
+    "title": "Design system",
+    "lead": "Page de démonstration des composants (développement uniquement).",
+    "buttons": "Boutons",
+    "primary": "Plaider",
+    "secondary": "Voir la Fiche",
+    "ghost": "Annuler",
+    "danger": "Bloquer",
+    "disabled": "Parloir complet",
+    "fields": "Champs",
+    "pseudo": "Pseudo",
+    "pseudoHint": "De 3 à 20 caractères.",
+    "pseudoError": "Ce pseudo est déjà pris.",
+    "city": "Ville",
+    "cities": ["Toulon", "Nice", "Hyères"],
+    "consent": "J'ai 18 ans ou plus",
+    "badges": "Badges",
+    "badgeOpen": "Ouvert aux plaidoiries",
+    "badgeFull": "Parloir complet",
+    "stamps": "Tampons",
+    "replay": "Rejouer l'animation",
+    "fiche": "Carte Fiche",
+    "ficheSamplePseudo": "Exemple",
+    "ficheSampleCity": "Toulon",
+    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tatoué·e"],
+    "ficheSampleCharges": [
+      "A déjà traversé l'Espagne en moto sans réserver une seule nuit",
+      "A un tatouage dont il refuse d'expliquer le sens",
+      "S'est fait virer d'un karaoké pour avoir chanté trop fort"
+    ],
+    "ficheSampleBio": "Texte de démonstration du composant.",
+    "skeletons": "Squelettes",
+    "empty": "État vide",
+    "emptyTitle": "Personne de nouveau dans ton coin pour l'instant",
+    "emptyBody": "Élargis tes filtres, ou fais entrer tes complices.",
+    "modal": "Modale",
+    "openModal": "Ouvrir la modale",
+    "modalTitle": "Plaider auprès de Exemple",
+    "modalBody": "Contenu de démonstration de la modale.",
+    "toast": "Notification",
+    "showToast": "Afficher une notification",
+    "toastMessage": "Plaidoirie envoyée."
+  },
+  "Charter": {
+    "title": "Charte « Bad, pas toxique »",
+    "lead": "« Bad », c'est une attitude et une esthétique : la franchise, l'audace, le goût de la liberté. Ce n'est jamais une excuse pour faire du mal. En t'inscrivant, tu t'engages à respecter ces règles.",
+    "sections": [
+      {
+        "title": "Ce qu'on valorise",
+        "items": [
+          "La franchise : dis ce que tu penses, avec respect.",
+          "L'audace : ose plaider, ose proposer une Cavale.",
+          "L'humour : un Casier drôle vaut mieux que dix compliments.",
+          "La liberté : chacun·e décide de ses rencontres et de son rythme."
+        ]
+      },
+      {
+        "title": "Ce qu'on sanctionne",
+        "items": [
+          "Le harcèlement : insister après une affaire classée, multiplier les comptes, relancer quelqu'un qui ne répond pas.",
+          "Le mépris : insultes, humiliations, remarques sur le physique, le genre, l'origine ou l'orientation.",
+          "Le contrôle : exiger des preuves, des photos, des comptes rendus, de l'exclusivité avant même de se connaître.",
+          "Les contenus sexuels non sollicités, les menaces, la violence.",
+          "Les arnaques : demandes d'argent, de codes, de cartes cadeaux, liens douteux."
+        ]
+      },
+      {
+        "title": "Ce qui est interdit, point",
+        "items": [
+          "Être mineur·e, ou parler de mineurs de façon sexualisée.",
+          "Se faire passer pour quelqu'un d'autre.",
+          "Raconter de vrais délits, des violences ou de la drogue dans son Casier : le Casier est un jeu.",
+          "Publier ses coordonnées ou celles de quelqu'un d'autre dans sa Fiche."
+        ]
+      },
+      {
+        "title": "Ici, c'est toi le juge",
+        "items": [
+          "La personne qui reçoit une plaidoirie décide seule. « Affaire classée » est une réponse complète : elle ne se discute pas.",
+          "Tu peux bloquer ou signaler n'importe qui, à tout moment. Le blocage est immédiat et dans les deux sens.",
+          "Chaque signalement est lu par un humain. Tu reçois l'exposé des motifs de la décision."
+        ]
+      },
+      {
+        "title": "Ce qu'on risque",
+        "items": [
+          "Un avertissement, une suspension temporaire ou un bannissement définitif, selon la gravité.",
+          "Chaque décision est motivée. La personne sanctionnée et la personne qui a signalé reçoivent les motifs."
+        ]
+      }
+    ]
+  },
+  "Safety": {
+    "title": "Conseils sécurité",
+    "lead": "Se rencontrer, c'est le but. Le faire en sécurité, c'est la règle.",
+    "sections": [
+      {
+        "title": "Avant la Cavale",
+        "items": [
+          "Reste dans le Parloir tant que tu ne te sens pas en confiance : tu peux y bloquer et signaler à tout moment.",
+          "Ne partage jamais d'argent, de codes de vérification, de cartes cadeaux ou de coordonnées bancaires. Personne de sincère ne te le demandera.",
+          "Méfie-toi des histoires trop parfaites, des urgences soudaines et de ceux qui veulent vite quitter le site."
+        ]
+      },
+      {
+        "title": "Le jour J",
+        "items": [
+          "Premier rendez-vous dans un lieu public et fréquenté : bar, café, concert, balade animée.",
+          "Préviens un proche : où tu vas, avec qui, et à quelle heure tu comptes rentrer.",
+          "Viens et repars par tes propres moyens. Garde ton téléphone chargé.",
+          "Ton verre, tu le gardes à l'œil."
+        ]
+      },
+      {
+        "title": "Si quelque chose ne va pas",
+        "items": [
+          "Tu as le droit de partir à tout moment, sans te justifier.",
+          "Signale la personne depuis sa Fiche ou depuis le Parloir. Chaque signalement est lu par un humain.",
+          "En cas de danger immédiat, appelle le 17 (police) ou le 112 (urgences européennes). Pour les violences sexistes et sexuelles : le 3919, gratuit et anonyme."
+        ]
+      }
+    ],
+    "numbersCheck": "[À FAIRE VALIDER : vérifier les numéros d'urgence et d'écoute avant publication]"
+  },
+  "Legal": {
+    "draftBanner": "[À FAIRE VALIDER PAR UN JURISTE] Ce document est un modèle. Il ne doit pas être considéré comme définitif.",
+    "terms": {
+      "title": "Conditions générales d'utilisation",
+      "sections": [
+        {
+          "title": "1. Objet",
+          "paragraphs": [
+            "Les présentes conditions encadrent l'utilisation du service Bad Boys & Bad Girls, site de rencontre entre adultes, édité par [À COMPLÉTER : identité de l'éditeur]."
+          ]
+        },
+        {
+          "title": "2. Accès au service",
+          "paragraphs": [
+            "Le service est réservé aux personnes âgées de 18 ans ou plus. La date de naissance est vérifiée à l'inscription et une attestation de majorité est demandée.",
+            "Le service est gratuit. Aucune option payante ne permet de plaider davantage ni d'être plus visible."
+          ]
+        },
+        {
+          "title": "3. Ton compte et ta Fiche",
+          "paragraphs": [
+            "Tu t'engages à fournir des informations exactes, à utiliser des photos de toi, et à ne créer qu'un seul compte.",
+            "Ta photo principale doit montrer ton visage. Les photos sont vérifiées par un humain avant d'être visibles."
+          ]
+        },
+        {
+          "title": "4. Contenus interdits",
+          "paragraphs": [
+            "Sont interdits : les références à de vrais délits, à la violence, aux drogues ou à des mineurs ; les contenus sexuels explicites ; les coordonnées personnelles dans la Fiche, le Casier ou les plaidoiries ; les arnaques ; le harcèlement ; toute usurpation d'identité.",
+            "Les règles de comportement sont détaillées dans la Charte « Bad, pas toxique », qui fait partie des présentes conditions."
+          ]
+        },
+        {
+          "title": "5. Modération et sanctions",
+          "paragraphs": [
+            "Chaque membre peut signaler une Fiche, une photo, un Casier ou un message. Les signalements sont traités par un humain.",
+            "Selon la gravité : avertissement, suspension ou bannissement. Toute décision est motivée et communiquée à la personne concernée et à la personne qui a signalé.",
+            "[À COMPLÉTER : voies de recours contre une décision de modération]"
+          ]
+        },
+        {
+          "title": "6. Suppression du compte",
+          "paragraphs": [
+            "Tu peux supprimer ton compte à tout moment depuis tes paramètres. La suppression est définitive : ta Fiche, tes photos et le texte de tes messages sont effacés."
+          ]
+        },
+        {
+          "title": "7. Responsabilité",
+          "paragraphs": [
+            "[À COMPLÉTER : limites de responsabilité de l'éditeur, notamment pour les rencontres réelles entre membres]"
+          ]
+        },
+        {
+          "title": "8. Droit applicable",
+          "paragraphs": ["[À COMPLÉTER : droit applicable et juridiction compétente]"]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "sections": [
+        {
+          "title": "1. Responsable du traitement",
+          "paragraphs": [
+            "[À COMPLÉTER : identité et coordonnées du responsable du traitement]",
+            "[À COMPLÉTER : coordonnées du délégué à la protection des données, le cas échéant]"
+          ]
+        },
+        {
+          "title": "2. Ce qu'on collecte, et pourquoi",
+          "paragraphs": [
+            "On ne collecte que ce qui sert une fonction visible : ton e-mail (connexion et notifications), ta date de naissance (vérification de la majorité ; seul ton âge est affiché), ton pseudo, ton genre, ta ville (jamais d'adresse ni de position GPS), tes photos, ton Casier, tes réponses au questionnaire, tes plaidoiries et tes messages.",
+            "Les genres que tu recherches peuvent révéler ton orientation sexuelle : c'est une donnée sensible. Elle n'est utilisée que pour te proposer des Fiches compatibles, avec ton consentement explicite, que tu peux retirer à tout moment (le service ne pouvant alors plus fonctionner, la suppression du compte te sera proposée)."
+          ]
+        },
+        {
+          "title": "3. Photos",
+          "paragraphs": [
+            "Les métadonnées de tes photos (dont la position GPS) sont supprimées avant l'envoi et contrôlées sur nos serveurs.",
+            "Une fois validées, tes photos sont servies par une adresse web longue et impossible à deviner. Cette adresse est renouvelée quand tu supprimes une photo, après 30 jours de pause et en cas de bannissement ; tout est effacé quand tu supprimes ton compte."
+          ]
+        },
+        {
+          "title": "4. Cookies",
+          "paragraphs": [
+            "On utilise uniquement des cookies strictement nécessaires (session de connexion, langue). Aucun traceur publicitaire, aucun outil de mesure d'audience externe : c'est pourquoi aucun bandeau de consentement n'est affiché."
+          ]
+        },
+        {
+          "title": "5. Durées de conservation",
+          "paragraphs": [
+            "Tes données sont conservées tant que ton compte existe. Un compte dont l'inscription n'est pas terminée est supprimé après 30 jours.",
+            "Après un bannissement, seule une empreinte chiffrée de l'e-mail est conservée pendant [À COMPLÉTER : durée, 12 mois proposés] pour empêcher la réinscription."
+          ]
+        },
+        {
+          "title": "6. Hébergement et sous-traitants",
+          "paragraphs": [
+            "Base de données et fichiers : Supabase, région Union européenne. Application : Vercel. E-mails : Brevo. Protection anti-robot : Cloudflare Turnstile.",
+            "[À COMPLÉTER : garanties encadrant les transferts hors de l'Union européenne]"
+          ]
+        },
+        {
+          "title": "7. Tes droits",
+          "paragraphs": [
+            "Tu peux exporter tes données (format JSON) et supprimer ton compte depuis tes paramètres. Tu disposes aussi des droits d'accès, de rectification, d'opposition et de limitation, et du droit d'introduire une réclamation auprès de la CNIL.",
+            "[À COMPLÉTER : adresse de contact pour exercer tes droits]"
+          ]
+        }
+      ]
+    },
+    "notice": {
+      "title": "Mentions légales",
+      "sections": [
+        {
+          "title": "Éditeur",
+          "paragraphs": [
+            "[À COMPLÉTER : nom ou raison sociale, forme juridique, adresse, numéro d'immatriculation]",
+            "Directeur ou directrice de la publication : [À COMPLÉTER]"
+          ]
+        },
+        {
+          "title": "Point de contact (DSA)",
+          "paragraphs": [
+            "[À COMPLÉTER : adresse e-mail du point de contact unique pour les autorités et les utilisateurs]"
+          ]
+        },
+        {
+          "title": "Hébergeurs",
+          "paragraphs": [
+            "Application : Vercel Inc. [À COMPLÉTER : adresse à vérifier]",
+            "Base de données et fichiers : Supabase Inc., données hébergées dans l'Union européenne. [À COMPLÉTER : adresse à vérifier]"
+          ]
+        },
+        {
+          "title": "Site",
+          "paragraphs": ["Adresse du site : [DOMAINE]"]
+        }
+      ]
+    }
+  }
+}
