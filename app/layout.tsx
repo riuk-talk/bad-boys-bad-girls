@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Bad Boys & Bad Girls",
+  description: "Site de rencontre « Bad, pas toxique ». Coupables de charme…",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="fr">
+      <body>
+        {children}
+        <SpeedInsights />
+      </body>
+    </html>
+  );
+}
