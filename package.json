@@ -1,0 +1,28 @@
+{
+  "name": "bad-boys-bad-girls",
+  "version": "1.0.0",
+  "description": "Bad Boys & Bad Girls - Site de rencontre « Bad, pas toxique »",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "packageManager": "pnpm@10.34.5",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
+    "next": "^16.3.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
+    "typescript": "^5.7.2"
+  }
+}
