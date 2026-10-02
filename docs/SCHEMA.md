@@ -34,7 +34,7 @@
 | `moderation_action_type` | `warn`, `suspend`, `ban`, `unban`, `hide_profile`, `unhide_profile`, `photo_approve`, `photo_reject`, `text_clear`, `text_remove`, `revoke_reglo` |
 | `consent_type` | `terms`, `privacy`, `age_18`, `art9_seeking` |
 | `notification_type` | `plea_received`, `plea_accepted`, `plea_dismissed`, `message_received`, `date_proposed`, `date_accepted`, `date_countered`, `hearing_open`, `moderation_decision`, `zone_opened`, `profile_dormant` |
-| `email_kind` | `plea_digest`, `date_accepted`, `zone_opened`, `profile_dormant`, `weekly_digest`, `moderation_decision` |
+| `email_kind` | `plea_digest`, `date_accepted`, `zone_opened`, `profile_dormant`, `weekly_digest`, `moderation_decision`, `onboarding_reminder` (J+7, priorité la plus basse) |
 | `flag_source` | `pseudo`, `bio`, `casier`, `tribe_detail`, `plea`, `message`, `date_venue` |
 
 ## 2. Tables
@@ -78,6 +78,9 @@ RLS : **S** `authenticated` (nom, statut, seuils — la jauge est servie par `zo
 
 #### `app_settings` — ligne unique
 `id boolean PK check (id)`, `launch_mode launch_mode default 'zones'`, `ban_hash_retention_months smallint default 12`, `email_daily_quota smallint default 300`, `email_auth_reserve smallint default 100` (part du quota réservée aux e-mails d'auth), `hearing_max_appearances_per_day smallint default 10` (R20, décision 12), `storage_alert_mb integer default 700`, `egress_alert_gb numeric default 3.5` (R1), `updated_at`.
+
+#### `egress_readings` — saisie mensuelle de l'egress (décision Phase 1 B1)
+`month date PK` (1er du mois), `egress_gb numeric(6,2) not null check (≥ 0)`, `entered_by uuid`, `created_at`. RLS : — (fonctions admin `admin_record_egress(month, gb)`). Alerte si deux mois consécutifs > `egress_alert_gb`.
 RLS : — (lu par les fonctions ; modifié par fonction admin).
 
 #### `tribes` — signes distinctifs
@@ -279,6 +282,9 @@ RLS : **S/U** propriétaire.
 `day date PK`, `sent integer`.
 RLS des deux : — (route serveur avec la clé secrète).
 
+#### `web_vitals_daily` — Core Web Vitals réels, agrégés (Phase 7, décision Phase 1 A2)
+`day date`, `route text` (gabarit de route, ex. `/fiche/[id]`, jamais l'URL réelle), `metric text check in ('LCP','CLS','INP')`, `device text check in ('mobile','desktop')`, `samples integer`, `histogram integer[]` (seaux fixes pour calculer le 75e centile). PK (`day`, `route`, `metric`, `device`). **Aucun identifiant, aucune IP.** Purge > 90 jours. RLS : — (écriture par la route serveur, lecture admin).
+
 #### `activity_days` — rétention J7/J30 (minimisation : une ligne par jour actif, rien d'autre)
 `user_id → profiles on delete cascade`, `day date`, PK (`user_id`, `day`). Purge > 13 mois.
 RLS : —.
@@ -298,7 +304,7 @@ RLS : —.
 | `criteria_match(a, b)` | genre de B ∈ recherchés de A, âge de B dans la tranche de A, **et réciproquement** |
 | `can_view_profile(viewer, target)` | actif, non bloqué, réciprocité, zone ouverte (sauf `launch_mode = open`), cible non en pause et active < 90 j |
 | `has_open_relation(viewer, target)` | conversation ou plaidoirie en cours entre les deux (B2) |
-| `can_unmask(conversation)` | Cavale acceptée **ou** 10/10 messages, **et** les deux comptes ont > 7 jours **et** aucun signalement `open` entre eux ni contre l'un d'eux (R7) |
+| `can_unmask(conversation)` | Cavale acceptée **ou** 10/10 messages, **et** les deux comptes ont > 7 jours, **et** aucun signalement `open` entre les deux personnes, **et** aucun signalement `open` contre l'une d'elles dans les catégories `scam`, `minor`, `harassment`, `violence_threat` (R7 affiné, décision Phase 1 B3) |
 | `pair_cooldown_until(a, b)` | fin du délai de 30 jours (R13/R14) |
 | `touch_activity()` | met à jour `last_seen_at` et `activity_days` (appelé par le layout de l'app, 1×/h max) |
 
@@ -341,7 +347,7 @@ RLS : —.
 8. Notification au destinataire + mise en file du récapitulatif e-mail du jour.
 
 ### 3.4 Admin (`security definer`, contrôle `is_admin()` en première ligne)
-`admin_review_photo(photo_id, approve, reason)` (la copie de fichier vers `photos` se fait côté serveur avant l'appel), `admin_decide_report(report_id, upheld, reason, action)`, `admin_sanction(user, action, reason, until)` (bannissement : insère l'empreinte e-mail, ferme les conversations, retire Réglo), `admin_resolve_flag(id, action, reason)`, `admin_upsert_zone(...)` (recalcule `zone_id` des membres concernés, B1), `admin_open_zone(zone_id)`, `admin_storage_usage()` (somme des tailles dans `storage.objects` ; l'egress n'est pas lisible en SQL, voir PROGRESS), `admin_upsert_tribe/question/keyword(...)`, `admin_search_users(q)`, `admin_zone_health(zone_id, from, to)` (indicateurs §15, `is_seed` exclus).
+`admin_review_photo(photo_id, approve, reason)` (la copie de fichier vers `photos` se fait côté serveur avant l'appel), `admin_decide_report(report_id, upheld, reason, action)`, `admin_sanction(user, action, reason, until)` (bannissement : insère l'empreinte e-mail, ferme les conversations, retire Réglo), `admin_resolve_flag(id, action, reason)`, `admin_upsert_zone(...)` (recalcule `zone_id` des membres concernés, B1), `admin_open_zone(zone_id)`, `admin_storage_usage()` (somme des tailles dans `storage.objects`), `admin_record_egress(month, gb)` (saisie manuelle), `admin_upsert_tribe/question/keyword(...)`, `admin_search_users(q)`, `admin_zone_health(zone_id, from, to)` (indicateurs §15 dont la part des membres ayant reçu < 5 Fiches à l'Audience ; `is_seed` exclus).
 
 ### 3.5 Jobs (exécutables par `postgres` uniquement)
 `run_hearings_due()` → `build_daily_hearing(zone_id, local_date)`, `expire_pleas()`, `compute_reglo()`, `process_inactive_profiles()`, `auto_open_zones()`, `cleanup()`, `enqueue_*_emails()`.

@@ -1,6 +1,6 @@
-# SPEC — Bad Boys & Bad Girls (v6.1)
+# SPEC — Bad Boys & Bad Girls (v6.2)
 
-> v6.1 : intègre les décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). Nom de domaine provisoire : `[DOMAINE]`.
+> v6.1 : intègre les décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). v6.2 : décisions de Phase 1 (`docs/PHASE1-DECISIONS.md`). Nom de domaine provisoire : `[DOMAINE]`.
 
 ## 0. Priorités
 
@@ -208,7 +208,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - En-têtes : CSP stricte, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` restrictive.
 - Turnstile à l'inscription et à la connexion.
 - Pseudo, présentation, Casier, plaidoiries : e-mails, numéros de téléphone et liens masqués (anti-arnaque).
-- Dans le Parloir, le masquage est **levé** dès qu'une Cavale est acceptée ou que les deux personnes ont chacune envoyé au moins 10 messages, **à condition** que les deux comptes aient plus de 7 jours et qu'aucun signalement ne soit ouvert entre eux ni contre l'un d'eux : échanger son numéro doit rester possible pour se voir. À ce moment, un encart rappelle : « Ne partage jamais d'argent ni de codes. »
+- Dans le Parloir, le masquage est **levé** dès qu'une Cavale est acceptée ou que les deux personnes ont chacune envoyé au moins 10 messages, **à condition** que les deux comptes aient plus de 7 jours, qu'aucun signalement ne soit ouvert **entre les deux personnes**, et qu'aucun signalement ouvert dans les catégories arnaque, mineur, harcèlement ou violence/menace ne vise l'une d'elles (les autres catégories ne bloquent pas) : échanger son numéro doit rester possible pour se voir. À ce moment, un encart rappelle : « Ne partage jamais d'argent ni de codes. »
 - Aucune clé secrète dans le client ; `.env.example` documenté.
 
 ## 11. Photos et modération d'images
@@ -217,7 +217,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - Upload dans le bucket **privé** `photos-pending` → **file de validation admin** (critères : adulte, visage visible sur la photo principale, pas de nudité, pas de coordonnées) → copie vers le bucket **public** `photos` sous un chemin UUID non devinable. Refus → suppression + motif notifié.
 - Les fichiers de `photos-pending` sont supprimés dès la décision. Fichiers publics servis avec un `Cache-Control` long (chemins immuables).
 - **Rotation de chemin** (nouvel UUID, ancien fichier supprimé) à la suppression d'une photo, après 30 jours de pause, au bannissement ; purge totale à la suppression du compte. Mentionné dans la politique de confidentialité.
-- **Seuil de bascule** : alerte dans le tableau de bord admin quand le stockage dépasse 700 Mo ou l'egress dépasse 3,5 Go/mois deux mois de suite. La décision de payer reste humaine.
+- **Seuil de bascule** : alerte dans le tableau de bord admin quand le stockage dépasse 700 Mo ou l'egress dépasse 3,5 Go/mois deux mois de suite. Le stockage est calculé en SQL (`storage.objects`) ; l'egress n'étant pas lisible en base, l'admin le **saisit chaque mois** (champ dédié + lien vers la page d'usage Supabase) et l'alerte porte sur la valeur saisie. La décision de payer reste humaine.
 - Pas de détection automatique au MVP (un modèle côté client est lourd et contournable ; la validation humaine fait foi au volume du lancement). Prévoir l'emplacement d'un contrôle automatique pour plus tard.
 - Notification admin (e-mail groupé) dès qu'il y a des photos en attente ; objectif de validation < 12 h, affiché à l'utilisateur.
 - Pas d'optimisation d'image Vercel (quota limité en Hobby) : `next/image` avec `unoptimized`, `width`, `height`, `sizes`, `loading="lazy"` hors de la zone visible.
@@ -275,6 +275,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
   - plaidoiries envoyées/jour, taux de libération, délai moyen de réponse ;
   - part des plaidoiries classées automatiquement (trop élevée = membres inactifs ou submergés) ;
   - rétention J7 et J30 ;
+  - part des membres ayant reçu moins de 5 Fiches à l'Audience (signal direct du déséquilibre femmes/hommes) ;
   - volume de signalements et délai de traitement ;
   - Cavales proposées et acceptées (le vrai indicateur de réussite : des gens qui se voient) ;
   - les Fiches `is_seed` sont exclues de tous les chiffres.
@@ -282,7 +283,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 ## 16. Notifications
 
 - In-app : cloche + compteurs (plaidoirie reçue, libération, affaire classée, nouveau message, Cavale proposée/acceptée/contre-proposée, Audience ouverte, décision de modération, ouverture de ta ville).
-- E-mail (SMTP gratuit, quota limité) : plaidoirie reçue et libération (regroupées, maximum 1 e-mail par jour et par membre), Cavale acceptée, ouverture de la ville, Fiche en veille ; désinscription par type. Si le quota du jour est atteint, les e-mails restants passent au lendemain.
+- E-mail (SMTP gratuit, quota limité) : plaidoirie reçue et libération (regroupées, maximum 1 e-mail par jour et par membre), Cavale acceptée, ouverture de la ville, Fiche en veille, rappel unique à J+7 pour un onboarding non terminé (« Ta Fiche t'attend », mentionne la suppression automatique à J+30 ; priorité la plus basse, aucune autre relance) ; désinscription par type. Si le quota du jour est atteint, les e-mails restants passent au lendemain.
 
 ## 17. Accessibilité et UX
 
@@ -294,7 +295,10 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 ## 18. Performance (critères d'acceptation)
 
 - Lighthouse mobile ≥ 90 en Performance, Accessibilité et Bonnes pratiques sur la landing, l'Audience du soir, la Découverte, une Fiche et le Parloir.
-- LCP < 2,5 s, CLS < 0,1, INP < 200 ms ; JS initial de la landing < 130 Ko compressé.
+- **Core Web Vitals réels des visiteurs (75e centile)** : LCP < 2,5 s, CLS < 0,1, INP < 200 ms. Ce critère fait foi. En laboratoire (Lighthouse mobile simulé), tolérance LCP ≤ 3,5 s.
+- Mesure réelle (Phase 7) : bibliothèque `web-vitals` + route interne, données **agrégées** sans identifiant ni IP, conservées 90 jours.
+- JS initial de la landing < 130 Ko compressé **en Brotli** (compression servie par Vercel).
+- Toutes les pages sont rendues dynamiquement (nonce CSP). En Phase 7, si le LCP réel de la landing dépasse le seuil : tester landing et pages légales statiques avec une CSP par empreintes (hash), mesurer avant/après.
 - Server Components par défaut ; bibliothèques lourdes en `dynamic import`.
 - Index SQL sur toutes les colonnes filtrées ou triées ; pas de requêtes N+1 ; `EXPLAIN ANALYZE` de `discover_profiles` avec un jeu de 5 000 Fiches de test.
 

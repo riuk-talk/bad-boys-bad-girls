@@ -4,14 +4,20 @@
 
 ## Phase en cours
 
-**Phase 1 — Fondations et identité : terminée, en attente de validation du porteur du projet.**
+**Phase 2 — Comptes, onboarding, Fiche, photos, zones : en attente** de l'URL du projet Supabase de dev et de la clé publishable.
+
+Phase 1 validée le 2026-10-02 (`docs/PHASE1-DECISIONS.md`) ; pull request vers `main` ouverte.
 
 ## Phase 0 — Cadrage : ✅ validée (2026-10-01)
 
 - Livrables : `docs/PHASE0.md` (vérifications, risques R1–R32, arborescence, env, jobs, comptes à créer), `docs/SCHEMA.md` (schéma v1 validé), `docs/PHASE0-DECISIONS.md` (réponses du porteur + corrections B1–B7).
 - Décisions intégrées dans `docs/SPEC.md` (v6.1), `docs/SCHEMA.md` et `CLAUDE.md` (tableau du vocabulaire corrigé, R27).
 
-## Phase 1 — bilan
+## Phase 1 — Fondations et identité : ✅ validée (2026-10-02)
+
+Tous les écarts ci-dessous sont **validés** (`docs/PHASE1-DECISIONS.md` §A) : budget JS mesuré en Brotli ; LCP jugé sur les visiteurs réels (75e centile < 2,5 s), tolérance laboratoire ≤ 3,5 s ; rouge et nuances dérivées ; logo AVIF en `<img>` ; `style-src 'unsafe-inline'` ; rendu dynamique (test d'une landing statique avec CSP par empreintes en Phase 7 seulement si le LCP réel l'exige) ; ESLint 9 ; pas de détection automatique de langue.
+
+### Bilan
 
 ### Fait
 - **1a Socle** : Next.js 16.3.8 (App Router, `proxy.ts`), TypeScript strict (+ `noUncheckedIndexedAccess`), Tailwind 4, ESLint 9 flat config (règles : pas de `any`, pas de `dangerouslySetInnerHTML`, pas de `next/link` direct, clé secrète Supabase interdite hors `lib/supabase/admin.ts`), Prettier, next-intl 4 (fr par défaut sans préfixe, en sous `/en`, **sans détection automatique de langue**), Vitest, Playwright + axe-core, Supabase CLI (`supabase/config.toml`), `.env.example`.
@@ -29,8 +35,8 @@
 | Aucune chaîne en dur | ✅ test automatique (`tests/unit/i18n.test.ts`) qui analyse le JSX ; parité des clés fr/en testée ; vocabulaire interdit (match, swipe, like) testé |
 | Rendu 360 → 1440 px | ✅ aucun défilement horizontal à 360, 414, 768, 1024, 1280, 1440 px (test e2e) |
 | Navigation clavier | ✅ lien d'évitement, focus visible, modale (piège de focus, Échap, retour du focus), focus sur le premier champ en erreur (tests e2e) ; axe-core WCAG 2.2 AA : 0 violation sur les 11 pages |
-| JS initial landing < 130 Ko compressé (SPEC §18) | ✅ **117 Ko en Brotli** (compression servie par Vercel) ; ⚠️ 137 Ko en gzip. Le socle du framework (React + routeur Next) pèse à lui seul ~126 Ko gzip |
-| LCP < 2,5 s (SPEC §18) | ⚠️ landing : 2,4 à 3,2 s en simulation Lighthouse mobile (4G lente simulée) ; sans simulation, l'image LCP s'affiche en ~0,2 s. Voir écart n° 3 |
+| JS initial landing < 130 Ko compressé en Brotli (SPEC §18) | ✅ **117 Ko** (137 Ko en gzip, pour information). Le socle du framework (React + routeur Next) pèse à lui seul ~126 Ko gzip |
+| LCP (SPEC §18) | ✅ tolérance laboratoire ≤ 3,5 s respectée ; LCP réel mesuré en Phase 7 —  landing : 2,4 à 3,2 s en simulation Lighthouse mobile (4G lente simulée) ; sans simulation, l'image LCP s'affiche en ~0,2 s. Voir écart n° 3 |
 
 ### Écarts par rapport à la spec
 1. **Couleurs dérivées pour l'accessibilité** : le rouge `#E0233F` n'atteint pas 4,5:1 (4,12 sur noir, 3,86 sur crème). Il reste utilisé pour les grands titres, bordures et décors ; ajout de `#EE3A55` (texte rouge sur noir, 4,93:1), `#B5172E` (rouge sur crème, 5,53:1), `#7A6420` (or sur crème), `#6A5F55` (gris sur crème). Les boutons principaux sont or sur noir (8,42:1).
@@ -71,13 +77,18 @@
 | TypeScript 6.0.x (et non 7.x) | `typescript-eslint` 8.71 exige TS < 6.1 ; TS 7 (portage natif) pas encore pris en charge par l'outillage ESLint |
 | ESLint 9.39.x (et non 10.x) | `eslint-plugin-react` (dépendance de `eslint-config-next`) n'accepte pas ESLint 10 |
 
-## Points contradictoires ou à surveiller (relevés en appliquant les décisions)
+## Points relevés en Phase 0 → tranchés en Phase 1 (`PHASE1-DECISIONS.md` §B)
 
-1. **Alerte egress (décision 1)** : l'egress n'est **pas lisible en SQL**. Le stockage, oui (somme des tailles dans `storage.objects`). Pour l'egress, il faudra l'API de gestion Supabase (je ne suis pas sûr qu'un point d'accès d'usage soit ouvert sur Free : à vérifier en Phase 6) ; à défaut, saisie manuelle mensuelle dans l'admin à partir du tableau de bord Supabase.
-2. **Plafond de 10 apparitions/jour** : si la répartition femmes/hommes est déséquilibrée, certains membres recevront moins de 5 Fiches (pas de remplissage, conforme à la spec). Le tableau de santé devra montrer le nombre moyen de Fiches par Audience.
-3. **Garde-fou de levée du masquage (R7)** : un seul signalement ouvert contre A suspend la levée dans **toutes** les conversations de A jusqu'à décision. Vecteur d'abus possible (signalement malveillant) ; la seule parade est un délai de traitement court des signalements.
-4. **Suppression des comptes sans onboarding après 30 jours** : la spec ne prévoit pas d'avertissement. Je propose de ne pas envoyer d'e-mail (quota) et d'afficher la règle sur l'écran d'onboarding. À confirmer.
-5. **Hook « Before User Created »** : la doc ne confirme pas explicitement qu'il s'exécute pour une inscription par lien magique. Test à faire en Phase 2 sur le projet de dev.
+1. **Egress** : pas d'API de gestion. Stockage calculé en SQL ; egress saisi chaque mois par l'admin (table `egress_readings`), alerte sur la valeur saisie.
+2. **Audience à moins de 5 Fiches** : accepté ; le tableau de santé affiche la part des membres concernés.
+3. **Levée du masquage** : bloquée par un signalement ouvert entre les deux personnes, ou contre l'une d'elles dans les catégories `scam`, `minor`, `harassment`, `violence_threat` uniquement.
+4. **Comptes sans onboarding** : un seul e-mail à J+7 (`onboarding_reminder`, priorité la plus basse), suppression à J+30.
+5. **Hook « Before User Created » et lien magique** : à tester en Phase 2 ; s'il ne s'exécute pas pour le lien magique → arrêt et proposition avant de continuer.
+
+## Organisation
+
+- Fin de chaque phase validée → pull request vers `main`. `main` est déployée en production par Vercel, chaque branche en prévisualisation.
+- Phase 7 : collecte des Core Web Vitals réels (`web-vitals` + route interne, table `web_vitals_daily`, agrégats sans identifiant ni IP, 90 jours).
 
 ## Versions figées
 
@@ -116,10 +127,7 @@ Toutes les dépendances sont figées à la version exacte dans `package.json` (p
 
 ## Questions ouvertes
 
-- Point 4 de la liste « à surveiller » (avertissement avant suppression des comptes sans onboarding).
 - Nom de domaine : `[DOMAINE]` en attendant.
-- Budget JS : mesure de référence Brotli ou gzip ? (écart Phase 1 n° 2)
-- LCP : seuil en laboratoire (simulation Lighthouse) ou mesuré chez les vrais visiteurs ? (écart Phase 1 n° 3)
 - Numéros d'urgence de la page Conseils sécurité (17, 112, 3919) à faire vérifier avant publication.
 
 ## Commandes utiles
