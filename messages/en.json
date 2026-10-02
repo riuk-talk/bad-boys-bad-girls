@@ -456,5 +456,143 @@
         }
       ]
     }
+  },
+  "App": {
+    "navLabel": "My space",
+    "myFiche": "My File",
+    "myCity": "My city",
+    "signOut": "Log out"
+  },
+  "Onboarding": {
+    "title": "Open your file",
+    "progress": "Step {current} of {total}",
+    "savedNotice": "Every step is saved: you can stop and come back later.",
+    "deletionNotice": "An unfinished file is deleted automatically after 30 days.",
+    "next": "Continue",
+    "finish": "Finish",
+    "steps": {
+      "1": "Age and rules",
+      "2": "Your identity",
+      "3": "Who you're looking for",
+      "4": "Your photo"
+    },
+    "age": {
+      "lead": "Bad Boys & Bad Girls is for adults only. Your date of birth is only used to check that: only your age will be shown.",
+      "birthdate": "Date of birth",
+      "attest": "I confirm I am 18 or older.",
+      "terms": "I accept the <terms>Terms of use</terms> and the <charter>“Bad, not toxic” Charter</charter>.",
+      "privacy": "I have read the <privacy>Privacy policy</privacy>."
+    },
+    "identity": {
+      "lead": "What others will see first.",
+      "pseudo": "Nickname",
+      "pseudoHint": "3 to 20 characters: letters, digits, space, dot, dash. No email, phone or link.",
+      "gender": "Gender",
+      "genders": {
+        "man": "Man",
+        "woman": "Woman",
+        "non_binary": "Non-binary",
+        "other": "Other"
+      },
+      "city": "City",
+      "cityHint": "Only your city is shown, never your address.",
+      "cityPlaceholder": "Type a name or postcode",
+      "cityNoResult": "No city found.",
+      "cityResults": "{count, plural, =0 {No result} one {# result} other {# results}}"
+    },
+    "seeking": {
+      "lead": "Who would you like to meet?",
+      "genders": "I'm looking for",
+      "gendersHint": "Several choices possible.",
+      "ageMin": "Minimum age",
+      "ageMax": "Maximum age",
+      "consentTitle": "Your consent",
+      "consentText": "The genders you are looking for may reveal your sexual orientation. We only use them to show you compatible Files, nothing else. You can withdraw this consent at any time; as the service cannot work without it, account deletion will then be offered.",
+      "consent": "I agree that the genders I'm looking for are used to show me compatible Files."
+    },
+    "photo": {
+      "lead": "Your ID photo, against the height chart. Your face must be visible.",
+      "rules": "No nudity, no contact details, no photo of someone else. It is checked by a human before becoming visible (goal: under 12 hours).",
+      "choose": "Choose a photo",
+      "change": "Change photo",
+      "preparing": "Preparing the photo…",
+      "uploading": "Uploading the photo…",
+      "previewAlt": "Preview of your photo"
+    },
+    "errors": {
+      "required": "This field is required.",
+      "underage": "You must be 18 or older to sign up.",
+      "invalidDate": "This date isn't valid.",
+      "mustAccept": "Tick this box to continue.",
+      "pseudoInvalid": "This nickname isn't accepted (3 to 20 characters, no email, phone or link).",
+      "pseudoTaken": "This nickname is taken.",
+      "cityRequired": "Pick your city from the list.",
+      "gendersRequired": "Choose at least one gender.",
+      "ageRange": "The age range must be between 18 and 99, lowest first.",
+      "consentRequired": "Without this consent, we can't show you any Files.",
+      "photoRequired": "Add your photo to continue.",
+      "photoUnreadable": "This file isn't a readable image.",
+      "photoTooSmall": "The photo is too small (at least 400 pixels per side).",
+      "photoTooLarge": "The photo is too heavy.",
+      "generic": "Something went wrong. Try again.",
+      "configuration": "The service isn't configured yet. Come back a bit later."
+    }
+  },
+  "MyFiche": {
+    "title": "My File",
+    "previewTitle": "As others will see it",
+    "status": {
+      "pending": "Your ID photo is being checked (goal: under 12 hours). Until then, nobody can see your File.",
+      "approved": "Your ID photo is approved.",
+      "rejected": "Your ID photo was refused: {reason}. Replace it so your File can be shown.",
+      "missing": "Add your ID photo so your File can be approved."
+    },
+    "gaugeLabel": "File {percent}% complete",
+    "gaugeHint": "The more complete your File, the more people want to plead.",
+    "criteria": {
+      "mainPhoto": "Approved ID photo",
+      "bio": "A bio of at least 40 characters",
+      "signs": "At least one distinctive mark",
+      "morePhotos": "Three photos or more"
+    },
+    "editTitle": "Complete my File",
+    "bio": "Bio",
+    "bioHint": "500 characters max. Emails, phone numbers and links are hidden.",
+    "signsTitle": "Distinctive marks",
+    "signsHint": "Up to 5. An optional detail for each (60 characters).",
+    "signDetail": "Detail for “{sign}”",
+    "save": "Save",
+    "saved": "File saved.",
+    "photosTitle": "My photos",
+    "photosHint": "1 to 6 photos. The first one is your ID photo.",
+    "addPhoto": "Add a photo",
+    "photoAdded": "Photo sent: it will be visible once checked.",
+    "photoStatus": {
+      "pending": "Being checked",
+      "approved": "Approved",
+      "rejected": "Refused"
+    },
+    "photoAlt": "Your photo no. {number}",
+    "errors": {
+      "tooManySigns": "5 distinctive marks max.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "City": {
+    "title": "Your city opens soon",
+    "lead": "We open city by city, so that everyone finds people from the very first evening.",
+    "zone": "Zone: {name}",
+    "profilesGauge": "{count} complete Files out of {threshold}",
+    "womenGauge": "{pct}% women (goal: {threshold}%)",
+    "noZone": "Your city isn't part of a launch zone yet. Your File is ready: we'll let you know as soon as a zone includes it.",
+    "open": "Your city is open!",
+    "openLink": "See my File",
+    "referralTitle": "Bring your accomplices in",
+    "referralLead": "The more Files your city has, the sooner it opens. Share your link:",
+    "referralLabel": "Your referral link",
+    "copy": "Copy link",
+    "copied": "Link copied.",
+    "recruited": "{count, plural, =0 {No accomplice recruited yet} one {# accomplice recruited} other {# accomplices recruited}}",
+    "noReward": "No reward: just more people, sooner."
   }
 }
