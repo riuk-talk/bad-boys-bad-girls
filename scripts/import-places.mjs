@@ -22,7 +22,9 @@ async function fetchCommunes() {
   if (departments.length === 0) return fetchJson(`${API}/communes?fields=${FIELDS}&format=json`);
   const lists = await Promise.all(
     departments.map((dep) =>
-      fetchJson(`${API}/departements/${encodeURIComponent(dep)}/communes?fields=${FIELDS}&format=json`),
+      fetchJson(
+        `${API}/departements/${encodeURIComponent(dep)}/communes?fields=${FIELDS}&format=json`,
+      ),
     ),
   );
   return lists.flat();
@@ -61,7 +63,8 @@ function toSql(rows) {
 async function push(rows) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key) throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY are required for --push");
+  if (!url || !key)
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY are required for --push");
   for (let i = 0; i < rows.length; i += 1000) {
     const batch = rows.slice(i, i + 1000);
     const response = await fetch(`${url}/rest/v1/places?on_conflict=country_code,official_code`, {
@@ -74,7 +77,8 @@ async function push(rows) {
       },
       body: JSON.stringify(batch),
     });
-    if (!response.ok) throw new Error(`batch ${i}: HTTP ${response.status} ${await response.text()}`);
+    if (!response.ok)
+      throw new Error(`batch ${i}: HTTP ${response.status} ${await response.text()}`);
     process.stderr.write(`${Math.min(i + 1000, rows.length)}/${rows.length}\n`);
   }
 }

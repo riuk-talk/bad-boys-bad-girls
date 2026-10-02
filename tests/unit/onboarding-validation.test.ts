@@ -45,9 +45,15 @@ describe("age step", () => {
 
 describe("identity step", () => {
   it("accepts accented pseudos and refuses contacts or symbols", () => {
-    expect(identityStepSchema.safeParse({ pseudo: " Rebelle Élodie ", gender: "woman", placeId: "12" }).success).toBe(true);
+    expect(
+      identityStepSchema.safeParse({ pseudo: " Rebelle Élodie ", gender: "woman", placeId: "12" })
+        .success,
+    ).toBe(true);
     for (const pseudo of ["ab", "a@b.fr", "x".repeat(21), "<script>"]) {
-      expect(identityStepSchema.safeParse({ pseudo, gender: "woman", placeId: "12" }).success, pseudo).toBe(false);
+      expect(
+        identityStepSchema.safeParse({ pseudo, gender: "woman", placeId: "12" }).success,
+        pseudo,
+      ).toBe(false);
     }
   });
 
@@ -60,7 +66,10 @@ describe("identity step", () => {
 
 describe("seeking step", () => {
   it("requires genders, a coherent age range and the explicit consent", () => {
-    expect(seekingStepSchema.safeParse({ genders: ["woman"], ageMin: "25", ageMax: "40", consent: "on" }).success).toBe(true);
+    expect(
+      seekingStepSchema.safeParse({ genders: ["woman"], ageMin: "25", ageMax: "40", consent: "on" })
+        .success,
+    ).toBe(true);
     const result = seekingStepSchema.safeParse({ genders: [], ageMin: "40", ageMax: "25" });
     expect(result.success).toBe(false);
     if (!result.success) {
