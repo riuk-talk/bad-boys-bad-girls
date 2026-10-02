@@ -1,0 +1,432 @@
+{
+  "Meta": {
+    "siteName": "Bad Boys & Bad Girls",
+    "shortName": "BB&BG",
+    "defaultTitle": "Bad Boys & Bad Girls — Guilty of charm…",
+    "titleTemplate": "%s · Bad Boys & Bad Girls",
+    "description": "The dating site for people who've always been called too much. Tattooed, bikers, night owls, straight talkers. Bad, not toxic.",
+    "ogAlt": "Bad Boys & Bad Girls logo: a crowned golden B and a red B with devil horns, with the tagline “Guilty of charm…”"
+  },
+  "Common": {
+    "brand": "Bad Boys & Bad Girls",
+    "signature": "Guilty of charm…",
+    "promise": "Bad, not toxic.",
+    "forWho": "For those who've always been called too much.",
+    "judge": "Here, you're the judge.",
+    "signup": "Sign up",
+    "login": "Log in",
+    "backHome": "Back to home",
+    "skipToContent": "Skip to content",
+    "loading": "Loading…",
+    "close": "Close",
+    "menu": "Menu",
+    "offline": "You're offline. We'll retry as soon as you're back.",
+    "retry": "Try again",
+    "draftNotice": "Template document: this text is not final.",
+    "lastUpdated": "Last updated: {date}",
+    "languageSwitch": "Language",
+    "languageNames": {
+      "fr": "Français",
+      "en": "English"
+    }
+  },
+  "Nav": {
+    "mainLabel": "Main navigation",
+    "homeLabel": "Bad Boys & Bad Girls, home"
+  },
+  "Footer": {
+    "label": "Footer",
+    "legalTitle": "The fine print",
+    "charter": "“Bad, not toxic” Charter",
+    "safety": "Safety tips",
+    "terms": "Terms of use",
+    "privacy": "Privacy",
+    "notice": "Legal notice",
+    "contact": "Contact: [TO COMPLETE: contact email address]",
+    "adultsOnly": "Adults only (18 and over).",
+    "copyright": "© {year} Bad Boys & Bad Girls"
+  },
+  "Landing": {
+    "heroEyebrow": "Dating site · 18+",
+    "heroTitle": "For those who've always been called too much.",
+    "heroLead": "Too blunt, too tattooed, too free, too nocturnal, too whole. Here, nobody swipes on photos: you plead your case on their Record.",
+    "heroCtaPrimary": "Open my file",
+    "heroCtaSecondary": "I already have a file",
+    "logoAlt": "Bad Boys & Bad Girls, Guilty of charm…",
+    "stepsTitle": "Three steps, zero small talk",
+    "steps": [
+      {
+        "title": "Fill in your File",
+        "body": "Your photo against the height chart, your distinctive marks, and your Record: three confessions about your life, one of them false."
+      },
+      {
+        "title": "Plead",
+        "body": "Like a File? Guess which confession is false and write your opening line. The first message always has substance."
+      },
+      {
+        "title": "The Visiting Room",
+        "body": "If they release you, the conversation opens. And when it clicks, suggest a Getaway: a real date."
+      }
+    ],
+    "judgeTitle": "Here, you're the judge.",
+    "judgeBody": "Received a plea? You alone decide. Release or dismiss the case, close your Visiting Room whenever you want, set how many pending pleas you accept. Nobody writes to you without your say-so.",
+    "judgePoints": [
+      "Nobody can message you until you've released them.",
+      "You set your plea limit: beyond it, your Visiting Room shows as full.",
+      "Dismissing a case sends a neutral, respectful message. Never silence, never a justification."
+    ],
+    "hearingTitle": "The Evening Hearing",
+    "hearingBody": "Every night at 9 pm, five Files picked for you. Not an endless catalogue: a careful selection.",
+    "charterTitle": "Bad, not toxic.",
+    "charterLead": "“Bad” is an attitude and a style. Never an excuse.",
+    "charterPoints": [
+      "Honesty, yes. Contempt, no.",
+      "Boldness, yes. Pushiness, no.",
+      "Freedom, yes. Control, no."
+    ],
+    "charterLink": "Read the Charter",
+    "citiesTitle": "Opening city by city",
+    "citiesBody": "An empty dating site is useless. We're starting with the Var and the Alpes-Maritimes, and each city opens once it has enough members. Anywhere else, sign up: you'll follow your city's progress and can bring your accomplices in.",
+    "finalTitle": "Guilty of charm…",
+    "finalBody": "Your file is waiting."
+  },
+  "Auth": {
+    "loginTitle": "Log in",
+    "loginLead": "Good to see you again.",
+    "signupTitle": "Open my file",
+    "signupLead": "An email, a password, and you're in. Less than five minutes to fill in your File afterwards.",
+    "forgotTitle": "Forgot password",
+    "forgotLead": "Enter your email: we'll send you a link to choose a new one.",
+    "email": "Email",
+    "emailHint": "It will never be shown on your profile.",
+    "password": "Password",
+    "passwordHint": "At least 12 characters.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "modePassword": "With password",
+    "modeMagicLink": "With a magic link",
+    "modeLabel": "Login method",
+    "magicLinkHint": "We'll email you a login link. No password to remember.",
+    "submitLogin": "Log in",
+    "submitMagicLink": "Send my link",
+    "submitSignup": "Create my account",
+    "submitForgot": "Send the link",
+    "forgotLink": "Forgot your password?",
+    "noAccount": "No file yet?",
+    "hasAccount": "Already have a file?",
+    "adultNotice": "For people aged 18 and over only. Your date of birth will be checked at the next step.",
+    "termsNotice": "By creating an account, you accept the <terms>Terms of use</terms> and the <charter>Charter</charter>, and confirm you have read the <privacy>Privacy policy</privacy>.",
+    "captchaLabel": "Anti-bot check",
+    "captchaPending": "The anti-bot check will be enabled when sign-ups open.",
+    "notYetOpen": "Sign-ups aren't open yet. Come back very soon.",
+    "errors": {
+      "emailInvalid": "This email doesn't look valid.",
+      "passwordTooShort": "Your password must be at least 12 characters long.",
+      "required": "This field is required."
+    }
+  },
+  "Errors": {
+    "notFoundStamp": "Case dismissed",
+    "notFoundTitle": "This page doesn't exist.",
+    "notFoundBody": "The file you're looking for has been dismissed, or was never opened.",
+    "errorStamp": "Procedural error",
+    "errorTitle": "Something went off the rails.",
+    "errorBody": "An unexpected error occurred. Try again in a moment; if it keeps happening, let us know."
+  },
+  "Components": {
+    "stamps": {
+      "guilty": "GUILTY",
+      "released": "RELEASED",
+      "releasedAria": "Released",
+      "dismissed": "CASE DISMISSED",
+      "reglo": "LEGIT"
+    },
+    "fiche": {
+      "caseNumber": "File {number}",
+      "age": "{age} years old",
+      "distinctiveSigns": "Distinctive marks",
+      "charges": "Charges",
+      "bio": "Bio",
+      "photoAlt": "ID photo of {pseudo}"
+    },
+    "toise": {
+      "label": "Height chart"
+    },
+    "toast": {
+      "dismiss": "Dismiss notification",
+      "region": "Notifications"
+    },
+    "select": {
+      "placeholder": "Choose an option"
+    },
+    "empty": {
+      "defaultTitle": "Nothing yet",
+      "defaultBody": "Come back a bit later."
+    }
+  },
+  "Design": {
+    "title": "Design system",
+    "lead": "Component showcase (development only).",
+    "buttons": "Buttons",
+    "primary": "Plead",
+    "secondary": "View File",
+    "ghost": "Cancel",
+    "danger": "Block",
+    "disabled": "Visiting Room full",
+    "fields": "Fields",
+    "pseudo": "Nickname",
+    "pseudoHint": "3 to 20 characters.",
+    "pseudoError": "This nickname is taken.",
+    "city": "City",
+    "cities": ["Toulon", "Nice", "Hyères"],
+    "consent": "I am 18 or older",
+    "badges": "Badges",
+    "badgeOpen": "Open to pleas",
+    "badgeFull": "Visiting Room full",
+    "stamps": "Stamps",
+    "replay": "Replay animation",
+    "fiche": "File card",
+    "ficheSamplePseudo": "Sample",
+    "ficheSampleCity": "Toulon",
+    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tattooed"],
+    "ficheSampleCharges": [
+      "Once rode across Spain without booking a single night",
+      "Has a tattoo they refuse to explain",
+      "Got kicked out of a karaoke bar for singing too loud"
+    ],
+    "ficheSampleBio": "Component demo text.",
+    "skeletons": "Skeletons",
+    "empty": "Empty state",
+    "emptyTitle": "Nobody new around you for now",
+    "emptyBody": "Widen your filters, or bring your accomplices in.",
+    "modal": "Modal",
+    "openModal": "Open modal",
+    "modalTitle": "Plead to Sample",
+    "modalBody": "Modal demo content.",
+    "toast": "Notification",
+    "showToast": "Show a notification",
+    "toastMessage": "Plea sent."
+  },
+  "Charter": {
+    "title": "“Bad, not toxic” Charter",
+    "lead": "“Bad” is an attitude and a style: honesty, boldness, a taste for freedom. It is never an excuse to hurt anyone. By signing up, you commit to these rules.",
+    "sections": [
+      {
+        "title": "What we value",
+        "items": [
+          "Honesty: say what you think, respectfully.",
+          "Boldness: dare to plead, dare to suggest a Getaway.",
+          "Humour: a funny Record beats ten compliments.",
+          "Freedom: everyone decides who they meet and at what pace."
+        ]
+      },
+      {
+        "title": "What we sanction",
+        "items": [
+          "Harassment: insisting after a case is dismissed, creating several accounts, chasing someone who doesn't reply.",
+          "Contempt: insults, humiliation, remarks about body, gender, origin or orientation.",
+          "Control: demanding proof, photos, reports or exclusivity before you've even met.",
+          "Unsolicited sexual content, threats, violence.",
+          "Scams: requests for money, codes, gift cards, dodgy links."
+        ]
+      },
+      {
+        "title": "What is simply forbidden",
+        "items": [
+          "Being a minor, or talking about minors in a sexual way.",
+          "Pretending to be someone else.",
+          "Describing real crimes, violence or drugs in your Record: the Record is a game.",
+          "Posting your contact details, or someone else's, in your File."
+        ]
+      },
+      {
+        "title": "Here, you're the judge",
+        "items": [
+          "The person receiving a plea decides alone. “Case dismissed” is a complete answer: it's not up for debate.",
+          "You can block or report anyone, at any time. Blocking is immediate and works both ways.",
+          "Every report is read by a human. You receive the reasons for the decision."
+        ]
+      },
+      {
+        "title": "What's at stake",
+        "items": [
+          "A warning, a temporary suspension or a permanent ban, depending on severity.",
+          "Every decision is reasoned. Both the sanctioned person and the reporter receive the reasons."
+        ]
+      }
+    ]
+  },
+  "Safety": {
+    "title": "Safety tips",
+    "lead": "Meeting up is the goal. Doing it safely is the rule.",
+    "sections": [
+      {
+        "title": "Before the Getaway",
+        "items": [
+          "Stay in the Visiting Room until you feel confident: you can block and report at any time there.",
+          "Never share money, verification codes, gift cards or bank details. Nobody sincere will ask you for them.",
+          "Be wary of stories that are too perfect, sudden emergencies and people who want to leave the site quickly."
+        ]
+      },
+      {
+        "title": "On the day",
+        "items": [
+          "First date in a busy public place: bar, café, gig, lively walk.",
+          "Tell someone close: where you're going, with whom, and when you plan to be back.",
+          "Get there and back on your own. Keep your phone charged.",
+          "Keep an eye on your drink."
+        ]
+      },
+      {
+        "title": "If something feels wrong",
+        "items": [
+          "You can leave at any time, without explaining yourself.",
+          "Report the person from their File or from the Visiting Room. Every report is read by a human.",
+          "In immediate danger, call 17 (police, France) or 112 (European emergency number). For gender-based and sexual violence in France: 3919, free and anonymous."
+        ]
+      }
+    ],
+    "numbersCheck": "[TO VALIDATE: check emergency and helpline numbers before publishing]"
+  },
+  "Legal": {
+    "draftBanner": "[TO BE VALIDATED BY A LAWYER] This document is a template. It must not be considered final.",
+    "terms": {
+      "title": "Terms of use",
+      "sections": [
+        {
+          "title": "1. Purpose",
+          "paragraphs": [
+            "These terms govern the use of Bad Boys & Bad Girls, a dating site for adults, published by [TO COMPLETE: publisher identity]."
+          ]
+        },
+        {
+          "title": "2. Access",
+          "paragraphs": [
+            "The service is reserved for people aged 18 or over. Your date of birth is checked at sign-up and an age attestation is required.",
+            "The service is free. No paid option lets you plead more or be more visible."
+          ]
+        },
+        {
+          "title": "3. Your account and File",
+          "paragraphs": [
+            "You agree to provide accurate information, use photos of yourself, and create only one account.",
+            "Your main photo must show your face. Photos are checked by a human before becoming visible."
+          ]
+        },
+        {
+          "title": "4. Forbidden content",
+          "paragraphs": [
+            "Forbidden: references to real crimes, violence, drugs or minors; explicit sexual content; personal contact details in your File, Record or pleas; scams; harassment; impersonation.",
+            "Conduct rules are detailed in the “Bad, not toxic” Charter, which is part of these terms."
+          ]
+        },
+        {
+          "title": "5. Moderation and sanctions",
+          "paragraphs": [
+            "Any member can report a File, a photo, a Record or a message. Reports are handled by a human.",
+            "Depending on severity: warning, suspension or ban. Every decision is reasoned and sent to the person concerned and to the reporter.",
+            "[TO COMPLETE: appeal process against a moderation decision]"
+          ]
+        },
+        {
+          "title": "6. Deleting your account",
+          "paragraphs": [
+            "You can delete your account at any time from your settings. Deletion is permanent: your File, photos and the text of your messages are erased."
+          ]
+        },
+        {
+          "title": "7. Liability",
+          "paragraphs": [
+            "[TO COMPLETE: publisher liability limits, especially for real-life meetings between members]"
+          ]
+        },
+        {
+          "title": "8. Governing law",
+          "paragraphs": ["[TO COMPLETE: governing law and competent court]"]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "sections": [
+        {
+          "title": "1. Data controller",
+          "paragraphs": [
+            "[TO COMPLETE: identity and contact details of the data controller]",
+            "[TO COMPLETE: data protection officer contact, if any]"
+          ]
+        },
+        {
+          "title": "2. What we collect, and why",
+          "paragraphs": [
+            "We only collect what serves a visible feature: your email (login and notifications), your date of birth (age check; only your age is shown), your nickname, gender, city (never an address or GPS location), photos, Record, questionnaire answers, pleas and messages.",
+            "The genders you are looking for may reveal your sexual orientation: this is sensitive data. It is only used to show you compatible Files, with your explicit consent, which you can withdraw at any time (as the service can then no longer work, account deletion will be offered)."
+          ]
+        },
+        {
+          "title": "3. Photos",
+          "paragraphs": [
+            "Photo metadata (including GPS location) is removed before upload and checked on our servers.",
+            "Once approved, your photos are served from a long, unguessable web address. That address is renewed when you delete a photo, after 30 days on pause and in case of a ban; everything is erased when you delete your account."
+          ]
+        },
+        {
+          "title": "4. Cookies",
+          "paragraphs": [
+            "We only use strictly necessary cookies (login session, language). No advertising trackers, no external analytics: that's why no consent banner is shown."
+          ]
+        },
+        {
+          "title": "5. Retention",
+          "paragraphs": [
+            "Your data is kept as long as your account exists. An account whose sign-up isn't completed is deleted after 30 days.",
+            "After a ban, only an encrypted fingerprint of the email is kept for [TO COMPLETE: duration, 12 months proposed] to prevent re-registration."
+          ]
+        },
+        {
+          "title": "6. Hosting and processors",
+          "paragraphs": [
+            "Database and files: Supabase, European Union region. Application: Vercel. Emails: Brevo. Anti-bot protection: Cloudflare Turnstile.",
+            "[TO COMPLETE: safeguards for transfers outside the European Union]"
+          ]
+        },
+        {
+          "title": "7. Your rights",
+          "paragraphs": [
+            "You can export your data (JSON) and delete your account from your settings. You also have the rights of access, rectification, objection and restriction, and may lodge a complaint with the CNIL.",
+            "[TO COMPLETE: contact address to exercise your rights]"
+          ]
+        }
+      ]
+    },
+    "notice": {
+      "title": "Legal notice",
+      "sections": [
+        {
+          "title": "Publisher",
+          "paragraphs": [
+            "[TO COMPLETE: name or company name, legal form, address, registration number]",
+            "Publication director: [TO COMPLETE]"
+          ]
+        },
+        {
+          "title": "Point of contact (DSA)",
+          "paragraphs": [
+            "[TO COMPLETE: email of the single point of contact for authorities and users]"
+          ]
+        },
+        {
+          "title": "Hosting providers",
+          "paragraphs": [
+            "Application: Vercel Inc. [TO COMPLETE: address to verify]",
+            "Database and files: Supabase Inc., data hosted in the European Union. [TO COMPLETE: address to verify]"
+          ]
+        },
+        {
+          "title": "Website",
+          "paragraphs": ["Website address: [DOMAINE]"]
+        }
+      ]
+    }
+  }
+}

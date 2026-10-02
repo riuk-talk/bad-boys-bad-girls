@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+.next
+node_modules
+public
+supabase/.temp
+docs
+CLAUDE.md
+README.md
+*.md

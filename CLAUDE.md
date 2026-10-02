@@ -63,10 +63,10 @@ Le plan de travail par phases est dans `docs/PROMPT.md`. L'état d'avancement es
 | Plaidoiries mutuelles | Coupables tous les deux | libération automatique |
 | Proposition de rendez-vous à deux | La Cavale | `date_proposals` |
 | Sorties de groupe (V2) | La Virée | hors MVP |
-
-Termes **interdits** dans l'UI : « match », « swipe », « like ». Aucun insigne ni nom d'administration réelle (police, gendarmerie, justice).
 | Ville pas encore ouverte | Ta ville ouvre bientôt | `launch_zones.status = 'waitlist'` |
 | Tribus / centres d'intérêt | Signes distinctifs | `tribes` |
+
+Termes **interdits** dans l'UI : « match », « swipe », « like ». Aucun insigne ni nom d'administration réelle (police, gendarmerie, justice).
 
 ## Identité visuelle
 
