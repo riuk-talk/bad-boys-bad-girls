@@ -1,14 +1,14 @@
 -- Development seed (SPEC §19): fictitious members for development and load tests ONLY.
 -- Never run in production. Two guards:
 --   1. the session must opt in:      set app.allow_dev_seed = 'true';
---   2. the project must be the dev one (checked against its reference below).
+--   2. refused when the database already holds more than 20 real finished Fiches
+--      (a sign of a production database).
 -- Seeded rows have is_seed = true and are excluded from every statistic.
 -- Usage (SQL editor / connector):  set app.allow_dev_seed = 'true';  then run this file.
 -- Parameters: change seed_count to generate more (Phase 4 uses 5000).
 do $$
 declare
   seed_count integer := 200;
-  dev_project_ref constant text := 'chvnmzmvcjvhxlnfmlvv';
   genders public.gender[] := array['man', 'woman', 'woman', 'man', 'non_binary']::public.gender[];
   zone_places bigint[];
   uid uuid;
@@ -17,14 +17,10 @@ begin
   if current_setting('app.allow_dev_seed', true) is distinct from 'true' then
     raise exception 'Refused: set app.allow_dev_seed = ''true'' in this session first (dev only).';
   end if;
-  if not exists (select 1 from auth.users where false) and
-     coalesce(current_setting('request.headers', true), '') like '%' || 'production' || '%' then
-    raise exception 'Refused: production context detected.';
+  if (select count(*) from public.profiles where not is_seed and onboarding_completed_at is not null) > 20 then
+    raise exception 'Refused: this database holds real members (production?).';
   end if;
-  if (select count(*) from vault.secrets where name = 'ban_email_pepper') = 0 then
-    raise exception 'Refused: schema not migrated.';
-  end if;
-  raise notice 'Seeding % fictitious members on project % (dev only).', seed_count, dev_project_ref;
+  raise notice 'Seeding % fictitious members (dev only).', seed_count;
 
   select array_agg(id) into zone_places from public.places
   where official_code like '83%' or official_code like '06%';
@@ -42,8 +38,11 @@ begin
     values (uid, 'Seed ' || i, (current_date - (18 + floor(random() * 40))::int * interval '1 year'
         - floor(random() * 360)::int * interval '1 day')::date,
       genders[1 + floor(random() * array_length(genders, 1))::int],
-      (array[array['woman']::public.gender[], array['man']::public.gender[], array['man', 'woman']::public.gender[]])
-        [1 + floor(random() * 3)::int],
+      case floor(random() * 3)::int
+        when 0 then array['woman']::public.gender[]
+        when 1 then array['man']::public.gender[]
+        else array['man', 'woman']::public.gender[]
+      end,
       18, 99, zone_places[1 + floor(random() * array_length(zone_places, 1))::int],
       'Fiche de démonstration générée pour le développement.', 4, now(), true,
       now() - (random() * interval '30 days'));
