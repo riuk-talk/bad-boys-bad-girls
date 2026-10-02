@@ -1,71 +1,112 @@
 "use client";
 
+import { MailCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState, type FormEvent, type ReactNode } from "react";
-import type * as z from "zod/mini";
+import { useActionState, useId, useState, type FormEvent, type ReactNode } from "react";
+import * as z from "zod/mini";
+import {
+  sendResetAction,
+  signInAction,
+  signUpAction,
+  updatePasswordAction,
+  type AuthState,
+} from "@/app/[locale]/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
+import type { AuthMessageKey } from "@/lib/auth/errors";
 import {
   fieldErrors,
   magicLinkSchema,
   passwordLoginSchema,
+  passwordSchema,
   signupSchema,
   type AuthErrorKey,
 } from "@/lib/validation/auth";
-import { CaptchaPlaceholder } from "./captcha-placeholder";
 import { PasswordInput } from "./password-input";
+import { Turnstile } from "./turnstile";
 
 type Errors = Partial<Record<string, AuthErrorKey>>;
+type Action = (state: AuthState, form: FormData) => Promise<AuthState>;
+const IDLE: AuthState = { status: "idle" };
 
 /**
- * Phase 1: UI and client-side validation only. Submissions are wired to Supabase Auth
- * (with Turnstile and server-side Zod validation) in Phase 2.
+ * Client validation for instant feedback, then the server action validates again (Zod) and talks
+ * to Supabase Auth. Field errors focus the first invalid field.
  */
-function useAuthForm(schema: z.ZodMiniType) {
-  const [errors, setErrors] = useState<Errors>({});
-  const [submitted, setSubmitted] = useState(false);
+function useAuthForm(action: Action, schema: () => z.ZodMiniType) {
+  const [state, formAction, pending] = useActionState(action, IDLE);
+  const [clientErrors, setClientErrors] = useState<Errors | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = Object.fromEntries(new FormData(event.currentTarget));
-    const parsed = schema.safeParse(data);
+    const parsed = schema().safeParse(Object.fromEntries(new FormData(event.currentTarget)));
     if (!parsed.success) {
-      const nextErrors = fieldErrors(parsed.error);
-      setErrors(nextErrors);
-      setSubmitted(false);
-      const firstField = Object.keys(nextErrors)[0];
-      const control = firstField ? event.currentTarget.elements.namedItem(firstField) : null;
+      event.preventDefault();
+      const errors = fieldErrors(parsed.error);
+      setClientErrors(errors);
+      const first = Object.keys(errors)[0];
+      const control = first ? event.currentTarget.elements.namedItem(first) : null;
       if (control instanceof HTMLElement) control.focus();
       return;
     }
-    setErrors({});
-    setSubmitted(true);
+    setClientErrors(null);
+    setAttempt((value) => value + 1);
   }
 
-  return { errors, submitted, onSubmit };
+  const errors: Errors = clientErrors ?? (state.status === "error" ? (state.fields ?? {}) : {});
+  const message = state.status === "error" ? state.message : undefined;
+  return { state, formAction, pending, onSubmit, errors, message, attempt };
 }
 
-function NotYetOpen({ show }: { show: boolean }) {
-  const t = useTranslations("Auth");
+function FormMessage({ message }: { message?: AuthMessageKey }) {
+  const t = useTranslations("Auth.errors");
   return (
-    <p role="status" className="text-gold min-h-6">
-      {show ? t("notYetOpen") : null}
+    <p role="alert" className="text-red-bright min-h-6 font-medium">
+      {message ? t(message) : null}
     </p>
   );
 }
 
-export function LoginForm() {
+function SentPanel({ body }: { body: string }) {
+  const t = useTranslations("Auth");
+  return (
+    <div
+      role="status"
+      className="border-gold/60 bg-gold/10 flex flex-col items-center gap-3 rounded-[var(--radius-card)] border p-6 text-center"
+    >
+      <MailCheck aria-hidden="true" className="text-gold size-10" />
+      <h2 className="font-display text-2xl tracking-wide uppercase">{t("checkEmailTitle")}</h2>
+      <p>{body}</p>
+    </div>
+  );
+}
+
+function SubmitButton({ pending, children }: { pending: boolean; children: ReactNode }) {
+  const t = useTranslations("Auth");
+  return (
+    <Button type="submit" size="lg" className="w-full" disabled={pending} aria-busy={pending}>
+      {pending ? t("submitting") : children}
+    </Button>
+  );
+}
+
+const linkClass =
+  "inline-flex min-h-11 items-center font-semibold text-gold underline underline-offset-4";
+
+export function LoginForm({ initialMessage }: { initialMessage?: AuthMessageKey }) {
   const t = useTranslations("Auth");
   const id = useId();
   const [mode, setMode] = useState<"password" | "magic">("password");
-  const { errors, submitted, onSubmit } = useAuthForm(
+  const form = useAuthForm(signInAction, () =>
     mode === "password" ? passwordLoginSchema : magicLinkSchema,
   );
   const error = (key?: AuthErrorKey) => (key ? t(`errors.${key}`) : undefined);
 
+  if (form.state.status === "sent") return <SentPanel body={t("checkEmailBody")} />;
+
   return (
-    <form noValidate onSubmit={onSubmit} className="space-y-5">
+    <form noValidate action={form.formAction} onSubmit={form.onSubmit} className="space-y-5">
       <fieldset className="space-y-2">
         <legend className="text-sm font-semibold">{t("modeLabel")}</legend>
         <div className="bg-ink-2 grid grid-cols-2 gap-2 rounded-full p-1">
@@ -94,7 +135,7 @@ export function LoginForm() {
         autoComplete="email"
         inputMode="email"
         label={t("email")}
-        error={error(errors.email)}
+        error={error(form.errors.email)}
       />
       {mode === "password" ? (
         <PasswordInput
@@ -102,16 +143,16 @@ export function LoginForm() {
           name="password"
           autoComplete="current-password"
           label={t("password")}
-          error={error(errors.password)}
+          error={error(form.errors.password)}
         />
       ) : (
         <p className="text-grey text-sm">{t("magicLinkHint")}</p>
       )}
-      <CaptchaPlaceholder />
-      <Button type="submit" size="lg" className="w-full">
+      <Turnstile key={form.attempt} />
+      <SubmitButton pending={form.pending}>
         {mode === "password" ? t("submitLogin") : t("submitMagicLink")}
-      </Button>
-      <NotYetOpen show={submitted} />
+      </SubmitButton>
+      <FormMessage message={form.message ?? (form.attempt === 0 ? initialMessage : undefined)} />
       <p className="text-center">
         <Link
           href="/mot-de-passe-oublie"
@@ -122,10 +163,7 @@ export function LoginForm() {
       </p>
       <p className="text-grey text-center">
         {t("noAccount")}{" "}
-        <Link
-          href="/inscription"
-          className="text-gold inline-flex min-h-11 items-center font-semibold underline underline-offset-4"
-        >
+        <Link href="/inscription" className={linkClass}>
           {t("submitSignup")}
         </Link>
       </p>
@@ -145,11 +183,13 @@ const richLink = (href: string) =>
 export function SignupForm() {
   const t = useTranslations("Auth");
   const id = useId();
-  const { errors, submitted, onSubmit } = useAuthForm(signupSchema);
+  const form = useAuthForm(signUpAction, () => signupSchema);
   const error = (key?: AuthErrorKey) => (key ? t(`errors.${key}`) : undefined);
 
+  if (form.state.status === "sent") return <SentPanel body={t("checkEmailBody")} />;
+
   return (
-    <form noValidate onSubmit={onSubmit} className="space-y-5">
+    <form noValidate action={form.formAction} onSubmit={form.onSubmit} className="space-y-5">
       <Input
         id={`${id}-email`}
         name="email"
@@ -158,7 +198,7 @@ export function SignupForm() {
         inputMode="email"
         label={t("email")}
         hint={t("emailHint")}
-        error={error(errors.email)}
+        error={error(form.errors.email)}
       />
       <PasswordInput
         id={`${id}-password`}
@@ -167,10 +207,10 @@ export function SignupForm() {
         minLength={12}
         label={t("password")}
         hint={t("passwordHint")}
-        error={error(errors.password)}
+        error={error(form.errors.password)}
       />
       <p className="text-grey text-sm">{t("adultNotice")}</p>
-      <CaptchaPlaceholder />
+      <Turnstile key={form.attempt} />
       <p className="text-sm">
         {t.rich("termsNotice", {
           terms: richLink("/cgu"),
@@ -178,16 +218,11 @@ export function SignupForm() {
           privacy: richLink("/confidentialite"),
         })}
       </p>
-      <Button type="submit" size="lg" className="w-full">
-        {t("submitSignup")}
-      </Button>
-      <NotYetOpen show={submitted} />
+      <SubmitButton pending={form.pending}>{t("submitSignup")}</SubmitButton>
+      <FormMessage message={form.message} />
       <p className="text-grey text-center">
         {t("hasAccount")}{" "}
-        <Link
-          href="/connexion"
-          className="text-gold inline-flex min-h-11 items-center font-semibold underline underline-offset-4"
-        >
+        <Link href="/connexion" className={linkClass}>
           {t("submitLogin")}
         </Link>
       </p>
@@ -198,9 +233,12 @@ export function SignupForm() {
 export function ForgotPasswordForm() {
   const t = useTranslations("Auth");
   const id = useId();
-  const { errors, submitted, onSubmit } = useAuthForm(magicLinkSchema);
+  const form = useAuthForm(sendResetAction, () => magicLinkSchema);
+
+  if (form.state.status === "sent") return <SentPanel body={t("resetSentBody")} />;
+
   return (
-    <form noValidate onSubmit={onSubmit} className="space-y-5">
+    <form noValidate action={form.formAction} onSubmit={form.onSubmit} className="space-y-5">
       <Input
         id={`${id}-email`}
         name="email"
@@ -208,13 +246,35 @@ export function ForgotPasswordForm() {
         autoComplete="email"
         inputMode="email"
         label={t("email")}
-        error={errors.email ? t(`errors.${errors.email}`) : undefined}
+        error={form.errors.email ? t(`errors.${form.errors.email}`) : undefined}
       />
-      <CaptchaPlaceholder />
-      <Button type="submit" size="lg" className="w-full">
-        {t("submitForgot")}
-      </Button>
-      <NotYetOpen show={submitted} />
+      <Turnstile key={form.attempt} />
+      <SubmitButton pending={form.pending}>{t("submitForgot")}</SubmitButton>
+      <FormMessage message={form.message} />
     </form>
   );
 }
+
+export function NewPasswordForm() {
+  const t = useTranslations("Auth");
+  const id = useId();
+  const form = useAuthForm(updatePasswordAction, () => passwordOnly);
+
+  return (
+    <form noValidate action={form.formAction} onSubmit={form.onSubmit} className="space-y-5">
+      <PasswordInput
+        id={`${id}-password`}
+        name="password"
+        autoComplete="new-password"
+        minLength={12}
+        label={t("password")}
+        hint={t("passwordHint")}
+        error={form.errors.password ? t(`errors.${form.errors.password}`) : undefined}
+      />
+      <SubmitButton pending={form.pending}>{t("submitNewPassword")}</SubmitButton>
+      <FormMessage message={form.message} />
+    </form>
+  );
+}
+
+const passwordOnly = z.object({ password: passwordSchema });

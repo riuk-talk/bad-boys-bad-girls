@@ -118,12 +118,29 @@
     "termsNotice": "En créant un compte, tu acceptes les <terms>Conditions d'utilisation</terms> et la <charter>Charte</charter>, et tu reconnais avoir lu la <privacy>Politique de confidentialité</privacy>.",
     "captchaLabel": "Vérification anti-robot",
     "captchaPending": "La vérification anti-robot sera active à l'ouverture des inscriptions.",
-    "notYetOpen": "Les inscriptions ne sont pas encore ouvertes. Reviens très vite.",
     "errors": {
       "emailInvalid": "Cet e-mail ne semble pas valide.",
       "passwordTooShort": "Le mot de passe doit contenir au moins 12 caractères.",
-      "required": "Ce champ est obligatoire."
-    }
+      "required": "Ce champ est obligatoire.",
+      "invalidCredentials": "E-mail ou mot de passe incorrect.",
+      "emailNotConfirmed": "Confirme d'abord ton e-mail : le lien t'attend dans ta boîte.",
+      "rateLimited": "Trop de tentatives. Réessaie dans quelques minutes.",
+      "captchaFailed": "La vérification anti-robot a échoué. Réessaie.",
+      "weakPassword": "Ce mot de passe est trop facile à deviner. Choisis-en un autre.",
+      "emailBanned": "Cette adresse ne peut plus être utilisée sur le site.",
+      "linkInvalid": "Ce lien n'est plus valide. Demande-en un nouveau.",
+      "generic": "Une erreur est survenue. Réessaie.",
+      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard."
+    },
+    "checkEmailTitle": "Vérifie ta boîte mail",
+    "checkEmailBody": "Si l'adresse est valide, tu vas recevoir un lien. Pense à regarder dans les indésirables.",
+    "resetSentBody": "Si un compte existe avec cette adresse, tu vas recevoir un lien pour choisir un nouveau mot de passe.",
+    "newPasswordTitle": "Nouveau mot de passe",
+    "newPasswordLead": "Choisis un mot de passe d'au moins 12 caractères.",
+    "submitNewPassword": "Enregistrer",
+    "passwordUpdated": "Mot de passe modifié.",
+    "signOut": "Se déconnecter",
+    "submitting": "Envoi en cours…"
   },
   "Errors": {
     "notFoundStamp": "Affaire classée",
@@ -178,7 +195,11 @@
     "pseudoHint": "De 3 à 20 caractères.",
     "pseudoError": "Ce pseudo est déjà pris.",
     "city": "Ville",
-    "cities": ["Toulon", "Nice", "Hyères"],
+    "cities": [
+      "Toulon",
+      "Nice",
+      "Hyères"
+    ],
     "consent": "J'ai 18 ans ou plus",
     "badges": "Badges",
     "badgeOpen": "Ouvert aux plaidoiries",
@@ -188,7 +209,10 @@
     "fiche": "Carte Fiche",
     "ficheSamplePseudo": "Exemple",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tatoué·e"],
+    "ficheSampleSigns": [
+      "Biker — Kawasaki Z650 café racer",
+      "Tatoué·e"
+    ],
     "ficheSampleCharges": [
       "A déjà traversé l'Espagne en moto sans réserver une seule nuit",
       "A un tatouage dont il refuse d'expliquer le sens",
@@ -342,7 +366,9 @@
         },
         {
           "title": "8. Droit applicable",
-          "paragraphs": ["[À COMPLÉTER : droit applicable et juridiction compétente]"]
+          "paragraphs": [
+            "[À COMPLÉTER : droit applicable et juridiction compétente]"
+          ]
         }
       ]
     },
@@ -424,7 +450,9 @@
         },
         {
           "title": "Site",
-          "paragraphs": ["Adresse du site : [DOMAINE]"]
+          "paragraphs": [
+            "Adresse du site : [DOMAINE]"
+          ]
         }
       ]
     }
