@@ -2,7 +2,14 @@
 
 import { MailCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useActionState, useId, useState, type FormEvent, type ReactNode } from "react";
+import {
+  startTransition,
+  useActionState,
+  useId,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import * as z from "zod/mini";
 import {
   sendResetAction,
@@ -50,8 +57,12 @@ function useAuthForm(action: Action, schema: () => z.ZodMiniType) {
       if (control instanceof HTMLElement) control.focus();
       return;
     }
+    event.preventDefault();
     setClientErrors(null);
     setAttempt((value) => value + 1);
+    // No <form action>: React 19 would reset the fields after an error answer.
+    const data = new FormData(event.currentTarget);
+    startTransition(() => formAction(data));
   }
 
   const errors: Errors = clientErrors ?? (state.status === "error" ? (state.fields ?? {}) : {});
@@ -106,7 +117,7 @@ export function LoginForm({ initialMessage }: { initialMessage?: AuthMessageKey 
   if (form.state.status === "sent") return <SentPanel body={t("checkEmailBody")} />;
 
   return (
-    <form noValidate action={form.formAction} onSubmit={form.onSubmit} className="space-y-5">
+    <form noValidate onSubmit={form.onSubmit} className="space-y-5">
       <fieldset className="space-y-2">
         <legend className="text-sm font-semibold">{t("modeLabel")}</legend>
         <div className="bg-ink-2 grid grid-cols-2 gap-2 rounded-full p-1">
@@ -180,7 +191,7 @@ const richLink = (href: string) =>
     );
   };
 
-export function SignupForm() {
+export function SignupForm({ referralCode }: { referralCode?: string }) {
   const t = useTranslations("Auth");
   const id = useId();
   const form = useAuthForm(signUpAction, () => signupSchema);
@@ -189,7 +200,8 @@ export function SignupForm() {
   if (form.state.status === "sent") return <SentPanel body={t("checkEmailBody")} />;
 
   return (
-    <form noValidate action={form.formAction} onSubmit={form.onSubmit} className="space-y-5">
+    <form noValidate onSubmit={form.onSubmit} className="space-y-5">
+      {referralCode ? <input type="hidden" name="ref" value={referralCode} /> : null}
       <Input
         id={`${id}-email`}
         name="email"
@@ -238,7 +250,7 @@ export function ForgotPasswordForm() {
   if (form.state.status === "sent") return <SentPanel body={t("resetSentBody")} />;
 
   return (
-    <form noValidate action={form.formAction} onSubmit={form.onSubmit} className="space-y-5">
+    <form noValidate onSubmit={form.onSubmit} className="space-y-5">
       <Input
         id={`${id}-email`}
         name="email"
@@ -261,7 +273,7 @@ export function NewPasswordForm() {
   const form = useAuthForm(updatePasswordAction, () => passwordOnly);
 
   return (
-    <form noValidate action={form.formAction} onSubmit={form.onSubmit} className="space-y-5">
+    <form noValidate onSubmit={form.onSubmit} className="space-y-5">
       <PasswordInput
         id={`${id}-password`}
         name="password"

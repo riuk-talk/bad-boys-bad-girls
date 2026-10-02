@@ -41,10 +41,16 @@ export async function signUpAction(_state: AuthState, form: FormData): Promise<A
     password: form.get("password"),
   });
   if (!parsed.success) return invalid(parsed.error);
+  const ref = String(form.get("ref") ?? "").toUpperCase();
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     ...parsed.data,
-    options: { emailRedirectTo: confirmUrl("/onboarding"), captchaToken: captchaToken(form) },
+    options: {
+      emailRedirectTo: confirmUrl("/onboarding"),
+      captchaToken: captchaToken(form),
+      // Referral code (SPEC §3) checked and claimed by the database at onboarding step 1.
+      data: /^[A-Z2-9]{8}$/.test(ref) ? { ref } : {},
+    },
   });
   // Existing addresses get the same answer (no account enumeration).
   if (error && error.code !== "user_already_exists")
