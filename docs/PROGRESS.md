@@ -4,9 +4,53 @@
 
 ## Phase en cours
 
-**Phase 2 — Comptes, onboarding, Fiche, photos, zones : en attente** de l'URL du projet Supabase de dev et de la clé publishable.
+**Phase 2 — Comptes, onboarding, Fiche, photos, zones : en cours, bloquée** par des réglages que seul le porteur peut faire (voir « Actions attendues »). Branche : `phase-2-accounts`.
 
-Phase 1 validée le 2026-10-02 (`docs/PHASE1-DECISIONS.md`) ; pull request vers `main` ouverte.
+## Phase 2 — état (2026-10-02)
+
+### Découpage annoncé
+2a extensions · 2b schéma + RLS · 2c tests pgTAP · 2d stockage photos · 2e authentification · 2f onboarding · 2g photos · 2h Ma Fiche, ville, parrainage · 2i premier admin + seed.
+
+### Fait (vérifié)
+- **Base de dev** (`chvnmzmvcjvhxlnfmlvv`, Postgres 17, région `eu-west-1`) : 5 migrations appliquées via le connecteur Supabase ; les fichiers de `supabase/migrations/` sont identiques octet pour octet au SQL enregistré (MD5 comparés).
+- **`pg_cron` et `pg_net` activés** sur l'offre gratuite : question de Phase 0 tranchée.
+- **Tests pgTAP** (`supabase/tests/phase2_security.test.sql`) : 21 groupes, 82 assertions, **tout passe** (RLS partout, `anon` sans aucun droit, colonnes protégées, 18+ même via l'API et même pour le propriétaire de la base, date de naissance verrouillée, pseudo sans coordonnées, masquage bio/précisions, photos, consentements en ajout seul, admin non auto-attribuable, hook des bannis, recalcul des zones B1, onboarding, parrainage, jauge, stockage). Ils ont trouvé un vrai bug (`complete_onboarding`), corrigé par migration.
+- **Advisors Supabase** : sécurité, seuls des signalements attendus (tables volontairement fermées, fonctions RPC prévues) ; performance, index de clés étrangères ajoutés.
+- **Communes** : script officiel `scripts/import-places.mjs` (geo.api.gouv.fr) ; Var + Alpes-Maritimes importés en dev (316 communes) ; zones de dev Toulon et Nice (35 km, « bientôt »).
+- **Authentification** : inscription, connexion mot de passe ou lien magique, mot de passe oublié/nouveau, déconnexion, route `/api/auth/confirm` (liens `token_hash` et `?code=`), Turnstile (widget prêt, inactif sans clé), messages d'erreur sans énumération de comptes, garde des pages connectées.
+- **Onboarding étapes 1 à 4** avec reprise, recherche de ville accessible, consentement art. 9 séparé et non pré-coché ; **photos** compressées dans le navigateur puis ré-encodées par le serveur (`sharp`) en WebP 1200/400 px **sans aucune métadonnée** (test unitaire avec GPS réel) ; bucket privé `photos-pending`, notification admin mise en file.
+- **Ma Fiche** (aperçu, statut de modération, jauge, bio, signes distinctifs, photos), **Ta ville ouvre bientôt** (jauges, lien de parrainage, compteur), scripts **premier admin** et **seed de dev** (garde-fous testés).
+- Vérifications : typecheck, lint, 61 tests unitaires, build, 40 tests e2e Phase 1 + 3 tests e2e réels (connexion, refus d'un mineur) contre Supabase.
+
+### Bugs trouvés et corrigés pendant la phase
+1. `complete_onboarding()` plantait (`text[] || 'littéral'`) → migration de correctif.
+2. Réinitialisation automatique des formulaires React 19 : l'e-mail et les saisies étaient effacés après une erreur → soumission sans réinitialisation (`lib/forms/submit.ts`).
+3. `upsert` PostgREST réécrit la colonne `id` (non autorisée aux membres) → insert ou update.
+4. Seed : faux garde-fou « production » et tableau 2D invalide → corrigés.
+
+### Reste à faire
+- Étapes 1 et 3 de l'onboarding : **bloquées sans `SUPABASE_SECRET_KEY`** (les consentements sont écrits par le serveur, seul à connaître l'IP réelle). Le parcours s'arrête proprement sur « Le service n'est pas encore configuré ».
+- Test B5 : le hook « Before User Created » s'exécute-t-il pour une inscription par lien magique ? (nécessite le hook activé dans le tableau de bord).
+- Critère « onboarding en moins de 5 minutes » : à chronométrer une fois la clé en place.
+- Import de toutes les communes de France (`node scripts/import-places.mjs --push`, clé secrète requise).
+- Validation admin des photos (copie vers le bucket public) : prévue en Phase 6 avec `/admin`.
+
+### Écarts par rapport à la spec / au schéma
+1. **Onboarding en 4 étapes en Phase 2** : le Casier (étape 5) et les 10 questions (étape 6) sont construits en Phase 3, qui étendra `complete_onboarding`.
+2. **Photos ré-encodées côté serveur** (en plus de la compression navigateur) : Safari ne sait pas toujours encoder en WebP ; cela garantit aussi l'absence d'EXIF même si un membre contourne l'interface.
+3. **Parrainage** porté par l'inscription (`?parrain=` → métadonnée du compte), pas par un cookie : aucun traceur supplémentaire.
+4. **Fichiers photo** : `{user}/{uuid}.webp` (1200 px) et `{user}/{uuid}-s.webp` (400 px) ; seule la grande taille est enregistrée dans `photos.pending_path`.
+5. Région Supabase `eu-west-1` (Irlande) et non Paris : reste dans l'UE.
+
+### Actions attendues du porteur (dans cet ordre)
+1. **Clé secrète** : menu de l'environnement cloud (barre de titre de la session) → Edit → variable `SUPABASE_SECRET_KEY` = clé `sb_secret_…`. Ne jamais la coller dans le chat. Elle sera lue par une nouvelle session. Ajoute aussi `E2E_EMAIL` / `E2E_PASSWORD` si tu veux que les tests réels tournent à chaque fois.
+2. **Supabase → Authentication → Hooks** : activer « Before User Created » → type Postgres → fonction `public.hook_before_user_created`.
+3. **Supabase → Authentication → URL Configuration** : Site URL = l'URL Vercel de production (puis `https://[DOMAINE]`) ; Redirect URLs : `http://localhost:3000/**`, `https://*-<ton-equipe>.vercel.app/**` (prévisualisations), l'URL de production.
+4. **Supabase → Authentication → Email Templates** (Confirm signup, Magic Link, Reset Password) : remplacer le lien par `{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=email` (`type=recovery` pour la réinitialisation). Sans ce changement, les liens ne marchent que dans le navigateur qui les a demandés.
+5. **SMTP Brevo** (Authentication → SMTP) et **Turnstile** (Attack Protection → Captcha) : quand tes comptes sont prêts ; en attendant, n'inscris pas de vraies adresses (2 e-mails/heure, les rebonds pénalisent le projet).
+6. **Vercel** : variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (production et prévisualisation), `APP_ENV=production` (production).
+7. **Ne fusionne pas** les branches `vercel/install-vercel-speed-insights-*` et `vercel/install-vercel-web-analytics-*` créées par Vercel : ce sont des outils de mesure tiers, exclus par la spec (§10) ; la mesure réelle se fera en Phase 7 sans tiers.
+8. Données de dev restantes : 1 compte de test `e2e-…@example.com` et 5 Fiches fictives `is_seed` (exclues des statistiques). Je les supprime sur ton accord (le connecteur demande une confirmation pour les suppressions).
 
 ## Phase 0 — Cadrage : ✅ validée (2026-10-01)
 
