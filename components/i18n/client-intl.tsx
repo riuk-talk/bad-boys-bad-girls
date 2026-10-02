@@ -3,7 +3,15 @@ import { getMessages } from "next-intl/server";
 import type { ReactNode } from "react";
 
 // Only the namespaces used by client components are sent to the browser.
-const CLIENT_NAMESPACES = ["Common", "Components", "Auth", "Design"] as const;
+const CLIENT_NAMESPACES = [
+  "Common",
+  "Components",
+  "Auth",
+  "Design",
+  "Onboarding",
+  "MyFiche",
+  "City",
+] as const;
 
 /**
  * Client i18n runtime (~11 kB gzip). Mounted only by the layouts whose pages have
