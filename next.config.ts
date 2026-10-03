@@ -17,6 +17,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    // Photos are compressed in the browser (~1 MB max) then re-encoded on the server.
+    serverActions: { bodySizeLimit: "3mb" },
+  },
   images: {
     // Vercel Hobby image optimisation quota is limited (SPEC §11): every image is pre-optimised.
     unoptimized: true,

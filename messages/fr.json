@@ -118,12 +118,29 @@
     "termsNotice": "En créant un compte, tu acceptes les <terms>Conditions d'utilisation</terms> et la <charter>Charte</charter>, et tu reconnais avoir lu la <privacy>Politique de confidentialité</privacy>.",
     "captchaLabel": "Vérification anti-robot",
     "captchaPending": "La vérification anti-robot sera active à l'ouverture des inscriptions.",
-    "notYetOpen": "Les inscriptions ne sont pas encore ouvertes. Reviens très vite.",
     "errors": {
       "emailInvalid": "Cet e-mail ne semble pas valide.",
       "passwordTooShort": "Le mot de passe doit contenir au moins 12 caractères.",
-      "required": "Ce champ est obligatoire."
-    }
+      "required": "Ce champ est obligatoire.",
+      "invalidCredentials": "E-mail ou mot de passe incorrect.",
+      "emailNotConfirmed": "Confirme d'abord ton e-mail : le lien t'attend dans ta boîte.",
+      "rateLimited": "Trop de tentatives. Réessaie dans quelques minutes.",
+      "captchaFailed": "La vérification anti-robot a échoué. Réessaie.",
+      "weakPassword": "Ce mot de passe est trop facile à deviner. Choisis-en un autre.",
+      "emailBanned": "Cette adresse ne peut plus être utilisée sur le site.",
+      "linkInvalid": "Ce lien n'est plus valide. Demande-en un nouveau.",
+      "generic": "Une erreur est survenue. Réessaie.",
+      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard."
+    },
+    "checkEmailTitle": "Vérifie ta boîte mail",
+    "checkEmailBody": "Si l'adresse est valide, tu vas recevoir un lien. Pense à regarder dans les indésirables.",
+    "resetSentBody": "Si un compte existe avec cette adresse, tu vas recevoir un lien pour choisir un nouveau mot de passe.",
+    "newPasswordTitle": "Nouveau mot de passe",
+    "newPasswordLead": "Choisis un mot de passe d'au moins 12 caractères.",
+    "submitNewPassword": "Enregistrer",
+    "passwordUpdated": "Mot de passe modifié.",
+    "signOut": "Se déconnecter",
+    "submitting": "Envoi en cours…"
   },
   "Errors": {
     "notFoundStamp": "Affaire classée",
@@ -428,5 +445,143 @@
         }
       ]
     }
+  },
+  "App": {
+    "navLabel": "Mon espace",
+    "myFiche": "Ma Fiche",
+    "myCity": "Ma ville",
+    "signOut": "Se déconnecter"
+  },
+  "Onboarding": {
+    "title": "Ouvre ton dossier",
+    "progress": "Étape {current} sur {total}",
+    "savedNotice": "Chaque étape est enregistrée : tu peux t'arrêter et reprendre plus tard.",
+    "deletionNotice": "Un dossier non terminé est supprimé automatiquement au bout de 30 jours.",
+    "next": "Continuer",
+    "finish": "Terminer",
+    "steps": {
+      "1": "Âge et règles",
+      "2": "Ton identité",
+      "3": "Qui tu cherches",
+      "4": "Ta photo"
+    },
+    "age": {
+      "lead": "Bad Boys & Bad Girls est réservé aux adultes. Ta date de naissance sert uniquement à le vérifier : seul ton âge sera affiché.",
+      "birthdate": "Date de naissance",
+      "attest": "J'atteste avoir 18 ans ou plus.",
+      "terms": "J'accepte les <terms>Conditions d'utilisation</terms> et la <charter>Charte « Bad, pas toxique »</charter>.",
+      "privacy": "J'ai lu la <privacy>Politique de confidentialité</privacy>."
+    },
+    "identity": {
+      "lead": "Ce que les autres verront en premier.",
+      "pseudo": "Pseudo",
+      "pseudoHint": "De 3 à 20 caractères : lettres, chiffres, espace, point, tiret. Pas d'e-mail, de téléphone ni de lien.",
+      "gender": "Genre",
+      "genders": {
+        "man": "Homme",
+        "woman": "Femme",
+        "non_binary": "Non-binaire",
+        "other": "Autre"
+      },
+      "city": "Ville",
+      "cityHint": "Seule ta ville est affichée, jamais ton adresse.",
+      "cityPlaceholder": "Tape le nom ou le code postal",
+      "cityNoResult": "Aucune ville trouvée.",
+      "cityResults": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
+    },
+    "seeking": {
+      "lead": "Qui aimerais-tu rencontrer ?",
+      "genders": "Je cherche",
+      "gendersHint": "Plusieurs choix possibles.",
+      "ageMin": "Âge minimum",
+      "ageMax": "Âge maximum",
+      "consentTitle": "Ton consentement",
+      "consentText": "Les genres que tu recherches peuvent révéler ton orientation sexuelle. Nous les utilisons uniquement pour te proposer des Fiches compatibles, rien d'autre. Tu peux retirer ce consentement à tout moment ; le service ne pouvant plus fonctionner sans lui, la suppression de ton compte te sera alors proposée.",
+      "consent": "J'accepte que les genres que je recherche soient utilisés pour me proposer des Fiches compatibles."
+    },
+    "photo": {
+      "lead": "Ta photo d'identité, sur la toise. Ton visage doit être visible.",
+      "rules": "Pas de nudité, pas de coordonnées, pas de photo de quelqu'un d'autre. Elle est vérifiée par un humain avant d'être visible (objectif : moins de 12 heures).",
+      "choose": "Choisir une photo",
+      "change": "Changer de photo",
+      "preparing": "Préparation de la photo…",
+      "uploading": "Envoi de la photo…",
+      "previewAlt": "Aperçu de ta photo"
+    },
+    "errors": {
+      "required": "Ce champ est obligatoire.",
+      "underage": "Tu dois avoir 18 ans ou plus pour t'inscrire.",
+      "invalidDate": "Cette date n'est pas valide.",
+      "mustAccept": "Coche cette case pour continuer.",
+      "pseudoInvalid": "Ce pseudo n'est pas accepté (3 à 20 caractères, sans e-mail, téléphone ni lien).",
+      "pseudoTaken": "Ce pseudo est déjà pris.",
+      "cityRequired": "Choisis ta ville dans la liste.",
+      "gendersRequired": "Choisis au moins un genre.",
+      "ageRange": "La tranche d'âge doit être comprise entre 18 et 99 ans, du plus petit au plus grand.",
+      "consentRequired": "Sans ce consentement, nous ne pouvons pas te proposer de Fiches.",
+      "photoRequired": "Ajoute ta photo pour continuer.",
+      "photoUnreadable": "Ce fichier n'est pas une image lisible.",
+      "photoTooSmall": "La photo est trop petite (400 pixels minimum de côté).",
+      "photoTooLarge": "La photo est trop lourde.",
+      "generic": "Une erreur est survenue. Réessaie.",
+      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard."
+    }
+  },
+  "MyFiche": {
+    "title": "Ma Fiche",
+    "previewTitle": "Telle que les autres la verront",
+    "status": {
+      "pending": "Ta photo d'identité est en cours de vérification (objectif : moins de 12 heures). En attendant, ta Fiche n'est visible par personne.",
+      "approved": "Ta photo d'identité est validée.",
+      "rejected": "Ta photo d'identité a été refusée : {reason}. Remplace-la pour que ta Fiche soit visible.",
+      "missing": "Ajoute ta photo d'identité pour que ta Fiche puisse être validée."
+    },
+    "gaugeLabel": "Fiche complète à {percent} %",
+    "gaugeHint": "Plus ta Fiche est complète, plus on a envie de plaider.",
+    "criteria": {
+      "mainPhoto": "Photo d'identité validée",
+      "bio": "Une présentation d'au moins 40 caractères",
+      "signs": "Au moins un signe distinctif",
+      "morePhotos": "Trois photos ou plus"
+    },
+    "editTitle": "Compléter ma Fiche",
+    "bio": "Présentation",
+    "bioHint": "500 caractères maximum. Les e-mails, téléphones et liens sont masqués.",
+    "signsTitle": "Signes distinctifs",
+    "signsHint": "Jusqu'à 5. Une précision facultative pour chacun (60 caractères).",
+    "signDetail": "Précision pour « {sign} »",
+    "save": "Enregistrer",
+    "saved": "Fiche enregistrée.",
+    "photosTitle": "Mes photos",
+    "photosHint": "De 1 à 6 photos. La première est ta photo d'identité.",
+    "addPhoto": "Ajouter une photo",
+    "photoAdded": "Photo envoyée : elle sera visible après vérification.",
+    "photoStatus": {
+      "pending": "En vérification",
+      "approved": "Validée",
+      "rejected": "Refusée"
+    },
+    "photoAlt": "Ta photo n° {number}",
+    "errors": {
+      "tooManySigns": "5 signes distinctifs maximum.",
+      "generic": "Une erreur est survenue. Réessaie."
+    }
+  },
+  "City": {
+    "title": "Ta ville ouvre bientôt",
+    "lead": "On ouvre ville par ville, pour que chacun·e trouve du monde dès le premier soir.",
+    "zone": "Zone : {name}",
+    "profilesGauge": "{count} Fiches complètes sur {threshold}",
+    "womenGauge": "{pct} % de femmes (objectif : {threshold} %)",
+    "noZone": "Ta ville ne fait pas encore partie d'une zone de lancement. Ta Fiche est prête : on te prévient dès qu'une zone t'inclut.",
+    "open": "Ta ville est ouverte !",
+    "openLink": "Voir ma Fiche",
+    "referralTitle": "Fais entrer tes complices",
+    "referralLead": "Plus ta ville compte de Fiches, plus vite elle ouvre. Partage ton lien :",
+    "referralLabel": "Ton lien de parrainage",
+    "copy": "Copier le lien",
+    "copied": "Lien copié.",
+    "recruited": "{count, plural, =0 {Aucun complice recruté pour l'instant} one {# complice recruté} other {# complices recrutés}}",
+    "noReward": "Aucune récompense : juste plus de monde, plus vite."
   }
 }

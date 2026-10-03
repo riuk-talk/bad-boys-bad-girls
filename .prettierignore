@@ -7,3 +7,4 @@ docs
 CLAUDE.md
 README.md
 *.md
+lib/supabase/database.types.ts

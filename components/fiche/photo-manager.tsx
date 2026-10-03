@@ -1,0 +1,112 @@
+"use client";
+
+import { ImagePlus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { startTransition, useActionState, useEffect, useId, useRef, useState } from "react";
+import { uploadPhotoAction, type StepState } from "@/app/[locale]/(app)/onboarding/actions";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/toast";
+
+type Photo = {
+  id: string;
+  position: number;
+  status: "pending" | "approved" | "rejected";
+  url: string | null;
+};
+const IDLE: StepState = { status: "idle" };
+
+export function PhotoManager({ photos }: { photos: Photo[] }) {
+  const t = useTranslations("MyFiche");
+  const errors = useTranslations("Onboarding.errors");
+  const id = useId();
+  const router = useRouter();
+  const toast = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, action, pending] = useActionState(uploadPhotoAction, IDLE);
+  const [preparing, setPreparing] = useState(false);
+  const freePosition = [0, 1, 2, 3, 4, 5].find(
+    (p) => !photos.some((photo) => photo.position === p),
+  );
+
+  useEffect(() => {
+    if (state.status === "done") {
+      toast.show(t("photoAdded"), "success");
+      router.refresh();
+    }
+  }, [state, router, t, toast]);
+
+  async function onFile(file: File | undefined) {
+    if (!file || freePosition === undefined) return;
+    setPreparing(true);
+    try {
+      const { compressForUpload } = await import("@/lib/image/compress");
+      const blob = await compressForUpload(file);
+      const form = new FormData();
+      form.set("photo", blob, "photo");
+      form.set("position", String(freePosition));
+      startTransition(() => action(form));
+    } catch {
+      toast.show(errors("photoUnreadable"), "error");
+    } finally {
+      setPreparing(false);
+      formRef.current?.reset();
+    }
+  }
+
+  const error = state.status === "error" ? (state.fields?.photo ?? state.message) : undefined;
+
+  return (
+    <div className="space-y-4">
+      <ul className="grid grid-cols-3 gap-3">
+        {photos.map((photo) => (
+          <li key={photo.id} className="bg-ink-3 relative aspect-[4/5] overflow-hidden rounded-lg">
+            {photo.url ? (
+              // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL of a private file
+              <img
+                src={photo.url}
+                alt={t("photoAlt", { number: photo.position + 1 })}
+                className="size-full object-cover"
+                loading="lazy"
+              />
+            ) : null}
+            <Badge
+              tone={
+                photo.status === "approved"
+                  ? "gold"
+                  : photo.status === "rejected"
+                    ? "red"
+                    : "neutral"
+              }
+              className="absolute bottom-1 left-1 text-xs"
+            >
+              {t(`photoStatus.${photo.status}`)}
+            </Badge>
+          </li>
+        ))}
+      </ul>
+      {freePosition !== undefined ? (
+        <form ref={formRef}>
+          <label
+            htmlFor={`${id}-add`}
+            className="border-cream/80 has-focus-visible:outline-gold hover:bg-cream hover:text-ink inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-2 px-5 py-2 font-semibold has-focus-visible:outline-3"
+          >
+            <ImagePlus aria-hidden="true" className="size-5" />
+            {t("addPhoto")}
+            <input
+              id={`${id}-add`}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              disabled={pending || preparing}
+              onChange={(event) => void onFile(event.target.files?.[0])}
+            />
+          </label>
+        </form>
+      ) : null}
+      <p aria-live="polite" className="min-h-6 text-sm">
+        {error ? <span className="text-red-bright">{errors(error as "generic")}</span> : null}
+      </p>
+    </div>
+  );
+}
