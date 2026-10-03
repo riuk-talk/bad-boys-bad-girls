@@ -4,14 +4,14 @@
 
 ## Phase en cours
 
-**Concept v2 intégré dans la documentation, en attente de validation du porteur (aucun code modifié).** Branche `concept-v2`.
-Prochaine étape après validation : **Phase 2b — mise à niveau du code livré** (voir `docs/PROMPT.md`).
+**Phase 2b — mise à niveau du code livré au concept v2 : en cours** (branche `phase-2b-concept-v2`).
+Concept v2 **validé** le 2026-10-03 (`docs/CONCEPT-V2-DECISIONS.md`), documentation intégrée sur la branche `concept-v2` (PR vers `main`).
 
 ## Concept v2 — intégration (2026-10-03)
 
 Source : `docs/CONCEPT-V2.md` (décision du porteur). Documents mis à jour : `docs/SPEC.md` (v7), `docs/SCHEMA.md` (v2, marqueurs [v2-modif] / [v2-nouveau] / [v2-supprimé], plan de migration §6), `docs/PROMPT.md` (plan v7 : Phases 2b à 9), `CLAUDE.md` (lexique §8).
 
-### Règles que j'ai dû préciser (marquées « proposé v7 » dans la SPEC) — à valider
+### Règles précisées — ✅ validées par le porteur (`CONCEPT-V2-DECISIONS.md` §A)
 1. **Choix du rôle** : la porte de la landing présélectionne le rôle ; l'étape « Ton rôle » le confirme (le concept dit à la fois « fixé avant la création du compte » et « étape après l'identité »).
 2. **Motif de visite** dans une colonne séparée (`visit_motive`, 280 caractères, obligatoire pour un Visiteur) : la présentation d'un Bad (500) n'est pas perdue quand il change de rôle.
 3. **Visiteur = 1 photo affichée** ; les autres photos d'un ex-Bad sont gardées en réserve.
@@ -25,9 +25,15 @@ Source : `docs/CONCEPT-V2.md` (décision du porteur). Documents mis à jour : `d
 11. **Notifications push au contenu neutre** (ni pseudo, ni photo, ni texte de message).
 12. **Greffe minimum en Phase 3** (validation des photos) au lieu de la Phase 6 : sans photo validée, rien n'est testable de bout en bout.
 13. **Fin de visite sans Libération** : le choix de chacun reste secret (l'autre voit seulement « Affaire classée »).
+14. **(ajoutée par le porteur) Pari secret pour les deux jusqu'à la visite** : le Bad décide sans voir ni le chef choisi ni le résultat ; les deux sont révélés ensemble comme premier message du Parloir ; le Souffleur ne cite jamais le chef choisi ; avertissement « Ton pari reste secret jusqu'à la visite. » ; la métrique d'acceptation selon pari juste/faux doit être neutre, sinon c'est une fuite.
 
-### Risques relevés
-- **Le Bad déduit le résultat du pari** (il sait lequel est vrai) : il pourrait refuser les mauvais parieurs. Règle du porteur conservée ; métrique de contrôle ajoutée.
+### Autres décisions du porteur (§B à §D)
+- Seuil : 50 Bads, ≥ 20 bad girls, ≥ 10 bad boys (réglable, 0 = désactivé) ; seuls les Bads connectés depuis moins de 30 jours comptent.
+- Greffe minimal (photos et Permis) avancé en Phase 3.
+- Plan des phases validé ; **la Phase 5 s'arrête après chaque sous-phase** (5a, 5b, 5c) avec validation et test sur téléphone.
+
+### Risques relevés (acceptés, suivis — §E)
+- ~~Le Bad déduit le résultat du pari~~ : **résolu par la règle 14**. Risque résiduel : un Visiteur peut citer lui-même le chef dans son mot libre ; l'avertissement de la modale le dissuade, rien ne l'empêche.
 - **Capacité de la Promenade** : 50 Bads × 10 sorties = 500 places par soir → 100 Visiteurs servis à 5 Bads au seuil d'ouverture. Au-delà, des Visiteurs en reçoivent moins.
 - **Realtime gratuit** : le plafond de connexions simultanées (à vérifier, de l'ordre de 200) correspond à environ 100 visites simultanées, concentrées à 21 h. Repli par interrogation prévu.
 - **iPhone** : Web Push seulement si le site est installé sur l'écran d'accueil (iOS 16.4+, à vérifier). Une partie des rappels n'arrivera pas.
@@ -201,7 +207,6 @@ Toutes les dépendances sont figées à la version exacte dans `package.json` (p
 
 ## Questions ouvertes
 
-- **Concept v2** : les 13 règles « proposé v7 » ci-dessus, et les questions posées dans le message de présentation de l'impact.
 - Nom de domaine : `[DOMAINE]` en attendant.
 - Numéros d'urgence de la page Conseils sécurité (17, 112, 3919) à faire vérifier avant publication.
 

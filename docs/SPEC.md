@@ -2,7 +2,7 @@
 
 > v6.1 : décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). v6.2 : décisions de Phase 1 (`docs/PHASE1-DECISIONS.md`).
 > **v7 : changement de concept décidé par le porteur (`docs/CONCEPT-V2.md`, 2026-10-03)** : deux rôles (Bad et Visiteur), demande de parloir à la place de la Plaidoirie, heures de visite, Parloir limité aux 30 minutes de la visite puis Libération, Web Push dans le MVP, Promenade, lancement « les Bads d'abord ».
-> Les points marqués **(proposé v7)** sont des règles que j'ai dû préciser pour rendre le concept constructible : elles attendent la validation du porteur (liste dans `docs/PROGRESS.md`, « Questions ouvertes »). Nom de domaine provisoire : `[DOMAINE]`.
+> **v7 validée** par le porteur (`docs/CONCEPT-V2-DECISIONS.md`) : les 13 règles marquées **(validé v7)** sont celles que j'avais dû préciser ; la **règle 14** (pari entièrement secret jusqu'à la visite, y compris pour le Bad) est intégrée en §7 et §8. Nom de domaine provisoire : `[DOMAINE]`.
 
 ## 0. Priorités
 
@@ -65,7 +65,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 ## 2 bis. Les deux rôles
 
 - Chaque membre a **un rôle** : `bad` ou `visitor`. **Un Bad ne demande pas de visite. Un Visiteur n'en reçoit pas.**
-- **Choix du rôle** : deux portes sur la landing, **« Je suis Bad »** (je me mets en vitrine, je reçois des visites) et **« Je viens visiter »** (je cherche un bad boy ou une bad girl). La porte choisie est transmise à l'inscription et enregistrée avec le compte ; l'étape « Ton rôle » de l'onboarding (§4) l'affiche **présélectionnée** et permet de la confirmer ou de la corriger. Une inscription arrivée sans porte (lien direct) choisit à cette étape. **(proposé v7 : le concept dit à la fois « rôle fixé avant la création du compte » et « étape Ton rôle après l'identité » ; cette lecture réconcilie les deux)**
+- **Choix du rôle** : deux portes sur la landing, **« Je suis Bad »** (je me mets en vitrine, je reçois des visites) et **« Je viens visiter »** (je cherche un bad boy ou une bad girl). La porte choisie est transmise à l'inscription et enregistrée avec le compte ; l'étape « Ton rôle » de l'onboarding (§4) l'affiche **présélectionnée** et permet de la confirmer ou de la corriger. Une inscription arrivée sans porte (lien direct) choisit à cette étape. **(validé v7 : le concept dit à la fois « rôle fixé avant la création du compte » et « étape Ton rôle après l'identité » ; cette lecture réconcilie les deux)**
 - **Changement de rôle** dans les paramètres, **1 fois par 7 jours** au plus :
   - **Bad → Visiteur** : le Casier est masqué (conservé, pas supprimé) ; les demandes de visite en attente sont classées avec le message neutre ; les visites programmées sont annulées avec notification à l'autre personne. Le Permis exige un Motif de visite : s'il est vide, il est demandé avant de valider le changement. Les conversations déjà libérées continuent.
   - **Visiteur → Bad** : la Fiche n'apparaît nulle part tant que le Casier n'est pas rempli ; les demandes envoyées en attente sont annulées ; les visites programmées sont annulées avec notification. Les conversations déjà libérées continuent.
@@ -79,7 +79,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
   1. **Les cellules ouvrent** (« Les cellules ouvrent à Toulon ») : dans un quartier en `waitlist`, les Bads s'inscrivent et complètent leur Dossier. Leur Fiche n'est visible par personne tant que le quartier n'est pas ouvert.
   2. **Les Visiteurs prennent leur permis** : ils s'inscrivent, font valider leur photo, mais restent sur **liste d'attente** avec la jauge du quartier. Ils ne voient pas encore les Bads.
   3. **Le quartier ouvre aux visites** quand le seuil de Bads est atteint : l'admin ouvre le quartier (ou ouverture automatique si l'option est activée), une notification et un e-mail préviennent tous les membres du quartier.
-- **Calcul du seuil (proposé v7, à valider)** :
+- **Calcul du seuil (validé v7)** :
   - **Bad compté** = rôle `bad`, onboarding terminé (Casier compris), photo d'identité validée, non banni, non suspendu, non masqué, `is_seed = false`, **pas en pause**, connecté dans les **30 derniers jours**. Raison : ouvrir un quartier sur des Bads partis ou en pause donnerait une Promenade vide aux Visiteurs.
   - **Bad girl** = Bad compté de genre `femme`.
   - **Condition d'ouverture** : `bads ≥ threshold_bads` (défaut **50**) **et** `bad_girls ≥ ceil(threshold_bads × threshold_women_pct / 100)` (défaut 40 % → **20 bad girls**) **et** `bad_boys ≥ ceil(threshold_bads × threshold_men_pct / 100)` (défaut 20 % → **10 bad boys** ; mettre 0 pour désactiver).
@@ -141,9 +141,9 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 - Obligatoire et **non négociable** : c'est la sécurité des Bads.
 - Contenu : pseudo, âge, ville, **1 photo validée par le Greffe** (visage visible), **Motif de visite** (présentation, 280 caractères, obligatoire), signes distinctifs (facultatifs, avec précisions), QCM (10 questions du socle, pour l'indice de complicité). **Pas de Casier.**
-- **1 seule photo affichée** : la photo d'identité. Un ancien Bad devenu Visiteur garde ses autres photos en réserve (non affichées) ; elles réapparaissent s'il redevient Bad. **(proposé v7)**
+- **1 seule photo affichée** : la photo d'identité. Un ancien Bad devenu Visiteur garde ses autres photos en réserve (non affichées) ; elles réapparaissent s'il redevient Bad. **(validé v7)**
 - **Réputation visible par les Bads** :
-  - **« Casier vierge »** : aucun signalement retenu contre ce membre et aucune sanction (avertissement, suspension) dans les 12 derniers mois. **(proposé v7 : durée de 12 mois)**
+  - **« Casier vierge »** : aucun signalement retenu contre ce membre et aucune sanction (avertissement, suspension) dans les 12 derniers mois. **(validé v7 : durée de 12 mois)**
   - **« Visites honorées : X/Y »** : Y = visites programmées de ce Visiteur arrivées à leur heure (hors visites annulées par le Bad ou annulées plus de 2 h avant) ; X = celles où il était présent (§7 ter). Avant la première visite échue : « Nouveau visiteur ». Le taux d'absence est donc visible.
 - Visible uniquement par un Bad qui a reçu une demande de ce Visiteur (en attente, acceptée, en visite, libérée), et par le Visiteur lui-même (aperçu « tel que le voit un Bad »).
 - Aucune demande de visite possible tant que la photo n'est pas validée.
@@ -173,9 +173,10 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 ### Envoi (Visiteur)
 - Sur la Fiche d'un Bad, **« Demander une visite »** ouvre une modale :
   1. le Visiteur **parie sur le chef d'accusation qu'il pense vrai** ;
-  2. il peut ajouter un **mot** (280 caractères, facultatif) ; **Le Souffleur** propose 3 accroches liées au chef choisi (cliquables et modifiables).
+  2. il peut ajouter un **mot** (280 caractères, facultatif) ; **Le Souffleur** propose 3 accroches (cliquables et modifiables) qui **ne citent jamais le chef choisi** (§8).
+- La modale prévient : **« Ton pari reste secret jusqu'à la visite. »** (le mot, lui, est lu par le Bad avant sa décision).
 - La demande part **dans tous les cas**, pari juste ou faux. Aucune révélation à l'envoi : écran « Demande déposée au Parloir ».
-- **Le résultat du pari reste secret pour le Visiteur jusqu'au début de la visite** : il devient le **premier message du Parloir** (§7 ter).
+- **Règle 14 (validée) — le pari est secret pour les deux jusqu'à la visite** : ni le Bad ni le Visiteur ne voient le chef choisi ni le résultat avant l'ouverture de la visite. Le chef choisi **et** le résultat sont révélés **ensemble**, comme **premier message du Parloir** (§7 ter). Le pari n'influence donc jamais l'acceptation.
 
 ### Limites appliquées en base (fonction SQL `send_visit_request`, jamais seulement côté client)
 - **Visiteur** : 5 demandes par 24 h glissantes ; 2 si le compte a moins de 24 h.
@@ -186,8 +187,8 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - **Supprimé en v7** : les plaidoiries croisées et « Coupables tous les deux » (sans objet : un Bad ne demande pas de visite).
 
 ### Réception (« Le Juge, c'est toi »)
-- Le Bad voit : le Permis du Visiteur (photo, pseudo, âge, ville, Motif de visite, signes distinctifs, Casier vierge, Visites honorées), l'indice de complicité et les points communs, **le chef d'accusation choisi (sans le résultat)** et le mot éventuel.
-  - ⚠️ Le Bad sait lequel de ses chefs est vrai : il **déduit** forcément le résultat. Le secret ne vaut que pour le Visiteur. Le tableau de santé suit le taux d'acceptation selon que le pari est juste ou faux, pour vérifier que cela ne devient pas un filtre.
+- Pour décider, le Bad voit **uniquement** : le Permis du Visiteur (photo, pseudo, âge, ville, Motif de visite, signes distinctifs, Casier vierge, Visites honorées), l'indice de complicité, les 3 points communs du QCM et le mot éventuel. **Jamais le chef choisi ni le résultat du pari** (règle 14) : aucune fonction ne les lui renvoie avant le début de la visite.
+  - Le tableau de santé suit le taux d'acceptation selon pari juste/faux : il **doit être neutre** ; un écart significatif est traité comme un **bug de fuite d'information**.
 - **Accepter la visite** → tampon « VISITE ACCEPTÉE », puis proposition des Heures de visite (§7 bis), dans le même écran.
 - **Affaire classée** → le Visiteur reçoit le message neutre prédéfini (« Affaire classée. Pas de suite cette fois — bonne route. »). Jamais de silence.
 - Sans réponse sous 7 jours → classement automatique avec le même message.
@@ -195,14 +196,14 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 ## 7 bis. Les Heures de visite
 
-1. **Le Bad accepte et propose 2 ou 3 créneaux** de 30 min, dans les 7 jours, chacun commençant **au moins 2 h** après la proposition. Raccourcis (heure locale du quartier, modifiables avant envoi) **(proposé v7)** :
+1. **Le Bad accepte et propose 2 ou 3 créneaux** de 30 min, dans les 7 jours, chacun commençant **au moins 2 h** après la proposition. Raccourcis (heure locale du quartier, modifiables avant envoi) **(validé v7)** :
    - « Ce soir » → 21 h 00 aujourd'hui (si 21 h est à moins de 2 h : la première demi-heure possible, au plus tard 23 h 30 ; sinon le raccourci est grisé) ;
    - « Demain soir » → 21 h 00 demain ;
    - « Ce week-end » → samedi 18 h 00 (si on est samedi ou dimanche : dimanche 18 h 00, avec la même règle des 2 h).
    - Contrôles en base : créneaux distincts, sans chevauchement entre eux ni avec les **visites déjà programmées** du Bad.
 2. **Le Visiteur choisit un créneau** dans les **48 h** (et avant le début du créneau choisi). Sans choix → la demande est classée automatiquement (message neutre, délai de 30 jours). Un créneau devenu indisponible (le Bad a entre-temps une visite programmée qui le chevauche, ou il commence dans moins de 15 min) est affiché grisé « plus disponible ». Le Visiteur ne peut pas avoir deux visites qui se chevauchent.
-3. **« Aucun ne me va »** : le Visiteur le signale (une seule fois par demande) → le Bad propose de nouveaux créneaux dans les **48 h**, sinon la demande est classée automatiquement. **(proposé v7 : délai de 48 h pour le Bad)**
-4. **Annulation** d'une visite programmée : possible par l'un ou l'autre jusqu'au début, avec un message neutre prédéfini ; l'autre est notifié. Une annulation **moins de 2 h avant** compte comme une absence de celui qui annule (Visites honorées pour le Visiteur ; Bonne conduite pour le Bad). **(proposé v7)**
+3. **« Aucun ne me va »** : le Visiteur le signale (une seule fois par demande) → le Bad propose de nouveaux créneaux dans les **48 h**, sinon la demande est classée automatiquement. **(validé v7 : délai de 48 h pour le Bad)**
+4. **Annulation** d'une visite programmée : possible par l'un ou l'autre jusqu'au début, avec un message neutre prédéfini ; l'autre est notifié. Une annulation **moins de 2 h avant** compte comme une absence de celui qui annule (Visites honorées pour le Visiteur ; Bonne conduite pour le Bad). **(validé v7)**
 5. **Rappels** : notification **1 h avant** et **à l'heure** (Web Push + in-app ; e-mail seulement si le membre l'a activé, dans la limite du quota).
 6. **Une seule visite programmée à la fois par couple.** Un Bad peut avoir plusieurs visites programmées avec des Visiteurs différents, sans chevauchement.
 
@@ -210,7 +211,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 - Le Parloir s'ouvre **uniquement pendant les 30 min du créneau**, en temps réel, avec un **compte à rebours** visible.
 - **Présence** : un membre est « présent » dès qu'il ouvre l'écran de la visite pendant le créneau (horodatage enregistré par la base, `join_visit()`). Si une seule personne est là : écran d'attente « En attente de [pseudo]… ».
-- **Premier message automatique** (message système, affiché aux deux) = le résultat du pari : « [Pseudo] a parié sur : "…" — Bien vu ! » ou « — Raté ! Le vrai était : "…" ». C'est le brise-glace.
+- **Premier message automatique** (message système, affiché aux deux) = le chef choisi **et** le résultat du pari, révélés ensemble : « [Pseudo] a parié sur : "…" — Bien vu ! » ou « — Raté ! Le vrai était : "…" ». C'est le brise-glace. Si la première visite n'a pas lieu (absence, annulation), la révélation attend la visite suivante ; si aucune visite n'a lieu, le pari n'est jamais révélé.
 - Puis le mot éventuel du Visiteur, s'il en a écrit un.
 - Messages texte, 1 000 caractères max, 30 messages/min max ; e-mails, téléphones et liens masqués.
 - **Signaler / Bloquer** toujours accessibles (en-tête), avec des mots simples. Bloquer met fin immédiatement à la visite.
@@ -232,13 +233,13 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 ## 8. Le Souffleur
 
 - Génération **sans IA et sans API**, 100 % locale (`lib/prompter`), à partir de modèles de phrases.
-- Entrées : **le chef d'accusation choisi**, réponses QCM des deux personnes, signes distinctifs communs.
-- Trois accroches proposées dans la demande de parloir, au moins une liée au chef choisi :
-  - Chef d'accusation : « "{chef}" ? Si c'est vrai, je veux la version longue. »
+- Entrées : réponses QCM des deux personnes, signes distinctifs communs, Motif de visite et présentation du Bad. **Jamais le chef d'accusation choisi** (règle 14 : le mot est lu par le Bad avant la visite).
+- Trois accroches proposées dans la demande de parloir :
   - Point commun : « On a tous les deux répondu "{réponse}" à "{question}". Raconte-moi la dernière fois. »
   - Signe distinctif : « {Tribu} aussi. Ta meilleure histoire en 2 lignes, je te donne la mienne. »
+  - Casier (sans désigner de ligne) : « Un de tes trois aveux m'a fait rire. Je te dirai lequel au Parloir. »
 - Au moins 10 modèles par type, en FR et EN dans les fichiers de messages ; choix aléatoire sans répétition immédiate.
-- Si les données manquent (moins de 5 questions communes), le Souffleur propose des accroches génériques liées au chef choisi.
+- Si les données manquent (moins de 5 questions communes), le Souffleur propose des accroches génériques sur le Casier, sans en citer une ligne.
 
 ## 9. Le QCM et l'indice de complicité
 
@@ -326,7 +327,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 
 - Compression côté client avant envoi, puis ré-encodage côté serveur : WebP, deux tailles (1200 px ≤ 180 Ko, 400 px ≤ 30 Ko), sans aucune métadonnée. Vignettes partout sauf sur la Fiche ouverte.
 - Upload dans le bucket **privé** `photos-pending` → **file de validation du Greffe** (critères : adulte, visage visible sur la photo d'identité, pas de nudité, pas de coordonnées) → copie vers le bucket **public** `photos` sous un chemin UUID non devinable. Refus → suppression + motif notifié. Pour un Visiteur, la validation de la photo d'identité délivre le Permis (tampon « PERMIS DÉLIVRÉ »).
-- **Priorité de la file** : photos d'identité des Visiteurs dont le quartier est ouvert, puis Bads, puis photos secondaires. **(proposé v7 : un Visiteur bloqué au Greffe ne peut rien faire)**
+- **Priorité de la file** : photos d'identité des Visiteurs dont le quartier est ouvert, puis Bads, puis photos secondaires. **(validé v7 : un Visiteur bloqué au Greffe ne peut rien faire)**
 - Les fichiers de `photos-pending` sont supprimés dès la décision. Fichiers publics servis avec un `Cache-Control` long (chemins immuables).
 - **Rotation de chemin** (nouvel UUID, ancien fichier supprimé) à la suppression d'une photo, après 30 jours de pause, au bannissement ; purge totale à la suppression du compte.
 - **Seuil de bascule** : alerte admin quand le stockage dépasse 700 Mo ou l'egress saisi dépasse 3,5 Go/mois deux mois de suite (stockage calculé en SQL, egress saisi chaque mois par l'admin). La décision de payer reste humaine.
@@ -375,7 +376,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 
 ## 14. Badges de confiance
 
-- **Bonne conduite** (Bad, remplace Réglo) — calcul quotidien **(critères proposés v7)** : compte de plus de 30 jours, au moins 3 visites où il/elle était présent·e, aucun signalement retenu, aucune absence ni annulation tardive (§7 bis) dans les 30 derniers jours. Retiré immédiatement si un signalement est retenu.
+- **Bonne conduite** (Bad, remplace Réglo) — calcul quotidien **(critères validés v7)** : compte de plus de 30 jours, au moins 3 visites où il/elle était présent·e, aucun signalement retenu, aucune absence ni annulation tardive (§7 bis) dans les 30 derniers jours. Retiré immédiatement si un signalement est retenu.
 - **Casier vierge** (Visiteur) — §5 bis, calculé à l'affichage.
 - **Visites honorées X/Y** (Visiteur) — §5 bis, calculé à l'affichage.
 - Infobulle explicative sur chaque badge.
@@ -386,7 +387,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - **Tableau de santé par quartier** (calculé depuis nos propres tables, sans outil tiers ; `is_seed` exclus) :
   - inscrits, **répartition Bads/Visiteurs par genre** (l'indicateur n° 1), Dossiers et Permis complets ;
   - jauge d'ouverture (Bads comptés, bad girls, bad boys, Visiteurs en attente) ;
-  - demandes envoyées/jour, **taux d'acceptation** (et selon pari juste/faux), délai moyen de réponse, part des demandes classées automatiquement ;
+  - demandes envoyées/jour, **taux d'acceptation** (et selon pari juste/faux : doit être neutre, sinon fuite d'information à corriger), délai moyen de réponse, part des demandes classées automatiquement ;
   - **taux de créneau choisi** (demandes acceptées → visite programmée), part des « Aucun ne me va » ;
   - **taux de présence aux visites** (Bads et Visiteurs séparément), annulations tardives ;
   - **taux de Libération après visite** ;

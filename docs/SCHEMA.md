@@ -1,7 +1,7 @@
 # Schéma de base — v2 (concept v2, en attente de validation)
 
 > **v1** validée en Phase 0 (corrections `docs/PHASE0-DECISIONS.md` §B) et livrée en Phase 2 (migrations `supabase/migrations/2026100219*`).
-> **v2** (2026-10-03) : intègre `docs/CONCEPT-V2.md` / SPEC v7 — rôles Bad/Visiteur, demandes de parloir, heures de visite, visites, Web Push, Promenade, seuils « les Bads d'abord ». **En attente de validation : rien n'est encore migré.**
+> **v2** (2026-10-03) : intègre `docs/CONCEPT-V2.md` / SPEC v7 — rôles Bad/Visiteur, demandes de parloir, heures de visite, visites, Web Push, Promenade, seuils « les Bads d'abord ». **Validée** (`docs/CONCEPT-V2-DECISIONS.md`, dont la règle 14 : pari secret pour les deux jusqu'à la visite). Migration en Phase 2b (§6).
 > Marqueurs : **[v2-modif]** = change une table ou une fonction **déjà en base** (migration de modification) ; **[v2-nouveau]** = nouvel objet ; **[v2-supprimé]** = objet prévu en v1, abandonné (jamais créé en base, sauf mention).
 > Postgres 17 (Supabase). Tous les horodatages en `timestamptz` (UTC). Renvois **(Rxx)** → [`PHASE0.md`](./PHASE0.md), **(Bx)** → [`PHASE0-DECISIONS.md`](./PHASE0-DECISIONS.md).
 
@@ -184,7 +184,7 @@ RLS : **S/I/U** propriétaire **et** `role = 'bad'` pour I/U (un Visiteur ne cr�
 | `created_at`, `decided_at`, `closed_at` | `timestamptz` | |
 
 Index : unique partiel (`visitor_id`, `bad_id`) `where status in ('pending','accepted')` (1 en cours par couple) ; (`bad_id`, `status`, `created_at`) (« Le Juge, c'est toi ») ; (`visitor_id`, `created_at desc`) (5/24 h + anti-arnaque 7 j) ; (`status`, `created_at`) partiel `pending` (expiration 7 j) ; (`choose_deadline`) partiel et (`repropose_deadline`) partiel (tâche minute) ; (`visitor_id`, `bad_id`, `closed_at desc`) (délai de 30 j).
-RLS : **S** — (lecture via `get_my_requests()` pour le Visiteur, sans `guess_correct` ni `true_index` avant la visite ; `get_judge_inbox()` pour le Bad) ; **I/U/D** —.
+RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_progress'` pour ce couple, **aucune** fonction ne renvoie `guess_correct` ni `true_index` (à personne), et `get_judge_inbox()` (Bad) ne renvoie ni `guessed_index` ni le texte du chef choisi. `get_my_requests()` (Visiteur) peut lui rappeler le chef qu'il a lui-même choisi, jamais le résultat. Chef choisi et résultat sont révélés ensemble par le message système inséré par `run_visit_ticks` au début de la visite.
 
 #### `visit_slots` — les Heures de visite — **[v2-nouveau]**
 | Colonne | Type | Contraintes |
@@ -331,7 +331,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `choose_visit_end(visit_id, prolong)` | participant, avant `end_choice_deadline` ; si les deux `prolong` → Libération (`visit_requests.status = released`, conversation `open`) | **[v2-nouveau]** |
 | `get_visit(visit_id)` | état, compte à rebours, présence de l'autre (oui/non), mon choix de fin (jamais celui de l'autre) | **[v2-nouveau]** |
 | `get_my_requests()` | Visiteur : ses demandes, créneaux, statut (sans le résultat du pari avant la visite) | **[v2-nouveau]** |
-| `get_judge_inbox()` | Bad : demandes reçues avec Permis, indice, chef choisi (sans `guess_correct`), mot | **[v2-nouveau]** |
+| `get_judge_inbox()` | Bad : demandes reçues avec Permis, indice, 3 points communs, mot — **ni chef choisi ni résultat** (règle 14) | **[v2-nouveau]** |
 | `get_my_visits()` | les deux rôles : agenda | **[v2-nouveau]** |
 | `set_requests_settings(cap, closed_manual)` | Bad | **[v2]** (remplace `set_pleas_settings`) |
 | `block_user(target)` / `unblock_user(target)` | voir 2.3 | **[v2-modif]** |
@@ -389,7 +389,7 @@ v1 (82 assertions en base, Phase 2) **+ [v2]** :
 - Un membre ne peut pas modifier son `role` directement ; `change_role` refuse un second changement avant 7 jours ; Bad → Visiteur classe les demandes en attente et annule les visites ; Visiteur → Bad annule les demandes envoyées.
 - Un Visiteur ne voit jamais un autre Visiteur ; un Bad ne voit jamais un autre Bad ; un Bad ne lit un Permis que s'il a reçu une demande de ce Visiteur.
 - Un Bad ne peut pas envoyer de demande ; un Visiteur sans permis délivré non plus ; la 6e demande en 24 h est refusée ; une nouvelle demande avant 30 jours est refusée ; au plafond, `requests_open` passe à faux.
-- Le Visiteur ne lit jamais `guess_correct` ni `true_index` avant le début de la visite.
+- **Règle 14** : ni le Visiteur ni le Bad ne lisent `guessed_index`, `casier_snapshot` ou `guess_correct` avant le début de la visite (aucune fonction, aucune table lisible, aucun canal temps réel) ; le message système de début de visite contient le chef choisi et le résultat.
 - Créneaux : moins de 2 h, plus de 7 jours, 1 ou 4 créneaux, créneaux qui se chevauchent → refusés ; deux visites qui se chevauchent pour un même Bad ou un même Visiteur → refusées par la contrainte d'exclusion.
 - Messages : refusés hors du créneau d'une visite tant que la conversation n'est pas libérée ; acceptés après Libération ; un tiers ne lit ni ne s'abonne à une visite ou une conversation qui n'est pas la sienne.
 - `run_visit_ticks` (horloge simulée) : rappel envoyé une seule fois ; absence à +10 min ; deuxième absence → classement ; fin de visite ; Libération seulement si les deux prolongent ; le choix de l'autre n'est jamais lisible.
