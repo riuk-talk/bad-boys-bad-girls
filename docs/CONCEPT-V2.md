@@ -1,5 +1,7 @@
 # Concept v2 — décisions du porteur de projet (2026-10-03)
 
+> **Esprit général (mots du porteur)** : faire ce site de rencontre **dans le même esprit que les prisons** pour mettre les personnes en relation. Tout le parcours suit cette métaphore (voir le lexique §8), en style **cartoon et léger**, sans aucun insigne réel, et avec des **mots simples pour toutes les fonctions de sécurité** (Signaler, Bloquer, Conseils sécurité).
+
 > Ces décisions **remplacent** les parties correspondantes de `SPEC.md` (v6.2). Avant la Phase 3 : intègre-les dans `SPEC.md` (v7), `SCHEMA.md`, `PROMPT.md` (plan des phases) et `PROGRESS.md`, puis **présente-moi l'impact** (ce qui change dans le code déjà livré, ce qui disparaît, ce qui s'ajoute, nouvelles estimations de phases) et **attends ma validation** avant de coder.
 
 ## 1. Deux rôles : le Bad et le Visiteur
@@ -14,11 +16,21 @@
 ### Fiche du Bad
 Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
 
-### Fiche du Visiteur (obligatoire, non négociable pour la sécurité des Bads)
+### Deux portes dès la page d'accueil
+- Deux boutons : **« Je suis Bad »** (je me mets en vitrine, je reçois des visites) et **« Je viens visiter »** (je cherche un bad boy ou une bad girl). Chacun mène à son propre parcours d'inscription ; le rôle est fixé avant la création du compte.
+
+### Fiche du Visiteur = « Le Permis de visite » (obligatoire, non négociable pour la sécurité des Bads)
 - Pseudo, âge, ville, **1 photo validée par la modération** (visage visible), présentation courte (280 caractères), signes distinctifs (facultatifs), QCM (10 questions du socle, pour l'indice de complicité).
 - **Pas de Casier.**
 - **Aucune demande de visite possible tant que la photo n'est pas validée.**
 - Le Bad voit la Fiche complète du Visiteur avant d'accepter.
+- Parcours d'inscription Visiteur (objectif ≈ 3 min) : 18+ et CGU → identité (pseudo, genre, ville) → qui tu viens voir (genres, âges, consentement art. 9) → photo → « Motif de visite » (présentation, 280 caractères) → 10 questions du QCM.
+- Photo validée par la modération → tampon **« PERMIS DÉLIVRÉ »** (le Greffe).
+- **Regarder tout de suite, demander après validation** : dès l'inscription terminée, le Visiteur voit les Bads (Promenade, Découverte) même si son permis est en attente ; il ne peut envoyer une demande qu'avec le permis délivré.
+- **Réputation visible par les Bads** sur le Permis :
+  - **« Casier vierge »** : aucun signalement retenu (badge de confiance du Visiteur) ;
+  - **« Visites honorées : X/Y »** : présence aux visites programmées (le taux d'absence est visible).
+- Espace du Visiteur : **La Promenade**, **La Découverte**, **Mes demandes** (en attente / acceptée → choisir un créneau / classée), **Mes visites** (agenda + compte à rebours), **Devenir Bad** (paramètres).
 
 ## 2. Le Casier : 1 vrai, 2 faux
 
@@ -59,20 +71,51 @@ Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
 
 ## 6. Ce qui change ailleurs
 
-- **L'Audience du soir** : seuls les **Visiteurs** la reçoivent (5 Fiches de **Bads** chaque soir). La répartition de l'attention protège les Bads très sollicités.
+- **L'Audience du soir est renommée « La Promenade »** : chaque soir à 21 h, 5 Bads « sortent dans la cour » pour chaque Visiteur (sélection par indice de complicité, avec répartition de l'attention qui protège les Bads très sollicités). Seuls les **Visiteurs** la reçoivent. C'est un raccourci quotidien ; la Découverte reste la liste complète.
 - **La Découverte** : réservée aux Visiteurs (grille de Bads).
 - **Les Bads** : leur écran d'accueil = « Le Juge, c'est toi » (demandes reçues) + « Mes visites » (agenda des visites programmées).
 - **Le tableau de santé** ajoute : répartition Bads/Visiteurs par genre et par zone, taux d'acceptation, taux de créneau choisi, taux de présence aux visites, taux de Libération après visite.
-- **Seuil d'ouverture d'une zone** : à recalculer avec les deux rôles (à me proposer).
+- **Lancement : les Bads d'abord.** Dans un quartier (zone) : 1) les inscriptions Bads ouvrent en premier (« Les cellules ouvrent à Toulon ») ; 2) les Visiteurs peuvent s'inscrire et obtenir leur permis mais restent sur **liste d'attente** avec la jauge du quartier ; 3) le quartier **ouvre aux visites** quand le seuil de Bads est atteint (par défaut 50 Bads dont au moins 40 % de bad girls, réglable par l'admin). Propose-moi le détail du calcul.
 - **Onboarding** : nouvelle étape « Ton rôle » juste après l'identité ; le Casier n'est demandé qu'aux Bads ; la photo validée est requise pour les deux rôles.
 
 ## 7. Vocabulaire mis à jour
 
 | Concept | Nom produit | Nom technique proposé |
 |---|---|---|
+| Fiche du Visiteur | Le Permis de visite | `profile.role = 'visitor'` |
+| Sélection du soir (Visiteurs) | La Promenade | `daily_hearings` (renommage libre) |
+| Modération des photos et textes | Le Greffe | admin |
+| Badge de confiance du Bad | Bonne conduite (remplace Réglo) | `profile.is_reglo` |
+| Badge de confiance du Visiteur | Casier vierge | calculé |
+| Présence aux visites | Visites honorées | calculé |
+| Zone / ville | Le Quartier | `launch_zones` |
 | Membre qui reçoit | Le Bad | `profile.role = 'bad'` |
 | Membre qui demande | Le Visiteur | `profile.role = 'visitor'` |
 | Pari + mot du visiteur | Demande de visite | `visit_requests` (remplace `pleas`) |
 | Créneaux proposés | Heures de visite | `visit_slots` |
 | Visite de 30 min | La visite au Parloir | `visits` |
 | Fin de visite réussie | Libération | `visits.outcome = 'released'` |
+
+## 8. Lexique complet du parcours (à appliquer dans toute l'interface)
+
+| Moment | Nom dans le site |
+|---|---|
+| Inscription Bad | Le Dossier (Fiche + Casier) |
+| Inscription Visiteur | Le Permis de visite |
+| Validation photos / modération | Le Greffe (« Permis délivré par le Greffe ») |
+| Les 3 phrases du Bad | Le Casier (1 vrai, 2 faux) |
+| Sélection du soir | La Promenade |
+| Liste complète des Bads | La Découverte |
+| Pari + mot du Visiteur | La Demande de parloir |
+| Écran du Bad qui décide | Le Juge, c'est toi |
+| Refus | Affaire classée |
+| Créneaux proposés | Les Heures de visite |
+| Visite de 30 min en direct | Le Parloir |
+| Les deux veulent continuer | La Libération (messagerie libre) |
+| Vrai rendez-vous | La Cavale |
+| Badge de confiance du Bad | Bonne conduite |
+| Badge de confiance du Visiteur | Casier vierge |
+| Ville | Le Quartier (« Ton quartier ouvre bientôt ») |
+| Bad trop sollicité | Parloir complet |
+
+Règles : les fonctions de sécurité gardent des mots simples (Signaler, Bloquer, Conseils sécurité) ; aucun insigne ni nom d'administration réelle ; style cartoon. Les termes « match », « swipe » et « like » restent interdits.
