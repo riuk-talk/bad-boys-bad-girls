@@ -2,10 +2,22 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 
 export type StampKind =
-  "guilty" | "released" | "dismissed" | "goodConduct" | "cleanRecord" | "permit" | "visitAccepted";
+  | "guilty"
+  | "permanentPermit"
+  | "dismissed"
+  | "goodConduct"
+  | "cleanRecord"
+  | "permit"
+  | "visitAccepted";
 
 /** Trust and welcome stamps are gold; the others red (SPEC v7 §1 bis). */
-const GOLD: readonly StampKind[] = ["goodConduct", "cleanRecord", "permit", "visitAccepted"];
+const GOLD: readonly StampKind[] = [
+  "goodConduct",
+  "cleanRecord",
+  "permit",
+  "visitAccepted",
+  "permanentPermit",
+];
 
 type StampProps = {
   kind: StampKind;
@@ -45,12 +57,11 @@ export function Stamp({
       ? "text-red-ink"
       : "text-red-bright";
   const label = t(kind);
-  const ariaLabel = kind === "released" ? t("releasedAria") : undefined;
 
   return (
     <span
       role="img"
-      aria-label={ariaLabel ?? label}
+      aria-label={label}
       style={{ rotate: `${tilt}deg` }}
       className={cn(
         "font-stamp relative inline-flex items-center justify-center border-[3px] border-current leading-none tracking-[0.12em] uppercase select-none",

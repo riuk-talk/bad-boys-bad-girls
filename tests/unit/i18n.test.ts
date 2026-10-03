@@ -25,12 +25,16 @@ describe("messages", () => {
     expect(text).not.toMatch(/\b(match|matchs|swipe|swiper|like|likes)\b/);
   });
 
-  it("no UI string uses vocabulary retired in SPEC v7 (Plaidoirie, Réglo, Audience du soir)", () => {
+  it("no UI string uses vocabulary retired in SPEC v7 (Plaidoirie, Réglo, Audience, Libération, aveux)", () => {
     // "audience" stays allowed in the privacy policy ("mesure d'audience" = web analytics).
     const text = JSON.stringify(fr).toLowerCase().replaceAll("mesure d'audience", "");
     expect(text).not.toMatch(/plaid|plaide[rz]?\b|réglo|audience|coupables tous les deux/);
+    // docs/LANDING-COPY.md: no "Libération" (the Parloir is where people talk; the Permis becomes
+    // permanent) and no "aveux" (a false charge is not a confession).
+    expect(text).not.toMatch(/libér|aveu|devine[rz]? (le|lequel)/);
     const english = JSON.stringify(en).toLowerCase();
     expect(english).not.toMatch(/\bplead|\bpleas?\b|\blegit\b|evening hearing|both guilty/);
+    expect(english).not.toMatch(/releas|confession|guess which/);
   });
 });
 

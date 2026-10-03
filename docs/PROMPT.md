@@ -67,11 +67,11 @@ Tu travailles **phase par phase**. À la fin de chaque phase :
 Découpage imposé : **5a Web Push** · **5b Heures de visite** · **5c La visite**. **Arrêt après chaque sous-phase** : validation écrite et test sur téléphone avant la suivante.
 - **5a** : clés VAPID (variables d'environnement, clé privée côté serveur uniquement), service worker (`worker-src 'self'`, jamais chargé sur la landing), `push_subscriptions`, demande d'abonnement au bon moment, guide d'installation iPhone, `push_outbox` + route `/api/cron/push` (envoi, suppression des abonnements expirés), préférences par type, contenu neutre.
 - **5b** : proposition de 2–3 créneaux avec raccourcis (« Ce soir », « Demain soir », « Ce week-end »), choix du créneau (48 h), « Aucun ne me va » (1 fois), annulation (tardive < 2 h), agenda « Mes visites » pour les deux rôles, tâche minute `run_visit_ticks` (rappels H-1 et à l'heure, délais échus).
-- **5c** : écran de visite (compte à rebours, écran d'attente, présence `join_visit`), message système « résultat du pari », messages en temps réel limités au créneau (repli par interrogation), absence à +10 min et report, deuxième absence → classement, choix de fin « Prolonger » / « Affaire classée » (24 h), Libération ; Signaler/Bloquer pendant la visite.
-- **Critères** : deux visites qui se chevauchent sont refusées par la base ; aucun message hors du créneau avant Libération ; ni le Bad ni le Visiteur ne voient le chef choisi ou le résultat du pari avant le début de la visite (règle 14, pgTAP) ; un rappel n'est jamais envoyé deux fois ; absence et Libération correctes avec horloge simulée (pgTAP) ; e2e complet de deux navigateurs : demande → acceptation → créneau → visite → Libération ; aucune notification ne contient de pseudo ni de texte ; aucun service worker ni connexion temps réel hors des écrans concernés.
+- **5c** : écran de visite (compte à rebours, écran d'attente, présence `join_visit`), message système « résultat du pari », messages en temps réel limités au créneau (repli par interrogation), absence à +10 min et report, deuxième absence → classement, choix de fin « Prolonger » / « Affaire classée » (24 h), Permis permanent ; Signaler/Bloquer pendant la visite.
+- **Critères** : deux visites qui se chevauchent sont refusées par la base ; aucun message hors du créneau avant le Permis permanent ; ni le Bad ni le Visiteur ne voient le chef choisi ou le résultat du pari avant le début de la visite (règle 14, pgTAP) ; un rappel n'est jamais envoyé deux fois ; absence et Permis permanent correctes avec horloge simulée (pgTAP) ; e2e complet de deux navigateurs : demande → acceptation → créneau → visite → Permis permanent ; aucune notification ne contient de pseudo ni de texte ; aucun service worker ni connexion temps réel hors des écrans concernés.
 
-## Phase 6 — Le Parloir libre (après Libération) et la Cavale
-- Conversation libérée : messages, temps réel avec repli, lu/non lu, compteurs, anti-spam, champ toujours visible.
+## Phase 6 — Le Parloir sans horaire (Permis permanent) et la Cavale
+- Conversation au Parloir sans horaire (Permis permanent) : messages, temps réel avec repli, lu/non lu, compteurs, anti-spam, champ toujours visible.
 - La Cavale : proposition, acceptation / contre-proposition / « pas encore », carte épinglée, avertissement lieu privé.
 - « Classer l'affaire », Signaler/Bloquer, encart sécurité.
 - Masquage des coordonnées, levé après une Cavale acceptée ou 10 messages chacun (SPEC §10), jamais pendant une visite.
@@ -89,7 +89,7 @@ Découpage imposé : **5a Web Push** · **5b Heures de visite** · **5c La visit
 - Sécurité : relecture de toutes les politiques RLS, recherche de fuites de la clé secrète et de la clé privée VAPID, tests d'autorisation négatifs, `supabase db lint`.
 - Performance : Lighthouse sur la landing, la Promenade, la Découverte, une Fiche, « Le Juge, c'est toi » et le Parloir ; Core Web Vitals réels ; charge Realtime d'un soir à 21 h (100 visites simultanées).
 - Accessibilité : clavier, lecteur d'écran, contrastes, `reduced-motion`, compte à rebours accessible.
-- Playwright : inscription Bad et Visiteur → onboarding → demande → acceptation → créneau → visite → Libération → message → Cavale acceptée → blocage → suppression de compte.
+- Playwright : inscription Bad et Visiteur → onboarding → demande → acceptation → créneau → visite → Permis permanent → message → Cavale acceptée → blocage → suppression de compte.
 - README : installation, variables d'environnement (VAPID comprises), déploiement, premier admin, ouverture d'un quartier, limites des offres gratuites, checklist avant ouverture.
 - **Critère** : liste des risques restants, classés par gravité, avec une recommandation pour chacun.
 

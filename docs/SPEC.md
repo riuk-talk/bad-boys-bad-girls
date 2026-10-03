@@ -1,7 +1,8 @@
 # SPEC — Bad Boys & Bad Girls (v7)
 
 > v6.1 : décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). v6.2 : décisions de Phase 1 (`docs/PHASE1-DECISIONS.md`).
-> **v7 : changement de concept décidé par le porteur (`docs/CONCEPT-V2.md`, 2026-10-03)** : deux rôles (Bad et Visiteur), demande de parloir à la place de la Plaidoirie, heures de visite, Parloir limité aux 30 minutes de la visite puis Libération, Web Push dans le MVP, Promenade, lancement « les Bads d'abord ».
+> **v7 : changement de concept décidé par le porteur (`docs/CONCEPT-V2.md`, 2026-10-03)** : deux rôles (Bad et Visiteur), demande de parloir à la place de la Plaidoirie, heures de visite, Parloir limité aux 30 minutes de la visite puis Permis permanent, Web Push dans le MVP, Promenade, lancement « les Bads d'abord ».
+> **v7.1 (2026-10-04, `docs/LANDING-COPY.md`)** : le Parloir est le lieu où l'on discute ; « Libération » est retiré, après une visite réussie **le Permis devient permanent** (tampon « PERMIS PERMANENT ») ; « aveux » est retiré, on dit toujours « chefs d'accusation » ; le texte de la landing est celui de LANDING-COPY.md, mot pour mot.
 > **v7 validée** par le porteur (`docs/CONCEPT-V2-DECISIONS.md`) : les 13 règles marquées **(validé v7)** sont celles que j'avais dû préciser ; la **règle 14** (pari entièrement secret jusqu'à la visite, y compris pour le Bad) est intégrée en §7 et §8. Nom de domaine provisoire : `[DOMAINE]`.
 
 ## 0. Priorités
@@ -29,7 +30,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - **La Fiche du Bad façon dossier** : carte papier crème légèrement vieilli, bandeau noir en en-tête avec le pseudo en Anton, numéro de dossier (dérivé de l'identifiant, ex. `BB-0427`), trombone décoratif, sections titrées en capitales (Signes distinctifs, Chefs d'accusation, Bio).
 - **Le Permis de visite** : carte plus petite, format « laissez-passer » cartoon (photo, pseudo, âge, ville, Motif de visite, badges Casier vierge / Visites honorées), tampon « PERMIS DÉLIVRÉ » une fois la photo validée. Aucune ressemblance avec un document officiel réel (pas de bande tricolore, pas de mention « République »).
 - **Mobile d'abord** : sur téléphone, la Fiche est verticale (photo sur toise en haut, puis le dossier en dessous). La mise en page en paysage est réservée aux écrans ≥ 1024 px. Corps de texte ≥ 16 px.
-- **Tampons** : cercle ou écusson à double contour, encre légèrement irrégulière, incliné de quelques degrés. Liste : « BONNE CONDUITE », « CASIER VIERGE », « PERMIS DÉLIVRÉ », « VISITE ACCEPTÉE », « LIBÉRÉ·E », « AFFAIRE CLASSÉE ». Le tampon « COUPABLE » reste un élément décoratif de la marque (signature « Coupables de charme… »).
+- **Tampons** : cercle ou écusson à double contour, encre légèrement irrégulière, incliné de quelques degrés. Liste : « BONNE CONDUITE », « CASIER VIERGE », « PERMIS DÉLIVRÉ », « VISITE ACCEPTÉE », « PERMIS PERMANENT », « AFFAIRE CLASSÉE ». Le tampon « COUPABLE » reste un élément décoratif de la marque (signature « Coupables de charme… »).
 - Les visuels générés par IA (visages) ne servent qu'aux maquettes ; en marketing, ils portent la mention « Illustration » et ne sont jamais présentés comme des membres.
 
 ## 1 ter. Lexique du parcours (à appliquer dans toute l'interface)
@@ -46,8 +47,8 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 | Écran du Bad qui décide | Le Juge, c'est toi |
 | Refus | Affaire classée |
 | Créneaux proposés | Les Heures de visite |
-| Visite de 30 min en direct | Le Parloir |
-| Les deux veulent continuer | La Libération (messagerie libre) |
+| Lieu où l'on discute (visite de 30 min, puis sans horaire avec le Permis permanent) | Le Parloir |
+| Les deux veulent continuer | Le Permis permanent (le Parloir reste ouvert entre eux, sans horaire) |
 | Vrai rendez-vous | La Cavale |
 | Badge de confiance du Bad | Bonne conduite |
 | Badge de confiance du Visiteur | Casier vierge |
@@ -67,8 +68,8 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - Chaque membre a **un rôle** : `bad` ou `visitor`. **Un Bad ne demande pas de visite. Un Visiteur n'en reçoit pas.**
 - **Choix du rôle** : deux portes sur la landing, **« Je suis Bad »** (je me mets en vitrine, je reçois des visites) et **« Je viens visiter »** (je cherche un bad boy ou une bad girl). La porte choisie est transmise à l'inscription et enregistrée avec le compte ; l'étape « Ton rôle » de l'onboarding (§4) l'affiche **présélectionnée** et permet de la confirmer ou de la corriger. Une inscription arrivée sans porte (lien direct) choisit à cette étape. **(validé v7 : le concept dit à la fois « rôle fixé avant la création du compte » et « étape Ton rôle après l'identité » ; cette lecture réconcilie les deux)**
 - **Changement de rôle** dans les paramètres, **1 fois par 7 jours** au plus :
-  - **Bad → Visiteur** : le Casier est masqué (conservé, pas supprimé) ; les demandes de visite en attente sont classées avec le message neutre ; les visites programmées sont annulées avec notification à l'autre personne. Le Permis exige un Motif de visite : s'il est vide, il est demandé avant de valider le changement. Les conversations déjà libérées continuent.
-  - **Visiteur → Bad** : la Fiche n'apparaît nulle part tant que le Casier n'est pas rempli ; les demandes envoyées en attente sont annulées ; les visites programmées sont annulées avec notification. Les conversations déjà libérées continuent.
+  - **Bad → Visiteur** : le Casier est masqué (conservé, pas supprimé) ; les demandes de visite en attente sont classées avec le message neutre ; les visites programmées sont annulées avec notification à l'autre personne. Le Permis exige un Motif de visite : s'il est vide, il est demandé avant de valider le changement. Les conversations au Parloir sans horaire (Permis permanent) continuent.
+  - **Visiteur → Bad** : la Fiche n'apparaît nulle part tant que le Casier n'est pas rempli ; les demandes envoyées en attente sont annulées ; les visites programmées sont annulées avec notification. Les conversations au Parloir sans horaire (Permis permanent) continuent.
   - La photo d'identité déjà validée reste valable dans les deux sens (pas de nouvelle file au Greffe).
 
 ## 3. Lancement quartier par quartier (« les Bads d'abord »)
@@ -113,7 +114,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 4. **Le Greffe** : la photo d'identité est « en attente de validation » jusqu'à la décision de la modération (objectif < 12 h, affiché).
    - **Bad** : sa Fiche n'apparaît nulle part avant la validation. Il peut compléter sa Fiche (présentation, signes distinctifs, autres photos, 10 questions restantes) ; une jauge « Fiche complète à X % » l'y encourage.
    - **Visiteur** : **il regarde tout de suite, il demande après validation**. Dès l'onboarding terminé (dans un quartier ouvert), il voit la Promenade et la Découverte ; le bouton « Demander une visite » affiche « Permis en attente au Greffe » tant que la photo n'est pas validée. Validation → tampon **« PERMIS DÉLIVRÉ »**.
-5. **Visiteur** : Promenade (ou Découverte) → Fiche d'un Bad → **Demande de parloir** → le Bad accepte et propose des **Heures de visite** → le Visiteur choisit un créneau → **la visite au Parloir** (30 min) → **Libération** ou Affaire classée.
+5. **Visiteur** : Promenade (ou Découverte) → Fiche d'un Bad → **Demande de parloir** → le Bad accepte et propose des **Heures de visite** → le Visiteur choisit un créneau → **la visite au Parloir** (30 min) → **Permis permanent** ou Affaire classée.
 6. **Bad** : écran d'accueil = **« Le Juge, c'est toi »** (demandes reçues) + **« Mes visites »** (agenda des visites programmées, compte à rebours).
 7. **Espace du Visiteur** : La Promenade, La Découverte, **Mes demandes** (en attente / acceptée → choisir un créneau / classée), **Mes visites** (agenda + compte à rebours), **Devenir Bad** (paramètres).
 
@@ -133,7 +134,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - Badges : **Bonne conduite**, **[P1]** « Complices recrutés ».
 - Actions (pour un Visiteur) : **Demander une visite**, **Signaler**, **Bloquer**.
 - Statut de disponibilité réglé par le Bad (§7) : « Ouvert aux visites » / « Parloir complet ».
-- **Mettre ma Fiche en pause** : la Fiche disparaît de la Promenade et de la Découverte ; les demandes en attente restent ; les visites programmées et les conversations libérées continuent. En pause, on ne reçoit plus de nouvelles demandes. Réactivation en un clic. Après 30 jours de pause, les chemins des photos publiques sont renouvelés (§11).
+- **Mettre ma Fiche en pause** : la Fiche disparaît de la Promenade et de la Découverte ; les demandes en attente restent ; les visites programmées et les conversations au Parloir sans horaire continuent. En pause, on ne reçoit plus de nouvelles demandes. Réactivation en un clic. Après 30 jours de pause, les chemins des photos publiques sont renouvelés (§11).
 - **Exception de visibilité** : on peut toujours ouvrir la Fiche (ou le Permis) d'une personne avec qui on a une demande, une visite ou une conversation en cours, même si elle est en pause ou inactive. Le blocage reste prioritaire.
 - **Fiches inactives** : sans connexion depuis 21 jours → retirée de la Promenade et affichée en fin de Découverte ; depuis 90 jours → masquée partout, e-mail « Ta Fiche est en veille » avec lien de réactivation.
 
@@ -145,19 +146,19 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - **Réputation visible par les Bads** :
   - **« Casier vierge »** : aucun signalement retenu contre ce membre et aucune sanction (avertissement, suspension) dans les 12 derniers mois. **(validé v7 : durée de 12 mois)**
   - **« Visites honorées : X/Y »** : Y = visites programmées de ce Visiteur arrivées à leur heure (hors visites annulées par le Bad ou annulées plus de 2 h avant) ; X = celles où il était présent (§7 ter). Avant la première visite échue : « Nouveau visiteur ». Le taux d'absence est donc visible.
-- Visible uniquement par un Bad qui a reçu une demande de ce Visiteur (en attente, acceptée, en visite, libérée), et par le Visiteur lui-même (aperçu « tel que le voit un Bad »).
+- Visible uniquement par un Bad qui a reçu une demande de ce Visiteur (en attente, acceptée, en visite, Permis permanent), et par le Visiteur lui-même (aperçu « tel que le voit un Bad »).
 - Aucune demande de visite possible tant que la photo n'est pas validée.
 
 ## 6. Le Casier (Bad uniquement)
 
 - 3 « chefs d'accusation », 120 caractères max chacun : **1 vrai et 2 faux**. L'auteur coche lequel est **vrai**.
-- Ton : aveux drôles et personnels. Exemples :
+- Ton : faits drôles et personnels. Exemples :
   - « A déjà traversé l'Espagne en moto sans réserver une seule nuit »
   - « A un tatouage dont il/elle refuse d'expliquer le sens »
   - « S'est fait virer d'un karaoké pour avoir chanté trop fort »
-- **Assistant de Casier** (obligatoire : écrire 3 aveux est difficile) :
+- **Assistant de Casier** (obligatoire : écrire 3 chefs d'accusation est difficile) :
   - une banque d'au moins 60 amorces à trous, classées par thème (voyage, soirée, moto, amour, enfance, travail, bêtises) : « A déjà ___ sans ___ », « S'est fait ___ pour avoir ___ », « N'a jamais avoué à personne ___ » ;
-  - le parcours guide : **d'abord le vrai** (« Ton fait le plus marquant »), **puis deux faux crédibles** (« Invente deux aveux qu'on pourrait croire ») ;
+  - le parcours guide : **d'abord le vrai** (« Ton fait le plus marquant »), **puis deux faux crédibles** (« Invente deux chefs d'accusation qu'on pourrait croire ») ;
   - bouton « Autre idée » pour tirer une nouvelle amorce ; écriture libre toujours possible ;
   - un aperçu montre le Casier tel que les Visiteurs le verront (ordre mélangé, sans indication du vrai).
 - Qualité : moins de 25 caractères par ligne → conseil, sans bloquer.
@@ -180,7 +181,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 ### Limites appliquées en base (fonction SQL `send_visit_request`, jamais seulement côté client)
 - **Visiteur** : 5 demandes par 24 h glissantes ; 2 si le compte a moins de 24 h.
-- **Couple** : 1 demande en cours maximum par Visiteur → Bad (en cours = en attente, acceptée, visite programmée) ; 30 jours d'attente après un classement (refus, classement automatique, visite sans Libération, affaire classée après Libération).
+- **Couple** : 1 demande en cours maximum par Visiteur → Bad (en cours = en attente, acceptée, visite programmée) ; 30 jours d'attente après un classement (refus, classement automatique, visite sans Permis permanent, affaire classée après le Permis permanent).
 - **Bad** : plafond de demandes en attente (défaut 15, réglable de 5 à 50). Plafond atteint → « Parloir complet » : la Fiche reste visible, le bouton est désactivé jusqu'à ce qu'il/elle traite ses demandes. Il/elle peut aussi se mettre en « Parloir complet » manuellement.
 - Refus si : l'expéditeur n'est pas Visiteur, Permis non délivré (photo non validée), destinataire qui n'est pas Bad ou dont la Fiche n'est pas visible (pause, inactif, quartier fermé), blocage dans un sens ou dans l'autre, critères de genre et d'âge non réciproques.
 - **Anti-arnaque** : 3 mots identiques ou quasi identiques envoyés par le même compte sur 7 jours → signalement automatique à la modération (sans blocage). Normalisation : minuscules, sans accents ni ponctuation, espaces réduits, coordonnées masquées ; « quasi identique » = similarité trigramme ≥ 0,9 ; mots vides exclus.
@@ -215,10 +216,10 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - Puis le mot éventuel du Visiteur, s'il en a écrit un.
 - Messages texte, 1 000 caractères max, 30 messages/min max ; e-mails, téléphones et liens masqués.
 - **Signaler / Bloquer** toujours accessibles (en-tête), avec des mots simples. Bloquer met fin immédiatement à la visite.
-- Les messages sont **conservés** (modération, signalements, puis Parloir libre si Libération).
+- Les messages sont **conservés** (modération, signalements, puis Parloir sans horaire si le Permis devient permanent).
 - **Absence** : si l'un des deux n'est pas présent **10 min** après le début, la visite est marquée « absent » (avec qui était absent) et se ferme. Chacun peut demander **un report** : le Bad repropose des créneaux (même règle qu'en §7 bis, 48 h). **Deuxième absence dans le même couple → affaire classée automatiquement.**
 - **Fin de visite** : à la fin des 30 min, chacun choisit **« Prolonger »** ou **« Affaire classée »**, dans les **24 h** (sans réponse = classée).
-  - Les deux choisissent Prolonger → **Libération** : tampon « LIBÉRÉ·E », le Parloir devient une **messagerie libre et permanente** (§13) et la **Cavale** devient disponible.
+  - Les deux choisissent Prolonger → **Permis permanent** : tampon « PERMIS PERMANENT », le Parloir reste ouvert entre eux, **sans horaire** (§13) et la **Cavale** devient disponible.
   - Sinon → affaire classée, message neutre (le choix de chacun n'est jamais révélé : l'autre voit seulement « Affaire classée »), délai de 30 jours.
 
 ## 7 quater. Web Push (dans le MVP)
@@ -237,7 +238,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - Trois accroches proposées dans la demande de parloir :
   - Point commun : « On a tous les deux répondu "{réponse}" à "{question}". Raconte-moi la dernière fois. »
   - Signe distinctif : « {Tribu} aussi. Ta meilleure histoire en 2 lignes, je te donne la mienne. »
-  - Casier (sans désigner de ligne) : « Un de tes trois aveux m'a fait rire. Je te dirai lequel au Parloir. »
+  - Casier (sans désigner de ligne) : « Un de tes trois chefs d'accusation m'a fait rire. Je te dirai lequel au Parloir. »
 - Au moins 10 modèles par type, en FR et EN dans les fichiers de messages ; choix aléatoire sans répétition immédiate.
 - Si les données manquent (moins de 5 questions communes), le Souffleur propose des accroches génériques sur le Casier, sans en citer une ligne.
 
@@ -320,7 +321,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - En-têtes : CSP stricte (+ `worker-src 'self'` pour le service worker), `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` restrictive.
 - Turnstile à l'inscription et à la connexion.
 - Pseudo, présentation, Motif de visite, Casier, mots des demandes, messages : e-mails, numéros de téléphone et liens masqués (anti-arnaque).
-- Dans le Parloir libéré, le masquage est **levé** dès qu'une Cavale est acceptée ou que les deux personnes ont chacune envoyé au moins 10 messages (messages de la visite compris), **à condition** que les deux comptes aient plus de 7 jours, qu'aucun signalement ne soit ouvert entre les deux personnes, et qu'aucun signalement ouvert dans les catégories arnaque, mineur, harcèlement ou violence/menace ne vise l'une d'elles. Encart : « Ne partage jamais d'argent ni de codes. » **Jamais de levée pendant la visite de 30 min.**
+- Au Parloir, une fois le Permis permanent, le masquage est **levé** dès qu'une Cavale est acceptée ou que les deux personnes ont chacune envoyé au moins 10 messages (messages de la visite compris), **à condition** que les deux comptes aient plus de 7 jours, qu'aucun signalement ne soit ouvert entre les deux personnes, et qu'aucun signalement ouvert dans les catégories arnaque, mineur, harcèlement ou violence/menace ne vise l'une d'elles. Encart : « Ne partage jamais d'argent ni de codes. » **Jamais de levée pendant la visite de 30 min.**
 - Aucune clé secrète dans le client (la clé privée VAPID comprise) ; `.env.example` documenté.
 
 ## 11. Photos et modération d'images (le Greffe)
@@ -360,13 +361,13 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 - Pagination par curseur (24 par page), une seule requête SQL (fonction `discover_bads`), exclusion des bloqués et des Fiches non validées.
 - État vide soigné : « Personne de nouveau dans la cour pour l'instant » + élargir les filtres + lien de parrainage.
 
-## 13. Le Parloir libre (après Libération)
+## 13. Le Parloir sans horaire (Permis permanent)
 
-- Ouvert seulement après une **Libération** (§7 ter). Il prolonge la même conversation : les messages de la visite restent affichés en haut.
+- Le Parloir est le lieu où l'on discute. Sans horaire seulement une fois le **Permis permanent** (§7 ter). Il prolonge la même conversation : les messages de la visite restent affichés en haut.
 - Texte uniquement au MVP, 1 000 caractères max par message.
 - **Le champ de saisie est toujours visible** en bas de l'écran ; les actions (Cavale, Classer l'affaire, Signaler, Bloquer) sont dans l'en-tête ou un menu, jamais à la place du champ.
 - **Proposer une Cavale** (rendez-vous réel) : bouton dans l'en-tête. Formulaire : type de lieu (bar, café, concert, balade, activité), nom du lieu (texte libre), date et heure. L'autre répond **Accepter**, **Proposer autre chose** ou **Pas encore**. Une Cavale acceptée s'affiche en carte épinglée en haut, avec le rappel des conseils sécurité. Une seule Cavale en attente par conversation. Si le lieu contient « chez moi », « chez toi » ou une adresse privée, un avertissement conseille un lieu public (conseil, pas blocage).
-- **[P1] Relance à 48 h** : si la conversation est libérée depuis 48 h sans Cavale proposée et que le dernier message a plus de 24 h, bandeau discret : « Toujours là ? Propose une Cavale ou classe l'affaire. » Une seule relance.
+- **[P1] Relance à 48 h** : si le Permis est permanent depuis 48 h sans Cavale proposée et que le dernier message a plus de 24 h, bandeau discret : « Toujours là ? Propose une Cavale ou classe l'affaire. » Une seule relance.
 - **Temps réel** (Supabase Realtime, canal par conversation, RLS respectée), **ouvert seulement quand une conversation ou une visite est affichée**. Les compteurs (non-lus, demandes, visites, cloche) sont mis à jour par interrogation toutes les 60 s et au retour sur l'onglet. ⚠️ Les visites concentrent les connexions à 21 h : le plafond de connexions Realtime simultanées de l'offre gratuite (**à vérifier**, de l'ordre de 200) correspond à environ 100 visites simultanées. Repli automatique par interrogation toutes les 3 s si la connexion temps réel est refusée.
 - Indicateur « lu », liste triée par activité, compteur de non-lus.
 - Anti-spam : 30 messages par minute max (fonction SQL).
@@ -390,7 +391,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
   - demandes envoyées/jour, **taux d'acceptation** (et selon pari juste/faux : doit être neutre, sinon fuite d'information à corriger), délai moyen de réponse, part des demandes classées automatiquement ;
   - **taux de créneau choisi** (demandes acceptées → visite programmée), part des « Aucun ne me va » ;
   - **taux de présence aux visites** (Bads et Visiteurs séparément), annulations tardives ;
-  - **taux de Libération après visite** ;
+  - **taux de Permis permanent après visite** ;
   - Cavales proposées et acceptées (le vrai indicateur : des gens qui se voient) ;
   - part des Visiteurs servis à moins de 5 Bads à la Promenade ;
   - rétention J7 et J30 par rôle ;
@@ -399,8 +400,8 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 
 ## 16. Notifications
 
-- **In-app** : cloche + compteurs (demande reçue, visite acceptée + créneaux proposés, créneau choisi, « aucun ne me va », nouveaux créneaux, visite annulée, rappel 1 h, visite qui commence, absence, report, Libération, affaire classée, nouveau message, Cavale proposée/acceptée/contre-proposée, Promenade ouverte, Permis délivré, décision de modération, ouverture du quartier).
-- **Web Push** (si abonné, §7 quater) : demande reçue, visite acceptée, créneau choisi, rappel 1 h, visite qui commence, Libération, nouveau message dans un Parloir libre (au plus 1 toutes les 15 min par conversation), Promenade ouverte. Préférences par type.
+- **In-app** : cloche + compteurs (demande reçue, visite acceptée + créneaux proposés, créneau choisi, « aucun ne me va », nouveaux créneaux, visite annulée, rappel 1 h, visite qui commence, absence, report, Permis permanent, affaire classée, nouveau message, Cavale proposée/acceptée/contre-proposée, Promenade ouverte, Permis délivré, décision de modération, ouverture du quartier).
+- **Web Push** (si abonné, §7 quater) : demande reçue, visite acceptée, créneau choisi, rappel 1 h, visite qui commence, Permis permanent, nouveau message au Parloir (Permis permanent) (au plus 1 toutes les 15 min par conversation), Promenade ouverte. Préférences par type.
 - **E-mail** (SMTP gratuit, quota limité) : demandes reçues et visites acceptées (regroupées, maximum 1 e-mail par jour et par membre), rappel de visite (**seulement si activé**), Cavale acceptée, ouverture du quartier, Permis délivré, Fiche en veille, rappel unique à J+7 pour un onboarding non terminé (priorité la plus basse) ; désinscription par type. Si le quota du jour est atteint, les e-mails restants passent au lendemain (sauf les rappels de visite, abandonnés s'ils sont dépassés).
 
 ## 17. Accessibilité et UX

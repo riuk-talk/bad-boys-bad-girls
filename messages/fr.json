@@ -49,15 +49,15 @@
   "Landing": {
     "heroEyebrow": "Site de rencontre · 18+",
     "heroTitle": "Pour ceux qu'on a toujours trouvés trop.",
-    "heroLead": "Trop francs, trop tatoués, trop libres, trop nocturnes, trop entiers. Ici, pas de photos qu'on fait défiler : on demande une visite au Parloir, en pariant sur un Casier.",
+    "heroLead": "Ici, les Bads se mettent en vitrine et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.",
     "logoAlt": "Bad Boys & Bad Girls, Coupables de charme…",
     "judgeTitle": "Ici, c'est toi le juge.",
-    "judgeBody": "Tu es Bad ? Tu reçois des demandes de visite et tu décides seul·e. Accepter ou classer l'affaire, fixer toi-même combien de demandes tu acceptes en attente. Personne ne t'écrit sans ton accord.",
+    "judgeBody": "Côté Bad, c'est toi qui décides. Chaque demande de visite arrive avec le Permis du Visiteur : tu acceptes ou tu classes l'affaire.",
     "judgePoints": [
-      "Personne ne peut t'écrire tant que tu n'as pas accepté sa visite.",
-      "Tu fixes ton plafond de demandes : au-delà, ton Parloir affiche complet.",
-      "Classer une affaire envoie un message neutre et respectueux. Jamais de silence, jamais de justification.",
-      "Après la visite, rien ne continue sans l'accord des deux."
+      "Personne ne te parle au Parloir sans que tu aies accepté sa visite.",
+      "Tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet.",
+      "Classer une affaire envoie un message neutre et respectueux : jamais de silence, jamais de justification.",
+      "Après une visite, rien ne continue sans l'accord des deux."
     ],
     "charterTitle": "Bad, pas toxique.",
     "charterLead": "« Bad », c'est une attitude et une esthétique. Jamais une excuse.",
@@ -78,37 +78,37 @@
     "steps_bad": [
       {
         "title": "Ouvre ton Dossier",
-        "body": "Ta photo sur la toise, tes signes distinctifs, et ton Casier : trois aveux sur ta vie, un vrai et deux faux."
+        "body": "Ta photo sur la toise, tes signes distinctifs et ton Casier : trois chefs d'accusation, un vrai et deux faux."
       },
       {
         "title": "Le Juge, c'est toi",
-        "body": "Les Visiteurs demandent à te voir. Tu lis leur Permis de visite et tu décides : visite acceptée ou affaire classée."
+        "body": "Les Visiteurs demandent une visite. Tu lis leur Permis et tu décides : visite acceptée ou affaire classée."
       },
       {
         "title": "Le Parloir",
-        "body": "Tu proposes tes Heures de visite. Trente minutes en direct ; si vous voulez tous les deux continuer, c'est la Libération."
+        "body": "Tu fixes tes Heures de visite. Au Parloir, vous discutez trente minutes en direct. Si vous voulez tous les deux continuer, le Permis devient permanent."
       }
     ],
     "stepsTitle_visitor": "Côté Visiteur",
     "steps_visitor": [
       {
         "title": "Prends ton Permis",
-        "body": "Une photo validée, ton Motif de visite, dix questions. Trois minutes, et le Greffe te délivre ton Permis."
+        "body": "Une photo, ton Motif de visite et dix questions. Le Greffe valide ta photo et te délivre ton Permis."
       },
       {
         "title": "Demande une visite",
-        "body": "Un Casier te plaît ? Parie sur l'aveu que tu crois vrai, ajoute un mot si tu veux. Ton pari reste secret jusqu'à la visite."
+        "body": "Un Bad te plaît ? Lis son Casier et parie sur le chef d'accusation que tu crois vrai. Juste ou faux, ta demande part : ton pari reste secret jusqu'à la visite."
       },
       {
         "title": "Le Parloir",
-        "body": "Choisis un créneau. Le résultat de ton pari ouvre la conversation : personne n'a à écrire le premier message."
+        "body": "Choisis une des Heures de visite proposées. La conversation s'ouvre sur ton pari, révélé à vous deux : personne n'a à écrire le premier message."
       }
     ],
     "stepsTitle": "Deux rôles, zéro baratin",
     "promenadeTitle": "La Promenade",
-    "promenadeBody": "Chaque soir à 21 h, cinq Bads sortent dans la cour pour chaque Visiteur. Pas un catalogue sans fin : une sélection, avec soin.",
+    "promenadeBody": "Chaque soir à 21 h, cinq Bads sortent dans la cour pour chaque Visiteur, choisis selon vos réponses au questionnaire. Une sélection, pas un catalogue sans fin.",
     "quartersTitle": "Les Bads d'abord",
-    "quartersBody": "Un site de rencontre vide ne sert à rien. On ouvre quartier par quartier, en commençant par le Var et les Alpes-Maritimes : les cellules ouvrent d'abord aux Bads, les Visiteurs prennent leur Permis et attendent, et le quartier ouvre aux visites quand il compte assez de Bads. Ailleurs, inscris-toi : tu suivras la progression de ton quartier."
+    "quartersBody": "Un site de rencontre vide ne sert à rien. On ouvre quartier par quartier, en commençant par le Var et les Alpes-Maritimes. Les Bads s'inscrivent en premier ; les Visiteurs prennent leur Permis et suivent la jauge de leur quartier. Les visites ouvrent quand il y a assez de Bads."
   },
   "Auth": {
     "loginTitle": "Se connecter",
@@ -177,13 +177,12 @@
   "Components": {
     "stamps": {
       "guilty": "COUPABLE",
-      "released": "LIBÉRÉ·E",
-      "releasedAria": "Libéré ou libérée",
       "dismissed": "AFFAIRE CLASSÉE",
       "goodConduct": "BONNE CONDUITE",
       "cleanRecord": "CASIER VIERGE",
       "permit": "PERMIS DÉLIVRÉ",
-      "visitAccepted": "VISITE ACCEPTÉE"
+      "visitAccepted": "VISITE ACCEPTÉE",
+      "permanentPermit": "PERMIS PERMANENT"
     },
     "fiche": {
       "caseNumber": "Dossier {number}",
@@ -387,7 +386,7 @@
         {
           "title": "6. Suppression du compte",
           "paragraphs": [
-            "Tu peux supprimer ton compte à tout moment depuis tes paramètres. La suppression est définitive : ta Fiche, tes photos et le texte de tes messages sont effacés."
+            "Tu peux supprimer ton compte à tout moment depuis tes paramètres. La suppression est définitive : ta Fiche ou ton Permis de visite, tes photos et le texte de tes messages sont effacés."
           ]
         },
         {
@@ -661,7 +660,7 @@
     "noReward": "Aucune récompense : juste plus de monde, plus vite.",
     "title": "Ton quartier ouvre bientôt",
     "lead_bad": "Les cellules ouvrent d'abord aux Bads. Ta Fiche sera visible dès que ton quartier ouvrira aux visites.",
-    "lead_visitor": "Les Bads s'installent d'abord. Ton Permis est prêt : tu pourras demander des visites dès que ton quartier ouvrira.",
+    "lead_visitor": "Les Bads s'installent d'abord. Ton dossier de Permis est complet : tu pourras demander des visites quand le Greffe aura délivré ton Permis et que ton quartier ouvrira.",
     "zone": "Quartier : {name}",
     "badsGauge": "{count} Bads sur {threshold}",
     "girlsGauge": "{count} bad girls sur {threshold} minimum",
@@ -670,7 +669,7 @@
     "ready": "Le quartier a assez de Bads : l'ouverture aux visites arrive.",
     "gaugeHint": "Seuls comptent les Bads dont la photo est validée, qui ne sont pas en pause et qui sont venus dans les 30 derniers jours.",
     "noZone_bad": "Ta ville ne fait pas encore partie d'un quartier de lancement. Ton Dossier est prêt : on te prévient dès qu'un quartier l'inclut.",
-    "noZone_visitor": "Ta ville ne fait pas encore partie d'un quartier de lancement. Ton Permis est prêt : on te prévient dès qu'un quartier l'inclut.",
+    "noZone_visitor": "Ta ville ne fait pas encore partie d'un quartier de lancement. Ton dossier de Permis est complet : on te prévient dès qu'un quartier l'inclut.",
     "open": "Ton quartier est ouvert !",
     "openLink_bad": "Voir ma Fiche",
     "openLink_visitor": "Voir mon Permis",

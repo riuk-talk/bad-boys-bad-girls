@@ -49,15 +49,15 @@
   "Landing": {
     "heroEyebrow": "Dating site · 18+",
     "heroTitle": "For those who've always been called too much.",
-    "heroLead": "Too blunt, too tattooed, too free, too nocturnal, too whole. Here, nobody scrolls through photos: you ask for a visit to the Visiting Room by betting on a Record.",
+    "heroLead": "Here, Bads put themselves on show and Visitors come to see them. No photos to scroll through endlessly: a visit request, a bet on a Record, and a real conversation in the Visiting Room.",
     "logoAlt": "Bad Boys & Bad Girls, Guilty of charm…",
     "judgeTitle": "Here, you're the judge.",
-    "judgeBody": "You're a Bad? You receive visit requests and you alone decide. Accept or dismiss the case, set how many pending requests you accept. Nobody writes to you without your say-so.",
+    "judgeBody": "On the Bad side, you decide. Every visit request comes with the Visitor's Permit: you accept or you dismiss the case.",
     "judgePoints": [
-      "Nobody can message you until you've accepted their visit.",
-      "You set your request limit: beyond it, your Visiting Room shows as full.",
-      "Dismissing a case sends a neutral, respectful message. Never silence, never a justification.",
-      "After the visit, nothing continues unless you both agree."
+      "Nobody talks to you in the Visiting Room unless you've accepted their visit.",
+      "You choose how many requests can wait for you at the same time. Beyond that, your Visiting Room shows as full.",
+      "Dismissing a case sends a neutral, respectful message: never silence, never a justification.",
+      "After a visit, nothing continues unless you both agree."
     ],
     "charterTitle": "Bad, not toxic.",
     "charterLead": "“Bad” is an attitude and a style. Never an excuse.",
@@ -78,37 +78,37 @@
     "steps_bad": [
       {
         "title": "Open your Case File",
-        "body": "Your photo against the height chart, your distinctive marks, and your Record: three confessions about your life, one true and two false."
+        "body": "Your photo against the height chart, your distinctive marks and your Record: three charges, one true and two false."
       },
       {
         "title": "You're the judge",
-        "body": "Visitors ask to see you. You read their Visiting Permit and decide: visit accepted or case dismissed."
+        "body": "Visitors ask for a visit. You read their Permit and decide: visit accepted or case dismissed."
       },
       {
         "title": "The Visiting Room",
-        "body": "You offer your Visiting Hours. Thirty minutes live; if you both want to carry on, that's the Release."
+        "body": "You set your Visiting Hours. In the Visiting Room, you talk for thirty minutes live. If you both want to carry on, the Permit becomes permanent."
       }
     ],
     "stepsTitle_visitor": "Visitor side",
     "steps_visitor": [
       {
         "title": "Get your Permit",
-        "body": "An approved photo, your Reason for visiting, ten questions. Three minutes, and the Registry issues your Permit."
+        "body": "A photo, your Reason for visiting and ten questions. The Registry approves your photo and issues your Permit."
       },
       {
         "title": "Ask for a visit",
-        "body": "Like a Record? Bet on the confession you think is true, add a note if you want. Your bet stays secret until the visit."
+        "body": "Like a Bad? Read their Record and bet on the charge you think is true. Right or wrong, your request goes out: your bet stays secret until the visit."
       },
       {
         "title": "The Visiting Room",
-        "body": "Pick a slot. The result of your bet opens the conversation: nobody has to write the first message."
+        "body": "Pick one of the Visiting Hours offered. The conversation opens with your bet, revealed to both of you: nobody has to write the first message."
       }
     ],
     "stepsTitle": "Two roles, zero small talk",
     "promenadeTitle": "The Yard",
-    "promenadeBody": "Every night at 9 pm, five Bads step out into the yard for each Visitor. Not an endless catalogue: a careful selection.",
+    "promenadeBody": "Every night at 9 pm, five Bads step out into the yard for each Visitor, picked from your answers to the questionnaire. A selection, not an endless catalogue.",
     "quartersTitle": "Bads first",
-    "quartersBody": "An empty dating site is useless. We open block by block, starting with the Var and the Alpes-Maritimes: the cells open to Bads first, Visitors get their Permit and wait, and the block opens to visits once it has enough Bads. Anywhere else, sign up: you'll follow your block's progress."
+    "quartersBody": "An empty dating site is useless. We open block by block, starting with the Var and the Alpes-Maritimes. Bads sign up first; Visitors get their Permit and follow their block's gauge. Visits open once there are enough Bads."
   },
   "Auth": {
     "loginTitle": "Log in",
@@ -177,13 +177,12 @@
   "Components": {
     "stamps": {
       "guilty": "GUILTY",
-      "released": "RELEASED",
-      "releasedAria": "Released",
       "dismissed": "CASE DISMISSED",
       "goodConduct": "GOOD CONDUCT",
       "cleanRecord": "CLEAN RECORD",
       "permit": "PERMIT ISSUED",
-      "visitAccepted": "VISIT ACCEPTED"
+      "visitAccepted": "VISIT ACCEPTED",
+      "permanentPermit": "PERMANENT PERMIT"
     },
     "fiche": {
       "caseNumber": "File {number}",
@@ -387,7 +386,7 @@
         {
           "title": "6. Deleting your account",
           "paragraphs": [
-            "You can delete your account at any time from your settings. Deletion is permanent: your File, photos and the text of your messages are erased."
+            "You can delete your account at any time from your settings. Deletion is final: your File or Visiting Permit, your photos and the text of your messages are erased."
           ]
         },
         {
@@ -661,7 +660,7 @@
     "noReward": "No reward: just more people, sooner.",
     "title": "Your block opens soon",
     "lead_bad": "The cells open to Bads first. Your File will be visible as soon as your block opens to visits.",
-    "lead_visitor": "Bads move in first. Your Permit is ready: you'll be able to ask for visits as soon as your block opens.",
+    "lead_visitor": "Bads move in first. Your Permit application is complete: you'll be able to ask for visits once the Registry has issued your Permit and your block opens.",
     "zone": "Block: {name}",
     "badsGauge": "{count} Bads out of {threshold}",
     "girlsGauge": "{count} bad girls out of {threshold} minimum",
@@ -670,7 +669,7 @@
     "ready": "The block has enough Bads: opening to visits is coming.",
     "gaugeHint": "Only Bads with an approved photo, not on pause and active in the last 30 days count.",
     "noZone_bad": "Your city isn't part of a launch block yet. Your Case File is ready: we'll let you know as soon as a block includes it.",
-    "noZone_visitor": "Your city isn't part of a launch block yet. Your Permit is ready: we'll let you know as soon as a block includes it.",
+    "noZone_visitor": "Your city isn't part of a launch block yet. Your Permit application is complete: we'll let you know as soon as a block includes it.",
     "open": "Your block is open!",
     "openLink_bad": "See my File",
     "openLink_visitor": "See my Permit",

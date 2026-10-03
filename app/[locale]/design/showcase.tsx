@@ -80,7 +80,7 @@ export function DesignShowcase() {
       <Block title={t("stamps")}>
         <div key={stampKey} className="flex flex-wrap items-center gap-8 overflow-x-clip py-4">
           <Stamp kind="guilty" animated />
-          <Stamp kind="released" animated tilt={6} />
+          <Stamp kind="permanentPermit" animated tilt={6} />
           <Stamp kind="dismissed" animated tilt={-4} />
           <Stamp kind="goodConduct" animated tilt={12} />
           <Stamp kind="permit" animated tilt={-6} />

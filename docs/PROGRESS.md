@@ -52,7 +52,7 @@ Source : `docs/CONCEPT-V2.md` (décision du porteur). Documents mis à jour : `d
 10. **Bonne conduite** = compte > 30 jours, ≥ 3 visites honorées, aucun signalement retenu, aucune absence ni annulation tardive depuis 30 jours.
 11. **Notifications push au contenu neutre** (ni pseudo, ni photo, ni texte de message).
 12. **Greffe minimum en Phase 3** (validation des photos) au lieu de la Phase 6 : sans photo validée, rien n'est testable de bout en bout.
-13. **Fin de visite sans Libération** : le choix de chacun reste secret (l'autre voit seulement « Affaire classée »).
+13. **Fin de visite sans Permis permanent** : le choix de chacun reste secret (l'autre voit seulement « Affaire classée »).
 14. **(ajoutée par le porteur) Pari secret pour les deux jusqu'à la visite** : le Bad décide sans voir ni le chef choisi ni le résultat ; les deux sont révélés ensemble comme premier message du Parloir ; le Souffleur ne cite jamais le chef choisi ; avertissement « Ton pari reste secret jusqu'à la visite. » ; la métrique d'acceptation selon pari juste/faux doit être neutre, sinon c'est une fuite.
 
 ### Autres décisions du porteur (§B à §D)
