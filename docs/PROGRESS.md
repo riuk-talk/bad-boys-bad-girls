@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 2 — Comptes, onboarding, Fiche, photos, zones : en cours, bloquée** par des réglages que seul le porteur peut faire (voir « Actions attendues »). Branche : `phase-2-accounts`.
+**Phase 2 — Comptes, onboarding, Fiche, photos, zones : terminée, en attente de validation** (PR `phase-2-accounts` → `main`).
 
 ## Phase 2 — état (2026-10-02)
 
@@ -28,12 +28,17 @@
 3. `upsert` PostgREST réécrit la colonne `id` (non autorisée aux membres) → insert ou update.
 4. Seed : faux garde-fou « production » et tableau 2D invalide → corrigés.
 
-### Reste à faire
-- Étapes 1 et 3 de l'onboarding : **bloquées sans `SUPABASE_SECRET_KEY`** (les consentements sont écrits par le serveur, seul à connaître l'IP réelle). Le parcours s'arrête proprement sur « Le service n'est pas encore configuré ».
-- Test B5 : le hook « Before User Created » s'exécute-t-il pour une inscription par lien magique ? (nécessite le hook activé dans le tableau de bord).
-- Critère « onboarding en moins de 5 minutes » : à chronométrer une fois la clé en place.
-- Import de toutes les communes de France (`node scripts/import-places.mjs --push`, clé secrète requise).
-- Validation admin des photos (copie vers le bucket public) : prévue en Phase 6 avec `/admin`.
+### Finalisation (2026-10-03, après les réglages du porteur)
+- **Test B5 — hook « Before User Created »** sur le projet réel : une adresse bannie est **refusée** pour le lien magique (403 `email_banned`), pour l'inscription par mot de passe, et en majuscules. Aucun e-mail n'est envoyé. ⚠️ La création de compte par l'API d'administration (clé secrète) **n'est pas** soumise au hook : réservée au serveur, à ne jamais exposer.
+- **Communes de France** : 34 969 importées (`scripts/import-places.mjs --push`, 18 s, 15 Mo). Recherche sans accent et par code postal vérifiée.
+- **Onboarding complet** (test e2e `onboarding-complete.spec.ts`, compte jetable créé et supprimé par le test) : connexion → étapes 1 à 4 → page de la ville, **7,7 à 8,5 s** en automatique ; 4 consentements enregistrés ; photo stockée en WebP **sans EXIF** (fichier téléchargé et vérifié) ; Ma Fiche (bio masquée, signe distinctif, jauge 40 %) et Ta ville (zone, lien de parrainage) contrôlées avec axe : 0 violation.
+- **Chrono humain** : 13 saisies réparties sur 4 écrans ; estimation 2 à 4 minutes selon le choix de la photo. **C'est une estimation**, à confirmer en le faisant toi-même sur ton téléphone.
+- Nettoyage : compte de test et 5 Fiches fictives supprimés ; base de dev vide de membres (communes, tribus, 2 zones de dev conservées).
+- Bug trouvé : des comptes insérés en SQL avec des jetons `NULL` cassent la liste des utilisateurs de Supabase Auth → seed corrigé.
+
+### Reste pour plus tard (hors Phase 2)
+- Validation admin des photos et copie vers le bucket public : Phase 6 (`/admin`).
+- Envoi réel des e-mails de la file (`email_outbox`) : Phase 6 (Brevo).
 
 ### Écarts par rapport à la spec / au schéma
 1. **Onboarding en 4 étapes en Phase 2** : le Casier (étape 5) et les 10 questions (étape 6) sont construits en Phase 3, qui étendra `complete_onboarding`.
@@ -42,15 +47,10 @@
 4. **Fichiers photo** : `{user}/{uuid}.webp` (1200 px) et `{user}/{uuid}-s.webp` (400 px) ; seule la grande taille est enregistrée dans `photos.pending_path`.
 5. Région Supabase `eu-west-1` (Irlande) et non Paris : reste dans l'UE.
 
-### Actions attendues du porteur (dans cet ordre)
-1. **Clé secrète** : menu de l'environnement cloud (barre de titre de la session) → Edit → variable `SUPABASE_SECRET_KEY` = clé `sb_secret_…`. Ne jamais la coller dans le chat. Elle sera lue par une nouvelle session. Ajoute aussi `E2E_EMAIL` / `E2E_PASSWORD` si tu veux que les tests réels tournent à chaque fois.
-2. **Supabase → Authentication → Hooks** : activer « Before User Created » → type Postgres → fonction `public.hook_before_user_created`.
-3. **Supabase → Authentication → URL Configuration** : Site URL = l'URL Vercel de production (puis `https://[DOMAINE]`) ; Redirect URLs : `http://localhost:3000/**`, `https://*-<ton-equipe>.vercel.app/**` (prévisualisations), l'URL de production.
-4. **Supabase → Authentication → Email Templates** (Confirm signup, Magic Link, Reset Password) : remplacer le lien par `{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=email` (`type=recovery` pour la réinitialisation). Sans ce changement, les liens ne marchent que dans le navigateur qui les a demandés.
-5. **SMTP Brevo** (Authentication → SMTP) et **Turnstile** (Attack Protection → Captcha) : quand tes comptes sont prêts ; en attendant, n'inscris pas de vraies adresses (2 e-mails/heure, les rebonds pénalisent le projet).
-6. **Vercel** : variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (production et prévisualisation), `APP_ENV=production` (production).
-7. **Ne fusionne pas** les branches `vercel/install-vercel-speed-insights-*` et `vercel/install-vercel-web-analytics-*` créées par Vercel : ce sont des outils de mesure tiers, exclus par la spec (§10) ; la mesure réelle se fera en Phase 7 sans tiers.
-8. Données de dev restantes : 1 compte de test `e2e-…@example.com` et 5 Fiches fictives `is_seed` (exclues des statistiques). Je les supprime sur ton accord (le connecteur demande une confirmation pour les suppressions).
+### Actions encore attendues du porteur
+1. **SMTP Brevo** et **Turnstile** dans Supabase Auth, quand tes comptes sont prêts (le widget s'active dès que `NEXT_PUBLIC_TURNSTILE_SITE_KEY` est défini).
+2. **Vercel** : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (production et prévisualisation), `APP_ENV=production` (production).
+3. Ne pas fusionner les branches `vercel/install-vercel-*` (outils de mesure tiers, exclus par la spec).
 
 ## Phase 0 — Cadrage : ✅ validée (2026-10-01)
 
