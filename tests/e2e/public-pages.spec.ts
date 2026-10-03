@@ -124,6 +124,20 @@ test("keyboard: skip link comes first and moves focus to main", async ({ page })
   expect(focused).toBe(true);
 });
 
+test("landing: two doors lead to the matching sign-up (SPEC v7 §2 bis)", async ({ page }) => {
+  await page.goto("/");
+  const bad = page.getByRole("link", { name: /Je suis Bad/ }).first();
+  const visitor = page.getByRole("link", { name: /Je viens visiter/ }).first();
+  await expect(bad).toHaveAttribute("href", "/inscription?role=bad");
+  await expect(visitor).toHaveAttribute("href", "/inscription?role=visitor");
+  await visitor.click();
+  await expect(page.getByRole("heading", { name: "Prendre mon Permis de visite" })).toBeVisible();
+  await expect(page.locator('input[name="role"]')).toHaveValue("visitor");
+  await page.goto("/inscription?role=juge");
+  await expect(page.getByRole("heading", { name: "Créer mon compte" })).toBeVisible();
+  await expect(page.locator('input[name="role"]')).toHaveCount(0);
+});
+
 test("signup form: client validation is announced and focuses the first invalid field", async ({
   page,
 }) => {
@@ -139,7 +153,7 @@ test("modal: opens, traps focus and closes with Escape", async ({ page }) => {
   await page.goto("/design");
   const opener = page.getByRole("button", { name: "Ouvrir la modale" });
   await opener.click();
-  const dialog = page.getByRole("dialog", { name: "Plaider auprès de Exemple" });
+  const dialog = page.getByRole("dialog", { name: "Demander une visite à Exemple" });
   await expect(dialog).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();

@@ -38,33 +38,36 @@ export type Database = {
           egress_alert_gb: number
           email_auth_reserve: number
           email_daily_quota: number
-          hearing_max_appearances_per_day: number
           id: boolean
           launch_mode: Database["public"]["Enums"]["launch_mode"]
+          promenade_max_appearances_per_day: number
           storage_alert_mb: number
           updated_at: string
+          zone_bad_active_days: number
         }
         Insert: {
           ban_hash_retention_months?: number
           egress_alert_gb?: number
           email_auth_reserve?: number
           email_daily_quota?: number
-          hearing_max_appearances_per_day?: number
           id?: boolean
           launch_mode?: Database["public"]["Enums"]["launch_mode"]
+          promenade_max_appearances_per_day?: number
           storage_alert_mb?: number
           updated_at?: string
+          zone_bad_active_days?: number
         }
         Update: {
           ban_hash_retention_months?: number
           egress_alert_gb?: number
           email_auth_reserve?: number
           email_daily_quota?: number
-          hearing_max_appearances_per_day?: number
           id?: boolean
           launch_mode?: Database["public"]["Enums"]["launch_mode"]
+          promenade_max_appearances_per_day?: number
           storage_alert_mb?: number
           updated_at?: string
+          zone_bad_active_days?: number
         }
         Relationships: []
       }
@@ -221,9 +224,11 @@ export type Database = {
           name: string
           opened_at: string | null
           radius_km: number
+          ready_at: string | null
           slug: string
           status: Database["public"]["Enums"]["zone_status"]
-          threshold_profiles: number
+          threshold_bads: number
+          threshold_men_pct: number
           threshold_women_pct: number
           timezone: string
         }
@@ -235,9 +240,11 @@ export type Database = {
           name: string
           opened_at?: string | null
           radius_km: number
+          ready_at?: string | null
           slug: string
           status?: Database["public"]["Enums"]["zone_status"]
-          threshold_profiles?: number
+          threshold_bads?: number
+          threshold_men_pct?: number
           threshold_women_pct?: number
           timezone?: string
         }
@@ -249,9 +256,11 @@ export type Database = {
           name?: string
           opened_at?: string | null
           radius_km?: number
+          ready_at?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["zone_status"]
-          threshold_profiles?: number
+          threshold_bads?: number
+          threshold_men_pct?: number
           threshold_women_pct?: number
           timezone?: string
         }
@@ -293,27 +302,48 @@ export type Database = {
         Row: {
           email_date_accepted: boolean
           email_dormant: boolean
-          email_plea_digest: boolean
+          email_permit_granted: boolean
+          email_request_digest: boolean
+          email_visit_reminder: boolean
           email_weekly: boolean
           email_zone_opened: boolean
+          push_messages: boolean
+          push_promenade: boolean
+          push_prompt_declined_at: string | null
+          push_requests: boolean
+          push_visits: boolean
           unsubscribe_token: string
           user_id: string
         }
         Insert: {
           email_date_accepted?: boolean
           email_dormant?: boolean
-          email_plea_digest?: boolean
+          email_permit_granted?: boolean
+          email_request_digest?: boolean
+          email_visit_reminder?: boolean
           email_weekly?: boolean
           email_zone_opened?: boolean
+          push_messages?: boolean
+          push_promenade?: boolean
+          push_prompt_declined_at?: string | null
+          push_requests?: boolean
+          push_visits?: boolean
           unsubscribe_token?: string
           user_id: string
         }
         Update: {
           email_date_accepted?: boolean
           email_dormant?: boolean
-          email_plea_digest?: boolean
+          email_permit_granted?: boolean
+          email_request_digest?: boolean
+          email_visit_reminder?: boolean
           email_weekly?: boolean
           email_zone_opened?: boolean
+          push_messages?: boolean
+          push_promenade?: boolean
+          push_prompt_declined_at?: string | null
+          push_requests?: boolean
+          push_visits?: boolean
           unsubscribe_token?: string
           user_id?: string
         }
@@ -474,19 +504,22 @@ export type Database = {
           onboarding_completed_at: string | null
           onboarding_step: number
           paused_at: string | null
-          pending_pleas_count: number
+          pending_requests_count: number
           place_id: number | null
-          pleas_cap: number
-          pleas_closed_manual: boolean
-          pleas_open: boolean
           pseudo: string | null
           referral_code: string
           referred_by: string | null
+          requests_cap: number
+          requests_closed_manual: boolean
+          requests_open: boolean
+          role: Database["public"]["Enums"]["member_role"] | null
+          role_changed_at: string | null
           seek_age_max: number
           seek_age_min: number
           seeking_genders: Database["public"]["Enums"]["gender"][]
           suspended_until: string | null
           updated_at: string
+          visit_motive: string | null
           zone_id: number | null
         }
         Insert: {
@@ -510,19 +543,22 @@ export type Database = {
           onboarding_completed_at?: string | null
           onboarding_step?: number
           paused_at?: string | null
-          pending_pleas_count?: number
+          pending_requests_count?: number
           place_id?: number | null
-          pleas_cap?: number
-          pleas_closed_manual?: boolean
-          pleas_open?: boolean
           pseudo?: string | null
           referral_code?: string
           referred_by?: string | null
+          requests_cap?: number
+          requests_closed_manual?: boolean
+          requests_open?: boolean
+          role?: Database["public"]["Enums"]["member_role"] | null
+          role_changed_at?: string | null
           seek_age_max?: number
           seek_age_min?: number
           seeking_genders?: Database["public"]["Enums"]["gender"][]
           suspended_until?: string | null
           updated_at?: string
+          visit_motive?: string | null
           zone_id?: number | null
         }
         Update: {
@@ -546,19 +582,22 @@ export type Database = {
           onboarding_completed_at?: string | null
           onboarding_step?: number
           paused_at?: string | null
-          pending_pleas_count?: number
+          pending_requests_count?: number
           place_id?: number | null
-          pleas_cap?: number
-          pleas_closed_manual?: boolean
-          pleas_open?: boolean
           pseudo?: string | null
           referral_code?: string
           referred_by?: string | null
+          requests_cap?: number
+          requests_closed_manual?: boolean
+          requests_open?: boolean
+          role?: Database["public"]["Enums"]["member_role"] | null
+          role_changed_at?: string | null
           seek_age_max?: number
           seek_age_min?: number
           seeking_genders?: Database["public"]["Enums"]["gender"][]
           suspended_until?: string | null
           updated_at?: string
+          visit_motive?: string | null
           zone_id?: number | null
         }
         Relationships: [
@@ -618,6 +657,10 @@ export type Database = {
       ban_email_hash: { Args: { p_email: string }; Returns: string }
       claim_referral: { Args: { p_code: string }; Returns: boolean }
       complete_onboarding: { Args: never; Returns: undefined }
+      counts_for_zone: {
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: boolean
+      }
       flag_keywords: {
         Args: {
           p_source: Database["public"]["Enums"]["flag_source"]
@@ -631,10 +674,6 @@ export type Database = {
       hook_before_user_created: { Args: { event: Json }; Returns: Json }
       immutable_unaccent: { Args: { value: string }; Returns: string }
       is_admin: { Args: never; Returns: boolean }
-      is_complete_fiche: {
-        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
-        Returns: boolean
-      }
       mask_contacts: { Args: { value: string }; Returns: string }
       new_referral_code: { Args: never; Returns: string }
       normalize_text: { Args: { value: string }; Returns: string }
@@ -649,16 +688,25 @@ export type Database = {
           postal_codes: string[]
         }[]
       }
+      set_onboarding_role: {
+        Args: { p_role: Database["public"]["Enums"]["member_role"] }
+        Returns: undefined
+      }
+      touch_activity: { Args: never; Returns: undefined }
       zone_for: { Args: { p_lat: number; p_lng: number }; Returns: number }
       zone_progress: {
         Args: never
         Returns: {
-          complete_profiles: number
+          bad_boys: number
+          bad_girls: number
+          bads: number
           launch_mode: Database["public"]["Enums"]["launch_mode"]
+          min_bad_boys: number
+          min_bad_girls: number
+          ready: boolean
           status: Database["public"]["Enums"]["zone_status"]
-          threshold_profiles: number
-          threshold_women_pct: number
-          women_pct: number
+          threshold_bads: number
+          visitors_waiting: number
           zone_id: number
           zone_name: string
         }[]
@@ -667,7 +715,7 @@ export type Database = {
     Enums: {
       consent_type: "terms" | "privacy" | "age_18" | "art9_seeking"
       email_kind:
-        | "plea_digest"
+        | "request_digest"
         | "date_accepted"
         | "zone_opened"
         | "profile_dormant"
@@ -675,16 +723,21 @@ export type Database = {
         | "moderation_decision"
         | "onboarding_reminder"
         | "admin_photos_pending"
+        | "visit_reminder"
+        | "permit_granted"
+        | "admin_zone_ready"
       flag_source:
         | "pseudo"
         | "bio"
+        | "visit_motive"
         | "casier"
         | "tribe_detail"
-        | "plea"
+        | "visit_request"
         | "message"
         | "date_venue"
       gender: "man" | "woman" | "non_binary" | "other"
       launch_mode: "zones" | "open"
+      member_role: "bad" | "visitor"
       moderation_status: "pending" | "approved" | "rejected"
       report_category:
         | "fake_profile"
@@ -825,7 +878,7 @@ export const Constants = {
     Enums: {
       consent_type: ["terms", "privacy", "age_18", "art9_seeking"],
       email_kind: [
-        "plea_digest",
+        "request_digest",
         "date_accepted",
         "zone_opened",
         "profile_dormant",
@@ -833,18 +886,23 @@ export const Constants = {
         "moderation_decision",
         "onboarding_reminder",
         "admin_photos_pending",
+        "visit_reminder",
+        "permit_granted",
+        "admin_zone_ready",
       ],
       flag_source: [
         "pseudo",
         "bio",
+        "visit_motive",
         "casier",
         "tribe_detail",
-        "plea",
+        "visit_request",
         "message",
         "date_venue",
       ],
       gender: ["man", "woman", "non_binary", "other"],
       launch_mode: ["zones", "open"],
+      member_role: ["bad", "visitor"],
       moderation_status: ["pending", "approved", "rejected"],
       report_category: [
         "fake_profile",

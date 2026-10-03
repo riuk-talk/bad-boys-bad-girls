@@ -397,16 +397,11 @@ v1 (82 assertions en base, Phase 2) **+ [v2]** :
 - `push_subscriptions` : un membre ne lit que les siens ; endpoint non HTTPS refusé.
 - Test générique : toute table du schéma `public` a `rowsecurity = true`.
 
-## 6. Migration depuis la v1 en base (Phase 2b)
+## 6. Migration depuis la v1 en base (Phase 2b) — ✅ appliquée le 2026-10-03
 
-Base de dev **vide de membres** (vérifié le 2026-10-03) : les renommages sont sans risque de perte de données.
-1. `create extension btree_gist` (schéma `extensions`).
-2. `create type member_role` ; `alter table profiles add role, role_changed_at, visit_motive` ; check `onboarding_step` 0–7 ; check de fin d'onboarding étendu ; index `profiles_discovery` recréé avec `role` ; privilèges de colonnes mis à jour (`visit_motive`, colonnes `requests_*` renommées, `role` exclu).
-3. `alter table profiles rename column pleas_cap to requests_cap` (+ 3 autres renommages) ; trigger `profiles_before_write` adapté.
-4. `alter table casier_charges rename column false_index to true_index` (table vide).
-5. `launch_zones` : `drop threshold_profiles`, `add threshold_bads default 50, threshold_men_pct default 20, ready_at`.
-6. `app_settings` : renommage `hearing_max_appearances_per_day` → `promenade_max_appearances_per_day` ; ajout `zone_bad_active_days`.
-7. Enums en base : `alter type email_kind rename value 'plea_digest' to 'request_digest'` + `add value` ; `alter type flag_source rename value 'plea' to 'visit_request'` + `add value 'visit_motive'`.
-8. `notification_preferences` : renommage `email_plea_digest` → `email_request_digest` + nouvelles colonnes.
-9. Fonctions remplacées : `complete_onboarding`, `is_complete_fiche` → `counts_for_zone`, `zone_progress` (nouvelle signature : `drop` puis `create`), + `set_onboarding_role`.
-10. Types TypeScript régénérés (`supabase gen types`), tests pgTAP de la Phase 2 mis à jour puis relancés.
+Base de dev vide de membres : les renommages n'ont rien fait perdre. Trois fichiers :
+1. `20261003135928_concept_v2_types.sql` : `btree_gist`, type `member_role`, enums `email_kind` (`plea_digest` → `request_digest`, + `visit_reminder`, `permit_granted`, `admin_zone_ready`) et `flag_source` (`plea` → `visit_request`, + `visit_motive`).
+2. `20261003145706_concept_v2_roles_and_zones.sql` (ajouts seulement) : `profiles.role`, `role_changed_at`, `visit_motive` ; `pleas_*` → `requests_*` ; contrainte de fin d'onboarding par rôle ; triggers (masquage du Motif, une seule photo pour un Visiteur) ; `app_settings` (`promenade_max_appearances_per_day`, `zone_bad_active_days`) ; `launch_zones` (`threshold_bads`, `threshold_men_pct`, `ready_at`) ; `notification_preferences` v2 ; `set_onboarding_role()`, `complete_onboarding()` par rôle, `touch_activity()`, `counts_for_zone()`.
+3. `20261003223804_concept_v2_recreate.sql` (suppressions puis recréations ; **appliquée à la main** dans l'éditeur SQL, absente de l'historique Supabase du projet de dev) : étapes 0–7, index `profiles_discovery` avec `role`, trigger `profiles_after_write` avec `visit_motive`, suppression de `threshold_profiles` et `is_complete_fiche()`, `zone_progress()` v2.
+
+`casier_charges` n'existait pas encore : elle sera créée en Phase 3 directement avec `true_index`.

@@ -28,7 +28,7 @@ test.describe("auth and onboarding (real Supabase)", () => {
     await page.getByLabel("E-mail").fill(email!);
     await page.getByLabel("Mot de passe", { exact: true }).fill(password!);
     await page.getByRole("button", { name: "Se connecter" }).click();
-    await page.waitForURL(/\/onboarding\/\d|\/ma-fiche|\/ville-bientot/, { waitUntil: "commit" });
+    await page.waitForURL(/\/onboarding\/\d|\/ma-fiche|\/quartier/, { waitUntil: "commit" });
     if (!/onboarding\/1/.test(page.url())) test.skip(true, "test account already past step 1");
     const minor = new Date();
     minor.setFullYear(minor.getFullYear() - 17);
