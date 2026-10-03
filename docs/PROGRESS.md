@@ -4,9 +4,39 @@
 
 ## Phase en cours
 
-**Phase 2 — Comptes, onboarding, Fiche, photos, zones : terminée, en attente de validation** (PR `phase-2-accounts` → `main`).
+**Concept v2 intégré dans la documentation, en attente de validation du porteur (aucun code modifié).** Branche `concept-v2`.
+Prochaine étape après validation : **Phase 2b — mise à niveau du code livré** (voir `docs/PROMPT.md`).
 
-## Phase 2 — état (2026-10-02)
+## Concept v2 — intégration (2026-10-03)
+
+Source : `docs/CONCEPT-V2.md` (décision du porteur). Documents mis à jour : `docs/SPEC.md` (v7), `docs/SCHEMA.md` (v2, marqueurs [v2-modif] / [v2-nouveau] / [v2-supprimé], plan de migration §6), `docs/PROMPT.md` (plan v7 : Phases 2b à 9), `CLAUDE.md` (lexique §8).
+
+### Règles que j'ai dû préciser (marquées « proposé v7 » dans la SPEC) — à valider
+1. **Choix du rôle** : la porte de la landing présélectionne le rôle ; l'étape « Ton rôle » le confirme (le concept dit à la fois « fixé avant la création du compte » et « étape après l'identité »).
+2. **Motif de visite** dans une colonne séparée (`visit_motive`, 280 caractères, obligatoire pour un Visiteur) : la présentation d'un Bad (500) n'est pas perdue quand il change de rôle.
+3. **Visiteur = 1 photo affichée** ; les autres photos d'un ex-Bad sont gardées en réserve.
+4. **Seuil d'ouverture** : planchers absolus (50 Bads, ≥ 20 bad girls, ≥ 10 bad boys), Bads comptés = visibles, pas en pause, connectés < 30 jours ; un quartier ouvert ne se referme pas tout seul.
+5. **Raccourcis** : « Ce soir » 21 h, « Demain soir » 21 h, « Ce week-end » samedi 18 h.
+6. **Annulation < 2 h avant** = absence de celui qui annule.
+7. **Délai de 48 h** pour que le Bad repropose des créneaux (après « Aucun ne me va » ou un report), sinon classement.
+8. **Présence** = ouverture de l'écran de visite (horodatage de la base).
+9. **Casier vierge** = aucun signalement retenu ni sanction depuis 12 mois.
+10. **Bonne conduite** = compte > 30 jours, ≥ 3 visites honorées, aucun signalement retenu, aucune absence ni annulation tardive depuis 30 jours.
+11. **Notifications push au contenu neutre** (ni pseudo, ni photo, ni texte de message).
+12. **Greffe minimum en Phase 3** (validation des photos) au lieu de la Phase 6 : sans photo validée, rien n'est testable de bout en bout.
+13. **Fin de visite sans Libération** : le choix de chacun reste secret (l'autre voit seulement « Affaire classée »).
+
+### Risques relevés
+- **Le Bad déduit le résultat du pari** (il sait lequel est vrai) : il pourrait refuser les mauvais parieurs. Règle du porteur conservée ; métrique de contrôle ajoutée.
+- **Capacité de la Promenade** : 50 Bads × 10 sorties = 500 places par soir → 100 Visiteurs servis à 5 Bads au seuil d'ouverture. Au-delà, des Visiteurs en reçoivent moins.
+- **Realtime gratuit** : le plafond de connexions simultanées (à vérifier, de l'ordre de 200) correspond à environ 100 visites simultanées, concentrées à 21 h. Repli par interrogation prévu.
+- **iPhone** : Web Push seulement si le site est installé sur l'écran d'accueil (iOS 16.4+, à vérifier). Une partie des rappels n'arrivera pas.
+- **Web Push** transite par les services des navigateurs (Google, Mozilla, Apple), contenu chiffré : à mentionner dans la politique de confidentialité.
+- **Tâche chaque minute** (`pg_cron`) : charge faible, à surveiller sur l'offre gratuite.
+
+## Phase 2 — Comptes, onboarding, Fiche, photos, zones : ✅ validée et fusionnée (PR #5)
+
+### État (2026-10-02)
 
 ### Découpage annoncé
 2a extensions · 2b schéma + RLS · 2c tests pgTAP · 2d stockage photos · 2e authentification · 2f onboarding · 2g photos · 2h Ma Fiche, ville, parrainage · 2i premier admin + seed.
@@ -171,6 +201,7 @@ Toutes les dépendances sont figées à la version exacte dans `package.json` (p
 
 ## Questions ouvertes
 
+- **Concept v2** : les 13 règles « proposé v7 » ci-dessus, et les questions posées dans le message de présentation de l'impact.
 - Nom de domaine : `[DOMAINE]` en attendant.
 - Numéros d'urgence de la page Conseils sécurité (17, 112, 3919) à faire vérifier avant publication.
 
