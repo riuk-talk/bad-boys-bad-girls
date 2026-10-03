@@ -49,34 +49,16 @@
   "Landing": {
     "heroEyebrow": "Dating site · 18+",
     "heroTitle": "For those who've always been called too much.",
-    "heroLead": "Too blunt, too tattooed, too free, too nocturnal, too whole. Here, nobody swipes on photos: you plead your case on their Record.",
-    "heroCtaPrimary": "Open my file",
-    "heroCtaSecondary": "I already have a file",
+    "heroLead": "Too blunt, too tattooed, too free, too nocturnal, too whole. Here, nobody scrolls through photos: you ask for a visit to the Visiting Room by betting on a Record.",
     "logoAlt": "Bad Boys & Bad Girls, Guilty of charm…",
-    "stepsTitle": "Three steps, zero small talk",
-    "steps": [
-      {
-        "title": "Fill in your File",
-        "body": "Your photo against the height chart, your distinctive marks, and your Record: three confessions about your life, one of them false."
-      },
-      {
-        "title": "Plead",
-        "body": "Like a File? Guess which confession is false and write your opening line. The first message always has substance."
-      },
-      {
-        "title": "The Visiting Room",
-        "body": "If they release you, the conversation opens. And when it clicks, suggest a Getaway: a real date."
-      }
-    ],
     "judgeTitle": "Here, you're the judge.",
-    "judgeBody": "Received a plea? You alone decide. Release or dismiss the case, close your Visiting Room whenever you want, set how many pending pleas you accept. Nobody writes to you without your say-so.",
+    "judgeBody": "You're a Bad? You receive visit requests and you alone decide. Accept or dismiss the case, set how many pending requests you accept. Nobody writes to you without your say-so.",
     "judgePoints": [
-      "Nobody can message you until you've released them.",
-      "You set your plea limit: beyond it, your Visiting Room shows as full.",
-      "Dismissing a case sends a neutral, respectful message. Never silence, never a justification."
+      "Nobody can message you until you've accepted their visit.",
+      "You set your request limit: beyond it, your Visiting Room shows as full.",
+      "Dismissing a case sends a neutral, respectful message. Never silence, never a justification.",
+      "After the visit, nothing continues unless you both agree."
     ],
-    "hearingTitle": "The Evening Hearing",
-    "hearingBody": "Every night at 9 pm, five Files picked for you. Not an endless catalogue: a careful selection.",
     "charterTitle": "Bad, not toxic.",
     "charterLead": "“Bad” is an attitude and a style. Never an excuse.",
     "charterPoints": [
@@ -85,16 +67,54 @@
       "Freedom, yes. Control, no."
     ],
     "charterLink": "Read the Charter",
-    "citiesTitle": "Opening city by city",
-    "citiesBody": "An empty dating site is useless. We're starting with the Var and the Alpes-Maritimes, and each city opens once it has enough members. Anywhere else, sign up: you'll follow your city's progress and can bring your accomplices in.",
     "finalTitle": "Guilty of charm…",
-    "finalBody": "Your file is waiting."
+    "finalBody": "Your Case File or your Permit is waiting.",
+    "door_bad": "I'm a Bad",
+    "doorHint_bad": "I put myself on show and receive visits",
+    "door_visitor": "I'm here to visit",
+    "doorHint_visitor": "I'm looking for a bad boy or a bad girl",
+    "heroCtaLogin": "I already have an account",
+    "stepsTitle_bad": "Bad side",
+    "steps_bad": [
+      {
+        "title": "Open your Case File",
+        "body": "Your photo against the height chart, your distinctive marks, and your Record: three confessions about your life, one true and two false."
+      },
+      {
+        "title": "You're the judge",
+        "body": "Visitors ask to see you. You read their Visiting Permit and decide: visit accepted or case dismissed."
+      },
+      {
+        "title": "The Visiting Room",
+        "body": "You offer your Visiting Hours. Thirty minutes live; if you both want to carry on, that's the Release."
+      }
+    ],
+    "stepsTitle_visitor": "Visitor side",
+    "steps_visitor": [
+      {
+        "title": "Get your Permit",
+        "body": "An approved photo, your Reason for visiting, ten questions. Three minutes, and the Registry issues your Permit."
+      },
+      {
+        "title": "Ask for a visit",
+        "body": "Like a Record? Bet on the confession you think is true, add a note if you want. Your bet stays secret until the visit."
+      },
+      {
+        "title": "The Visiting Room",
+        "body": "Pick a slot. The result of your bet opens the conversation: nobody has to write the first message."
+      }
+    ],
+    "stepsTitle": "Two roles, zero small talk",
+    "promenadeTitle": "The Yard",
+    "promenadeBody": "Every night at 9 pm, five Bads step out into the yard for each Visitor. Not an endless catalogue: a careful selection.",
+    "quartersTitle": "Bads first",
+    "quartersBody": "An empty dating site is useless. We open block by block, starting with the Var and the Alpes-Maritimes: the cells open to Bads first, Visitors get their Permit and wait, and the block opens to visits once it has enough Bads. Anywhere else, sign up: you'll follow your block's progress."
   },
   "Auth": {
     "loginTitle": "Log in",
     "loginLead": "Good to see you again.",
-    "signupTitle": "Open my file",
-    "signupLead": "An email, a password, and you're in. Less than five minutes to fill in your File afterwards.",
+    "signupTitle": "Create my account",
+    "signupLead": "An email, a password, and you're in. You'll then choose your role: Bad or Visitor.",
     "forgotTitle": "Forgot password",
     "forgotLead": "Enter your email: we'll send you a link to choose a new one.",
     "email": "Email",
@@ -140,7 +160,11 @@
     "submitNewPassword": "Save",
     "passwordUpdated": "Password changed.",
     "signOut": "Log out",
-    "submitting": "Sending…"
+    "submitting": "Sending…",
+    "signupTitle_bad": "Open my Case File",
+    "signupLead_bad": "An email, a password, and you're in. Less than five minutes to fill in your Case File afterwards.",
+    "signupTitle_visitor": "Get my Visiting Permit",
+    "signupLead_visitor": "An email, a password, and you're in. Three minutes for your Permit afterwards."
   },
   "Errors": {
     "notFoundStamp": "Case dismissed",
@@ -156,7 +180,10 @@
       "released": "RELEASED",
       "releasedAria": "Released",
       "dismissed": "CASE DISMISSED",
-      "reglo": "LEGIT"
+      "goodConduct": "GOOD CONDUCT",
+      "cleanRecord": "CLEAN RECORD",
+      "permit": "PERMIT ISSUED",
+      "visitAccepted": "VISIT ACCEPTED"
     },
     "fiche": {
       "caseNumber": "File {number}",
@@ -179,13 +206,25 @@
     "empty": {
       "defaultTitle": "Nothing yet",
       "defaultBody": "Come back a bit later."
+    },
+    "permit": {
+      "title": "Visiting Permit",
+      "number": "No. {number}",
+      "age": "{age} years old",
+      "photoAlt": "Photo of {pseudo}",
+      "motive": "Reason for visiting",
+      "distinctiveSigns": "Distinctive marks",
+      "cleanRecord": "Clean record",
+      "visitsHonored": "Visits honoured: {honored}/{due}",
+      "newVisitor": "New visitor",
+      "pending": "Pending at the Registry"
     }
   },
   "Design": {
     "title": "Design system",
     "lead": "Component showcase (development only).",
     "buttons": "Buttons",
-    "primary": "Plead",
+    "primary": "Ask for a visit",
     "secondary": "View File",
     "ghost": "Cancel",
     "danger": "Block",
@@ -198,7 +237,7 @@
     "cities": ["Toulon", "Nice", "Hyères"],
     "consent": "I am 18 or older",
     "badges": "Badges",
-    "badgeOpen": "Open to pleas",
+    "badgeOpen": "Open to visits",
     "badgeFull": "Visiting Room full",
     "stamps": "Stamps",
     "replay": "Replay animation",
@@ -218,11 +257,11 @@
     "emptyBody": "Widen your filters, or bring your accomplices in.",
     "modal": "Modal",
     "openModal": "Open modal",
-    "modalTitle": "Plead to Sample",
+    "modalTitle": "Ask Sample for a visit",
     "modalBody": "Modal demo content.",
     "toast": "Notification",
     "showToast": "Show a notification",
-    "toastMessage": "Plea sent."
+    "toastMessage": "Request left at the Visiting Room."
   },
   "Charter": {
     "title": "“Bad, not toxic” Charter",
@@ -232,7 +271,7 @@
         "title": "What we value",
         "items": [
           "Honesty: say what you think, respectfully.",
-          "Boldness: dare to plead, dare to suggest a Getaway.",
+          "Boldness: dare to ask for a visit, dare to suggest a Getaway.",
           "Humour: a funny Record beats ten compliments.",
           "Freedom: everyone decides who they meet and at what pace."
         ]
@@ -259,7 +298,7 @@
       {
         "title": "Here, you're the judge",
         "items": [
-          "The person receiving a plea decides alone. “Case dismissed” is a complete answer: it's not up for debate.",
+          "The Bad who receives a visit request decides alone. “Case dismissed” is a complete answer: it's not up for debate. After a visit, nothing continues unless you both agree.",
           "You can block or report anyone, at any time. Blocking is immediate and works both ways.",
           "Every report is read by a human. You receive the reasons for the decision."
         ]
@@ -320,7 +359,7 @@
           "title": "2. Access",
           "paragraphs": [
             "The service is reserved for people aged 18 or over. Your date of birth is checked at sign-up and an age attestation is required.",
-            "The service is free. No paid option lets you plead more or be more visible."
+            "The service is free. No paid option lets you send more visit requests or be more visible."
           ]
         },
         {
@@ -333,14 +372,14 @@
         {
           "title": "4. Forbidden content",
           "paragraphs": [
-            "Forbidden: references to real crimes, violence, drugs or minors; explicit sexual content; personal contact details in your File, Record or pleas; scams; harassment; impersonation.",
+            "Forbidden: references to real crimes, violence, drugs or minors; explicit sexual content; personal contact details in your File, Visiting Permit, Record or visit requests; scams; harassment; impersonation.",
             "Conduct rules are detailed in the “Bad, not toxic” Charter, which is part of these terms."
           ]
         },
         {
           "title": "5. Moderation and sanctions",
           "paragraphs": [
-            "Any member can report a File, a photo, a Record or a message. Reports are handled by a human.",
+            "Every member can report a File, a Visiting Permit, a photo, a Record, a visit request or a message. Reports are handled by a human.",
             "Depending on severity: warning, suspension or ban. Every decision is reasoned and sent to the person concerned and to the reporter.",
             "[TO COMPLETE: appeal process against a moderation decision]"
           ]
@@ -376,8 +415,8 @@
         {
           "title": "2. What we collect, and why",
           "paragraphs": [
-            "We only collect what serves a visible feature: your email (login and notifications), your date of birth (age check; only your age is shown), your nickname, gender, city (never an address or GPS location), photos, Record, questionnaire answers, pleas and messages.",
-            "The genders you are looking for may reveal your sexual orientation: this is sensitive data. It is only used to show you compatible Files, with your explicit consent, which you can withdraw at any time (as the service can then no longer work, account deletion will be offered)."
+            "We only collect what serves a visible feature: your email (login and notifications), your date of birth (age check; only your age is shown), your nickname, gender, role (Bad or Visitor), city (never an address or GPS location), photos, Record or Reason for visiting, questionnaire answers, visit requests, visits and messages.",
+            "The genders you are looking for may reveal your sexual orientation: this is sensitive data. It is only used to show you compatible profiles, with your explicit consent, which you can withdraw at any time (as the service can then no longer work, account deletion will be offered)."
           ]
         },
         {
@@ -388,9 +427,10 @@
           ]
         },
         {
-          "title": "4. Cookies",
+          "title": "4. Cookies and notifications",
           "paragraphs": [
-            "We only use strictly necessary cookies (login session, language). No advertising trackers, no external analytics: that's why no consent banner is shown."
+            "We only use strictly necessary cookies (login session, language). No advertising trackers, no external analytics: that's why no consent banner is shown.",
+            "Notifications: if you accept them, we send you notifications (visit reminders, new requests) through your browser's notification service (Google for Chrome and Android, Mozilla for Firefox, Apple for Safari). Their content is encrypted and deliberately neutral: never a nickname, a photo or a message. These services only see that a notification is being sent to you. You can turn them off at any time in your settings or your browser's."
           ]
         },
         {
@@ -449,21 +489,23 @@
   "App": {
     "navLabel": "My space",
     "myFiche": "My File",
-    "myCity": "My city",
-    "signOut": "Log out"
+    "signOut": "Log out",
+    "myPermit": "My Permit",
+    "myQuarter": "My block"
   },
   "Onboarding": {
-    "title": "Open your file",
     "progress": "Step {current} of {total}",
     "savedNotice": "Every step is saved: you can stop and come back later.",
-    "deletionNotice": "An unfinished file is deleted automatically after 30 days.",
     "next": "Continue",
     "finish": "Finish",
     "steps": {
-      "1": "Age and rules",
-      "2": "Your identity",
-      "3": "Who you're looking for",
-      "4": "Your photo"
+      "age": "Age and rules",
+      "identity": "Your identity",
+      "role": "Your role",
+      "seeking_bad": "Who you're looking for",
+      "seeking_visitor": "Who you'd like to visit",
+      "photo": "Your photo",
+      "motive": "Your Reason for visiting"
     },
     "age": {
       "lead": "Bad Boys & Bad Girls is for adults only. Your date of birth is only used to check that: only your age will be shown.",
@@ -490,14 +532,16 @@
       "cityResults": "{count, plural, =0 {No result} one {# result} other {# results}}"
     },
     "seeking": {
-      "lead": "Who would you like to meet?",
-      "genders": "I'm looking for",
       "gendersHint": "Several choices possible.",
       "ageMin": "Minimum age",
       "ageMax": "Maximum age",
       "consentTitle": "Your consent",
-      "consentText": "The genders you are looking for may reveal your sexual orientation. We only use them to show you compatible Files, nothing else. You can withdraw this consent at any time; as the service cannot work without it, account deletion will then be offered.",
-      "consent": "I agree that the genders I'm looking for are used to show me compatible Files."
+      "consentText": "The genders you are looking for may reveal your sexual orientation. We only use them to show you compatible profiles, nothing else. You can withdraw this consent at any time; as the service cannot work without it, account deletion will then be offered.",
+      "consent": "I agree that the genders I'm looking for are used to show me compatible profiles.",
+      "lead_bad": "Who would you like to receive in the Visiting Room?",
+      "lead_visitor": "Who would you like to visit?",
+      "genders_bad": "I'm looking for",
+      "genders_visitor": "I'd like to visit"
     },
     "photo": {
       "lead": "Your ID photo, against the height chart. Your face must be visible.",
@@ -524,27 +568,45 @@
       "photoTooSmall": "The photo is too small (at least 400 pixels per side).",
       "photoTooLarge": "The photo is too heavy.",
       "generic": "Something went wrong. Try again.",
-      "configuration": "The service isn't configured yet. Come back a bit later."
+      "configuration": "The service isn't configured yet. Come back a bit later.",
+      "roleRequired": "Choose your role to continue.",
+      "motiveRequired": "Write your Reason for visiting to continue.",
+      "motiveTooLong": "280 characters max."
+    },
+    "title": "Your sign-up",
+    "title_bad": "Your Case File",
+    "title_visitor": "Your Visiting Permit",
+    "deletionNotice_bad": "An unfinished Case File is deleted automatically after 30 days.",
+    "deletionNotice_visitor": "An unfinished Permit is deleted automatically after 30 days.",
+    "role": {
+      "lead": "Two roles, two ways to meet. You can change later (at most once a week).",
+      "legend": "Your role",
+      "bad": {
+        "title": "I'm a Bad",
+        "body": "I put myself on show with my Record. Visitors ask me for a visit, and I decide."
+      },
+      "visitor": {
+        "title": "I'm here to visit",
+        "body": "I browse the Bads of my block and ask for visits, with a bet on their Record."
+      },
+      "change": "A Bad doesn't ask for visits; a Visitor doesn't receive any."
+    },
+    "motive": {
+      "lead": "What Bads will read before accepting your visit. Be yourself, in a few lines.",
+      "label": "Reason for visiting",
+      "hint": "{max} characters max. Emails, phone numbers and links are hidden."
     }
   },
   "MyFiche": {
-    "title": "My File",
     "previewTitle": "As others will see it",
-    "status": {
-      "pending": "Your ID photo is being checked (goal: under 12 hours). Until then, nobody can see your File.",
-      "approved": "Your ID photo is approved.",
-      "rejected": "Your ID photo was refused: {reason}. Replace it so your File can be shown.",
-      "missing": "Add your ID photo so your File can be approved."
-    },
     "gaugeLabel": "File {percent}% complete",
-    "gaugeHint": "The more complete your File, the more people want to plead.",
+    "gaugeHint": "The more complete your File, the more Visitors want to ask for a visit.",
     "criteria": {
       "mainPhoto": "Approved ID photo",
       "bio": "A bio of at least 40 characters",
       "signs": "At least one distinctive mark",
       "morePhotos": "Three photos or more"
     },
-    "editTitle": "Complete my File",
     "bio": "Bio",
     "bioHint": "500 characters max. Emails, phone numbers and links are hidden.",
     "signsTitle": "Distinctive marks",
@@ -552,8 +614,6 @@
     "signDetail": "Detail for “{sign}”",
     "save": "Save",
     "saved": "File saved.",
-    "photosTitle": "My photos",
-    "photosHint": "1 to 6 photos. The first one is your ID photo.",
     "addPhoto": "Add a photo",
     "photoAdded": "Photo sent: it will be visible once checked.",
     "photoStatus": {
@@ -564,24 +624,56 @@
     "photoAlt": "Your photo no. {number}",
     "errors": {
       "tooManySigns": "5 distinctive marks max.",
-      "generic": "Something went wrong. Try again."
-    }
+      "generic": "Something went wrong. Try again.",
+      "motiveRequired": "Your Reason for visiting can't be empty."
+    },
+    "titleShort": "My File",
+    "title_bad": "My File",
+    "title_visitor": "My Visiting Permit",
+    "status_bad": {
+      "pending": "Your ID photo is with the Registry (goal: under 12 hours). Until then, nobody can see your File.",
+      "approved": "Your ID photo is approved by the Registry.",
+      "rejected": "Your ID photo was refused: {reason}. Replace it so your File can be shown.",
+      "missing": "Add your ID photo so your File can be approved."
+    },
+    "status_visitor": {
+      "pending": "Permit pending at the Registry (goal: under 12 hours). You'll be able to browse Bads once your block opens; visit requests wait for your Permit.",
+      "approved": "Permit issued by the Registry: you can ask for visits in your block as soon as it opens.",
+      "rejected": "Your photo was refused: {reason}. Replace it to get your Permit.",
+      "missing": "Add your photo to get your Permit."
+    },
+    "editTitle_bad": "Complete my File",
+    "editTitle_visitor": "Edit my Permit",
+    "photosTitle_bad": "My photos",
+    "photosTitle_visitor": "My photo",
+    "photosHint_bad": "1 to 6 photos. The first one is your ID photo.",
+    "photosHint_visitor": "A single photo on the Permit, face visible. Replacing it sends it back to the Registry.",
+    "replacePhoto": "Replace my photo",
+    "motive": "Reason for visiting",
+    "motiveHint": "{max} characters max. Emails, phone numbers and links are hidden."
   },
-  "City": {
-    "title": "Your city opens soon",
-    "lead": "We open city by city, so that everyone finds people from the very first evening.",
-    "zone": "Zone: {name}",
-    "profilesGauge": "{count} complete Files out of {threshold}",
-    "womenGauge": "{pct}% women (goal: {threshold}%)",
-    "noZone": "Your city isn't part of a launch zone yet. Your File is ready: we'll let you know as soon as a zone includes it.",
-    "open": "Your city is open!",
-    "openLink": "See my File",
+  "Quarter": {
     "referralTitle": "Bring your accomplices in",
-    "referralLead": "The more Files your city has, the sooner it opens. Share your link:",
     "referralLabel": "Your referral link",
     "copy": "Copy link",
     "copied": "Link copied.",
     "recruited": "{count, plural, =0 {No accomplice recruited yet} one {# accomplice recruited} other {# accomplices recruited}}",
-    "noReward": "No reward: just more people, sooner."
+    "noReward": "No reward: just more people, sooner.",
+    "title": "Your block opens soon",
+    "lead_bad": "The cells open to Bads first. Your File will be visible as soon as your block opens to visits.",
+    "lead_visitor": "Bads move in first. Your Permit is ready: you'll be able to ask for visits as soon as your block opens.",
+    "zone": "Block: {name}",
+    "badsGauge": "{count} Bads out of {threshold}",
+    "girlsGauge": "{count} bad girls out of {threshold} minimum",
+    "boysGauge": "{count} bad boys out of {threshold} minimum",
+    "visitorsWaiting": "{count, plural, =0 {No Visitor has a Permit here yet} one {# Visitor already has a Permit and is waiting} other {# Visitors already have a Permit and are waiting}}",
+    "ready": "The block has enough Bads: opening to visits is coming.",
+    "gaugeHint": "Only Bads with an approved photo, not on pause and active in the last 30 days count.",
+    "noZone_bad": "Your city isn't part of a launch block yet. Your Case File is ready: we'll let you know as soon as a block includes it.",
+    "noZone_visitor": "Your city isn't part of a launch block yet. Your Permit is ready: we'll let you know as soon as a block includes it.",
+    "open": "Your block is open!",
+    "openLink_bad": "See my File",
+    "openLink_visitor": "See my Permit",
+    "referralLead": "The more Bads your block has, the sooner it opens. Share your link:"
   }
 }

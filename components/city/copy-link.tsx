@@ -8,7 +8,7 @@ import { controlClasses } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 
 export function CopyLink({ url }: { url: string }) {
-  const t = useTranslations("City");
+  const t = useTranslations("Quarter");
   const toast = useToast();
   const id = useId();
   return (

@@ -2,6 +2,7 @@
 
 import { MailCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { Role } from "@/lib/onboarding/config";
 import {
   startTransition,
   useActionState,
@@ -191,7 +192,7 @@ const richLink = (href: string) =>
     );
   };
 
-export function SignupForm({ referralCode }: { referralCode?: string }) {
+export function SignupForm({ referralCode, role }: { referralCode?: string; role?: Role }) {
   const t = useTranslations("Auth");
   const id = useId();
   const form = useAuthForm(signUpAction, () => signupSchema);
@@ -202,6 +203,7 @@ export function SignupForm({ referralCode }: { referralCode?: string }) {
   return (
     <form noValidate onSubmit={form.onSubmit} className="space-y-5">
       {referralCode ? <input type="hidden" name="ref" value={referralCode} /> : null}
+      {role ? <input type="hidden" name="role" value={role} /> : null}
       <Input
         id={`${id}-email`}
         name="email"

@@ -24,6 +24,14 @@ describe("messages", () => {
     const text = JSON.stringify(fr).toLowerCase();
     expect(text).not.toMatch(/\b(match|matchs|swipe|swiper|like|likes)\b/);
   });
+
+  it("no UI string uses vocabulary retired in SPEC v7 (Plaidoirie, Réglo, Audience du soir)", () => {
+    // "audience" stays allowed in the privacy policy ("mesure d'audience" = web analytics).
+    const text = JSON.stringify(fr).toLowerCase().replaceAll("mesure d'audience", "");
+    expect(text).not.toMatch(/plaid|plaide[rz]?\b|réglo|audience|coupables tous les deux/);
+    const english = JSON.stringify(en).toLowerCase();
+    expect(english).not.toMatch(/\bplead|\bpleas?\b|\blegit\b|evening hearing|both guilty/);
+  });
 });
 
 const ROOT = join(__dirname, "..", "..");

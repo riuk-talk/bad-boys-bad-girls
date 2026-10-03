@@ -82,7 +82,10 @@ export function DesignShowcase() {
           <Stamp kind="guilty" animated />
           <Stamp kind="released" animated tilt={6} />
           <Stamp kind="dismissed" animated tilt={-4} />
-          <Stamp kind="reglo" animated tilt={12} />
+          <Stamp kind="goodConduct" animated tilt={12} />
+          <Stamp kind="permit" animated tilt={-6} />
+          <Stamp kind="visitAccepted" animated tilt={5} />
+          <Stamp kind="cleanRecord" animated tilt={-10} />
         </div>
         <Button variant="secondary" onClick={() => setStampKey((key) => key + 1)}>
           {t("replay")}
@@ -100,7 +103,7 @@ export function DesignShowcase() {
             signs: t.raw("ficheSampleSigns") as string[],
             charges: t.raw("ficheSampleCharges") as string[],
             bio: t("ficheSampleBio"),
-            isReglo: true,
+            goodConduct: true,
           }}
         />
       </Block>

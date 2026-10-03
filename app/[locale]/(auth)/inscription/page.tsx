@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SignupForm } from "@/components/auth/auth-forms";
+import { parseRole } from "@/lib/onboarding/config";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ parrain?: string }>;
+  searchParams: Promise<{ parrain?: string; role?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -15,14 +16,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { parrain } = await searchParams;
+  const { parrain, role: door } = await searchParams;
+  const role = parseRole(door) ?? undefined;
   setRequestLocale(locale);
   const t = await getTranslations("Auth");
   return (
     <>
-      <h1 className="font-display text-4xl tracking-wide uppercase">{t("signupTitle")}</h1>
-      <p className="text-cream/85 mt-2 mb-8">{t("signupLead")}</p>
-      <SignupForm referralCode={parrain?.slice(0, 8)} />
+      <h1 className="font-display text-4xl tracking-wide uppercase">
+        {role ? t(`signupTitle_${role}`) : t("signupTitle")}
+      </h1>
+      <p className="text-cream/85 mt-2 mb-8">{role ? t(`signupLead_${role}`) : t("signupLead")}</p>
+      <SignupForm referralCode={parrain?.slice(0, 8)} role={role} />
     </>
   );
 }

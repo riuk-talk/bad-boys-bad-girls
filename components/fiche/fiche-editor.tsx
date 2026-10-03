@@ -7,12 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { submitWithoutReset } from "@/lib/forms/submit";
 import { useToast } from "@/components/ui/toast";
+import { VISIT_MOTIVE_MAX, type Role } from "@/lib/onboarding/config";
 
 type Tribe = { id: number; label: string };
-type Props = { bio: string; tribes: Tribe[]; selected: Record<number, string | null> };
+/** Bad: présentation (500); Visitor: Motif de visite (280, required), SPEC v7 §5 and §5 bis. */
+type Props = {
+  role: Role;
+  text: string;
+  tribes: Tribe[];
+  selected: Record<number, string | null>;
+};
 const IDLE: FicheState = { status: "idle" };
 
-export function FicheEditor({ bio, tribes, selected }: Props) {
+export function FicheEditor({ role, text, tribes, selected }: Props) {
   const t = useTranslations("MyFiche");
   const toast = useToast();
   const [state, action, pending] = useActionState(updateFicheAction, IDLE);
@@ -28,14 +35,26 @@ export function FicheEditor({ bio, tribes, selected }: Props) {
 
   return (
     <form onSubmit={submitWithoutReset(action)} className="space-y-6">
-      <Textarea
-        id="bio"
-        name="bio"
-        maxLength={500}
-        defaultValue={bio}
-        label={t("bio")}
-        hint={t("bioHint")}
-      />
+      {role === "visitor" ? (
+        <Textarea
+          id="motive"
+          name="motive"
+          required
+          maxLength={VISIT_MOTIVE_MAX}
+          defaultValue={text}
+          label={t("motive")}
+          hint={t("motiveHint", { max: VISIT_MOTIVE_MAX })}
+        />
+      ) : (
+        <Textarea
+          id="bio"
+          name="bio"
+          maxLength={500}
+          defaultValue={text}
+          label={t("bio")}
+          hint={t("bioHint")}
+        />
+      )}
       <fieldset className="space-y-3" aria-describedby="signs-hint">
         <legend className="text-sm font-semibold">{t("signsTitle")}</legend>
         <p id="signs-hint" className="text-grey text-sm">

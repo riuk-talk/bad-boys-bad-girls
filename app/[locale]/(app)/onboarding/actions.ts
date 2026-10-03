@@ -6,13 +6,23 @@ import { redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
 import { PhotoError, processPhoto } from "@/lib/image/process";
 import { truncateIp } from "@/lib/net/ip";
-import { CONSENT_VERSIONS, ONBOARDING_STEPS, stepPath } from "@/lib/onboarding/config";
+import {
+  CONSENT_VERSIONS,
+  lastStep,
+  onboardingSteps,
+  parseRole,
+  ROLE_STEP,
+  stepPath,
+  type Role,
+} from "@/lib/onboarding/config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
 import {
   ageStepSchema,
   firstErrors,
   identityStepSchema,
+  motiveStepSchema,
+  roleStepSchema,
   seekingStepSchema,
 } from "@/lib/validation/onboarding";
 
@@ -51,13 +61,26 @@ async function recordConsents(userId: string, types: ConsentType[]): Promise<boo
   return !error;
 }
 
-async function currentStep(member: Awaited<ReturnType<typeof requireMember>>): Promise<number> {
+type Member = Awaited<ReturnType<typeof requireMember>>;
+
+async function progress(member: Member): Promise<{ step: number; role: Role | null }> {
   const { data } = await member.supabase
     .from("profiles")
-    .select("onboarding_step")
+    .select("onboarding_step, role")
     .eq("id", member.userId)
     .maybeSingle();
-  return data?.onboarding_step ?? 0;
+  return { step: data?.onboarding_step ?? 0, role: parseRole(data?.role) };
+}
+
+async function currentStep(member: Member): Promise<number> {
+  return (await progress(member)).step;
+}
+
+/** Ends the onboarding (checks in SQL) and sends the member to their zone page or their Fiche. */
+async function finishOnboarding(member: Member): Promise<StepState> {
+  const { error } = await member.supabase.rpc("complete_onboarding");
+  if (error) return failMessage("generic");
+  return goTo(await destinationAfterOnboarding(member));
 }
 
 export async function saveAgeStep(_state: StepState, form: FormData): Promise<StepState> {
@@ -120,7 +143,17 @@ export async function saveIdentityStep(_state: StepState, form: FormData): Promi
     if (error.code === "23503") return fail({ placeId: "cityRequired" });
     return failMessage("generic");
   }
-  return goTo(stepPath(3));
+  return goTo(stepPath(ROLE_STEP));
+}
+
+/** Step 3, "Ton rôle" (SPEC v7 §2 bis): the role column is protected, only this function writes it. */
+export async function saveRoleStep(_state: StepState, form: FormData): Promise<StepState> {
+  const parsed = roleStepSchema.safeParse({ role: form.get("role") ?? undefined });
+  if (!parsed.success) return fail(firstErrors(parsed.error));
+  const member = await requireMember();
+  const { error } = await member.supabase.rpc("set_onboarding_role", { p_role: parsed.data.role });
+  if (error) return failMessage("generic");
+  return goTo(stepPath(ROLE_STEP + 1));
 }
 
 export async function saveSeekingStep(_state: StepState, form: FormData): Promise<StepState> {
@@ -140,19 +173,19 @@ export async function saveSeekingStep(_state: StepState, form: FormData): Promis
       seeking_genders: parsed.data.genders,
       seek_age_min: parsed.data.ageMin,
       seek_age_max: parsed.data.ageMax,
-      onboarding_step: Math.max(step, 3),
+      onboarding_step: Math.max(step, ROLE_STEP + 1),
     })
     .eq("id", member.userId);
   if (error) return failMessage("generic");
-  return goTo(stepPath(4));
+  return goTo(stepPath(ROLE_STEP + 2));
 }
 
-/** Where a member lands once onboarding is done: their city's waitlist page or their Fiche. */
-async function destinationAfterOnboarding(member: Awaited<ReturnType<typeof requireMember>>) {
+/** Where a member lands once onboarding is done: their zone's waitlist page or their Fiche/Permis. */
+async function destinationAfterOnboarding(member: Member) {
   const { data } = await member.supabase.rpc("zone_progress");
   const zone = data?.[0];
   const open = zone && (zone.launch_mode === "open" || zone.status === "open");
-  return open ? "/ma-fiche" : "/ville-bientot";
+  return open ? "/ma-fiche" : "/quartier";
 }
 
 const PHOTO_ERRORS: Record<PhotoError["reason"], string> = {
@@ -164,7 +197,8 @@ const PHOTO_ERRORS: Record<PhotoError["reason"], string> = {
 
 /**
  * Stores a photo in the private pending bucket after server-side re-encoding (no metadata).
- * The main photo (position 0) of the onboarding also finishes the onboarding.
+ * During the onboarding, the main photo (position 0) moves to the next step, or finishes the
+ * onboarding when it is the role's last step (Bad, Phase 2b).
  */
 export async function uploadPhotoAction(_state: StepState, form: FormData): Promise<StepState> {
   const file = form.get("photo");
@@ -219,17 +253,35 @@ export async function uploadPhotoAction(_state: StepState, form: FormData): Prom
     return failMessage("generic");
   }
 
-  if (form.get("finish") === "1") {
-    const step = await currentStep(member);
+  if (form.get("onboarding") === "1") {
+    const { step, role } = await progress(member);
+    if (!role) return goTo(stepPath(ROLE_STEP));
+    const photoStep = onboardingSteps(role).indexOf("photo") + 1;
     await member.supabase
       .from("profiles")
-      .update({ onboarding_step: Math.max(step, ONBOARDING_STEPS) })
+      .update({ onboarding_step: Math.max(step, photoStep) })
       .eq("id", member.userId);
-    const { error: completeError } = await member.supabase.rpc("complete_onboarding");
-    if (completeError) return failMessage("generic");
-    return goTo(await destinationAfterOnboarding(member));
+    if (photoStep === lastStep(role)) return finishOnboarding(member);
+    return goTo(stepPath(photoStep + 1));
   }
   return { status: "done" };
+}
+
+/** Visitor's last step in Phase 2b: the Motif de visite (masked and keyword-checked in SQL). */
+export async function saveMotiveStep(_state: StepState, form: FormData): Promise<StepState> {
+  const parsed = motiveStepSchema.safeParse({ motive: form.get("motive") ?? undefined });
+  if (!parsed.success) return fail(firstErrors(parsed.error));
+  const member = await requireMember();
+  const { step, role } = await progress(member);
+  if (role !== "visitor") return failMessage("generic");
+  const motiveStep = onboardingSteps(role).indexOf("motive") + 1;
+  const { error } = await member.supabase
+    .from("profiles")
+    .update({ visit_motive: parsed.data.motive, onboarding_step: Math.max(step, motiveStep) })
+    .eq("id", member.userId);
+  if (error) return failMessage("generic");
+  if (motiveStep === lastStep(role)) return finishOnboarding(member);
+  return goTo(stepPath(motiveStep + 1));
 }
 
 export type PlaceOption = { id: number; name: string; postalCode: string };

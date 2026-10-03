@@ -6,6 +6,8 @@ import { useActionState, useEffect, useId, useState, type ReactNode } from "reac
 import {
   saveAgeStep,
   saveIdentityStep,
+  saveMotiveStep,
+  saveRoleStep,
   saveSeekingStep,
   uploadPhotoAction,
   type StepState,
@@ -14,8 +16,10 @@ import { Toise } from "@/components/brand/toise";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 import { submitWithoutReset } from "@/lib/forms/submit";
+import { ROLES, VISIT_MOTIVE_MAX, type Role } from "@/lib/onboarding/config";
 import { Constants, type Database } from "@/lib/supabase/database.types";
 import { CityPicker } from "./city-picker";
 
@@ -168,11 +172,57 @@ export function IdentityStepForm({
   );
 }
 
+/** Step 3, "Ton rôle": preselected by the door chosen on the landing (SPEC v7 §2 bis). */
+export function RoleStepForm({ role }: { role: Role | null }) {
+  const t = useTranslations("Onboarding");
+  const step = useStep(saveRoleStep, "role-form");
+  const roleError = step.error("role");
+  return (
+    <form id="role-form" onSubmit={step.onSubmit} noValidate className="space-y-5">
+      <p className="text-cream/85">{t("role.lead")}</p>
+      <fieldset aria-describedby={roleError ? "role-error" : undefined} className="space-y-3">
+        <legend className="sr-only">{t("role.legend")}</legend>
+        {ROLES.map((value) => (
+          <label
+            key={value}
+            className="border-line has-checked:border-gold has-checked:bg-gold/10 has-focus-visible:outline-gold flex cursor-pointer gap-3 rounded-[var(--radius-card)] border p-4 has-focus-visible:outline-3"
+          >
+            <input
+              type="radio"
+              name="role"
+              value={value}
+              data-field="role"
+              defaultChecked={role === value}
+              className="accent-gold mt-1 size-5 shrink-0"
+            />
+            <span>
+              <span className="font-display block text-2xl tracking-wide uppercase">
+                {t(`role.${value}.title`)}
+              </span>
+              <span className="text-cream/85 mt-1 block">{t(`role.${value}.body`)}</span>
+            </span>
+          </label>
+        ))}
+        {roleError ? (
+          <p id="role-error" role="alert" className="text-red-bright text-sm font-medium">
+            {roleError}
+          </p>
+        ) : null}
+      </fieldset>
+      <p className="text-grey text-sm">{t("role.change")}</p>
+      <Submit pending={step.pending}>{t("next")}</Submit>
+      <Alert message={step.message} />
+    </form>
+  );
+}
+
 export function SeekingStepForm({
+  role,
   genders,
   ageMin,
   ageMax,
 }: {
+  role: Role;
   genders: Gender[];
   ageMin: number;
   ageMax: number;
@@ -182,12 +232,12 @@ export function SeekingStepForm({
   const gendersError = step.error("genders");
   return (
     <form id="seeking-form" onSubmit={step.onSubmit} noValidate className="space-y-5">
-      <p className="text-cream/85">{t("seeking.lead")}</p>
+      <p className="text-cream/85">{t(`seeking.lead_${role}`)}</p>
       <fieldset
         aria-describedby={gendersError ? "genders-error" : "genders-hint"}
         className="space-y-2"
       >
-        <legend className="text-sm font-semibold">{t("seeking.genders")}</legend>
+        <legend className="text-sm font-semibold">{t(`seeking.genders_${role}`)}</legend>
         <p id="genders-hint" className="text-grey text-sm">
           {t("seeking.gendersHint")}
         </p>
@@ -260,7 +310,7 @@ export function SeekingStepForm({
   );
 }
 
-export function PhotoStepForm() {
+export function PhotoStepForm({ last }: { last: boolean }) {
   const t = useTranslations("Onboarding");
   const id = useId();
   const step = useStep(uploadPhotoAction, "photo-form");
@@ -304,7 +354,7 @@ export function PhotoStepForm() {
         form.delete("file");
         if (photoBlob) form.set("photo", photoBlob, "photo");
         form.set("position", "0");
-        form.set("finish", "1");
+        form.set("onboarding", "1");
       })}
       className="space-y-5"
     >
@@ -352,7 +402,30 @@ export function PhotoStepForm() {
           </p>
         ) : null}
       </div>
-      <Submit pending={step.pending || preparing}>{t("finish")}</Submit>
+      <Submit pending={step.pending || preparing}>{last ? t("finish") : t("next")}</Submit>
+      <Alert message={step.message} />
+    </form>
+  );
+}
+
+/** Visitor: the Motif de visite, read by the Bads before they accept a visit (SPEC v7 §5 bis). */
+export function MotiveStepForm({ motive }: { motive: string }) {
+  const t = useTranslations("Onboarding");
+  const step = useStep(saveMotiveStep, "motive-form");
+  return (
+    <form id="motive-form" onSubmit={step.onSubmit} noValidate className="space-y-5">
+      <p className="text-cream/85">{t("motive.lead")}</p>
+      <Textarea
+        id="motive"
+        name="motive"
+        rows={5}
+        maxLength={VISIT_MOTIVE_MAX}
+        defaultValue={motive}
+        label={t("motive.label")}
+        hint={t("motive.hint", { max: VISIT_MOTIVE_MAX })}
+        error={step.error("motive")}
+      />
+      <Submit pending={step.pending}>{t("finish")}</Submit>
       <Alert message={step.message} />
     </form>
   );

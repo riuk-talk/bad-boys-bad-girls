@@ -1,4 +1,5 @@
 import * as z from "zod/mini";
+import { ROLES, VISIT_MOTIVE_MAX } from "@/lib/onboarding/config";
 import { Constants } from "@/lib/supabase/database.types";
 
 /** Error messages are i18n keys under "Onboarding.errors". */
@@ -11,7 +12,10 @@ export type OnboardingErrorKey =
   | "cityRequired"
   | "gendersRequired"
   | "ageRange"
-  | "consentRequired";
+  | "consentRequired"
+  | "roleRequired"
+  | "motiveRequired"
+  | "motiveTooLong";
 
 /** Age in full years on `today` (same rule as public.age_years). */
 export function ageOn(birthdate: string, today = new Date()): number {
@@ -69,6 +73,21 @@ export const seekingStepSchema = z
   .check(
     z.refine((value) => value.ageMin <= value.ageMax, { message: "ageRange", path: ["ageMax"] }),
   );
+
+export const roleStepSchema = z.object({
+  role: z.enum(ROLES, "roleRequired"),
+});
+
+/** Motif de visite: required for a Visitor, 280 characters (SPEC v7 §5 bis). */
+export const motiveStepSchema = z.object({
+  motive: z
+    .string("motiveRequired")
+    .check(
+      z.trim(),
+      z.minLength(1, "motiveRequired"),
+      z.maxLength(VISIT_MOTIVE_MAX, "motiveTooLong"),
+    ),
+});
 
 export function firstErrors(error: z.core.$ZodError): Partial<Record<string, OnboardingErrorKey>> {
   const result: Partial<Record<string, OnboardingErrorKey>> = {};
