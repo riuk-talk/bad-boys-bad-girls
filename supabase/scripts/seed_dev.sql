@@ -28,11 +28,14 @@ begin
 
   for i in 1..seed_count loop
     uid := gen_random_uuid();
+    -- Token columns must be '' (not NULL): Supabase Auth fails to read users otherwise.
     insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-      raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+      raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token,
+      email_change_token_new, email_change, email_change_token_current, phone_change, phone_change_token,
+      reauthentication_token)
     values ('00000000-0000-0000-0000-000000000000', uid, 'authenticated', 'authenticated',
       'seed-' || i || '-' || substr(uid::text, 1, 8) || '@seed.invalid', '', now(), '{"seed":true}', '{}',
-      now() - (random() * interval '120 days'), now());
+      now() - (random() * interval '120 days'), now(), '', '', '', '', '', '', '', '');
     insert into public.profiles (id, pseudo, birthdate, gender, seeking_genders, seek_age_min, seek_age_max,
       place_id, bio, onboarding_step, onboarding_completed_at, is_seed, last_seen_at)
     values (uid, 'Seed ' || i, (current_date - (18 + floor(random() * 40))::int * interval '1 year'
