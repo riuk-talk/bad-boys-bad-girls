@@ -12,7 +12,7 @@
     "signature": "Coupables de charme…",
     "promise": "Bad, pas toxique.",
     "forWho": "Pour ceux qu'on a toujours trouvés trop.",
-    "judge": "Ici, c'est toi le juge.",
+    "judge": "Ici, rien ne se fait sans ton accord.",
     "signup": "S'inscrire",
     "login": "Se connecter",
     "backHome": "Retour à l'accueil",
@@ -51,13 +51,14 @@
     "heroTitle": "Pour ceux qu'on a toujours trouvés trop.",
     "heroLead": "Ici, les Bads se mettent en vitrine et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.",
     "logoAlt": "Bad Boys & Bad Girls, Coupables de charme…",
-    "judgeTitle": "Ici, c'est toi le juge.",
-    "judgeBody": "Côté Bad, c'est toi qui décides. Chaque demande de visite arrive avec le Permis du Visiteur : tu acceptes ou tu classes l'affaire.",
+    "judgeTitle": "Ici, rien ne se fait sans ton accord.",
+    "judgeBody": "Bad ou Visiteur, chacun garde la main. Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand.",
     "judgePoints": [
-      "Personne ne te parle au Parloir sans que tu aies accepté sa visite.",
-      "Tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet.",
-      "Classer une affaire envoie un message neutre et respectueux : jamais de silence, jamais de justification.",
-      "Après une visite, rien ne continue sans l'accord des deux."
+      "Côté Bad : personne ne te parle au Parloir sans que tu aies accepté sa visite.",
+      "Côté Bad : tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet.",
+      "Côté Visiteur : tu choisis l'heure de ta visite parmi celles proposées.",
+      "Pour tous : classer une affaire envoie un message neutre et respectueux. Jamais de silence, jamais de justification.",
+      "Pour tous : après une visite, rien ne continue sans l'accord des deux."
     ],
     "charterTitle": "Bad, pas toxique.",
     "charterLead": "« Bad », c'est une attitude et une esthétique. Jamais une excuse.",
@@ -81,8 +82,8 @@
         "body": "Ta photo sur la toise, tes signes distinctifs et ton Casier : trois chefs d'accusation, un vrai et deux faux."
       },
       {
-        "title": "Le Juge, c'est toi",
-        "body": "Les Visiteurs demandent une visite. Tu lis leur Permis et tu décides : visite acceptée ou affaire classée."
+        "title": "Le Courrier",
+        "body": "Les demandes de visite arrivent dans ton Courrier. Tu lis le Permis du Visiteur et tu décides : visite acceptée ou affaire classée."
       },
       {
         "title": "Le Parloir",
@@ -295,9 +296,9 @@
         ]
       },
       {
-        "title": "Ici, c'est toi le juge",
+        "title": "Ici, rien ne se fait sans ton accord",
         "items": [
-          "Le Bad qui reçoit une demande de visite décide seul·e. « Affaire classée » est une réponse complète : elle ne se discute pas. Après une visite, rien ne continue sans l'accord des deux.",
+          "Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand. « Affaire classée » est une réponse complète : elle ne se discute pas. Après une visite, rien ne continue sans l'accord des deux.",
           "Tu peux bloquer ou signaler n'importe qui, à tout moment. Le blocage est immédiat et dans les deux sens.",
           "Chaque signalement est lu par un humain. Tu reçois l'exposé des motifs de la décision."
         ]

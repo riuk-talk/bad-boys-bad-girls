@@ -2,6 +2,7 @@
 
 > v6.1 : décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). v6.2 : décisions de Phase 1 (`docs/PHASE1-DECISIONS.md`).
 > **v7 : changement de concept décidé par le porteur (`docs/CONCEPT-V2.md`, 2026-10-03)** : deux rôles (Bad et Visiteur), demande de parloir à la place de la Plaidoirie, heures de visite, Parloir limité aux 30 minutes de la visite puis Permis permanent, Web Push dans le MVP, Promenade, lancement « les Bads d'abord ».
+> **v7.2 (2026-10-04, `docs/LANDING-COPY.md` correction n° 2, `docs/CONCEPT-V2.md` §9)** : « Le Juge, c'est toi » devient **« Le Courrier »** ; le principe « Ici, c'est toi le juge » devient **« Ici, rien ne se fait sans ton accord. »** ; plus aucun « juge » dans l'interface.
 > **v7.1 (2026-10-04, `docs/LANDING-COPY.md`)** : le Parloir est le lieu où l'on discute ; « Libération » est retiré, après une visite réussie **le Permis devient permanent** (tampon « PERMIS PERMANENT ») ; « aveux » est retiré, on dit toujours « chefs d'accusation » ; le texte de la landing est celui de LANDING-COPY.md, mot pour mot.
 > **v7 validée** par le porteur (`docs/CONCEPT-V2-DECISIONS.md`) : les 13 règles marquées **(validé v7)** sont celles que j'avais dû préciser ; la **règle 14** (pari entièrement secret jusqu'à la visite, y compris pour le Bad) est intégrée en §7 et §8. Nom de domaine provisoire : `[DOMAINE]`.
 
@@ -16,7 +17,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - « Bad » = une attitude et une esthétique, **jamais** de la toxicité. Le site valorise la franchise et l'audace, et sanctionne le harcèlement, le contrôle et le mépris.
 - **Deux rôles** (§2) : le **Bad** se met en vitrine et reçoit des demandes de visite ; le **Visiteur** demande des visites. Les deux genres peuvent prendre les deux rôles.
 - Différenciation : pas de swipe, pas de match. On demande une **visite au Parloir** en pariant sur le **Casier** d'un Bad. Le pari sert de brise-glace : personne n'a à écrire le premier message.
-- **Ici, c'est toi le juge.** Le Bad qui reçoit une demande décide seul·e : accepter la visite ou classer l'affaire. Après la visite, chacun·e décide de prolonger ou non ; rien ne continue sans l'accord des deux. L'écran du Bad s'appelle « Le Juge, c'est toi ».
+- **Ici, rien ne se fait sans ton accord.** (vrai pour les deux rôles) Le Bad choisit qui il reçoit : il accepte la visite ou classe l'affaire. Le Visiteur choisit qui il vient voir et quand (créneau parmi ceux proposés). Après la visite, rien ne continue sans l'accord des deux. L'écran où le Bad reçoit les demandes s'appelle « Le Courrier ». Le mot « juge » n'apparaît nulle part dans l'interface.
 - Univers **cartoon** : tampons, toise, dossiers, parloir, promenade. Jamais d'imagerie carcérale réaliste (barreaux, menottes, uniformes, miradors).
 - **Interdit absolu** : aucun nom, logo, blason, écusson ou insigne d'une administration réelle (Police nationale, Gendarmerie, Ministère de la Justice, Administration pénitentiaire, Marianne, drapeaux officiels, polices étrangères). Les tampons et en-têtes utilisent uniquement la marque « Bad Boys & Bad Girls ».
 - L'univers habille le **décor** (en-têtes, tampons, fonds), jamais les **échanges** : dans le Parloir, les messages affichent les pseudos, pas des rôles (« Détenu », « Visiteur »).
@@ -44,7 +45,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 | Sélection du soir | La Promenade |
 | Liste complète des Bads | La Découverte |
 | Pari + mot du Visiteur | La Demande de parloir |
-| Écran du Bad qui décide | Le Juge, c'est toi |
+| Demandes de visite reçues par le Bad | Le Courrier |
 | Refus | Affaire classée |
 | Créneaux proposés | Les Heures de visite |
 | Lieu où l'on discute (visite de 30 min, puis sans horaire avec le Permis permanent) | Le Parloir |
@@ -96,7 +97,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 ## 4. Parcours utilisateur
 
-1. **Landing** (seule page indexée) : logo 3D, promesse, **deux portes** (« Je suis Bad » / « Je viens visiter »), le déroulé en étapes de chaque côté (Bad : Ouvre ton Dossier → Le Juge, c'est toi → Le Parloir ; Visiteur : Prends ton Permis → Demande une visite → Le Parloir), la Charte « Bad, pas toxique », Se connecter. Aucune fausse donnée, aucun faux témoignage.
+1. **Landing** (seule page indexée) : logo 3D, promesse, **deux portes** (« Je suis Bad » / « Je viens visiter »), le déroulé en étapes de chaque côté (Bad : Ouvre ton Dossier → Le Courrier → Le Parloir ; Visiteur : Prends ton Permis → Demande une visite → Le Parloir), la Charte « Bad, pas toxique », Se connecter. Aucune fausse donnée, aucun faux témoignage.
 2. **Inscription** (e-mail + mot de passe, ou lien magique) + Turnstile. La porte choisie est transmise (`?role=bad|visitor`) et enregistrée dans les métadonnées du compte, comme le parrainage.
 3. **Onboarding court** (sauvegarde et reprise à chaque étape) :
 
@@ -115,7 +116,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
    - **Bad** : sa Fiche n'apparaît nulle part avant la validation. Il peut compléter sa Fiche (présentation, signes distinctifs, autres photos, 10 questions restantes) ; une jauge « Fiche complète à X % » l'y encourage.
    - **Visiteur** : **il regarde tout de suite, il demande après validation**. Dès l'onboarding terminé (dans un quartier ouvert), il voit la Promenade et la Découverte ; le bouton « Demander une visite » affiche « Permis en attente au Greffe » tant que la photo n'est pas validée. Validation → tampon **« PERMIS DÉLIVRÉ »**.
 5. **Visiteur** : Promenade (ou Découverte) → Fiche d'un Bad → **Demande de parloir** → le Bad accepte et propose des **Heures de visite** → le Visiteur choisit un créneau → **la visite au Parloir** (30 min) → **Permis permanent** ou Affaire classée.
-6. **Bad** : écran d'accueil = **« Le Juge, c'est toi »** (demandes reçues) + **« Mes visites »** (agenda des visites programmées, compte à rebours).
+6. **Bad** : écran d'accueil = **« Le Courrier »** (demandes reçues) + **« Mes visites »** (agenda des visites programmées, compte à rebours).
 7. **Espace du Visiteur** : La Promenade, La Découverte, **Mes demandes** (en attente / acceptée → choisir un créneau / classée), **Mes visites** (agenda + compte à rebours), **Devenir Bad** (paramètres).
 
 ## 5. La Fiche du Bad
@@ -187,7 +188,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - **Anti-arnaque** : 3 mots identiques ou quasi identiques envoyés par le même compte sur 7 jours → signalement automatique à la modération (sans blocage). Normalisation : minuscules, sans accents ni ponctuation, espaces réduits, coordonnées masquées ; « quasi identique » = similarité trigramme ≥ 0,9 ; mots vides exclus.
 - **Supprimé en v7** : les plaidoiries croisées et « Coupables tous les deux » (sans objet : un Bad ne demande pas de visite).
 
-### Réception (« Le Juge, c'est toi »)
+### Réception (« Le Courrier »)
 - Pour décider, le Bad voit **uniquement** : le Permis du Visiteur (photo, pseudo, âge, ville, Motif de visite, signes distinctifs, Casier vierge, Visites honorées), l'indice de complicité, les 3 points communs du QCM et le mot éventuel. **Jamais le chef choisi ni le résultat du pari** (règle 14) : aucune fonction ne les lui renvoie avant le début de la visite.
   - Le tableau de santé suit le taux d'acceptation selon pari juste/faux : il **doit être neutre** ; un écart significatif est traité comme un **bug de fuite d'information**.
 - **Accepter la visite** → tampon « VISITE ACCEPTÉE », puis proposition des Heures de visite (§7 bis), dans le même écran.
@@ -255,7 +256,7 @@ Calcul pour A et B sur les questions répondues par les deux (minimum 5, sinon �
 - `indice = sqrt(satisfaction(A→B) × satisfaction(B→A))`, affiché en % arrondi.
 - Une question « indispensable » non satisfaite dans un sens plafonne l'indice à 50 %.
 - Implémenté en SQL (`complicity_score`) **et** en TypeScript pur (`lib/complicity.ts`), avec tests de parité.
-- **Calculé à la volée** entre un Visiteur et des Bads (Promenade, Découverte, Fiche) ou entre un Bad et un Visiteur qui lui a écrit (« Le Juge, c'est toi »). Pas de table de cache au MVP.
+- **Calculé à la volée** entre un Visiteur et des Bads (Promenade, Découverte, Fiche) ou entre un Bad et un Visiteur qui lui a écrit (« Le Courrier »). Pas de table de cache au MVP.
 
 ### Les 20 questions (seed FR ; traductions EN à produire)
 Les **10 premières** sont demandées à l'inscription (le socle, pour les deux rôles) ; les 10 suivantes sont proposées ensuite.
@@ -413,7 +414,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 
 ## 18. Performance (critères d'acceptation)
 
-- Lighthouse mobile ≥ 90 en Performance, Accessibilité et Bonnes pratiques sur la landing, la Promenade, la Découverte, une Fiche, « Le Juge, c'est toi » et le Parloir.
+- Lighthouse mobile ≥ 90 en Performance, Accessibilité et Bonnes pratiques sur la landing, la Promenade, la Découverte, une Fiche, « Le Courrier » et le Parloir.
 - **Core Web Vitals réels (75e centile)** : LCP < 2,5 s, CLS < 0,1, INP < 200 ms. Ce critère fait foi. En laboratoire, tolérance LCP ≤ 3,5 s.
 - Mesure réelle (Phase 8) : bibliothèque `web-vitals` + route interne, données **agrégées** sans identifiant ni IP, conservées 90 jours.
 - JS initial de la landing < 130 Ko compressé **en Brotli**. Le service worker n'est **pas** enregistré sur la landing.

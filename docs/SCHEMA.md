@@ -183,8 +183,8 @@ RLS : **S/I/U** propriétaire **et** `role = 'bad'` pour I/U (un Visiteur ne cr�
 | `conversation_id` | `uuid` → `conversations` | créée au premier créneau choisi |
 | `created_at`, `decided_at`, `closed_at` | `timestamptz` | |
 
-Index : unique partiel (`visitor_id`, `bad_id`) `where status in ('pending','accepted')` (1 en cours par couple) ; (`bad_id`, `status`, `created_at`) (« Le Juge, c'est toi ») ; (`visitor_id`, `created_at desc`) (5/24 h + anti-arnaque 7 j) ; (`status`, `created_at`) partiel `pending` (expiration 7 j) ; (`choose_deadline`) partiel et (`repropose_deadline`) partiel (tâche minute) ; (`visitor_id`, `bad_id`, `closed_at desc`) (délai de 30 j).
-RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_progress'` pour ce couple, **aucune** fonction ne renvoie `guess_correct` ni `true_index` (à personne), et `get_judge_inbox()` (Bad) ne renvoie ni `guessed_index` ni le texte du chef choisi. `get_my_requests()` (Visiteur) peut lui rappeler le chef qu'il a lui-même choisi, jamais le résultat. Chef choisi et résultat sont révélés ensemble par le message système inséré par `run_visit_ticks` au début de la visite.
+Index : unique partiel (`visitor_id`, `bad_id`) `where status in ('pending','accepted')` (1 en cours par couple) ; (`bad_id`, `status`, `created_at`) (« Le Courrier ») ; (`visitor_id`, `created_at desc`) (5/24 h + anti-arnaque 7 j) ; (`status`, `created_at`) partiel `pending` (expiration 7 j) ; (`choose_deadline`) partiel et (`repropose_deadline`) partiel (tâche minute) ; (`visitor_id`, `bad_id`, `closed_at desc`) (délai de 30 j).
+RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_progress'` pour ce couple, **aucune** fonction ne renvoie `guess_correct` ni `true_index` (à personne), et `get_mailbox()` (Bad) ne renvoie ni `guessed_index` ni le texte du chef choisi. `get_my_requests()` (Visiteur) peut lui rappeler le chef qu'il a lui-même choisi, jamais le résultat. Chef choisi et résultat sont révélés ensemble par le message système inséré par `run_visit_ticks` au début de la visite.
 
 #### `visit_slots` — les Heures de visite — **[v2-nouveau]**
 | Colonne | Type | Contraintes |
@@ -199,7 +199,7 @@ RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_prog
 
 Contraintes : 2 ou 3 créneaux par (`request_id`, `round`) (contrôlé dans `decide_visit_request` / `propose_slots`) ; pas de chevauchement entre les créneaux d'un même tour.
 Index : (`request_id`, `round`).
-RLS : **S** — (via `get_my_requests()` / `get_judge_inbox()`) ; **I/U/D** —.
+RLS : **S** — (via `get_my_requests()` / `get_mailbox()`) ; **I/U/D** —.
 
 #### `visits` — la visite au Parloir — **[v2-nouveau]**
 | Colonne | Type | Contraintes |
@@ -331,7 +331,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `choose_visit_end(visit_id, prolong)` | participant, avant `end_choice_deadline` ; si les deux `prolong` → Permis permanent (`visit_requests.status = released`, conversation `open`) | **[v2-nouveau]** |
 | `get_visit(visit_id)` | état, compte à rebours, présence de l'autre (oui/non), mon choix de fin (jamais celui de l'autre) | **[v2-nouveau]** |
 | `get_my_requests()` | Visiteur : ses demandes, créneaux, statut (sans le résultat du pari avant la visite) | **[v2-nouveau]** |
-| `get_judge_inbox()` | Bad : demandes reçues avec Permis, indice, 3 points communs, mot — **ni chef choisi ni résultat** (règle 14) | **[v2-nouveau]** |
+| `get_mailbox()` | Bad : demandes reçues avec Permis, indice, 3 points communs, mot — **ni chef choisi ni résultat** (règle 14) | **[v2-nouveau]** |
 | `get_my_visits()` | les deux rôles : agenda | **[v2-nouveau]** |
 | `set_requests_settings(cap, closed_manual)` | Bad | **[v2]** (remplace `set_pleas_settings`) |
 | `block_user(target)` / `unblock_user(target)` | voir 2.3 | **[v2-modif]** |

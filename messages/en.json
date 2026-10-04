@@ -12,7 +12,7 @@
     "signature": "Guilty of charm…",
     "promise": "Bad, not toxic.",
     "forWho": "For those who've always been called too much.",
-    "judge": "Here, you're the judge.",
+    "judge": "Here, nothing happens without your consent.",
     "signup": "Sign up",
     "login": "Log in",
     "backHome": "Back to home",
@@ -51,13 +51,14 @@
     "heroTitle": "For those who've always been called too much.",
     "heroLead": "Here, Bads put themselves on show and Visitors come to see them. No photos to scroll through endlessly: a visit request, a bet on a Record, and a real conversation in the Visiting Room.",
     "logoAlt": "Bad Boys & Bad Girls, Guilty of charm…",
-    "judgeTitle": "Here, you're the judge.",
-    "judgeBody": "On the Bad side, you decide. Every visit request comes with the Visitor's Permit: you accept or you dismiss the case.",
+    "judgeTitle": "Here, nothing happens without your consent.",
+    "judgeBody": "Bad or Visitor, everyone stays in control. The Bad chooses who to receive, the Visitor chooses who to visit and when.",
     "judgePoints": [
-      "Nobody talks to you in the Visiting Room unless you've accepted their visit.",
-      "You choose how many requests can wait for you at the same time. Beyond that, your Visiting Room shows as full.",
-      "Dismissing a case sends a neutral, respectful message: never silence, never a justification.",
-      "After a visit, nothing continues unless you both agree."
+      "Bad side: nobody talks to you in the Visiting Room unless you've accepted their visit.",
+      "Bad side: you choose how many requests can wait for you at the same time. Beyond that, your Visiting Room shows as full.",
+      "Visitor side: you choose the time of your visit from the ones offered.",
+      "For everyone: dismissing a case sends a neutral, respectful message. Never silence, never a justification.",
+      "For everyone: after a visit, nothing continues unless you both agree."
     ],
     "charterTitle": "Bad, not toxic.",
     "charterLead": "“Bad” is an attitude and a style. Never an excuse.",
@@ -81,8 +82,8 @@
         "body": "Your photo against the height chart, your distinctive marks and your Record: three charges, one true and two false."
       },
       {
-        "title": "You're the judge",
-        "body": "Visitors ask for a visit. You read their Permit and decide: visit accepted or case dismissed."
+        "title": "The Mailbox",
+        "body": "Visit requests land in your Mailbox. You read the Visitor's Permit and decide: visit accepted or case dismissed."
       },
       {
         "title": "The Visiting Room",
@@ -295,9 +296,9 @@
         ]
       },
       {
-        "title": "Here, you're the judge",
+        "title": "Here, nothing happens without your consent",
         "items": [
-          "The Bad who receives a visit request decides alone. “Case dismissed” is a complete answer: it's not up for debate. After a visit, nothing continues unless you both agree.",
+          "The Bad chooses who to receive, the Visitor chooses who to visit and when. “Case dismissed” is a complete answer: it's not up for debate. After a visit, nothing continues unless you both agree.",
           "You can block or report anyone, at any time. Blocking is immediate and works both ways.",
           "Every report is read by a human. You receive the reasons for the decision."
         ]

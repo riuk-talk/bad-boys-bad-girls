@@ -28,6 +28,12 @@ Concept v2 **validé** le 2026-10-03 (`docs/CONCEPT-V2-DECISIONS.md`), documenta
 6. Tests pgTAP : pseudos de test sans chiffres et zones de test fictives, pour ne plus dépendre du hasard ni des zones de dev Toulon/Nice (2 tests étaient fragiles depuis la Phase 2).
 7. Mesures Lighthouse : lancer le serveur sur le port de `NEXT_PUBLIC_SITE_URL` (3000 en local), sinon l'audit « canonical » échoue (SEO 92) sans rapport avec le code.
 
+### Corrections de vocabulaire du porteur (2026-10-04, `docs/LANDING-COPY.md`)
+- Texte de la landing appliqué mot pour mot (fr), traduit en anglais.
+- « Libération » retiré : après une visite réussie, **le Permis devient permanent** (tampon « PERMIS PERMANENT ») ; « aveux » → « chefs d'accusation ».
+- Correction n° 2 : « Le Juge, c'est toi » → **« Le Courrier »** ; principe → **« Ici, rien ne se fait sans ton accord. »** ; icône marteau (`Gavel`) remplacée par une clé (`KeyRound`) ; `get_judge_inbox` prévu en Phase 4 renommé `get_mailbox`.
+- Le test de vocabulaire (textes affichés seulement, pas les noms de clés) refuse : match/swipe/like, Plaidoirie, Réglo, Audience, Libération, aveux, « deviner le/lequel », juge (fr) ; plead, legit, hearing, release, confession, judge (en).
+
 ### Comment tester
 1. `pnpm build && pnpm start`, ouvrir `/` : deux portes.
 2. « Je viens visiter » → `/inscription?role=visitor` (« Prendre mon Permis de visite »), créer un compte, confirmer l'e-mail.

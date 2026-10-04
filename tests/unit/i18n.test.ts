@@ -14,6 +14,14 @@ function shape(value: unknown, path = ""): string[] {
   return [path];
 }
 
+/** Every displayed string, without the keys (technical names such as "judgeTitle" may stay). */
+function values(value: unknown): string[] {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(values);
+  if (value && typeof value === "object") return Object.values(value).flatMap(values);
+  return [];
+}
+
 describe("messages", () => {
   it("fr and en have exactly the same keys", () => {
     expect(shape(en).sort()).toEqual(shape(fr).sort());
@@ -25,16 +33,19 @@ describe("messages", () => {
     expect(text).not.toMatch(/\b(match|matchs|swipe|swiper|like|likes)\b/);
   });
 
-  it("no UI string uses vocabulary retired in SPEC v7 (Plaidoirie, Réglo, Audience, Libération, aveux)", () => {
+  it("no UI string uses vocabulary retired in SPEC v7 (Plaidoirie, Réglo, Audience, Libération, aveux, juge)", () => {
     // "audience" stays allowed in the privacy policy ("mesure d'audience" = web analytics).
-    const text = JSON.stringify(fr).toLowerCase().replaceAll("mesure d'audience", "");
+    const text = values(fr).join("\n").toLowerCase().replaceAll("mesure d'audience", "");
     expect(text).not.toMatch(/plaid|plaide[rz]?\b|réglo|audience|coupables tous les deux/);
     // docs/LANDING-COPY.md: no "Libération" (the Parloir is where people talk; the Permis becomes
     // permanent) and no "aveux" (a false charge is not a confession).
     expect(text).not.toMatch(/libér|aveu|devine[rz]? (le|lequel)/);
-    const english = JSON.stringify(en).toLowerCase();
+    // Correction n° 2: the Bad is not a judge; the principle is "rien ne se fait sans ton accord".
+    expect(text).not.toMatch(/\bjuges?\b/);
+    const english = values(en).join("\n").toLowerCase();
     expect(english).not.toMatch(/\bplead|\bpleas?\b|\blegit\b|evening hearing|both guilty/);
     expect(english).not.toMatch(/releas|confession|guess which/);
+    expect(english).not.toMatch(/\bjudges?\b/);
   });
 });
 

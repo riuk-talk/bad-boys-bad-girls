@@ -2,7 +2,7 @@
 
 Site de rencontre pour les profils « bad » : tatoué·es, motards, noctambules, rebelles, francs du collier.
 Promesse de marque : **« Bad, pas toxique. »** Signature : **« Coupables de charme… »**
-Pour qui : **« Pour ceux qu'on a toujours trouvés trop. »** Principe : **« Ici, c'est toi le juge. »**
+Pour qui : **« Pour ceux qu'on a toujours trouvés trop. »** Principe : **« Ici, rien ne se fait sans ton accord. »**
 
 Ce fichier contient les règles permanentes. La spécification détaillée est dans `docs/SPEC.md` : relis les sections concernées avant chaque phase.
 Le plan de travail par phases est dans `docs/PROMPT.md`. L'état d'avancement est dans `docs/PROGRESS.md`.
@@ -60,7 +60,7 @@ Esprit : un site de rencontre **dans le même esprit que les prisons**, en style
 | Sélection du soir (5 Bads à 21 h, Visiteurs uniquement) | La Promenade | `promenade_picks` |
 | Liste complète des Bads (Visiteurs uniquement) | La Découverte | `discover_bads` |
 | Pari + mot du Visiteur | La Demande de parloir | `visit_requests` |
-| Écran du Bad qui décide | Le Juge, c'est toi | `visit_requests` (côté Bad) |
+| Demandes de visite reçues par le Bad | Le Courrier | `visit_requests` (côté Bad) |
 | Refus / fin | Affaire classée | `status = 'dismissed'` / `'closed'` |
 | Créneaux proposés | Les Heures de visite | `visit_slots` |
 | Lieu où l'on discute (visite de 30 min, puis sans horaire avec le Permis permanent) | Le Parloir | `visits`, `conversation`, `message` |
@@ -76,7 +76,7 @@ Esprit : un site de rencontre **dans le même esprit que les prisons**, en style
 | Tribus / centres d'intérêt | Signes distinctifs | `tribes` |
 | Sorties de groupe (V2) | La Virée | hors MVP |
 
-Termes **retirés** (v7) : Plaidoirie, Plaider, Libérer / Libération / LIBÉRÉ·E, aveux (on dit toujours « chefs d'accusation » : un faux n'est pas un aveu), « deviner le faux », Coupables tous les deux, Réglo, L'Audience du soir, Ta ville ouvre bientôt. « Match » reste interdit, même pour dire qu'il n'y en a pas.
+Termes **retirés** (v7) : Plaidoirie, Plaider, Libérer / Libération / LIBÉRÉ·E, aveux (on dit toujours « chefs d'accusation » : un faux n'est pas un aveu), « deviner le faux », Coupables tous les deux, « Le Juge, c'est toi » et « Ici, c'est toi le juge » (aucun « juge » dans l'interface), Réglo, L'Audience du soir, Ta ville ouvre bientôt. « Match » reste interdit, même pour dire qu'il n'y en a pas.
 Termes **interdits** dans l'UI : « match », « swipe », « like ». Aucun insigne ni nom d'administration réelle (police, gendarmerie, justice, administration pénitentiaire).
 Les **fonctions de sécurité gardent des mots simples** : Signaler, Bloquer, Conseils sécurité.
 

@@ -1,4 +1,4 @@
-import { Gavel, Moon, ScrollText } from "lucide-react";
+import { KeyRound, Moon, ScrollText } from "lucide-react";
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -136,7 +136,7 @@ export default function LandingPage({ params }: Props) {
               id="judge-title"
               className="font-display flex items-center gap-3 text-4xl tracking-wide uppercase sm:text-5xl"
             >
-              <Gavel aria-hidden="true" className="text-gold size-10 shrink-0" />
+              <KeyRound aria-hidden="true" className="text-gold size-10 shrink-0" />
               {t("judgeTitle")}
             </h2>
             <p className="mt-4 max-w-prose text-lg">{t("judgeBody")}</p>
