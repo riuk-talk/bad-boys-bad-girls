@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Accueil · Version centrée</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;600;700&family=Special+Elite&family=Yellowtail&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F2E8D5}a:hover{color:#D4A437}
+.mq{display:flex;width:max-content;animation:mq 22s linear infinite}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.neon{text-shadow:0 0 6px #FF3355,0 0 18px #FF3355,0 0 40px #E0233F;animation:flick 6s infinite}
+@keyframes flick{0%,18%,22%,62%,64%,100%{opacity:1}20%,63%{opacity:.35}}
+.gneon{text-shadow:0 0 6px #D4A437,0 0 18px #D4A437}
+.bars{background-image:repeating-linear-gradient(to right,transparent 0 22px,rgba(242,232,213,.16) 22px 26px)}
+@media (prefers-reduced-motion: reduce){.mq,.neon{animation:none}}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 2520px; background: #0A0A0C; color: #F2E8D5; font-family: 'Inter Tight', sans-serif; overflow: hidden; text-align: center">
+
+<header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #2A2A2E; text-align: left">
+<a href="#top" aria-label="Bad Boys &amp; Bad Girls, accueil" style="display: flex; align-items: center; gap: 8px; text-decoration: none">
+<span style="font-family: Anton, sans-serif; font-size: 26px; line-height: 1"><span style="display: inline-block; transform: scaleX(-1); color: #D4A437">B</span><span style="color: #E0233F">B</span></span>
+<span style="font-family: Anton, sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase">Bad Boys &amp; Bad Girls</span>
+</a>
+<a href="#login" style="font-size: 13px; font-weight: 600; min-height: 44px; display: flex; align-items: center">Connexion</a>
+</header>
+
+<section id="top" style="position: relative; padding: 36px 24px 40px">
+<div aria-hidden="true" style="position: absolute; inset: 0; background-image: repeating-linear-gradient(to bottom, #222226 0 1px, transparent 1px 44px)"></div>
+<div aria-hidden="true" style="position: absolute; left: 8px; top: 30px; display: flex; flex-direction: column; gap: 26px; font-family: Anton, sans-serif; font-size: 11px; color: #3E3E44"><span>200</span><span>190</span><span>180</span><span>170</span><span>160</span><span>150</span><span>140</span><span>130</span><span>120</span><span>110</span><span>100</span><span>90</span></div>
+<div aria-hidden="true" style="position: absolute; right: 8px; top: 30px; display: flex; flex-direction: column; gap: 26px; font-family: Anton, sans-serif; font-size: 11px; color: #3E3E44"><span>200</span><span>190</span><span>180</span><span>170</span><span>160</span><span>150</span><span>140</span><span>130</span><span>120</span><span>110</span><span>100</span><span>90</span></div>
+<div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px">
+<p class="neon" style="margin: 0; font-family: Anton, sans-serif; font-size: 15px; letter-spacing: 5px; color: #FFD1D8; border: 2px solid #FF3355; border-radius: 8px; padding: 6px 14px; box-shadow: 0 0 12px rgba(255,51,85,.55), inset 0 0 12px rgba(255,51,85,.35)">OUVERT AUX VISITES</p>
+<img src="/_blob/4014fa3da9c29a0a696732a047aa82fb" alt="Bad Boys &amp; Bad Girls, Coupables de charme…" style="width: 240px; height: 240px; object-fit: contain">
+<h1 style="margin: 0; max-width: 330px; font-family: Anton, sans-serif; font-size: 46px; line-height: 1.04; text-transform: uppercase; letter-spacing: 1px">Pour ceux qu'on a toujours trouvés <span class="gneon" style="color: #F4D27A">trop.</span></h1>
+<p style="margin: 0; max-width: 320px; font-size: 16px; line-height: 1.55; color: #E6DCC8">Ici, les Bads se mettent en vitrine et les Visiteurs viennent les voir. Une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%">
+<a href="#bad" class="bars" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; min-height: 168px; padding: 14px 10px; border: 3px solid #D4A437; border-radius: 6px 6px 2px 2px; background-color: #121214; text-decoration: none; color: #F2E8D5; box-shadow: 0 0 16px rgba(212,164,55,.35)">
+<span style="position: absolute; top: 10px; left: 0; right: 0; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 2px; color: #D4A437">CELLULE B</span>
+<span class="gneon" style="font-family: Anton, sans-serif; font-size: 24px; line-height: 1; text-transform: uppercase; color: #F4D27A">Je suis Bad</span>
+<span style="font-size: 12px; font-weight: 600; line-height: 1.3">Je me mets en vitrine, je reçois des visites</span>
+</a>
+<a href="#visitor" class="bars" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; min-height: 168px; padding: 14px 10px; border: 3px solid #E0233F; border-radius: 6px 6px 2px 2px; background-color: #121214; text-decoration: none; color: #F2E8D5; box-shadow: 0 0 16px rgba(224,35,63,.4)">
+<span style="position: absolute; top: 10px; left: 0; right: 0; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 2px; color: #EE3A55">PARLOIR</span>
+<span class="neon" style="font-family: Anton, sans-serif; font-size: 24px; line-height: 1; text-transform: uppercase; color: #FFD1D8">Je viens visiter</span>
+<span style="font-size: 12px; font-weight: 600; line-height: 1.3">Je cherche un bad boy ou une bad girl</span>
+</a>
+</div>
+</div>
+</section>
+
+<div aria-hidden="true" style="background: #E0233F; color: #0E0E10; padding: 10px 0; overflow: hidden; box-shadow: 0 0 24px rgba(224,35,63,.45)">
+<div class="mq" style="font-family: Anton, sans-serif; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap; gap: 28px">
+<span>Coupables de charme ★</span><span>Bad, pas toxique ★</span><span>Ici, rien ne se fait sans ton accord ★</span><span>Coupables de charme ★</span><span>Bad, pas toxique ★</span><span>Ici, rien ne se fait sans ton accord ★</span>
+</div>
+</div>
+
+<section id="bad" style="padding: 44px 24px 8px; display: flex; flex-direction: column; align-items: center; gap: 18px">
+<p style="margin: 0; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 3px; color: #D4A437">— TU TE METS EN VITRINE —</p>
+<h2 class="gneon" style="margin: -8px 0 0; font-family: Anton, sans-serif; font-size: 36px; text-transform: uppercase; color: #F4D27A">Côté Bad</h2>
+<article style="position: relative; width: 100%; box-sizing: border-box; background: #F2E8D5; color: #0E0E10; padding: 22px 18px 18px; border-radius: 3px">
+<span aria-hidden="true" style="position: absolute; top: -10px; left: 50%; width: 70px; height: 20px; margin-left: -35px; background: rgba(212,164,55,.75)"></span>
+<p style="margin: 0 0 6px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 2px; color: #7A6420">PIÈCE N° 1</p>
+<h3 style="margin: 0 0 8px; font-family: Anton, sans-serif; font-size: 24px; text-transform: uppercase">Ouvre ton Dossier</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5">Ta photo sur la toise, tes signes distinctifs et ton Casier : trois chefs d'accusation, un vrai et deux faux.</p>
+</article>
+<article style="position: relative; width: 100%; box-sizing: border-box; background: #F2E8D5; color: #0E0E10; padding: 22px 18px 18px; border-radius: 3px">
+<span aria-hidden="true" style="position: absolute; top: -10px; left: 50%; width: 70px; height: 20px; margin-left: -35px; background: rgba(212,164,55,.75)"></span>
+<p style="margin: 0 0 6px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 2px; color: #7A6420">PIÈCE N° 2</p>
+<h3 style="margin: 0 0 8px; font-family: Anton, sans-serif; font-size: 24px; text-transform: uppercase">Le Courrier</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5">Les demandes de visite arrivent dans ton Courrier. Tu lis le Permis du Visiteur et tu décides : visite acceptée ou affaire classée.</p>
+</article>
+<article style="position: relative; width: 100%; box-sizing: border-box; background: #F2E8D5; color: #0E0E10; padding: 22px 18px 18px; border-radius: 3px">
+<span aria-hidden="true" style="position: absolute; top: -10px; left: 50%; width: 70px; height: 20px; margin-left: -35px; background: rgba(212,164,55,.75)"></span>
+<p style="margin: 0 0 6px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 2px; color: #7A6420">PIÈCE N° 3</p>
+<h3 style="margin: 0 0 8px; font-family: Anton, sans-serif; font-size: 24px; text-transform: uppercase">Le Parloir</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5">Tu fixes tes Heures de visite. Au Parloir, vous discutez trente minutes en direct. Si vous voulez tous les deux continuer, le Permis devient permanent.</p>
+</article>
+</section>
+
+<section id="visitor" style="padding: 44px 24px 8px; display: flex; flex-direction: column; align-items: center; gap: 18px">
+<p style="margin: 0; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 3px; color: #EE3A55">— TU VIENS EN VISITE —</p>
+<h2 class="neon" style="margin: -8px 0 0; font-family: Anton, sans-serif; font-size: 36px; text-transform: uppercase; color: #FFD1D8">Côté Visiteur</h2>
+<article style="width: 100%; box-sizing: border-box; background: #121214; border: 1px solid #3A1A20; padding: 20px 18px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 0 14px rgba(224,35,63,.18)">
+<span aria-hidden="true" class="neon" style="font-family: Anton, sans-serif; font-size: 40px; line-height: 1; color: #FFD1D8">1</span>
+<h3 style="margin: 0; font-family: Anton, sans-serif; font-size: 22px; text-transform: uppercase">Prends ton Permis</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #E6DCC8">Une photo, ton Motif de visite et dix questions. Le Greffe valide ta photo et te délivre ton Permis.</p>
+</article>
+<article style="width: 100%; box-sizing: border-box; background: #121214; border: 1px solid #3A1A20; padding: 20px 18px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 0 14px rgba(224,35,63,.18)">
+<span aria-hidden="true" class="neon" style="font-family: Anton, sans-serif; font-size: 40px; line-height: 1; color: #FFD1D8">2</span>
+<h3 style="margin: 0; font-family: Anton, sans-serif; font-size: 22px; text-transform: uppercase">Demande une visite</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #E6DCC8">Un Bad te plaît ? Lis son Casier et parie sur le chef d'accusation que tu crois vrai. Juste ou faux, ta demande part : ton pari reste secret jusqu'à la visite.</p>
+</article>
+<article style="width: 100%; box-sizing: border-box; background: #121214; border: 1px solid #3A1A20; padding: 20px 18px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 0 14px rgba(224,35,63,.18)">
+<span aria-hidden="true" class="neon" style="font-family: Anton, sans-serif; font-size: 40px; line-height: 1; color: #FFD1D8">3</span>
+<h3 style="margin: 0; font-family: Anton, sans-serif; font-size: 22px; text-transform: uppercase">Le Parloir</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #E6DCC8">Choisis une des Heures de visite proposées. La conversation s'ouvre sur ton pari, révélé à vous deux : personne n'a à écrire le premier message.</p>
+</article>
+</section>
+
+<section style="margin: 44px 24px 0; padding: 24px 18px; border-radius: 10px; background: #121214; border: 1px solid #D4A437; box-shadow: 0 0 18px rgba(212,164,55,.25); display: flex; flex-direction: column; align-items: center; gap: 10px">
+<span class="gneon" style="font-family: Anton, sans-serif; font-size: 40px; line-height: 1; color: #F4D27A">21:00</span>
+<h2 style="margin: 0; font-family: Anton, sans-serif; font-size: 28px; text-transform: uppercase">La Promenade</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #E6DCC8">Chaque soir à 21 h, cinq Bads sortent dans la cour pour chaque Visiteur, choisis selon vos réponses au questionnaire. Une sélection, pas un catalogue sans fin.</p>
+</section>
+
+<section style="padding: 44px 24px 0; display: flex; flex-direction: column; align-items: center; gap: 16px">
+<h2 style="margin: 0; font-family: Anton, sans-serif; font-size: 30px; line-height: 1.1; text-transform: uppercase">Ici, rien ne se fait sans ton accord.</h2>
+<div style="display: flex; flex-direction: column; gap: 14px; width: 100%">
+<div style="padding-bottom: 14px; border-bottom: 1px solid #2A2A2E"><p style="margin: 0 0 4px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 2px; color: #D4A437">CÔTÉ BAD</p><p style="margin: 0; font-size: 15px; line-height: 1.5">Personne ne te parle au Parloir sans que tu aies accepté sa visite.</p></div>
+<div style="padding-bottom: 14px; border-bottom: 1px solid #2A2A2E"><p style="margin: 0 0 4px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 2px; color: #EE3A55">CÔTÉ VISITEUR</p><p style="margin: 0; font-size: 15px; line-height: 1.5">Tu choisis l'heure de ta visite parmi celles proposées.</p></div>
+<div><p style="margin: 0 0 4px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 2px; color: #F2E8D5">POUR TOUS</p><p style="margin: 0; font-size: 15px; line-height: 1.5">Après une visite, rien ne continue sans l'accord des deux.</p></div>
+</div>
+</section>
+
+<section style="padding: 44px 24px 0; display: flex; flex-direction: column; align-items: center; gap: 8px">
+<h2 style="margin: 0; font-family: Anton, sans-serif; font-size: 26px; text-transform: uppercase; color: #EE3A55">Bad, pas toxique.</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.7; color: #E6DCC8">La franchise, oui. Le mépris, non.<br>L'audace, oui. L'insistance, non.<br>La liberté, oui. Le contrôle, non.</p>
+<a href="#charte" style="min-height: 44px; display: flex; align-items: center; font-weight: 700; font-size: 14px">Lire la Charte</a>
+</section>
+
+<section style="margin-top: 36px; padding: 40px 24px 48px; background: #121214; border-top: 1px solid #2A2A2E; display: flex; flex-direction: column; gap: 16px; align-items: center">
+<p class="neon" style="margin: 0; font-family: Yellowtail, cursive; font-size: 44px; color: #FFD1D8">Coupables de charme…</p>
+<p style="margin: 0; font-size: 15px; color: #E6DCC8">Ton Dossier ou ton Permis t'attend.</p>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%">
+<a href="#bad" style="display: flex; justify-content: center; align-items: center; min-height: 52px; background: #D4A437; color: #0E0E10; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; text-decoration: none; border-radius: 4px; box-shadow: 0 0 18px rgba(212,164,55,.45)">Ouvrir mon Dossier</a>
+<a href="#visitor" style="display: flex; justify-content: center; align-items: center; min-height: 52px; border: 2px solid #E0233F; color: #FFD1D8; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; text-decoration: none; border-radius: 4px; box-shadow: 0 0 18px rgba(224,35,63,.4)">Prendre mon Permis</a>
+</div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2520}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
