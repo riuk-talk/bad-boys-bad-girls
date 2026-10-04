@@ -10,7 +10,7 @@ const CLIENT_NAMESPACES = [
   "Design",
   "Onboarding",
   "MyFiche",
-  "City",
+  "Quarter",
 ] as const;
 
 /**

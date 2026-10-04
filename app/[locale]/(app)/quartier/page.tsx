@@ -7,12 +7,13 @@ import type { Locale } from "@/i18n/routing";
 import { requireMember } from "@/lib/auth/user";
 import { SITE_URL } from "@/lib/env";
 import { localizedPath } from "@/lib/i18n-path";
+import { parseRole } from "@/lib/onboarding/config";
 
 type Props = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "City" });
+  const t = await getTranslations({ locale, namespace: "Quarter" });
   return { title: t("title") };
 }
 
@@ -35,15 +36,16 @@ function Gauge({ label, value, max }: { label: string; value: number; max: numbe
   );
 }
 
-// "Ta ville ouvre bientôt" (SPEC §3): progress of the member's zone + referral link.
-export default async function CityPage() {
+// "Ton quartier ouvre bientôt" (SPEC v7 §3, "les Bads d'abord"): the three floors of the zone,
+// the Visitors already waiting (shown to Bads only) and the referral link.
+export default async function QuarterPage() {
   const member = await requireMember();
   const locale = (await getLocale()) as Locale;
-  const t = await getTranslations("City");
+  const t = await getTranslations("Quarter");
   const [{ data: profile }, { data: progress }, { data: recruited }] = await Promise.all([
     member.supabase
       .from("profiles")
-      .select("referral_code, onboarding_completed_at")
+      .select("referral_code, onboarding_completed_at, role")
       .eq("id", member.userId)
       .maybeSingle(),
     member.supabase.rpc("zone_progress"),
@@ -51,6 +53,7 @@ export default async function CityPage() {
   ]);
   if (!profile?.onboarding_completed_at) return redirect({ href: "/onboarding", locale });
 
+  const role = parseRole(profile.role) ?? "bad";
   const zone = progress?.[0];
   const isOpen = zone && (zone.status === "open" || zone.launch_mode === "open");
   const referralUrl = `${SITE_URL}${localizedPath("/inscription", locale)}?parrain=${profile.referral_code}`;
@@ -61,32 +64,43 @@ export default async function CityPage() {
         <h1 className="font-display text-4xl tracking-wide uppercase sm:text-5xl">
           {isOpen ? t("open") : t("title")}
         </h1>
-        {!isOpen ? <p className="text-cream/90 text-lg">{t("lead")}</p> : null}
+        {!isOpen ? <p className="text-cream/90 text-lg">{t(`lead_${role}`)}</p> : null}
       </header>
 
       {isOpen ? (
-        <ButtonLink href="/ma-fiche">{t("openLink")}</ButtonLink>
+        <ButtonLink href="/ma-fiche">{t(`openLink_${role}`)}</ButtonLink>
       ) : zone ? (
         <section className="bg-ink-2 space-y-6 rounded-[var(--radius-card)] p-6">
           <p className="font-display text-2xl tracking-wide uppercase">
             {t("zone", { name: zone.zone_name })}
           </p>
           <Gauge
-            label={t("profilesGauge", {
-              count: zone.complete_profiles,
-              threshold: zone.threshold_profiles,
-            })}
-            value={zone.complete_profiles}
-            max={zone.threshold_profiles}
+            label={t("badsGauge", { count: zone.bads, threshold: zone.threshold_bads })}
+            value={zone.bads}
+            max={zone.threshold_bads}
           />
           <Gauge
-            label={t("womenGauge", { pct: zone.women_pct, threshold: zone.threshold_women_pct })}
-            value={zone.women_pct}
-            max={zone.threshold_women_pct}
+            label={t("girlsGauge", { count: zone.bad_girls, threshold: zone.min_bad_girls })}
+            value={zone.bad_girls}
+            max={zone.min_bad_girls}
           />
+          {zone.min_bad_boys > 0 ? (
+            <Gauge
+              label={t("boysGauge", { count: zone.bad_boys, threshold: zone.min_bad_boys })}
+              value={zone.bad_boys}
+              max={zone.min_bad_boys}
+            />
+          ) : null}
+          {zone.visitors_waiting !== null ? (
+            <p className="text-gold font-semibold">
+              {t("visitorsWaiting", { count: zone.visitors_waiting })}
+            </p>
+          ) : null}
+          {zone.ready ? <p className="font-semibold">{t("ready")}</p> : null}
+          <p className="text-grey text-sm">{t("gaugeHint")}</p>
         </section>
       ) : (
-        <p className="border-line bg-ink-2 rounded-lg border px-4 py-3">{t("noZone")}</p>
+        <p className="border-line bg-ink-2 rounded-lg border px-4 py-3">{t(`noZone_${role}`)}</p>
       )}
 
       <section aria-labelledby="referral-title" className="space-y-4">

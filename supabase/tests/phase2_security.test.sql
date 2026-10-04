@@ -1,4 +1,4 @@
--- Phase 2 security tests (pgTAP, xUnit style).
+-- Phase 2 / 2b security tests (pgTAP, xUnit style).
 -- Every test_* function runs in its own rolled-back transaction (runtests), so nothing persists.
 -- Helpers and tests live in pg_temp: they disappear with the session.
 -- Run: `supabase test db`, or paste this file into the SQL editor / Supabase connector.
@@ -24,12 +24,12 @@ $$;
 
 -- Member with a profile, created as the database owner (bypasses RLS on purpose).
 create function pg_temp.new_member(p_email text, p_gender public.gender default 'woman',
-  p_place bigint default null) returns uuid language plpgsql as $$
+  p_place bigint default null, p_role public.member_role default 'bad') returns uuid language plpgsql as $$
 declare uid uuid := pg_temp.new_user(p_email);
 begin
-  insert into public.profiles (id, pseudo, birthdate, gender, seeking_genders, place_id)
-  values (uid, 'm' || substr(replace(uid::text, '-', ''), 1, 12), date '1990-01-01', p_gender,
-    '{man,woman}', p_place);
+  insert into public.profiles (id, pseudo, birthdate, gender, seeking_genders, place_id, role, visit_motive)
+  values (uid, 'm' || translate(substr(replace(uid::text, '-', ''), 1, 12), '0123456789', 'ghijklmnop'), date '1990-01-01', p_gender,
+    '{man,woman}', p_place, p_role, case when p_role = 'visitor' then 'Motif de test' end);
   return uid;
 end $$;
 
@@ -145,7 +145,8 @@ declare a uuid := pg_temp.new_member('a@test.local'); col text;
 begin
   perform pg_temp.as_user(a);
   foreach col in array array['moderation_status = ''approved''', 'is_reglo = true', 'banned_at = null',
-    'hidden_reason = null', 'suspended_until = null', 'pending_pleas_count = 0', 'pleas_open = true',
+    'hidden_reason = null', 'suspended_until = null', 'pending_requests_count = 0', 'requests_open = true',
+    'role = ''visitor''', 'role_changed_at = now()',
     'zone_id = null', 'is_seed = true', 'referral_code = ''HACKED00''', 'referred_by = null',
     'onboarding_completed_at = now()', 'last_seen_at = now()', 'consecutive_dismissals = 0',
     'lat = 0', 'paused_at = null'] loop
@@ -314,13 +315,14 @@ end $$;
 
 create function pg_temp.test_zone_recomputed_when_zones_change() returns setof text language plpgsql as $$
 declare
-  toulon bigint := pg_temp.new_place('Toulon', 43.1242, 5.928);
-  hyeres bigint := pg_temp.new_place('Hyères', 43.1204, 6.1286);
+  -- Fictitious places far from the dev zones (about 20 km apart).
+  toulon bigint := pg_temp.new_place('Centre test', 46.0, 2.0);
+  hyeres bigint := pg_temp.new_place('Voisine test', 46.0, 2.26);
   a uuid := pg_temp.new_member('a@test.local', 'woman', hyeres);
   z smallint;
 begin
   return next is((select zone_id from public.profiles where id = a), null, 'no zone before any zone exists');
-  insert into public.launch_zones (slug, name, center_place_id, radius_km) values ('toulon', 'Toulon', toulon, 30)
+  insert into public.launch_zones (slug, name, center_place_id, radius_km) values ('test-centre', 'Centre test', toulon, 30)
     returning id into z;
   return next is((select zone_id from public.profiles where id = a), z, 'existing member attached when the zone is created');
   update public.launch_zones set radius_km = 10 where id = z;
@@ -332,16 +334,18 @@ end $$;
 create function pg_temp.test_complete_onboarding() returns setof text language plpgsql as $$
 declare a uuid := pg_temp.new_member('a@test.local', 'woman', pg_temp.new_place('Ville', 43.1, 5.9)); t text;
 begin
+  update public.profiles set role = null where id = a;
   perform pg_temp.as_user(a);
   return next matches(coalesce(pg_temp.try('select public.complete_onboarding()'), 'ok'),
-    '^23514 onboarding_incomplete', 'refused without consents and photo');
+    '^23514 onboarding_incomplete', 'refused without role, consents and photo');
   perform pg_temp.as_owner();
+  update public.profiles set role = 'bad' where id = a;
   foreach t in array array['terms', 'privacy', 'age_18', 'art9_seeking'] loop
     insert into public.consents (user_id, type, text_version, granted) values (a, t::public.consent_type, 'v1', true);
   end loop;
   insert into public.photos (owner_id, position, pending_path) values (a, 0, a || '/0.webp');
   perform pg_temp.as_user(a);
-  return next is(pg_temp.try('select public.complete_onboarding()'), null, 'accepted once steps 1–4 are done');
+  return next is(pg_temp.try('select public.complete_onboarding()'), null, 'a Bad is accepted once the common steps are done');
   perform pg_temp.as_owner();
   return next isnt((select onboarding_completed_at from public.profiles where id = a), null, 'onboarding marked complete');
   insert into public.consents (user_id, type, text_version, granted) values (a, 'art9_seeking', 'v1', false);
@@ -366,23 +370,80 @@ begin
   perform pg_temp.as_owner();
 end $$;
 
-create function pg_temp.test_zone_progress_counts_complete_fiches() returns setof text language plpgsql as $$
+create function pg_temp.test_zone_progress_counts_active_bads() returns setof text language plpgsql as $$
 declare
-  nice bigint := pg_temp.new_place('Nice', 43.7031, 7.2661);
+  nice bigint := pg_temp.new_place('Ville test', 47.0, 3.0);
   me uuid := pg_temp.new_member('me@test.local', 'man', nice);
-  w uuid := pg_temp.new_member('w@test.local', 'woman', nice);
-  m uuid := pg_temp.new_member('m@test.local', 'man', nice);
-  p uuid := pg_temp.new_member('p@test.local', 'woman', nice);
+  w1 uuid := pg_temp.new_member('w1@test.local', 'woman', nice);
+  w2 uuid := pg_temp.new_member('w2@test.local', 'woman', nice);
+  m1 uuid := pg_temp.new_member('m1@test.local', 'man', nice);
+  paused uuid := pg_temp.new_member('paused@test.local', 'woman', nice);
+  gone uuid := pg_temp.new_member('gone@test.local', 'woman', nice);
+  nophoto uuid := pg_temp.new_member('nophoto@test.local', 'man', nice);
+  v uuid := pg_temp.new_member('v@test.local', 'woman', nice, 'visitor');
 begin
-  insert into public.launch_zones (slug, name, center_place_id, radius_km, threshold_profiles) values ('nice', 'Nice', nice, 30, 3);
-  update public.profiles set onboarding_completed_at = now() where id in (w, m, p);
-  insert into public.photos (owner_id, position, pending_path) values (w, 0, w || '/0.webp'), (m, 0, m || '/0.webp'),
-    (p, 0, p || '/0.webp');
-  update public.photos set status = 'approved' where owner_id in (w, m);
+  -- 4 Bads required, floors: 50 % bad girls (2), 25 % bad boys (1).
+  insert into public.launch_zones (slug, name, center_place_id, radius_km, threshold_bads,
+    threshold_women_pct, threshold_men_pct) values ('test-ville', 'Ville test', nice, 30, 4, 50, 25);
+  update public.profiles set onboarding_completed_at = now(), last_seen_at = now()
+    where id in (w1, w2, m1, paused, nophoto, v);
+  update public.profiles set onboarding_completed_at = now(), last_seen_at = now() - interval '31 days'
+    where id = gone;
+  update public.profiles set is_paused = true where id = paused;
+  insert into public.photos (owner_id, position, pending_path)
+    select id, 0, id || '/0.webp' from unnest(array[w1, w2, m1, paused, gone, nophoto, v]) id;
+  update public.photos set status = 'approved' where owner_id <> nophoto;
   perform pg_temp.as_user(me);
-  return next is(pg_temp.val('select complete_profiles from public.zone_progress()'), '2',
-    'only finished Fiches with an approved photo count');
-  return next is(pg_temp.val('select women_pct from public.zone_progress()'), '50', 'women share computed');
+  return next is(pg_temp.val('select bads from public.zone_progress()'), '3',
+    'only active, visible Bads count (not paused, not inactive > 30 days, approved photo, no Visitor)');
+  return next is(pg_temp.val('select bad_girls || ''/'' || min_bad_girls from public.zone_progress()'), '2/2',
+    'bad girls floor is an absolute number');
+  return next is(pg_temp.val('select bad_boys || ''/'' || min_bad_boys from public.zone_progress()'), '1/1',
+    'bad boys floor is an absolute number');
+  return next is(pg_temp.val('select ready from public.zone_progress()'), 'false', 'not ready below the total');
+  return next is(pg_temp.val('select visitors_waiting from public.zone_progress()'), '1',
+    'a Bad sees the Visitors waiting with a Permit');
+  perform pg_temp.as_owner();
+  update public.profiles set is_paused = false where id = paused;
+  perform pg_temp.as_user(me);
+  return next is(pg_temp.val('select ready from public.zone_progress()'), 'true', 'ready once all floors are met');
+  perform pg_temp.as_user(v);
+  return next is(pg_temp.val('select visitors_waiting is null from public.zone_progress()'), 'true',
+    'a Visitor does not get the Visitors count');
+  perform pg_temp.as_owner();
+end $$;
+
+-- Concept v2 (SPEC v7 §2 bis, §5 bis): the role is protected; a Visitor's Permis needs a Motif and one photo.
+create function pg_temp.test_onboarding_role_rules() returns setof text language plpgsql as $$
+declare a uuid := pg_temp.new_member('a@test.local', 'woman', pg_temp.new_place('Ville', 43.1, 5.9)); t text;
+begin
+  update public.profiles set role = null, visit_motive = null where id = a;
+  perform pg_temp.as_user(a);
+  return next matches(coalesce(pg_temp.try(format('update public.profiles set role = ''bad'' where id = %L', a)), 'ok'),
+    '^42501', 'the role column is not writable by the member');
+  return next is(pg_temp.try('select public.set_onboarding_role(''visitor'')'), null, 'role chosen at step 3');
+  return next is(pg_temp.val(format('select role from public.profiles where id = %L', a)), 'visitor', 'role saved');
+  perform pg_temp.as_owner();
+  foreach t in array array['terms', 'privacy', 'age_18', 'art9_seeking'] loop
+    insert into public.consents (user_id, type, text_version, granted) values (a, t::public.consent_type, 'v1', true);
+  end loop;
+  perform pg_temp.as_user(a);
+  return next is(pg_temp.try(format('insert into public.photos (owner_id, position, pending_path) values (%L, 0, %L)',
+    a, a || '/0.webp')), null, 'a Visitor adds the Permis photo');
+  return next matches(coalesce(pg_temp.try(format(
+    'insert into public.photos (owner_id, position, pending_path) values (%L, 1, %L)', a, a || '/1.webp')), 'ok'),
+    'visitor_single_photo', 'a Visitor cannot add a second photo');
+  return next matches(coalesce(pg_temp.try('select public.complete_onboarding()'), 'ok'),
+    'onboarding_incomplete', 'a Visitor cannot finish without a Motif de visite');
+  return next is(pg_temp.try(format('update public.profiles set visit_motive = %L where id = %L',
+    'Écris-moi à moi@exemple.fr', a)), null, 'the Visitor writes the Motif');
+  return next is(pg_temp.val(format('select position(''moi@exemple.fr'' in visit_motive) from public.profiles where id = %L', a)),
+    '0', 'contacts are masked in the Motif');
+  return next is(pg_temp.try('select public.complete_onboarding()'), null, 'a Visitor finishes with photo and Motif');
+  return next matches(coalesce(pg_temp.try('select public.set_onboarding_role(''bad'')'), 'ok'),
+    'role_locked', 'the role cannot be changed through the onboarding function afterwards');
+  return next matches(coalesce(pg_temp.try(format('update public.profiles set visit_motive = null where id = %L', a)), 'ok'),
+    '23514', 'a finished Visitor cannot erase the Motif');
   perform pg_temp.as_owner();
 end $$;
 

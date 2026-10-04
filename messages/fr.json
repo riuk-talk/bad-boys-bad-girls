@@ -12,7 +12,7 @@
     "signature": "Coupables de charme…",
     "promise": "Bad, pas toxique.",
     "forWho": "Pour ceux qu'on a toujours trouvés trop.",
-    "judge": "Ici, c'est toi le juge.",
+    "judge": "Ici, rien ne se fait sans ton accord.",
     "signup": "S'inscrire",
     "login": "Se connecter",
     "backHome": "Retour à l'accueil",
@@ -49,34 +49,17 @@
   "Landing": {
     "heroEyebrow": "Site de rencontre · 18+",
     "heroTitle": "Pour ceux qu'on a toujours trouvés trop.",
-    "heroLead": "Trop francs, trop tatoués, trop libres, trop nocturnes, trop entiers. Ici, on ne glisse pas sur des photos : on plaide sur ton Casier.",
-    "heroCtaPrimary": "Ouvrir mon dossier",
-    "heroCtaSecondary": "J'ai déjà un dossier",
+    "heroLead": "Ici, les Bads se mettent en vitrine et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.",
     "logoAlt": "Bad Boys & Bad Girls, Coupables de charme…",
-    "stepsTitle": "Trois étapes, zéro baratin",
-    "steps": [
-      {
-        "title": "Remplis ta Fiche",
-        "body": "Ta photo sur la toise, tes signes distinctifs, et ton Casier : trois aveux sur ta vie, dont un faux."
-      },
-      {
-        "title": "Plaide",
-        "body": "Une Fiche te plaît ? Devine lequel de ses aveux est faux et écris ton accroche. Le premier message a toujours du fond."
-      },
-      {
-        "title": "Le Parloir",
-        "body": "Si l'autre te libère, la conversation s'ouvre. Et quand le courant passe, propose une Cavale : un vrai rendez-vous."
-      }
-    ],
-    "judgeTitle": "Ici, c'est toi le juge.",
-    "judgeBody": "Tu reçois une plaidoirie ? Tu décides seul·e. Libérer ou classer l'affaire, fermer ton Parloir quand tu veux, fixer toi-même combien de plaidoiries tu acceptes en attente. Personne ne t'écrit sans ton accord.",
+    "judgeTitle": "Ici, rien ne se fait sans ton accord.",
+    "judgeBody": "Bad ou Visiteur, chacun garde la main. Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand.",
     "judgePoints": [
-      "Personne ne peut t'écrire tant que tu ne l'as pas libéré·e.",
-      "Tu fixes ton plafond de plaidoiries : au-delà, ton Parloir affiche complet.",
-      "Classer une affaire envoie un message neutre et respectueux. Jamais de silence, jamais de justification."
+      "Côté Bad : personne ne te parle au Parloir sans que tu aies accepté sa visite.",
+      "Côté Bad : tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet.",
+      "Côté Visiteur : tu choisis l'heure de ta visite parmi celles proposées.",
+      "Pour tous : classer une affaire envoie un message neutre et respectueux. Jamais de silence, jamais de justification.",
+      "Pour tous : après une visite, rien ne continue sans l'accord des deux."
     ],
-    "hearingTitle": "L'Audience du soir",
-    "hearingBody": "Chaque soir à 21 h, cinq Fiches choisies pour toi. Pas un catalogue sans fin : une sélection, avec soin.",
     "charterTitle": "Bad, pas toxique.",
     "charterLead": "« Bad », c'est une attitude et une esthétique. Jamais une excuse.",
     "charterPoints": [
@@ -85,16 +68,54 @@
       "La liberté, oui. Le contrôle, non."
     ],
     "charterLink": "Lire la Charte",
-    "citiesTitle": "On ouvre ville par ville",
-    "citiesBody": "Un site de rencontre vide ne sert à rien. On commence par le Var et les Alpes-Maritimes, et chaque ville ouvre quand elle compte assez de membres. Ailleurs, inscris-toi : tu suivras la progression de ta ville et tu pourras y faire entrer tes complices.",
     "finalTitle": "Coupables de charme…",
-    "finalBody": "Ton dossier t'attend."
+    "finalBody": "Ton Dossier ou ton Permis t'attend.",
+    "door_bad": "Je suis Bad",
+    "doorHint_bad": "Je me mets en vitrine, je reçois des visites",
+    "door_visitor": "Je viens visiter",
+    "doorHint_visitor": "Je cherche un bad boy ou une bad girl",
+    "heroCtaLogin": "J'ai déjà un compte",
+    "stepsTitle_bad": "Côté Bad",
+    "steps_bad": [
+      {
+        "title": "Ouvre ton Dossier",
+        "body": "Ta photo sur la toise, tes signes distinctifs et ton Casier : trois chefs d'accusation, un vrai et deux faux."
+      },
+      {
+        "title": "Le Courrier",
+        "body": "Les demandes de visite arrivent dans ton Courrier. Tu lis le Permis du Visiteur et tu décides : visite acceptée ou affaire classée."
+      },
+      {
+        "title": "Le Parloir",
+        "body": "Tu fixes tes Heures de visite. Au Parloir, vous discutez trente minutes en direct. Si vous voulez tous les deux continuer, le Permis devient permanent."
+      }
+    ],
+    "stepsTitle_visitor": "Côté Visiteur",
+    "steps_visitor": [
+      {
+        "title": "Prends ton Permis",
+        "body": "Une photo, ton Motif de visite et dix questions. Le Greffe valide ta photo et te délivre ton Permis."
+      },
+      {
+        "title": "Demande une visite",
+        "body": "Un Bad te plaît ? Lis son Casier et parie sur le chef d'accusation que tu crois vrai. Juste ou faux, ta demande part : ton pari reste secret jusqu'à la visite."
+      },
+      {
+        "title": "Le Parloir",
+        "body": "Choisis une des Heures de visite proposées. La conversation s'ouvre sur ton pari, révélé à vous deux : personne n'a à écrire le premier message."
+      }
+    ],
+    "stepsTitle": "Deux rôles, zéro baratin",
+    "promenadeTitle": "La Promenade",
+    "promenadeBody": "Chaque soir à 21 h, cinq Bads sortent dans la cour pour chaque Visiteur, choisis selon vos réponses au questionnaire. Une sélection, pas un catalogue sans fin.",
+    "quartersTitle": "Les Bads d'abord",
+    "quartersBody": "Un site de rencontre vide ne sert à rien. On ouvre quartier par quartier, en commençant par le Var et les Alpes-Maritimes. Les Bads s'inscrivent en premier ; les Visiteurs prennent leur Permis et suivent la jauge de leur quartier. Les visites ouvrent quand il y a assez de Bads."
   },
   "Auth": {
     "loginTitle": "Se connecter",
     "loginLead": "Content de te revoir.",
-    "signupTitle": "Ouvrir mon dossier",
-    "signupLead": "Un e-mail, un mot de passe, et c'est parti. Moins de cinq minutes pour remplir ta Fiche ensuite.",
+    "signupTitle": "Créer mon compte",
+    "signupLead": "Un e-mail, un mot de passe, et c'est parti. Tu choisis ensuite ton rôle : Bad ou Visiteur.",
     "forgotTitle": "Mot de passe oublié",
     "forgotLead": "Indique ton e-mail : on t'envoie un lien pour en choisir un nouveau.",
     "email": "E-mail",
@@ -140,7 +161,11 @@
     "submitNewPassword": "Enregistrer",
     "passwordUpdated": "Mot de passe modifié.",
     "signOut": "Se déconnecter",
-    "submitting": "Envoi en cours…"
+    "submitting": "Envoi en cours…",
+    "signupTitle_bad": "Ouvrir mon Dossier",
+    "signupLead_bad": "Un e-mail, un mot de passe, et c'est parti. Moins de cinq minutes pour remplir ton Dossier ensuite.",
+    "signupTitle_visitor": "Prendre mon Permis de visite",
+    "signupLead_visitor": "Un e-mail, un mot de passe, et c'est parti. Trois minutes pour ton Permis ensuite."
   },
   "Errors": {
     "notFoundStamp": "Affaire classée",
@@ -153,10 +178,12 @@
   "Components": {
     "stamps": {
       "guilty": "COUPABLE",
-      "released": "LIBÉRÉ·E",
-      "releasedAria": "Libéré ou libérée",
       "dismissed": "AFFAIRE CLASSÉE",
-      "reglo": "RÉGLO"
+      "goodConduct": "BONNE CONDUITE",
+      "cleanRecord": "CASIER VIERGE",
+      "permit": "PERMIS DÉLIVRÉ",
+      "visitAccepted": "VISITE ACCEPTÉE",
+      "permanentPermit": "PERMIS PERMANENT"
     },
     "fiche": {
       "caseNumber": "Dossier {number}",
@@ -179,13 +206,25 @@
     "empty": {
       "defaultTitle": "Rien pour l'instant",
       "defaultBody": "Reviens un peu plus tard."
+    },
+    "permit": {
+      "title": "Permis de visite",
+      "number": "N° {number}",
+      "age": "{age} ans",
+      "photoAlt": "Photo de {pseudo}",
+      "motive": "Motif de visite",
+      "distinctiveSigns": "Signes distinctifs",
+      "cleanRecord": "Casier vierge",
+      "visitsHonored": "Visites honorées : {honored}/{due}",
+      "newVisitor": "Nouveau visiteur",
+      "pending": "En attente au Greffe"
     }
   },
   "Design": {
     "title": "Design system",
     "lead": "Page de démonstration des composants (développement uniquement).",
     "buttons": "Boutons",
-    "primary": "Plaider",
+    "primary": "Demander une visite",
     "secondary": "Voir la Fiche",
     "ghost": "Annuler",
     "danger": "Bloquer",
@@ -198,7 +237,7 @@
     "cities": ["Toulon", "Nice", "Hyères"],
     "consent": "J'ai 18 ans ou plus",
     "badges": "Badges",
-    "badgeOpen": "Ouvert aux plaidoiries",
+    "badgeOpen": "Ouvert aux visites",
     "badgeFull": "Parloir complet",
     "stamps": "Tampons",
     "replay": "Rejouer l'animation",
@@ -218,11 +257,11 @@
     "emptyBody": "Élargis tes filtres, ou fais entrer tes complices.",
     "modal": "Modale",
     "openModal": "Ouvrir la modale",
-    "modalTitle": "Plaider auprès de Exemple",
+    "modalTitle": "Demander une visite à Exemple",
     "modalBody": "Contenu de démonstration de la modale.",
     "toast": "Notification",
     "showToast": "Afficher une notification",
-    "toastMessage": "Plaidoirie envoyée."
+    "toastMessage": "Demande déposée au Parloir."
   },
   "Charter": {
     "title": "Charte « Bad, pas toxique »",
@@ -232,7 +271,7 @@
         "title": "Ce qu'on valorise",
         "items": [
           "La franchise : dis ce que tu penses, avec respect.",
-          "L'audace : ose plaider, ose proposer une Cavale.",
+          "L'audace : ose demander une visite, ose proposer une Cavale.",
           "L'humour : un Casier drôle vaut mieux que dix compliments.",
           "La liberté : chacun·e décide de ses rencontres et de son rythme."
         ]
@@ -257,9 +296,9 @@
         ]
       },
       {
-        "title": "Ici, c'est toi le juge",
+        "title": "Ici, rien ne se fait sans ton accord",
         "items": [
-          "La personne qui reçoit une plaidoirie décide seule. « Affaire classée » est une réponse complète : elle ne se discute pas.",
+          "Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand. « Affaire classée » est une réponse complète : elle ne se discute pas. Après une visite, rien ne continue sans l'accord des deux.",
           "Tu peux bloquer ou signaler n'importe qui, à tout moment. Le blocage est immédiat et dans les deux sens.",
           "Chaque signalement est lu par un humain. Tu reçois l'exposé des motifs de la décision."
         ]
@@ -320,7 +359,7 @@
           "title": "2. Accès au service",
           "paragraphs": [
             "Le service est réservé aux personnes âgées de 18 ans ou plus. La date de naissance est vérifiée à l'inscription et une attestation de majorité est demandée.",
-            "Le service est gratuit. Aucune option payante ne permet de plaider davantage ni d'être plus visible."
+            "Le service est gratuit. Aucune option payante ne permet d'envoyer plus de demandes de visite ni d'être plus visible."
           ]
         },
         {
@@ -333,14 +372,14 @@
         {
           "title": "4. Contenus interdits",
           "paragraphs": [
-            "Sont interdits : les références à de vrais délits, à la violence, aux drogues ou à des mineurs ; les contenus sexuels explicites ; les coordonnées personnelles dans la Fiche, le Casier ou les plaidoiries ; les arnaques ; le harcèlement ; toute usurpation d'identité.",
+            "Sont interdits : les références à de vrais délits, à la violence, aux drogues ou à des mineurs ; les contenus sexuels explicites ; les coordonnées personnelles dans la Fiche, le Permis de visite, le Casier ou les demandes de visite ; les arnaques ; le harcèlement ; toute usurpation d'identité.",
             "Les règles de comportement sont détaillées dans la Charte « Bad, pas toxique », qui fait partie des présentes conditions."
           ]
         },
         {
           "title": "5. Modération et sanctions",
           "paragraphs": [
-            "Chaque membre peut signaler une Fiche, une photo, un Casier ou un message. Les signalements sont traités par un humain.",
+            "Chaque membre peut signaler une Fiche, un Permis de visite, une photo, un Casier, une demande de visite ou un message. Les signalements sont traités par un humain.",
             "Selon la gravité : avertissement, suspension ou bannissement. Toute décision est motivée et communiquée à la personne concernée et à la personne qui a signalé.",
             "[À COMPLÉTER : voies de recours contre une décision de modération]"
           ]
@@ -348,7 +387,7 @@
         {
           "title": "6. Suppression du compte",
           "paragraphs": [
-            "Tu peux supprimer ton compte à tout moment depuis tes paramètres. La suppression est définitive : ta Fiche, tes photos et le texte de tes messages sont effacés."
+            "Tu peux supprimer ton compte à tout moment depuis tes paramètres. La suppression est définitive : ta Fiche ou ton Permis de visite, tes photos et le texte de tes messages sont effacés."
           ]
         },
         {
@@ -376,8 +415,8 @@
         {
           "title": "2. Ce qu'on collecte, et pourquoi",
           "paragraphs": [
-            "On ne collecte que ce qui sert une fonction visible : ton e-mail (connexion et notifications), ta date de naissance (vérification de la majorité ; seul ton âge est affiché), ton pseudo, ton genre, ta ville (jamais d'adresse ni de position GPS), tes photos, ton Casier, tes réponses au questionnaire, tes plaidoiries et tes messages.",
-            "Les genres que tu recherches peuvent révéler ton orientation sexuelle : c'est une donnée sensible. Elle n'est utilisée que pour te proposer des Fiches compatibles, avec ton consentement explicite, que tu peux retirer à tout moment (le service ne pouvant alors plus fonctionner, la suppression du compte te sera proposée)."
+            "On ne collecte que ce qui sert une fonction visible : ton e-mail (connexion et notifications), ta date de naissance (vérification de la majorité ; seul ton âge est affiché), ton pseudo, ton genre, ton rôle (Bad ou Visiteur), ta ville (jamais d'adresse ni de position GPS), tes photos, ton Casier ou ton Motif de visite, tes réponses au questionnaire, tes demandes de visite, tes visites et tes messages.",
+            "Les genres que tu recherches peuvent révéler ton orientation sexuelle : c'est une donnée sensible. Elle n'est utilisée que pour te proposer des profils compatibles, avec ton consentement explicite, que tu peux retirer à tout moment (le service ne pouvant alors plus fonctionner, la suppression du compte te sera proposée)."
           ]
         },
         {
@@ -388,9 +427,10 @@
           ]
         },
         {
-          "title": "4. Cookies",
+          "title": "4. Cookies et notifications",
           "paragraphs": [
-            "On utilise uniquement des cookies strictement nécessaires (session de connexion, langue). Aucun traceur publicitaire, aucun outil de mesure d'audience externe : c'est pourquoi aucun bandeau de consentement n'est affiché."
+            "On utilise uniquement des cookies strictement nécessaires (session de connexion, langue). Aucun traceur publicitaire, aucun outil de mesure d'audience externe : c'est pourquoi aucun bandeau de consentement n'est affiché.",
+            "Notifications : si tu les acceptes, on t'envoie des notifications (rappels de visite, nouvelles demandes) par le service de notification de ton navigateur (Google pour Chrome et Android, Mozilla pour Firefox, Apple pour Safari). Leur contenu est chiffré et volontairement neutre : jamais de pseudo, de photo ni de message. Ces services voient seulement qu'une notification t'est envoyée. Tu peux les couper à tout moment dans tes paramètres ou ceux de ton navigateur."
           ]
         },
         {
@@ -449,21 +489,23 @@
   "App": {
     "navLabel": "Mon espace",
     "myFiche": "Ma Fiche",
-    "myCity": "Ma ville",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "myPermit": "Mon Permis",
+    "myQuarter": "Mon quartier"
   },
   "Onboarding": {
-    "title": "Ouvre ton dossier",
     "progress": "Étape {current} sur {total}",
     "savedNotice": "Chaque étape est enregistrée : tu peux t'arrêter et reprendre plus tard.",
-    "deletionNotice": "Un dossier non terminé est supprimé automatiquement au bout de 30 jours.",
     "next": "Continuer",
     "finish": "Terminer",
     "steps": {
-      "1": "Âge et règles",
-      "2": "Ton identité",
-      "3": "Qui tu cherches",
-      "4": "Ta photo"
+      "age": "Âge et règles",
+      "identity": "Ton identité",
+      "role": "Ton rôle",
+      "seeking_bad": "Qui tu cherches",
+      "seeking_visitor": "Qui tu viens voir",
+      "photo": "Ta photo",
+      "motive": "Ton Motif de visite"
     },
     "age": {
       "lead": "Bad Boys & Bad Girls est réservé aux adultes. Ta date de naissance sert uniquement à le vérifier : seul ton âge sera affiché.",
@@ -490,14 +532,16 @@
       "cityResults": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}"
     },
     "seeking": {
-      "lead": "Qui aimerais-tu rencontrer ?",
-      "genders": "Je cherche",
       "gendersHint": "Plusieurs choix possibles.",
       "ageMin": "Âge minimum",
       "ageMax": "Âge maximum",
       "consentTitle": "Ton consentement",
-      "consentText": "Les genres que tu recherches peuvent révéler ton orientation sexuelle. Nous les utilisons uniquement pour te proposer des Fiches compatibles, rien d'autre. Tu peux retirer ce consentement à tout moment ; le service ne pouvant plus fonctionner sans lui, la suppression de ton compte te sera alors proposée.",
-      "consent": "J'accepte que les genres que je recherche soient utilisés pour me proposer des Fiches compatibles."
+      "consentText": "Les genres que tu recherches peuvent révéler ton orientation sexuelle. Nous les utilisons uniquement pour te proposer des profils compatibles, rien d'autre. Tu peux retirer ce consentement à tout moment ; le service ne pouvant plus fonctionner sans lui, la suppression de ton compte te sera alors proposée.",
+      "consent": "J'accepte que les genres que je recherche soient utilisés pour me proposer des profils compatibles.",
+      "lead_bad": "Qui aimerais-tu recevoir au Parloir ?",
+      "lead_visitor": "Qui aimerais-tu venir voir ?",
+      "genders_bad": "Je cherche",
+      "genders_visitor": "Je viens voir"
     },
     "photo": {
       "lead": "Ta photo d'identité, sur la toise. Ton visage doit être visible.",
@@ -524,27 +568,45 @@
       "photoTooSmall": "La photo est trop petite (400 pixels minimum de côté).",
       "photoTooLarge": "La photo est trop lourde.",
       "generic": "Une erreur est survenue. Réessaie.",
-      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard."
+      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard.",
+      "roleRequired": "Choisis ton rôle pour continuer.",
+      "motiveRequired": "Écris ton Motif de visite pour continuer.",
+      "motiveTooLong": "280 caractères maximum."
+    },
+    "title": "Ton inscription",
+    "title_bad": "Ton Dossier",
+    "title_visitor": "Ton Permis de visite",
+    "deletionNotice_bad": "Un Dossier non terminé est supprimé automatiquement au bout de 30 jours.",
+    "deletionNotice_visitor": "Un Permis non terminé est supprimé automatiquement au bout de 30 jours.",
+    "role": {
+      "lead": "Deux rôles, deux façons de se rencontrer. Tu pourras en changer plus tard (une fois par semaine au plus).",
+      "legend": "Ton rôle",
+      "bad": {
+        "title": "Je suis Bad",
+        "body": "Je me mets en vitrine avec mon Casier. Les Visiteurs me demandent une visite, et c'est moi qui décide."
+      },
+      "visitor": {
+        "title": "Je viens visiter",
+        "body": "Je regarde les Bads de mon quartier et je demande des visites, avec un pari sur leur Casier."
+      },
+      "change": "Un Bad ne demande pas de visite ; un Visiteur n'en reçoit pas."
+    },
+    "motive": {
+      "lead": "Ce que les Bads liront avant d'accepter ta visite. Sois toi-même, en quelques lignes.",
+      "label": "Motif de visite",
+      "hint": "{max} caractères maximum. Les e-mails, téléphones et liens sont masqués."
     }
   },
   "MyFiche": {
-    "title": "Ma Fiche",
     "previewTitle": "Telle que les autres la verront",
-    "status": {
-      "pending": "Ta photo d'identité est en cours de vérification (objectif : moins de 12 heures). En attendant, ta Fiche n'est visible par personne.",
-      "approved": "Ta photo d'identité est validée.",
-      "rejected": "Ta photo d'identité a été refusée : {reason}. Remplace-la pour que ta Fiche soit visible.",
-      "missing": "Ajoute ta photo d'identité pour que ta Fiche puisse être validée."
-    },
     "gaugeLabel": "Fiche complète à {percent} %",
-    "gaugeHint": "Plus ta Fiche est complète, plus on a envie de plaider.",
+    "gaugeHint": "Plus ta Fiche est complète, plus les Visiteurs ont envie de demander une visite.",
     "criteria": {
       "mainPhoto": "Photo d'identité validée",
       "bio": "Une présentation d'au moins 40 caractères",
       "signs": "Au moins un signe distinctif",
       "morePhotos": "Trois photos ou plus"
     },
-    "editTitle": "Compléter ma Fiche",
     "bio": "Présentation",
     "bioHint": "500 caractères maximum. Les e-mails, téléphones et liens sont masqués.",
     "signsTitle": "Signes distinctifs",
@@ -552,8 +614,6 @@
     "signDetail": "Précision pour « {sign} »",
     "save": "Enregistrer",
     "saved": "Fiche enregistrée.",
-    "photosTitle": "Mes photos",
-    "photosHint": "De 1 à 6 photos. La première est ta photo d'identité.",
     "addPhoto": "Ajouter une photo",
     "photoAdded": "Photo envoyée : elle sera visible après vérification.",
     "photoStatus": {
@@ -564,24 +624,56 @@
     "photoAlt": "Ta photo n° {number}",
     "errors": {
       "tooManySigns": "5 signes distinctifs maximum.",
-      "generic": "Une erreur est survenue. Réessaie."
-    }
+      "generic": "Une erreur est survenue. Réessaie.",
+      "motiveRequired": "Le Motif de visite ne peut pas être vide."
+    },
+    "titleShort": "Ma Fiche",
+    "title_bad": "Ma Fiche",
+    "title_visitor": "Mon Permis de visite",
+    "status_bad": {
+      "pending": "Ta photo d'identité est au Greffe (objectif : moins de 12 heures). En attendant, ta Fiche n'est visible par personne.",
+      "approved": "Ta photo d'identité est validée par le Greffe.",
+      "rejected": "Ta photo d'identité a été refusée : {reason}. Remplace-la pour que ta Fiche soit visible.",
+      "missing": "Ajoute ta photo d'identité pour que ta Fiche puisse être validée."
+    },
+    "status_visitor": {
+      "pending": "Permis en attente au Greffe (objectif : moins de 12 heures). Tu pourras regarder les Bads dès l'ouverture de ton quartier ; les demandes de visite attendent ton Permis.",
+      "approved": "Permis délivré par le Greffe : tu peux demander des visites dans ton quartier dès qu'il est ouvert.",
+      "rejected": "Ta photo a été refusée : {reason}. Remplace-la pour obtenir ton Permis.",
+      "missing": "Ajoute ta photo pour obtenir ton Permis."
+    },
+    "editTitle_bad": "Compléter ma Fiche",
+    "editTitle_visitor": "Modifier mon Permis",
+    "photosTitle_bad": "Mes photos",
+    "photosTitle_visitor": "Ma photo",
+    "photosHint_bad": "De 1 à 6 photos. La première est ta photo d'identité.",
+    "photosHint_visitor": "Une seule photo sur le Permis, visage visible. La remplacer la renvoie au Greffe.",
+    "replacePhoto": "Remplacer ma photo",
+    "motive": "Motif de visite",
+    "motiveHint": "{max} caractères maximum. Les e-mails, téléphones et liens sont masqués."
   },
-  "City": {
-    "title": "Ta ville ouvre bientôt",
-    "lead": "On ouvre ville par ville, pour que chacun·e trouve du monde dès le premier soir.",
-    "zone": "Zone : {name}",
-    "profilesGauge": "{count} Fiches complètes sur {threshold}",
-    "womenGauge": "{pct} % de femmes (objectif : {threshold} %)",
-    "noZone": "Ta ville ne fait pas encore partie d'une zone de lancement. Ta Fiche est prête : on te prévient dès qu'une zone t'inclut.",
-    "open": "Ta ville est ouverte !",
-    "openLink": "Voir ma Fiche",
+  "Quarter": {
     "referralTitle": "Fais entrer tes complices",
-    "referralLead": "Plus ta ville compte de Fiches, plus vite elle ouvre. Partage ton lien :",
     "referralLabel": "Ton lien de parrainage",
     "copy": "Copier le lien",
     "copied": "Lien copié.",
     "recruited": "{count, plural, =0 {Aucun complice recruté pour l'instant} one {# complice recruté} other {# complices recrutés}}",
-    "noReward": "Aucune récompense : juste plus de monde, plus vite."
+    "noReward": "Aucune récompense : juste plus de monde, plus vite.",
+    "title": "Ton quartier ouvre bientôt",
+    "lead_bad": "Les cellules ouvrent d'abord aux Bads. Ta Fiche sera visible dès que ton quartier ouvrira aux visites.",
+    "lead_visitor": "Les Bads s'installent d'abord. Ton dossier de Permis est complet : tu pourras demander des visites quand le Greffe aura délivré ton Permis et que ton quartier ouvrira.",
+    "zone": "Quartier : {name}",
+    "badsGauge": "{count} Bads sur {threshold}",
+    "girlsGauge": "{count} bad girls sur {threshold} minimum",
+    "boysGauge": "{count} bad boys sur {threshold} minimum",
+    "visitorsWaiting": "{count, plural, =0 {Aucun Visiteur n'a encore son Permis ici} one {# Visiteur a déjà son Permis et attend l'ouverture} other {# Visiteurs ont déjà leur Permis et attendent l'ouverture}}",
+    "ready": "Le quartier a assez de Bads : l'ouverture aux visites arrive.",
+    "gaugeHint": "Seuls comptent les Bads dont la photo est validée, qui ne sont pas en pause et qui sont venus dans les 30 derniers jours.",
+    "noZone_bad": "Ta ville ne fait pas encore partie d'un quartier de lancement. Ton Dossier est prêt : on te prévient dès qu'un quartier l'inclut.",
+    "noZone_visitor": "Ta ville ne fait pas encore partie d'un quartier de lancement. Ton dossier de Permis est complet : on te prévient dès qu'un quartier l'inclut.",
+    "open": "Ton quartier est ouvert !",
+    "openLink_bad": "Voir ma Fiche",
+    "openLink_visitor": "Voir mon Permis",
+    "referralLead": "Plus ton quartier compte de Bads, plus vite il ouvre. Partage ton lien :"
   }
 }

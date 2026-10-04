@@ -4,6 +4,7 @@ import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { authErrorKey, type AuthMessageKey } from "@/lib/auth/errors";
 import { confirmUrl } from "@/lib/auth/redirects";
+import { parseRole } from "@/lib/onboarding/config";
 import { createClient } from "@/lib/supabase/server";
 import {
   fieldErrors,
@@ -42,14 +43,16 @@ export async function signUpAction(_state: AuthState, form: FormData): Promise<A
   });
   if (!parsed.success) return invalid(parsed.error);
   const ref = String(form.get("ref") ?? "").toUpperCase();
+  const role = parseRole(form.get("role"));
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     ...parsed.data,
     options: {
       emailRedirectTo: confirmUrl("/onboarding"),
       captchaToken: captchaToken(form),
-      // Referral code (SPEC §3) checked and claimed by the database at onboarding step 1.
-      data: /^[A-Z2-9]{8}$/.test(ref) ? { ref } : {},
+      // Referral code (SPEC §3) claimed by the database at onboarding step 1; the door chosen on
+      // the landing (SPEC v7 §2 bis) only preselects step 3, where the database records the role.
+      data: { ...(/^[A-Z2-9]{8}$/.test(ref) ? { ref } : {}), ...(role ? { role } : {}) },
     },
   });
   // Existing addresses get the same answer (no account enumeration).

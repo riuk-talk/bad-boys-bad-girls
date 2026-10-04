@@ -51,14 +51,14 @@ Tu travailles **phase par phase**. À la fin de chaque phase :
 - **Le Greffe, minimum vital** (validé) : file admin des photos (priorité SPEC §11), valider/refuser avec motif, copie vers le bucket public, suppression du fichier en attente, tampon « PERMIS DÉLIVRÉ » et notification in-app. (Le reste de `/admin` reste en Phase 7.) Raison : sans photo validée, personne n'est visible et aucun Visiteur ne peut demander de visite ; les Phases 4 à 6 en dépendent.
 - **Critères** : scores SQL et TS identiques ; < 5 questions communes = pas d'indice ; Casier impossible pour un Visiteur (pgTAP) ; une photo validée est servie publiquement sans EXIF et le fichier en attente est supprimé ; un non-admin ne peut appeler aucune fonction du Greffe.
 
-## Phase 4 — Promenade, Découverte, Fiche et Permis, Demande de parloir, Le Juge
+## Phase 4 — Promenade, Découverte, Fiche et Permis, Demande de parloir, Le Courrier
 - Tâches planifiées (`pg_cron`) : `run_promenades_due`, `expire_visit_requests`.
 - `build_daily_promenade` (SPEC §12, Visiteurs uniquement, répartition de l'attention, `visible_from`) + écran « La Promenade » (5 Bads, compte à rebours, états vides honnêtes).
 - `discover_bads` + page Découverte (Visiteurs uniquement).
 - Fiche publique du Bad (toise, Casier sans le vrai, complicité, 3 points communs, Bonne conduite, « Parloir complet ») ; Permis vu par un Bad (`get_permit`, Casier vierge, Visites honorées).
 - Modale **Demande de parloir** + `send_visit_request` (toutes les limites SPEC §7, plafond, anti-arnaque) ; écran « Demande déposée » sans révélation.
 - Le Souffleur (`lib/prompter`, accroches qui ne citent jamais le chef choisi, modèles FR/EN, tests) ; avertissement « Ton pari reste secret jusqu'à la visite. »
-- « Le Juge, c'est toi » : Permis, indice, 3 points communs, mot — **ni chef choisi ni résultat du pari** (règle 14) ; **Accepter** (sans créneaux à ce stade : la proposition de créneaux arrive en Phase 5, la demande reste `accepted`) / **Affaire classée** ; réglage du plafond ; conseils au Visiteur après 3 classements.
+- « Le Courrier » : Permis, indice, 3 points communs, mot — **ni chef choisi ni résultat du pari** (règle 14) ; **Accepter** (sans créneaux à ce stade : la proposition de créneaux arrive en Phase 5, la demande reste `accepted`) / **Affaire classée** ; réglage du plafond ; conseils au Visiteur après 3 classements.
 - « Mes demandes » (Visiteur).
 - Changement de rôle (`change_role`, 7 jours, effets SPEC §2 bis) ; mise en pause de la Fiche ; blocage et signalement depuis une Fiche ou un Permis.
 - **Critères** : un Bad au-dessus de 50 % de son plafond sort moins souvent en Promenade (test sur le seed) ; un Bad ne peut pas demander de visite ; la 6e demande en 24 h est refusée par la base ; redemander avant 30 jours est impossible ; au plafond → « Parloir complet » ; deux Visiteurs ne se voient jamais, deux Bads non plus ; un profil bloqué n'apparaît nulle part (pgTAP) ; `EXPLAIN ANALYZE` de `discover_bads` sur 1 000 Bads de seed < 200 ms ; génération de la Promenade pour 5 000 Visiteurs < 5 min.
@@ -67,11 +67,11 @@ Tu travailles **phase par phase**. À la fin de chaque phase :
 Découpage imposé : **5a Web Push** · **5b Heures de visite** · **5c La visite**. **Arrêt après chaque sous-phase** : validation écrite et test sur téléphone avant la suivante.
 - **5a** : clés VAPID (variables d'environnement, clé privée côté serveur uniquement), service worker (`worker-src 'self'`, jamais chargé sur la landing), `push_subscriptions`, demande d'abonnement au bon moment, guide d'installation iPhone, `push_outbox` + route `/api/cron/push` (envoi, suppression des abonnements expirés), préférences par type, contenu neutre.
 - **5b** : proposition de 2–3 créneaux avec raccourcis (« Ce soir », « Demain soir », « Ce week-end »), choix du créneau (48 h), « Aucun ne me va » (1 fois), annulation (tardive < 2 h), agenda « Mes visites » pour les deux rôles, tâche minute `run_visit_ticks` (rappels H-1 et à l'heure, délais échus).
-- **5c** : écran de visite (compte à rebours, écran d'attente, présence `join_visit`), message système « résultat du pari », messages en temps réel limités au créneau (repli par interrogation), absence à +10 min et report, deuxième absence → classement, choix de fin « Prolonger » / « Affaire classée » (24 h), Libération ; Signaler/Bloquer pendant la visite.
-- **Critères** : deux visites qui se chevauchent sont refusées par la base ; aucun message hors du créneau avant Libération ; ni le Bad ni le Visiteur ne voient le chef choisi ou le résultat du pari avant le début de la visite (règle 14, pgTAP) ; un rappel n'est jamais envoyé deux fois ; absence et Libération correctes avec horloge simulée (pgTAP) ; e2e complet de deux navigateurs : demande → acceptation → créneau → visite → Libération ; aucune notification ne contient de pseudo ni de texte ; aucun service worker ni connexion temps réel hors des écrans concernés.
+- **5c** : écran de visite (compte à rebours, écran d'attente, présence `join_visit`), message système « résultat du pari », messages en temps réel limités au créneau (repli par interrogation), absence à +10 min et report, deuxième absence → classement, choix de fin « Prolonger » / « Affaire classée » (24 h), Permis permanent ; Signaler/Bloquer pendant la visite.
+- **Critères** : deux visites qui se chevauchent sont refusées par la base ; aucun message hors du créneau avant le Permis permanent ; ni le Bad ni le Visiteur ne voient le chef choisi ou le résultat du pari avant le début de la visite (règle 14, pgTAP) ; un rappel n'est jamais envoyé deux fois ; absence et Permis permanent correctes avec horloge simulée (pgTAP) ; e2e complet de deux navigateurs : demande → acceptation → créneau → visite → Permis permanent ; aucune notification ne contient de pseudo ni de texte ; aucun service worker ni connexion temps réel hors des écrans concernés.
 
-## Phase 6 — Le Parloir libre (après Libération) et la Cavale
-- Conversation libérée : messages, temps réel avec repli, lu/non lu, compteurs, anti-spam, champ toujours visible.
+## Phase 6 — Le Parloir sans horaire (Permis permanent) et la Cavale
+- Conversation au Parloir sans horaire (Permis permanent) : messages, temps réel avec repli, lu/non lu, compteurs, anti-spam, champ toujours visible.
 - La Cavale : proposition, acceptation / contre-proposition / « pas encore », carte épinglée, avertissement lieu privé.
 - « Classer l'affaire », Signaler/Bloquer, encart sécurité.
 - Masquage des coordonnées, levé après une Cavale acceptée ou 10 messages chacun (SPEC §10), jamais pendant une visite.
@@ -87,9 +87,9 @@ Découpage imposé : **5a Web Push** · **5b Heures de visite** · **5c La visit
 
 ## Phase 8 — Audit final
 - Sécurité : relecture de toutes les politiques RLS, recherche de fuites de la clé secrète et de la clé privée VAPID, tests d'autorisation négatifs, `supabase db lint`.
-- Performance : Lighthouse sur la landing, la Promenade, la Découverte, une Fiche, « Le Juge, c'est toi » et le Parloir ; Core Web Vitals réels ; charge Realtime d'un soir à 21 h (100 visites simultanées).
+- Performance : Lighthouse sur la landing, la Promenade, la Découverte, une Fiche, « Le Courrier » et le Parloir ; Core Web Vitals réels ; charge Realtime d'un soir à 21 h (100 visites simultanées).
 - Accessibilité : clavier, lecteur d'écran, contrastes, `reduced-motion`, compte à rebours accessible.
-- Playwright : inscription Bad et Visiteur → onboarding → demande → acceptation → créneau → visite → Libération → message → Cavale acceptée → blocage → suppression de compte.
+- Playwright : inscription Bad et Visiteur → onboarding → demande → acceptation → créneau → visite → Permis permanent → message → Cavale acceptée → blocage → suppression de compte.
 - README : installation, variables d'environnement (VAPID comprises), déploiement, premier admin, ouverture d'un quartier, limites des offres gratuites, checklist avant ouverture.
 - **Critère** : liste des risques restants, classés par gravité, avec une recommandation pour chacun.
 

@@ -3,8 +3,11 @@ import { getTranslations } from "next-intl/server";
 import { signOutAction } from "@/app/[locale]/(auth)/actions";
 import { Logo } from "@/components/brand/logo";
 import { LocalizedLink } from "@/components/i18n/localized-link";
+import type { Role } from "@/lib/onboarding/config";
 
-export async function AppHeader({ onboardingDone }: { onboardingDone: boolean }) {
+type Props = { onboardingDone: boolean; role: Role | null };
+
+export async function AppHeader({ onboardingDone, role }: Props) {
   const t = await getTranslations();
   const linkClass =
     "inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-cream hover:text-gold";
@@ -22,10 +25,10 @@ export async function AppHeader({ onboardingDone }: { onboardingDone: boolean })
           {onboardingDone ? (
             <>
               <LocalizedLink href="/ma-fiche" className={linkClass}>
-                {t("App.myFiche")}
+                {role === "visitor" ? t("App.myPermit") : t("App.myFiche")}
               </LocalizedLink>
-              <LocalizedLink href="/ville-bientot" className={linkClass}>
-                {t("App.myCity")}
+              <LocalizedLink href="/quartier" className={linkClass}>
+                {t("App.myQuarter")}
               </LocalizedLink>
             </>
           ) : null}

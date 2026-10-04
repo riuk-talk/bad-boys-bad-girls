@@ -46,7 +46,7 @@ Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
   2. il peut ajouter un mot (280 caractères, facultatif), avec **Le Souffleur** qui propose 3 accroches liées au chef d'accusation choisi.
 - La demande part **dans tous les cas**, pari juste ou faux.
 - **Le résultat du pari est gardé secret jusqu'au début de la visite** : il s'affiche comme **premier message du Parloir** (« Il/elle a parié sur : "…" — Bien vu ! » ou « — Raté ! Le vrai était : "…" »). C'est le brise-glace : personne n'a à écrire le premier message.
-- Côté Bad (« Le Juge, c'est toi ») : il voit la Fiche du Visiteur, l'indice de complicité, le chef d'accusation choisi (sans le résultat) et le mot éventuel. Actions : **Accepter la visite** ou **Affaire classée** (message neutre prédéfini).
+- Côté Bad (« Le Courrier ») : il voit la Fiche du Visiteur, l'indice de complicité, le chef d'accusation choisi (sans le résultat) et le mot éventuel. Actions : **Accepter la visite** ou **Affaire classée** (message neutre prédéfini).
 - Limites inchangées (SPEC §7) : 5 demandes / 24 h par Visiteur (2 si compte < 24 h), 1 demande en cours par couple, 30 jours après un classement, plafond de demandes en attente réglable par le Bad (« Parloir complet »), anti-arnaque.
 - **Supprimé** : les plaidoiries croisées / « Coupables tous les deux » (sans objet avec des rôles séparés).
 
@@ -58,7 +58,7 @@ Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
 4. **La visite** : le Parloir s'ouvre **uniquement pendant les 30 min du créneau**, en temps réel, avec compte à rebours visible. Écran d'attente « en attente de l'autre » si une seule personne est là. Premier message automatique = résultat du pari (§3). Signaler / Bloquer toujours accessibles. Les messages sont conservés (modération, signalements).
 5. **Absence** : si l'un des deux n'est pas venu au bout de 10 min, la visite est marquée « absent ». Chacun peut demander **un report** (le Bad repropose des créneaux). Deuxième absence → affaire classée automatiquement.
 6. **Fin de visite** : chacun choisit **« Prolonger »** ou **« Affaire classée »** (dans les 24 h ; sans réponse = classée).
-   - Les deux choisissent Prolonger → **Libération** : le Parloir devient une messagerie **libre et permanente**, et la **Cavale** (rendez-vous réel, SPEC §13) devient disponible.
+   - Les deux choisissent Prolonger → **Permis permanent** : le Parloir devient une messagerie **libre et permanente**, et la **Cavale** (rendez-vous réel, SPEC §13) devient disponible.
    - Sinon → affaire classée, message neutre, délai de 30 jours.
 7. Une seule visite programmée à la fois par couple ; un Bad peut avoir plusieurs visites programmées avec des Visiteurs différents, sans chevauchement de créneaux.
 
@@ -73,8 +73,8 @@ Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
 
 - **L'Audience du soir est renommée « La Promenade »** : chaque soir à 21 h, 5 Bads « sortent dans la cour » pour chaque Visiteur (sélection par indice de complicité, avec répartition de l'attention qui protège les Bads très sollicités). Seuls les **Visiteurs** la reçoivent. C'est un raccourci quotidien ; la Découverte reste la liste complète.
 - **La Découverte** : réservée aux Visiteurs (grille de Bads).
-- **Les Bads** : leur écran d'accueil = « Le Juge, c'est toi » (demandes reçues) + « Mes visites » (agenda des visites programmées).
-- **Le tableau de santé** ajoute : répartition Bads/Visiteurs par genre et par zone, taux d'acceptation, taux de créneau choisi, taux de présence aux visites, taux de Libération après visite.
+- **Les Bads** : leur écran d'accueil = « Le Courrier » (demandes reçues) + « Mes visites » (agenda des visites programmées).
+- **Le tableau de santé** ajoute : répartition Bads/Visiteurs par genre et par zone, taux d'acceptation, taux de créneau choisi, taux de présence aux visites, taux de Permis permanent après visite.
 - **Lancement : les Bads d'abord.** Dans un quartier (zone) : 1) les inscriptions Bads ouvrent en premier (« Les cellules ouvrent à Toulon ») ; 2) les Visiteurs peuvent s'inscrire et obtenir leur permis mais restent sur **liste d'attente** avec la jauge du quartier ; 3) le quartier **ouvre aux visites** quand le seuil de Bads est atteint (par défaut 50 Bads dont au moins 40 % de bad girls, réglable par l'admin). Propose-moi le détail du calcul.
 - **Onboarding** : nouvelle étape « Ton rôle » juste après l'identité ; le Casier n'est demandé qu'aux Bads ; la photo validée est requise pour les deux rôles.
 
@@ -94,7 +94,7 @@ Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
 | Pari + mot du visiteur | Demande de visite | `visit_requests` (remplace `pleas`) |
 | Créneaux proposés | Heures de visite | `visit_slots` |
 | Visite de 30 min | La visite au Parloir | `visits` |
-| Fin de visite réussie | Libération | `visits.outcome = 'released'` |
+| Fin de visite réussie | Permis permanent | `visits.outcome = 'released'` |
 
 ## 8. Lexique complet du parcours (à appliquer dans toute l'interface)
 
@@ -107,11 +107,11 @@ Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
 | Sélection du soir | La Promenade |
 | Liste complète des Bads | La Découverte |
 | Pari + mot du Visiteur | La Demande de parloir |
-| Écran du Bad qui décide | Le Juge, c'est toi |
+| Écran du Bad qui décide | Le Courrier |
 | Refus | Affaire classée |
 | Créneaux proposés | Les Heures de visite |
 | Visite de 30 min en direct | Le Parloir |
-| Les deux veulent continuer | La Libération (messagerie libre) |
+| Les deux veulent continuer | La Permis permanent (messagerie libre) |
 | Vrai rendez-vous | La Cavale |
 | Badge de confiance du Bad | Bonne conduite |
 | Badge de confiance du Visiteur | Casier vierge |
@@ -119,3 +119,8 @@ Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
 | Bad trop sollicité | Parloir complet |
 
 Règles : les fonctions de sécurité gardent des mots simples (Signaler, Bloquer, Conseils sécurité) ; aucun insigne ni nom d'administration réelle ; style cartoon. Les termes « match », « swipe » et « like » restent interdits.
+
+## 9. Corrections de vocabulaire (2026-10-04)
+- **« Libération » est retiré** : le Parloir est le lieu où l'on discute. Quand les deux veulent continuer après une visite, **le Permis devient permanent** (le Parloir reste ouvert entre eux, sans horaire, et la Cavale devient possible).
+- **« Le Juge, c'est toi » est retiré** : le Bad n'est pas un juge, et les Visiteurs choisissent aussi. L'écran où le Bad reçoit les demandes de visite s'appelle **« Le Courrier »**.
+- Le principe de marque **« Ici, c'est toi le juge » devient « Ici, rien ne se fait sans ton accord. »** (vrai pour les deux rôles).

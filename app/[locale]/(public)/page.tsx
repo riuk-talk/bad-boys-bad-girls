@@ -1,4 +1,4 @@
-import { Gavel, Moon, ScrollText } from "lucide-react";
+import { KeyRound, Moon, ScrollText } from "lucide-react";
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -16,13 +16,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 type Step = { title: string; body: string };
+type Door = "bad" | "visitor";
+const DOORS: readonly Door[] = ["bad", "visitor"];
 
 export default function LandingPage({ params }: Props) {
   const { locale } = use(params);
   setRequestLocale(locale);
   const t = useTranslations("Landing");
   const common = useTranslations("Common");
-  const steps = t.raw("steps") as Step[];
+  const stepsByDoor = {
+    bad: t.raw("steps_bad") as Step[],
+    visitor: t.raw("steps_visitor") as Step[],
+  };
   const judgePoints = t.raw("judgePoints") as string[];
   const charterPoints = t.raw("charterPoints") as string[];
 
@@ -40,14 +45,27 @@ export default function LandingPage({ params }: Props) {
           <p className="font-display text-red text-2xl tracking-wide uppercase">
             {common("promise")}
           </p>
-          <div className="flex flex-col gap-3 min-[420px]:flex-row">
-            <ButtonLink href="/inscription" size="lg">
-              {t("heroCtaPrimary")}
-            </ButtonLink>
-            <ButtonLink href="/connexion" variant="secondary" size="lg">
-              {t("heroCtaSecondary")}
-            </ButtonLink>
+          {/* Two doors (SPEC v7 §2 bis): the role chosen here preselects onboarding step 3. */}
+          <div className="grid gap-3 min-[420px]:grid-cols-2">
+            {DOORS.map((door) => (
+              <ButtonLink
+                key={door}
+                href={`/inscription?role=${door}`}
+                variant={door === "bad" ? undefined : "secondary"}
+                size="lg"
+                className="flex-col text-center"
+              >
+                <span>{t(`door_${door}`)}</span>
+                <span className="text-sm font-normal">{t(`doorHint_${door}`)}</span>
+              </ButtonLink>
+            ))}
           </div>
+          <LocalizedLink
+            href="/connexion"
+            className="text-cream inline-flex min-h-11 items-center font-semibold underline underline-offset-4"
+          >
+            {t("heroCtaLogin")}
+          </LocalizedLink>
         </div>
         <div className="order-1 mx-auto w-full max-w-[22rem] md:order-2 md:max-w-[30rem]">
           {/* Plain <img>: the asset is pre-optimised (scripts/build-brand-assets.mjs) and
@@ -75,17 +93,39 @@ export default function LandingPage({ params }: Props) {
           >
             {t("stepsTitle")}
           </h2>
-          <ol className="mt-8 grid gap-6 md:grid-cols-3">
-            {steps.map((step, index) => (
-              <li key={step.title} className="bg-ink-3 rounded-[var(--radius-card)] p-6">
-                <p aria-hidden="true" className="font-display text-gold text-6xl">
-                  {index + 1}
-                </p>
-                <h3 className="font-display mt-2 text-2xl tracking-wide uppercase">{step.title}</h3>
-                <p className="text-cream/85 mt-2">{step.body}</p>
-              </li>
+          <div className="mt-8 grid gap-10 lg:grid-cols-2">
+            {DOORS.map((door) => (
+              <section key={door} aria-labelledby={`steps-${door}`}>
+                <h3
+                  id={`steps-${door}`}
+                  className="font-display text-gold text-3xl tracking-wide uppercase"
+                >
+                  {t(`stepsTitle_${door}`)}
+                </h3>
+                <ol className="mt-4 space-y-4">
+                  {stepsByDoor[door].map((step, index) => (
+                    <li
+                      key={step.title}
+                      className="bg-ink-3 flex gap-4 rounded-[var(--radius-card)] p-5"
+                    >
+                      <p
+                        aria-hidden="true"
+                        className="font-display text-gold text-5xl leading-none"
+                      >
+                        {index + 1}
+                      </p>
+                      <div>
+                        <h4 className="font-display text-2xl tracking-wide uppercase">
+                          {step.title}
+                        </h4>
+                        <p className="text-cream/85 mt-1">{step.body}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </section>
             ))}
-          </ol>
+          </div>
         </div>
       </section>
 
@@ -96,7 +136,7 @@ export default function LandingPage({ params }: Props) {
               id="judge-title"
               className="font-display flex items-center gap-3 text-4xl tracking-wide uppercase sm:text-5xl"
             >
-              <Gavel aria-hidden="true" className="text-gold size-10 shrink-0" />
+              <KeyRound aria-hidden="true" className="text-gold size-10 shrink-0" />
               {t("judgeTitle")}
             </h2>
             <p className="mt-4 max-w-prose text-lg">{t("judgeBody")}</p>
@@ -113,22 +153,22 @@ export default function LandingPage({ params }: Props) {
             </ul>
           </div>
           <div className="flex justify-center md:pr-6">
-            <Stamp kind="released" size="lg" tilt={-10} />
+            <Stamp kind="visitAccepted" size="lg" tilt={-10} />
           </div>
         </div>
       </section>
 
-      <section aria-labelledby="hearing-title" className="border-line/60 bg-ink-2 border-y">
+      <section aria-labelledby="promenade-title" className="border-line/60 bg-ink-2 border-y">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-14 sm:px-6 md:flex-row md:items-center md:gap-10">
           <Moon aria-hidden="true" className="text-gold size-14 shrink-0" />
           <div>
             <h2
-              id="hearing-title"
+              id="promenade-title"
               className="font-display text-4xl tracking-wide uppercase sm:text-5xl"
             >
-              {t("hearingTitle")}
+              {t("promenadeTitle")}
             </h2>
-            <p className="mt-3 max-w-prose text-lg">{t("hearingBody")}</p>
+            <p className="mt-3 max-w-prose text-lg">{t("promenadeBody")}</p>
           </div>
         </div>
       </section>
@@ -159,24 +199,33 @@ export default function LandingPage({ params }: Props) {
         </div>
       </section>
 
-      <section aria-labelledby="cities-title" className="border-line/60 bg-ink-2 border-t">
+      <section aria-labelledby="quarters-title" className="border-line/60 bg-ink-2 border-t">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
           <h2
-            id="cities-title"
+            id="quarters-title"
             className="font-display text-4xl tracking-wide uppercase sm:text-5xl"
           >
-            {t("citiesTitle")}
+            {t("quartersTitle")}
           </h2>
-          <p className="mt-3 max-w-prose text-lg">{t("citiesBody")}</p>
+          <p className="mt-3 max-w-prose text-lg">{t("quartersBody")}</p>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16 text-center sm:px-6">
         <h2 className="font-script text-gold text-5xl sm:text-6xl">{t("finalTitle")}</h2>
         <p className="mt-3 text-lg">{t("finalBody")}</p>
-        <ButtonLink href="/inscription" size="lg" className="mt-6">
-          {t("heroCtaPrimary")}
-        </ButtonLink>
+        <div className="mt-6 flex flex-col justify-center gap-3 min-[420px]:flex-row">
+          {DOORS.map((door) => (
+            <ButtonLink
+              key={door}
+              href={`/inscription?role=${door}`}
+              variant={door === "bad" ? undefined : "secondary"}
+              size="lg"
+            >
+              {t(`door_${door}`)}
+            </ButtonLink>
+          ))}
+        </div>
       </section>
     </>
   );

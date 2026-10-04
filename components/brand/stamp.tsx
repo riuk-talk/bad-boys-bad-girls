@@ -1,7 +1,23 @@
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 
-export type StampKind = "guilty" | "released" | "dismissed" | "reglo";
+export type StampKind =
+  | "guilty"
+  | "permanentPermit"
+  | "dismissed"
+  | "goodConduct"
+  | "cleanRecord"
+  | "permit"
+  | "visitAccepted";
+
+/** Trust and welcome stamps are gold; the others red (SPEC v7 §1 bis). */
+const GOLD: readonly StampKind[] = [
+  "goodConduct",
+  "cleanRecord",
+  "permit",
+  "visitAccepted",
+  "permanentPermit",
+];
 
 type StampProps = {
   kind: StampKind;
@@ -33,30 +49,25 @@ export function Stamp({
   className,
 }: StampProps) {
   const t = useTranslations("Components.stamps");
-  const color =
-    kind === "reglo"
-      ? surface === "paper"
-        ? "text-gold-ink"
-        : "text-gold"
-      : surface === "paper"
-        ? "text-red-ink"
-        : "text-red-bright";
+  const color = GOLD.includes(kind)
+    ? surface === "paper"
+      ? "text-gold-ink"
+      : "text-gold"
+    : surface === "paper"
+      ? "text-red-ink"
+      : "text-red-bright";
   const label = t(kind);
-  const ariaLabel = kind === "released" ? t("releasedAria") : undefined;
-  const round = kind === "reglo";
 
   return (
     <span
       role="img"
-      aria-label={ariaLabel ?? label}
+      aria-label={label}
       style={{ rotate: `${tilt}deg` }}
       className={cn(
         "font-stamp relative inline-flex items-center justify-center border-[3px] border-current leading-none tracking-[0.12em] uppercase select-none",
         "before:pointer-events-none before:absolute before:inset-[3px] before:border before:border-current before:content-['']",
         "[mask-image:radial-gradient(circle_at_30%_40%,#000_55%,rgb(0_0_0/0.82)_70%,#000_100%)]",
-        round
-          ? "aspect-square rounded-full before:rounded-full"
-          : "rounded-sm before:rounded-[1px]",
+        "rounded-sm before:rounded-[1px]",
         surface === "paper" ? "mix-blend-multiply" : "",
         animated ? "animate-stamp" : "",
         color,

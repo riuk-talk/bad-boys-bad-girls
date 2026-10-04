@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Inscription Bad · Teste ton Casier</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F2E8D5}a:hover{color:#D4A437}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 844px; background: #0A0A0C; color: #F2E8D5; font-family: 'Inter Tight', sans-serif; display: flex; flex-direction: column">
+<div style="padding: 16px 20px 0; display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; color: #B8AE9C; min-height: 44px; display: flex; align-items: center">Dossier · étape 6 sur 8</div>
+<div aria-hidden="true" style="height: 4px; background: #2A2A2E; border-radius: 4px"><div style="width: 75%; height: 4px; background: #D4A437; border-radius: 4px"></div></div>
+</div>
+<section style="padding: 22px 20px 0; text-align: center; display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 3px; color: #D4A437">TESTE TON CASIER</p>
+<h1 style="margin: 0; font-family: Anton, sans-serif; font-size: 34px; line-height: 1.05; text-transform: uppercase">Voilà ce que verront<br>les Visiteurs</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #E6DCC8">Mets-toi à leur place : le vrai se devine-t-il trop facilement ? Un bon Casier, ce sont trois chefs d'accusation aussi crédibles les uns que les autres.</p>
+</section>
+<section style="margin: 18px 20px 0; background: #F2E8D5; color: #0E0E10; border-radius: 4px; padding: 16px">
+<p style="margin: 0 0 10px; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 2px; color: #6A5F55; text-align: center">TON CASIER · APERÇU</p>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+<li style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 2px solid #CFC4AE; border-radius: 3px"><span style="font-family: Anton, sans-serif; font-size: 20px; color: #B5172E">1</span><span style="font-family: 'Special Elite', monospace; font-size: 15px; line-height: 1.4">[Ton premier chef d'accusation]</span></li>
+<li style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 3px solid #1F7A4A; border-radius: 3px; position: relative"><span style="font-family: Anton, sans-serif; font-size: 20px; color: #B5172E">2</span><span style="font-family: 'Special Elite', monospace; font-size: 15px; line-height: 1.4">[Ton chef d'accusation vrai]</span><span style="position: absolute; top: -10px; right: 10px; background: #1F7A4A; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px">LE VRAI · visible par toi seul</span></li>
+<li style="display: flex; gap: 12px; padding: 12px; background: #FFFFFF; border: 2px solid #CFC4AE; border-radius: 3px"><span style="font-family: Anton, sans-serif; font-size: 20px; color: #B5172E">3</span><span style="font-family: 'Special Elite', monospace; font-size: 15px; line-height: 1.4">[Ton troisième chef d'accusation]</span></li>
+</ol>
+</section>
+<section style="margin: 16px 20px 0; padding: 14px 16px; background: #121214; border: 1px solid #2A2A2E; border-radius: 6px; display: flex; flex-direction: column; gap: 8px">
+<p style="margin: 0; font-family: Anton, sans-serif; font-size: 16px; text-transform: uppercase; color: #D4A437">Les conseils du Souffleur</p>
+<ul style="margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.5; color: #E6DCC8">
+<li>Même longueur pour les trois phrases : une phrase plus détaillée trahit souvent le vrai.</li>
+<li>Des faux plausibles : ni impossibles, ni trop banals.</li>
+<li>Un vrai surprenant : c'est lui qui fera parler au Parloir.</li>
+</ul>
+</section>
+<div style="margin-top: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+<a href="#next" style="display: flex; justify-content: center; align-items: center; min-height: 52px; background: #D4A437; color: #0E0E10; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; text-decoration: none; border-radius: 4px">Mon Casier est prêt</a>
+<a href="#edit" style="display: flex; justify-content: center; align-items: center; min-height: 48px; border: 2px solid #4A4A50; color: #F2E8D5; font-family: Anton, sans-serif; font-size: 17px; text-transform: uppercase; text-decoration: none; border-radius: 4px">Le retravailler</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -15,11 +15,12 @@ export type FicheCardData = {
   signs: string[];
   charges: string[];
   bio?: string | null;
-  isReglo?: boolean;
+  /** Bonne conduite badge (column profiles.is_reglo, SPEC v7 §14). */
+  goodConduct?: boolean;
 };
 
 /**
- * The Fiche as a case file (SPEC §1 bis): aged paper, black header band, case number,
+ * The Bad's Fiche as a case file (SPEC v7 §1 bis): aged paper, black header band, case number,
  * paperclip, ID photo on the height chart. Vertical on mobile, landscape from 1024 px.
  */
 export function FicheCard({ data, className }: { data: FicheCardData; className?: string }) {
@@ -73,10 +74,10 @@ export function FicheCard({ data, className }: { data: FicheCardData; className?
             {t("age", { age: data.age })} · {data.city}
           </p>
         </header>
-        <div className={cn("relative space-y-5 py-5 pl-5", data.isReglo ? "pr-24" : "pr-5")}>
-          {data.isReglo ? (
+        <div className={cn("relative space-y-5 py-5 pl-5", data.goodConduct ? "pr-28" : "pr-5")}>
+          {data.goodConduct ? (
             <span className="absolute top-3 right-4">
-              <Stamp kind="reglo" surface="paper" size="sm" tilt={10} />
+              <Stamp kind="goodConduct" surface="paper" size="sm" tilt={10} />
             </span>
           ) : null}
           {data.signs.length > 0 ? (
