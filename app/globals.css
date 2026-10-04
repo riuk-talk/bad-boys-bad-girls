@@ -116,3 +116,83 @@
     repeating-linear-gradient(0deg, rgb(120 90 40 / 0.035) 0 1px, transparent 1px 3px);
   color: var(--color-ink);
 }
+
+/*
+ * Landing "centrée" (LANDING-DESIGN.md §1): neon glows, height-chart lines, cell bars,
+ * visiting-room glass, ticker. Pure CSS: no JavaScript. Glows never replace text contrast.
+ */
+.neon-red {
+  text-shadow:
+    0 0 6px #ff3355,
+    0 0 18px #ff3355,
+    0 0 40px #e0233f;
+}
+.neon-gold {
+  text-shadow:
+    0 0 6px #d4a437,
+    0 0 18px #d4a437;
+}
+/* The neon sign: a brief, occasional dip (once every 9 s, < 3 flashes per second, WCAG 2.3.1). */
+.neon-sign {
+  text-shadow:
+    0 0 6px #ff3355,
+    0 0 18px #ff3355,
+    0 0 40px #e0233f;
+  box-shadow:
+    0 0 12px rgb(255 51 85 / 0.55),
+    inset 0 0 12px rgb(255 51 85 / 0.35);
+  animation: neon-flicker 9s linear infinite;
+}
+@keyframes neon-flicker {
+  0%,
+  94%,
+  95.5%,
+  100% {
+    opacity: 1;
+  }
+  94.6% {
+    opacity: 0.4;
+  }
+  96.2% {
+    opacity: 0.6;
+  }
+}
+.landing-toise {
+  background-image: repeating-linear-gradient(to bottom, #222226 0 1px, transparent 1px 44px);
+}
+.door-cell {
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0 22px,
+    rgb(242 232 213 / 0.16) 22px 26px
+  );
+}
+.door-glass {
+  background-image:
+    linear-gradient(
+      115deg,
+      transparent 0 30%,
+      rgb(242 232 213 / 0.1) 30% 38%,
+      transparent 38% 46%,
+      rgb(242 232 213 / 0.06) 46% 50%,
+      transparent 50%
+    ),
+    linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0));
+}
+.landing-marquee {
+  animation: landing-marquee 22s linear infinite;
+}
+@keyframes landing-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .neon-sign,
+  .landing-marquee {
+    animation: none !important;
+  }
+}

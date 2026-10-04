@@ -48,18 +48,11 @@
   },
   "Landing": {
     "heroEyebrow": "Dating site · 18+",
-    "heroTitle": "For those who've always been called too much.",
+    "heroTitle": "For those who've always been called <glow>too much.</glow>",
     "heroLead": "Here, Bads put themselves on show and Visitors come to see them. No photos to scroll through endlessly: a visit request, a bet on a Record, and a real conversation in the Visiting Room.",
     "logoAlt": "Bad Boys & Bad Girls, Guilty of charm…",
     "consentTitle": "Here, nothing happens without your consent.",
     "consentBody": "Bad or Visitor, everyone stays in control. The Bad chooses who to receive, the Visitor chooses who to visit and when.",
-    "consentPoints": [
-      "Bad side: nobody talks to you in the Visiting Room unless you've accepted their visit.",
-      "Bad side: you choose how many requests can wait for you at the same time. Beyond that, your Visiting Room shows as full.",
-      "Visitor side: you choose the time of your visit from the ones offered.",
-      "For everyone: dismissing a case sends a neutral, respectful message. Never silence, never a justification.",
-      "For everyone: after a visit, nothing continues unless you both agree."
-    ],
     "charterTitle": "Bad, not toxic.",
     "charterLead": "“Bad” is an attitude and a style. Never an excuse.",
     "charterPoints": [
@@ -109,7 +102,37 @@
     "promenadeTitle": "The Yard",
     "promenadeBody": "Every night at 9 pm, five Bads step out into the yard for each Visitor, picked from your answers to the questionnaire. A selection, not an endless catalogue.",
     "quartersTitle": "Bads first",
-    "quartersBody": "An empty dating site is useless. We open block by block, starting with the Var and the Alpes-Maritimes. Bads sign up first; Visitors get their Permit and follow their block's gauge. Visits open once there are enough Bads."
+    "quartersBody": "An empty dating site is useless. We open block by block, starting with the Var and the Alpes-Maritimes. Bads sign up first; Visitors get their Permit and follow their block's gauge. Visits open once there are enough Bads.",
+    "sign": "Open for visits",
+    "doorLabel_bad": "Cell B",
+    "doorLabel_visitor": "Visiting room",
+    "ticker": ["Guilty of charm", "Bad, not toxic", "Here, nothing happens without your consent"],
+    "sideKicker_bad": "You put yourself on show",
+    "sideKicker_visitor": "You come to visit",
+    "pieceLabel": "Exhibit no. {number}",
+    "promenadeTime": "9 PM",
+    "finalCta_bad": "Open my Case File",
+    "finalCta_visitor": "Get my Permit",
+    "consentGroups": [
+      {
+        "title": "Bad side",
+        "points": [
+          "Nobody talks to you in the Visiting Room unless you've accepted their visit.",
+          "You choose how many requests can wait for you at the same time. Beyond that, your Visiting Room shows as full."
+        ]
+      },
+      {
+        "title": "Visitor side",
+        "points": ["You choose the time of your visit from the ones offered."]
+      },
+      {
+        "title": "For everyone",
+        "points": [
+          "Dismissing a case sends a neutral, respectful message. Never silence, never a justification.",
+          "After a visit, nothing continues unless you both agree."
+        ]
+      }
+    ]
   },
   "Auth": {
     "loginTitle": "Log in",
@@ -234,11 +257,7 @@
     "pseudoHint": "3 to 20 characters.",
     "pseudoError": "This nickname is taken.",
     "city": "City",
-    "cities": [
-      "Toulon",
-      "Nice",
-      "Hyères"
-    ],
+    "cities": ["Toulon", "Nice", "Hyères"],
     "consent": "I am 18 or older",
     "badges": "Badges",
     "badgeOpen": "Open to visits",
@@ -248,10 +267,7 @@
     "fiche": "File card",
     "ficheSamplePseudo": "Sample",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": [
-      "Biker — Kawasaki Z650 café racer",
-      "Tattooed"
-    ],
+    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tattooed"],
     "ficheSampleCharges": [
       "Once rode across Spain without booking a single night",
       "Has a tattoo they refuse to explain",
@@ -405,9 +421,7 @@
         },
         {
           "title": "8. Governing law",
-          "paragraphs": [
-            "[TO COMPLETE: governing law and competent court]"
-          ]
+          "paragraphs": ["[TO COMPLETE: governing law and competent court]"]
         }
       ]
     },
@@ -490,9 +504,7 @@
         },
         {
           "title": "Website",
-          "paragraphs": [
-            "Website address: [DOMAINE]"
-          ]
+          "paragraphs": ["Website address: [DOMAINE]"]
         }
       ]
     }
