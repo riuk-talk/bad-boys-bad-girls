@@ -14,7 +14,7 @@ function shape(value: unknown, path = ""): string[] {
   return [path];
 }
 
-/** Every displayed string, without the keys (technical names such as "judgeTitle" may stay). */
+/** Every displayed string, without the keys (vocabulary rules apply to what members read). */
 function values(value: unknown): string[] {
   if (typeof value === "string") return [value];
   if (Array.isArray(value)) return value.flatMap(values);
@@ -44,10 +44,13 @@ describe("messages", () => {
     expect(text).not.toMatch(/libér|aveu|devine[rz]? (le|lequel)/);
     // Correction n° 2: the Bad is not a judge; the principle is "rien ne se fait sans ton accord".
     expect(text).not.toMatch(/\bjuges?\b/);
+    // The Bad "passe à la toise" (height chart), never "se met en vitrine".
+    expect(text).not.toMatch(/vitrine/);
     const english = values(en).join("\n").toLowerCase();
     expect(english).not.toMatch(/\bplead|\bpleas?\b|\blegit\b|evening hearing|both guilty/);
     expect(english).not.toMatch(/releas|confession|guess which/);
     expect(english).not.toMatch(/\bjudges?\b/);
+    expect(english).not.toMatch(/on show\b|shop window/);
   });
 });
 

@@ -24,9 +24,9 @@
 |---|---|
 | heroEyebrow | Site de rencontre · 18+ |
 | heroTitle | Pour ceux qu'on a toujours trouvés trop. |
-| heroLead | Ici, les Bads se mettent en vitrine et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir. |
+| heroLead | Ici, les Bads passent à la toise et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir. |
 | door_bad | Je suis Bad |
-| doorHint_bad | Je me mets en vitrine, je reçois des visites |
+| doorHint_bad | Je passe à la toise, je reçois des visites |
 | door_visitor | Je viens visiter |
 | doorHint_visitor | Je cherche un bad boy ou une bad girl |
 | heroCtaLogin | J'ai déjà un compte |

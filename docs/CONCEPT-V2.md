@@ -6,7 +6,7 @@
 
 ## 1. Deux rôles : le Bad et le Visiteur
 
-- À l'inscription, chaque membre choisit **un rôle** : **Bad** (il se met en vitrine et reçoit des demandes de visite) ou **Visiteur** (il demande des visites aux Bads). Les deux genres peuvent prendre les deux rôles.
+- À l'inscription, chaque membre choisit **un rôle** : **Bad** (il passe à la toise et reçoit des demandes de visite) ou **Visiteur** (il demande des visites aux Bads). Les deux genres peuvent prendre les deux rôles.
 - Le rôle est **modifiable** dans les paramètres :
   - Bad → Visiteur : le Casier est masqué ; les demandes de visite en attente sont classées avec le message neutre ; les visites programmées sont annulées avec notification à l'autre personne.
   - Visiteur → Bad : le Casier doit être rempli avant que la Fiche apparaisse ; les demandes envoyées en attente sont annulées.
@@ -17,7 +17,7 @@
 Inchangée (SPEC §5) + le Casier (§2 ci-dessous).
 
 ### Deux portes dès la page d'accueil
-- Deux boutons : **« Je suis Bad »** (je me mets en vitrine, je reçois des visites) et **« Je viens visiter »** (je cherche un bad boy ou une bad girl). Chacun mène à son propre parcours d'inscription ; le rôle est fixé avant la création du compte.
+- Deux boutons : **« Je suis Bad »** (je passe à la toise, je reçois des visites) et **« Je viens visiter »** (je cherche un bad boy ou une bad girl). Chacun mène à son propre parcours d'inscription ; le rôle est fixé avant la création du compte.
 
 ### Fiche du Visiteur = « Le Permis de visite » (obligatoire, non négociable pour la sécurité des Bads)
 - Pseudo, âge, ville, **1 photo validée par la modération** (visage visible), présentation courte (280 caractères), signes distinctifs (facultatifs), QCM (10 questions du socle, pour l'indice de complicité).

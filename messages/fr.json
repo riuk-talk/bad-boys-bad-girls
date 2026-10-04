@@ -12,7 +12,7 @@
     "signature": "Coupables de charme…",
     "promise": "Bad, pas toxique.",
     "forWho": "Pour ceux qu'on a toujours trouvés trop.",
-    "judge": "Ici, rien ne se fait sans ton accord.",
+    "consent": "Ici, rien ne se fait sans ton accord.",
     "signup": "S'inscrire",
     "login": "Se connecter",
     "backHome": "Retour à l'accueil",
@@ -48,18 +48,11 @@
   },
   "Landing": {
     "heroEyebrow": "Site de rencontre · 18+",
-    "heroTitle": "Pour ceux qu'on a toujours trouvés trop.",
-    "heroLead": "Ici, les Bads se mettent en vitrine et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.",
+    "heroTitle": "Pour ceux qu'on a toujours trouvés <glow>trop.</glow>",
+    "heroLead": "Ici, les Bads passent à la toise et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.",
     "logoAlt": "Bad Boys & Bad Girls, Coupables de charme…",
-    "judgeTitle": "Ici, rien ne se fait sans ton accord.",
-    "judgeBody": "Bad ou Visiteur, chacun garde la main. Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand.",
-    "judgePoints": [
-      "Côté Bad : personne ne te parle au Parloir sans que tu aies accepté sa visite.",
-      "Côté Bad : tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet.",
-      "Côté Visiteur : tu choisis l'heure de ta visite parmi celles proposées.",
-      "Pour tous : classer une affaire envoie un message neutre et respectueux. Jamais de silence, jamais de justification.",
-      "Pour tous : après une visite, rien ne continue sans l'accord des deux."
-    ],
+    "consentTitle": "Ici, rien ne se fait sans ton accord.",
+    "consentBody": "Bad ou Visiteur, chacun garde la main. Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand.",
     "charterTitle": "Bad, pas toxique.",
     "charterLead": "« Bad », c'est une attitude et une esthétique. Jamais une excuse.",
     "charterPoints": [
@@ -71,7 +64,7 @@
     "finalTitle": "Coupables de charme…",
     "finalBody": "Ton Dossier ou ton Permis t'attend.",
     "door_bad": "Je suis Bad",
-    "doorHint_bad": "Je me mets en vitrine, je reçois des visites",
+    "doorHint_bad": "Je passe à la toise, je reçois des visites",
     "door_visitor": "Je viens visiter",
     "doorHint_visitor": "Je cherche un bad boy ou une bad girl",
     "heroCtaLogin": "J'ai déjà un compte",
@@ -109,7 +102,43 @@
     "promenadeTitle": "La Promenade",
     "promenadeBody": "Chaque soir à 21 h, cinq Bads sortent dans la cour pour chaque Visiteur, choisis selon vos réponses au questionnaire. Une sélection, pas un catalogue sans fin.",
     "quartersTitle": "Les Bads d'abord",
-    "quartersBody": "Un site de rencontre vide ne sert à rien. On ouvre quartier par quartier, en commençant par le Var et les Alpes-Maritimes. Les Bads s'inscrivent en premier ; les Visiteurs prennent leur Permis et suivent la jauge de leur quartier. Les visites ouvrent quand il y a assez de Bads."
+    "quartersBody": "Un site de rencontre vide ne sert à rien. On ouvre quartier par quartier, en commençant par le Var et les Alpes-Maritimes. Les Bads s'inscrivent en premier ; les Visiteurs prennent leur Permis et suivent la jauge de leur quartier. Les visites ouvrent quand il y a assez de Bads.",
+    "sign": "Ouvert aux visites",
+    "doorLabel_bad": "Cellule B",
+    "doorLabel_visitor": "Parloir",
+    "ticker": [
+      "Coupables de charme",
+      "Bad, pas toxique",
+      "Ici, rien ne se fait sans ton accord"
+    ],
+    "sideKicker_bad": "Tu passes à la toise",
+    "sideKicker_visitor": "Tu viens en visite",
+    "pieceLabel": "Pièce n° {number}",
+    "promenadeTime": "21:00",
+    "finalCta_bad": "Ouvrir mon Dossier",
+    "finalCta_visitor": "Prendre mon Permis",
+    "consentGroups": [
+      {
+        "title": "Côté Bad",
+        "points": [
+          "Personne ne te parle au Parloir sans que tu aies accepté sa visite.",
+          "Tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet."
+        ]
+      },
+      {
+        "title": "Côté Visiteur",
+        "points": [
+          "Tu choisis l'heure de ta visite parmi celles proposées."
+        ]
+      },
+      {
+        "title": "Pour tous",
+        "points": [
+          "Classer une affaire envoie un message neutre et respectueux. Jamais de silence, jamais de justification.",
+          "Après une visite, rien ne continue sans l'accord des deux."
+        ]
+      }
+    ]
   },
   "Auth": {
     "loginTitle": "Se connecter",
@@ -183,7 +212,9 @@
       "cleanRecord": "CASIER VIERGE",
       "permit": "PERMIS DÉLIVRÉ",
       "visitAccepted": "VISITE ACCEPTÉE",
-      "permanentPermit": "PERMIS PERMANENT"
+      "permanentPermit": "PERMIS PERMANENT",
+      "rightGuess": "BIEN VU !",
+      "wrongGuess": "RATÉ !"
     },
     "fiche": {
       "caseNumber": "Dossier {number}",
@@ -234,7 +265,11 @@
     "pseudoHint": "De 3 à 20 caractères.",
     "pseudoError": "Ce pseudo est déjà pris.",
     "city": "Ville",
-    "cities": ["Toulon", "Nice", "Hyères"],
+    "cities": [
+      "Toulon",
+      "Nice",
+      "Hyères"
+    ],
     "consent": "J'ai 18 ans ou plus",
     "badges": "Badges",
     "badgeOpen": "Ouvert aux visites",
@@ -244,7 +279,10 @@
     "fiche": "Carte Fiche",
     "ficheSamplePseudo": "Exemple",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tatoué·e"],
+    "ficheSampleSigns": [
+      "Biker — Kawasaki Z650 café racer",
+      "Tatoué·e"
+    ],
     "ficheSampleCharges": [
       "A déjà traversé l'Espagne en moto sans réserver une seule nuit",
       "A un tatouage dont il refuse d'expliquer le sens",
@@ -398,7 +436,9 @@
         },
         {
           "title": "8. Droit applicable",
-          "paragraphs": ["[À COMPLÉTER : droit applicable et juridiction compétente]"]
+          "paragraphs": [
+            "[À COMPLÉTER : droit applicable et juridiction compétente]"
+          ]
         }
       ]
     },
@@ -481,7 +521,9 @@
         },
         {
           "title": "Site",
-          "paragraphs": ["Adresse du site : [DOMAINE]"]
+          "paragraphs": [
+            "Adresse du site : [DOMAINE]"
+          ]
         }
       ]
     }
@@ -505,7 +547,8 @@
       "seeking_bad": "Qui tu cherches",
       "seeking_visitor": "Qui tu viens voir",
       "photo": "Ta photo",
-      "motive": "Ton Motif de visite"
+      "motive": "Ton Motif de visite",
+      "practice": "Un vrai, deux faux. Lequel est vrai ?"
     },
     "age": {
       "lead": "Bad Boys & Bad Girls est réservé aux adultes. Ta date de naissance sert uniquement à le vérifier : seul ton âge sera affiché.",
@@ -583,7 +626,7 @@
       "legend": "Ton rôle",
       "bad": {
         "title": "Je suis Bad",
-        "body": "Je me mets en vitrine avec mon Casier. Les Visiteurs me demandent une visite, et c'est moi qui décide."
+        "body": "Je passe à la toise avec mon Casier. Les Visiteurs me demandent une visite, et c'est moi qui décide."
       },
       "visitor": {
         "title": "Je viens visiter",
@@ -595,6 +638,24 @@
       "lead": "Ce que les Bads liront avant d'accepter ta visite. Sois toi-même, en quelques lignes.",
       "label": "Motif de visite",
       "hint": "{max} caractères maximum. Les e-mails, téléphones et liens sont masqués."
+    },
+    "practice": {
+      "kicker": "Entraîne-toi",
+      "lead": "Chaque Bad a un Casier comme celui-ci. Pour lui demander une visite, tu paries sur le chef d'accusation que tu crois vrai.",
+      "caseLabel": "Exemple fictif · Casier n° 000",
+      "charges": [
+        "A traversé l'Espagne à moto sans réserver une seule nuit.",
+        "S'est fait sortir d'un karaoké pour avoir chanté trop fort.",
+        "A un tatouage dont personne ne connaît le sens."
+      ],
+      "chooseHint": "Touche le chef d'accusation que tu crois vrai.",
+      "trueLabel": "Le vrai",
+      "yourBet": "Ton pari",
+      "revealRight": "Bien joué : c'était le vrai. Les deux autres étaient inventés.",
+      "revealWrong": "Le vrai était : « {charge} » Les deux autres étaient inventés.",
+      "secretNote": "Sur le site, le verdict reste <strong>secret jusqu'à la visite</strong>. Il s'affiche en premier message du Parloir, pour vous deux. Juste ou faux, ta demande part toujours.",
+      "cta": "J'ai compris, je prends mon Permis",
+      "skip": "Passer"
     }
   },
   "MyFiche": {

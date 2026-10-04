@@ -1,5 +1,6 @@
 // Generates every brand asset from the two sources in public/brand:
-// logo.svg (flat monogram) and logo-3d.png (supplied 3D logo).
+// logo.svg (flat monogram), logo-3d.png (supplied 3D logo, on black: Open Graph image) and
+// logo-3d-transparent.png (same logo, transparent: landing).
 // Run with `pnpm brand:build` after changing a source file; outputs are committed.
 import { readFile, writeFile } from "node:fs/promises";
 import sharp from "sharp";
@@ -42,18 +43,20 @@ await sharp(Buffer.from(maskable), { density: 400 })
   .png()
   .toFile(new URL("icon-maskable-512.png", brand).pathname);
 
-// Landing hero (LCP element): pre-optimised AVIF, ~35 % lighter than WebP. Every browser
+// Landing hero (LCP element): the transparent 3D logo (black background removed, cropped,
+// LANDING-DESIGN.md §1), pre-optimised AVIF with alpha, ~35 % lighter than WebP. Every browser
 // supported by Next.js 16 (Safari 16.4+, Chrome/Firefox 111+) decodes AVIF. No runtime
 // image optimisation (SPEC §11).
 const logo3d = new URL("logo-3d.png", brand).pathname;
+const logo3dTransparent = new URL("logo-3d-transparent.png", brand).pathname;
 for (const width of [360, 560, 840]) {
-  await sharp(logo3d)
+  await sharp(logo3dTransparent)
     .resize(width)
     .avif({ quality: 55, effort: 6 })
-    .toFile(new URL(`logo-3d-${width}.avif`, brand).pathname);
+    .toFile(new URL(`logo-3d-t-${width}.avif`, brand).pathname);
 }
 
-// Open Graph image 1200×630: the 3D logo centred on ink.
+// Open Graph image 1200×630: the 3D logo on black (social networks render transparency badly).
 const ogLogo = await sharp(logo3d).resize(630).toBuffer();
 await sharp({ create: { width: 1200, height: 630, channels: 3, background: INK } })
   .composite([{ input: ogLogo, left: 285, top: 0 }])

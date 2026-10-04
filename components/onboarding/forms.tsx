@@ -1,23 +1,26 @@
 "use client";
 
-import { ImagePlus } from "lucide-react";
+import { Check, ImagePlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useId, useState, type ReactNode } from "react";
 import {
   saveAgeStep,
   saveIdentityStep,
   saveMotiveStep,
+  savePracticeStep,
   saveRoleStep,
   saveSeekingStep,
   uploadPhotoAction,
   type StepState,
 } from "@/app/[locale]/(app)/onboarding/actions";
+import { Stamp } from "@/components/brand/stamp";
 import { Toise } from "@/components/brand/toise";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
+import { cn } from "@/lib/cn";
 import { submitWithoutReset } from "@/lib/forms/submit";
 import { ROLES, VISIT_MOTIVE_MAX, type Role } from "@/lib/onboarding/config";
 import { Constants, type Database } from "@/lib/supabase/database.types";
@@ -426,6 +429,119 @@ export function MotiveStepForm({ motive }: { motive: string }) {
         error={step.error("motive")}
       />
       <Submit pending={step.pending}>{t("finish")}</Submit>
+      <Alert message={step.message} />
+    </form>
+  );
+}
+
+/** The true charge of the fictional practice Record (the 2nd one, LANDING-DESIGN.md §2.1). */
+const PRACTICE_TRUE_INDEX = 1;
+
+/**
+ * Visitor step « Entraîne-toi »: a fictional Record to try the bet once. Purely local: the
+ * answer is never sent; submitting (or « Passer ») only moves to the next step.
+ */
+export function PracticeStepForm() {
+  const t = useTranslations("Onboarding.practice");
+  const step = useStep(savePracticeStep, "practice-form");
+  const charges = t.raw("charges") as string[];
+  const [bet, setBet] = useState<number | null>(null);
+  const answered = bet !== null;
+  const right = bet === PRACTICE_TRUE_INDEX;
+
+  return (
+    <form id="practice-form" onSubmit={step.onSubmit} noValidate className="space-y-5">
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          className="text-cream inline-flex min-h-11 items-center font-semibold underline underline-offset-4"
+        >
+          {t("skip")}
+        </button>
+      </div>
+      <p className="text-cream/85 text-center">{t("lead")}</p>
+      <section
+        aria-labelledby="practice-case"
+        className="paper space-y-3 overflow-x-clip rounded-[var(--radius-card)] p-4"
+      >
+        <h2
+          id="practice-case"
+          className="font-stamp text-grey-ink text-center text-sm tracking-[0.15em] uppercase"
+        >
+          {t("caseLabel")}
+        </h2>
+        {answered ? null : <p className="text-grey-ink text-center text-sm">{t("chooseHint")}</p>}
+        <ol className="space-y-2.5">
+          {charges.map((charge, index) => {
+            const isTrue = index === PRACTICE_TRUE_INDEX;
+            const isBet = index === bet;
+            return (
+              <li key={charge}>
+                <button
+                  type="button"
+                  disabled={answered}
+                  aria-pressed={isBet}
+                  onClick={() => setBet(index)}
+                  className={cn(
+                    "font-stamp relative flex min-h-11 w-full items-start gap-3 rounded-md border-2 bg-white/70 px-3 py-2.5 text-left",
+                    !answered && "border-paper-shade hover:border-gold-ink",
+                    answered && isTrue && "border-green-ink",
+                    answered && !isTrue && isBet && "border-red-ink",
+                    answered && !isTrue && !isBet && "border-paper-shade opacity-70",
+                  )}
+                >
+                  <span aria-hidden="true" className="text-red-ink">
+                    {index + 1}
+                  </span>
+                  <span className="flex-1">{charge}</span>
+                  {answered && isTrue ? (
+                    <span className="bg-green-ink inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-sans text-xs font-bold text-white">
+                      <Check aria-hidden="true" className="size-3.5" />
+                      {t("trueLabel")}
+                    </span>
+                  ) : null}
+                  {answered && isBet && !isTrue ? (
+                    <span className="bg-red-ink inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-sans text-xs font-bold text-white">
+                      <X aria-hidden="true" className="size-3.5" />
+                      {t("yourBet")}
+                    </span>
+                  ) : null}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+        <div aria-live="polite" className="space-y-2 text-center">
+          {answered ? (
+            <>
+              <Stamp
+                kind={right ? "rightGuess" : "wrongGuess"}
+                surface="paper"
+                size="md"
+                animated
+                tilt={right ? -6 : 5}
+              />
+              <p className="text-sm">
+                {right
+                  ? t("revealRight")
+                  : t("revealWrong", { charge: charges[PRACTICE_TRUE_INDEX] ?? "" })}
+              </p>
+            </>
+          ) : null}
+        </div>
+      </section>
+      <p className="border-line rounded-[var(--radius-card)] border border-dashed p-4 text-center text-sm">
+        {t.rich("secretNote", { strong: (chunks) => <strong>{chunks}</strong> })}
+      </p>
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={step.pending}
+        aria-busy={step.pending}
+      >
+        {t("cta")}
+      </Button>
       <Alert message={step.message} />
     </form>
   );

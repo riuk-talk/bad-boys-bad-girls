@@ -4,8 +4,26 @@
 
 ## Phase en cours
 
-**Phase 2b — mise à niveau du code livré au concept v2 : terminée, en attente de validation** (branche `phase-2b-concept-v2`).
-Concept v2 **validé** le 2026-10-03 (`docs/CONCEPT-V2-DECISIONS.md`), documentation intégrée sur la branche `concept-v2` (PR #6 vers `main`).
+**Phase 2c — Habillage : terminée, en attente de validation** (branche `phase-2c-habillage`). Phase 2b validée et fusionnée (PR #7, avec la PR #6).
+
+## Phase 2c — Habillage (2026-10-04, `docs/LANDING-DESIGN.md`)
+
+### Fait (vérifié)
+- **2c-0** clés i18n `judge*` → `consent*` (commit séparé).
+- **2c-1 Logo transparent** : `logo-3d-t-360/560/840.avif` générés par `pnpm brand:build` depuis `logo-3d-transparent.png` (560 px : 46 Ko) ; l'image Open Graph garde `logo-3d.png` sur fond noir ; anciennes variantes opaques supprimées. L'en-tête garde le monogramme plat SVG.
+- **2c-2 Landing centrée** (tout en CSS, aucun JS) : enseigne néon « Ouvert aux visites » (éclat bref toutes les 9 s, < 3 éclats/s), logo transparent, « trop. » en or lumineux, toise des deux côtés, porte **cellule** (barreaux, « Cellule B ») et porte **vitre de parloir** (reflets, hygiaphone, combiné), bandeau défilant, pièces à conviction (Bad), cartes néon (Visiteur), « 21:00 », les 5 phrases d'accord sous « Côté Bad / Côté Visiteur / Pour tous » (préfixes retirés), intro et « Les Bads d'abord » conservées, Charte, deux boutons finaux. Animations coupées avec `prefers-reduced-motion`.
+- **2c-3 « Entraîne-toi »** : étape 4 du Visiteur (7 étapes), Casier fictif « n° 000 », tampons BIEN VU ! / RATÉ !, vrai signalé par icône + texte, rappel du secret, « Passer » ; rien n'est enregistré sauf le numéro d'étape. Les numéros d'étape sont désormais calculés depuis la liste du rôle ; changer de rôle renvoie aux étapes qui suivent.
+- **Vert** : `#1D6B43` (papier, 5,06:1) et `#3CCF86` (sombre, 9,6:1), réservé à « BIEN VU ! » / « LE VRAI » (SPEC v7.3 §1 bis).
+- **Vérifications** : typecheck, lint, 68 tests unitaires, build, **52 tests e2e** (dont onboarding Visiteur réel avec « Entraîne-toi » et axe sur l'étape), Lighthouse landing ×3 : 92–93 / 100 / 100 / 100, LCP simulé 3,2–3,3 s (tolérance 3,5 s ; 3,1–3,2 s avant), JS initial **117,6 Ko Brotli** (inchangé). Comptes de test supprimés.
+
+### Défauts trouvés et corrigés
+1. Bandeau défilant : texte noir sur `#E0233F` = 4,12:1 (axe) → fond `#EE3A55` (4,93:1).
+2. Barre de progression de l'onboarding sans nom accessible (présent depuis la Phase 2, jamais testé par axe sur ces pages) → `aria-label`.
+3. « like this one » dans le texte anglais de l'étape (attrapé par le test de vocabulaire) → « such as this one ».
+4. « ? » orphelin en grand écran → espace insécable.
+
+### Reste pour la Phase 3
+- « Teste ton Casier » (Bad, étape 7, après la saisie du Casier) avec l'alerte d'écart de longueur > 40 %.
 
 ## Phase 2b — état (2026-10-03)
 

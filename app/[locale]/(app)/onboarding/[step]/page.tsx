@@ -6,6 +6,7 @@ import {
   IdentityStepForm,
   MotiveStepForm,
   PhotoStepForm,
+  PracticeStepForm,
   RoleStepForm,
   SeekingStepForm,
 } from "@/components/onboarding/forms";
@@ -72,6 +73,7 @@ export default async function OnboardingStep({ params }: Props) {
         />
       ) : null}
       {kind === "role" ? <RoleStepForm role={preferredRole} /> : null}
+      {kind === "practice" ? <PracticeStepForm /> : null}
       {kind === "seeking" ? (
         <SeekingStepForm
           role={role}
