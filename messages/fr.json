@@ -49,7 +49,7 @@
   "Landing": {
     "heroEyebrow": "Site de rencontre · 18+",
     "heroTitle": "Pour ceux qu'on a toujours trouvés <glow>trop.</glow>",
-    "heroLead": "Ici, les Bads se mettent en vitrine et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.",
+    "heroLead": "Ici, les Bads passent à la toise et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.",
     "logoAlt": "Bad Boys & Bad Girls, Coupables de charme…",
     "consentTitle": "Ici, rien ne se fait sans ton accord.",
     "consentBody": "Bad ou Visiteur, chacun garde la main. Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand.",
@@ -64,7 +64,7 @@
     "finalTitle": "Coupables de charme…",
     "finalBody": "Ton Dossier ou ton Permis t'attend.",
     "door_bad": "Je suis Bad",
-    "doorHint_bad": "Je me mets en vitrine, je reçois des visites",
+    "doorHint_bad": "Je passe à la toise, je reçois des visites",
     "door_visitor": "Je viens visiter",
     "doorHint_visitor": "Je cherche un bad boy ou une bad girl",
     "heroCtaLogin": "J'ai déjà un compte",
@@ -111,7 +111,7 @@
       "Bad, pas toxique",
       "Ici, rien ne se fait sans ton accord"
     ],
-    "sideKicker_bad": "Tu te mets en vitrine",
+    "sideKicker_bad": "Tu passes à la toise",
     "sideKicker_visitor": "Tu viens en visite",
     "pieceLabel": "Pièce n° {number}",
     "promenadeTime": "21:00",
@@ -626,7 +626,7 @@
       "legend": "Ton rôle",
       "bad": {
         "title": "Je suis Bad",
-        "body": "Je me mets en vitrine avec mon Casier. Les Visiteurs me demandent une visite, et c'est moi qui décide."
+        "body": "Je passe à la toise avec mon Casier. Les Visiteurs me demandent une visite, et c'est moi qui décide."
       },
       "visitor": {
         "title": "Je viens visiter",

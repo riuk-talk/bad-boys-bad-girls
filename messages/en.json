@@ -49,7 +49,7 @@
   "Landing": {
     "heroEyebrow": "Dating site · 18+",
     "heroTitle": "For those who've always been called <glow>too much.</glow>",
-    "heroLead": "Here, Bads put themselves on show and Visitors come to see them. No photos to scroll through endlessly: a visit request, a bet on a Record, and a real conversation in the Visiting Room.",
+    "heroLead": "Here, Bads step up to the height chart and Visitors come to see them. No photos to scroll through endlessly: a visit request, a bet on a Record, and a real conversation in the Visiting Room.",
     "logoAlt": "Bad Boys & Bad Girls, Guilty of charm…",
     "consentTitle": "Here, nothing happens without your consent.",
     "consentBody": "Bad or Visitor, everyone stays in control. The Bad chooses who to receive, the Visitor chooses who to visit and when.",
@@ -64,7 +64,7 @@
     "finalTitle": "Guilty of charm…",
     "finalBody": "Your Case File or your Permit is waiting.",
     "door_bad": "I'm a Bad",
-    "doorHint_bad": "I put myself on show and receive visits",
+    "doorHint_bad": "I step up to the height chart and receive visits",
     "door_visitor": "I'm here to visit",
     "doorHint_visitor": "I'm looking for a bad boy or a bad girl",
     "heroCtaLogin": "I already have an account",
@@ -107,7 +107,7 @@
     "doorLabel_bad": "Cell B",
     "doorLabel_visitor": "Visiting room",
     "ticker": ["Guilty of charm", "Bad, not toxic", "Here, nothing happens without your consent"],
-    "sideKicker_bad": "You put yourself on show",
+    "sideKicker_bad": "You step up to the height chart",
     "sideKicker_visitor": "You come to visit",
     "pieceLabel": "Exhibit no. {number}",
     "promenadeTime": "9 PM",
@@ -609,7 +609,7 @@
       "legend": "Your role",
       "bad": {
         "title": "I'm a Bad",
-        "body": "I put myself on show with my Record. Visitors ask me for a visit, and I decide."
+        "body": "I step up to the height chart with my Record. Visitors ask me for a visit, and I decide."
       },
       "visitor": {
         "title": "I'm here to visit",

@@ -15,7 +15,7 @@ Principe : **tout le texte centré**, rythme vertical régulier, ambiance prison
    - **Je suis Bad = une cellule** : cadre or, barreaux verticaux en fond, étiquette « CELLULE B ».
    - **Je viens visiter = une vitre de parloir (pas de barreaux)** : cadre rouge, vitre avec reflets en diagonale, **hygiaphone** (cercle perforé de petits trous pour parler) au centre, **icône de combiné téléphonique** (lucide `Phone`) en haut à droite, étiquette « PARLOIR ».
 4. **Bandeau rouge défilant** pleine largeur sous le hero : « Coupables de charme ★ Bad, pas toxique ★ Ici, rien ne se fait sans ton accord ★ » (boucle CSS, `aria-hidden`, arrêté si `prefers-reduced-motion`).
-5. **Côté Bad** : sur-titre « — TU TE METS EN VITRINE — » (Special Elite), titre doré lumineux, puis 3 **« pièces à conviction »** : cartes papier crème, texte centré, bande de scotch dorée centrée en haut, « PIÈCE N° 1/2/3 ». Pas de rotation des cartes (harmonie).
+5. **Côté Bad** : sur-titre « — TU PASSES À LA TOISE — » (Special Elite), titre doré lumineux, puis 3 **« pièces à conviction »** : cartes papier crème, texte centré, bande de scotch dorée centrée en haut, « PIÈCE N° 1/2/3 ». Pas de rotation des cartes (harmonie).
 6. **Côté Visiteur** : sur-titre « — TU VIENS EN VISITE — », titre néon rouge, 3 cartes sombres centrées avec le numéro en néon au-dessus du titre.
 7. **La Promenade** : encadré à bordure dorée, « 21:00 » en grand chiffre doré lumineux au-dessus du titre.
 8. **« Ici, rien ne se fait sans ton accord. »** : trois blocs centrés séparés par un filet : « CÔTÉ BAD » (or), « CÔTÉ VISITEUR » (rouge), « POUR TOUS » (crème), chacun avec sa phrase.
