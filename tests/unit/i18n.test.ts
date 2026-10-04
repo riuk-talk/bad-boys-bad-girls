@@ -27,10 +27,12 @@ describe("messages", () => {
     expect(shape(en).sort()).toEqual(shape(fr).sort());
   });
 
-  it("no UI string uses forbidden product vocabulary (match, swipe, like)", () => {
-    // Allowed: "like" inside other words, e.g. "likely". Checked on the French UI only.
-    const text = JSON.stringify(fr).toLowerCase();
-    expect(text).not.toMatch(/\b(match|matchs|swipe|swiper|like|likes)\b/);
+  it("no UI string uses forbidden product vocabulary (match, swipe, like, judge), fr and en", () => {
+    // Whole words only ("likely" stays allowed); "like" is forbidden even as a verb ("I'd like").
+    const forbidden =
+      /\b(match|matchs|matches|matched|swipe|swiper|swipes|like|likes|liked|judge|judges)\b/;
+    expect(values(fr).join("\n").toLowerCase()).not.toMatch(forbidden);
+    expect(values(en).join("\n").toLowerCase()).not.toMatch(forbidden);
   });
 
   it("no UI string uses vocabulary retired in SPEC v7 (Plaidoirie, Réglo, Audience, Libération, aveux, juge)", () => {

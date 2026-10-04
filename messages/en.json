@@ -98,7 +98,7 @@
       },
       {
         "title": "Ask for a visit",
-        "body": "Like a Bad? Read their Record and bet on the charge you think is true. Right or wrong, your request goes out: your bet stays secret until the visit."
+        "body": "Drawn to a Bad? Read their Record and bet on the charge you think is true. Right or wrong, your request goes out: your bet stays secret until the visit."
       },
       {
         "title": "The Visiting Room",
@@ -503,7 +503,7 @@
       "identity": "Your identity",
       "role": "Your role",
       "seeking_bad": "Who you're looking for",
-      "seeking_visitor": "Who you'd like to visit",
+      "seeking_visitor": "Who you want to visit",
       "photo": "Your photo",
       "motive": "Your Reason for visiting"
     },
@@ -538,10 +538,10 @@
       "consentTitle": "Your consent",
       "consentText": "The genders you are looking for may reveal your sexual orientation. We only use them to show you compatible profiles, nothing else. You can withdraw this consent at any time; as the service cannot work without it, account deletion will then be offered.",
       "consent": "I agree that the genders I'm looking for are used to show me compatible profiles.",
-      "lead_bad": "Who would you like to receive in the Visiting Room?",
-      "lead_visitor": "Who would you like to visit?",
+      "lead_bad": "Who do you want to receive in the Visiting Room?",
+      "lead_visitor": "Who do you want to visit?",
       "genders_bad": "I'm looking for",
-      "genders_visitor": "I'd like to visit"
+      "genders_visitor": "I want to visit"
     },
     "photo": {
       "lead": "Your ID photo, against the height chart. Your face must be visible.",
