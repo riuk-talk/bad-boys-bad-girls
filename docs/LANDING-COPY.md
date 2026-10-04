@@ -11,6 +11,13 @@
 2. **Le Casier = 3 chefs d'accusation : 1 vrai et 2 faux.** Le mot « aveux » est retiré (un faux n'est pas un aveu) : on dit toujours « chefs d'accusation ».
 3. Le mot « match » reste interdit, y compris pour dire qu'il n'y en a pas.
 
+## Correction n° 2 (2026-10-04) : plus de « juge »
+
+- **« Le Juge, c'est toi » est retiré partout** : le Bad n'est pas un juge, et les Visiteurs choisissent aussi. L'écran des demandes reçues par le Bad s'appelle **« Le Courrier »**.
+- Le principe de marque devient **« Ici, rien ne se fait sans ton accord. »** (remplace « Ici, c'est toi le juge » dans CLAUDE.md, SPEC, interface, Charte, métadonnées).
+- Les clés `judge*` peuvent garder leur nom technique ; seuls les textes changent. L'icône du marteau de juge (`Gavel`) est remplacée par une icône neutre (par exemple `KeyRound` ou `Lock` de lucide-react).
+- Ajoute « juge » / « judge » au test automatique de vocabulaire interdit dans l'interface.
+
 ## Textes (`Landing`)
 
 | Clé | Texte |
@@ -26,18 +33,19 @@
 | stepsTitle | Deux rôles, zéro baratin |
 | stepsTitle_bad | Côté Bad |
 | steps_bad[0] | **Ouvre ton Dossier** — Ta photo sur la toise, tes signes distinctifs et ton Casier : trois chefs d'accusation, un vrai et deux faux. |
-| steps_bad[1] | **Le Juge, c'est toi** — Les Visiteurs demandent une visite. Tu lis leur Permis et tu décides : visite acceptée ou affaire classée. |
+| steps_bad[1] | **Le Courrier** — Les demandes de visite arrivent dans ton Courrier. Tu lis le Permis du Visiteur et tu décides : visite acceptée ou affaire classée. |
 | steps_bad[2] | **Le Parloir** — Tu fixes tes Heures de visite. Au Parloir, vous discutez trente minutes en direct. Si vous voulez tous les deux continuer, le Permis devient permanent. |
 | stepsTitle_visitor | Côté Visiteur |
 | steps_visitor[0] | **Prends ton Permis** — Une photo, ton Motif de visite et dix questions. Le Greffe valide ta photo et te délivre ton Permis. |
 | steps_visitor[1] | **Demande une visite** — Un Bad te plaît ? Lis son Casier et parie sur le chef d'accusation que tu crois vrai. Juste ou faux, ta demande part : ton pari reste secret jusqu'à la visite. |
 | steps_visitor[2] | **Le Parloir** — Choisis une des Heures de visite proposées. La conversation s'ouvre sur ton pari, révélé à vous deux : personne n'a à écrire le premier message. |
-| judgeTitle | Ici, c'est toi le juge. |
-| judgeBody | Côté Bad, c'est toi qui décides. Chaque demande de visite arrive avec le Permis du Visiteur : tu acceptes ou tu classes l'affaire. |
-| judgePoints[0] | Personne ne te parle au Parloir sans que tu aies accepté sa visite. |
-| judgePoints[1] | Tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet. |
-| judgePoints[2] | Classer une affaire envoie un message neutre et respectueux : jamais de silence, jamais de justification. |
-| judgePoints[3] | Après une visite, rien ne continue sans l'accord des deux. |
+| judgeTitle | Ici, rien ne se fait sans ton accord. |
+| judgeBody | Bad ou Visiteur, chacun garde la main. Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand. |
+| judgePoints[0] | Côté Bad : personne ne te parle au Parloir sans que tu aies accepté sa visite. |
+| judgePoints[1] | Côté Bad : tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet. |
+| judgePoints[2] | Côté Visiteur : tu choisis l'heure de ta visite parmi celles proposées. |
+| judgePoints[3] | Pour tous : classer une affaire envoie un message neutre et respectueux. Jamais de silence, jamais de justification. |
+| judgePoints[4] | Pour tous : après une visite, rien ne continue sans l'accord des deux. |
 | promenadeTitle | La Promenade |
 | promenadeBody | Chaque soir à 21 h, cinq Bads sortent dans la cour pour chaque Visiteur, choisis selon vos réponses au questionnaire. Une sélection, pas un catalogue sans fin. |
 | quartersTitle | Les Bads d'abord |
