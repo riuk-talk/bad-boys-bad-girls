@@ -12,7 +12,7 @@
     "signature": "Coupables de charme…",
     "promise": "Bad, pas toxique.",
     "forWho": "Pour ceux qu'on a toujours trouvés trop.",
-    "judge": "Ici, rien ne se fait sans ton accord.",
+    "consent": "Ici, rien ne se fait sans ton accord.",
     "signup": "S'inscrire",
     "login": "Se connecter",
     "backHome": "Retour à l'accueil",
@@ -51,9 +51,9 @@
     "heroTitle": "Pour ceux qu'on a toujours trouvés trop.",
     "heroLead": "Ici, les Bads se mettent en vitrine et les Visiteurs viennent les voir. Pas de photos qu'on fait défiler à l'infini : une demande de visite, un pari sur un Casier, et une vraie conversation au Parloir.",
     "logoAlt": "Bad Boys & Bad Girls, Coupables de charme…",
-    "judgeTitle": "Ici, rien ne se fait sans ton accord.",
-    "judgeBody": "Bad ou Visiteur, chacun garde la main. Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand.",
-    "judgePoints": [
+    "consentTitle": "Ici, rien ne se fait sans ton accord.",
+    "consentBody": "Bad ou Visiteur, chacun garde la main. Le Bad choisit qui il reçoit, le Visiteur choisit qui il vient voir et quand.",
+    "consentPoints": [
       "Côté Bad : personne ne te parle au Parloir sans que tu aies accepté sa visite.",
       "Côté Bad : tu choisis combien de demandes peuvent t'attendre en même temps. Au-delà, ton Parloir affiche complet.",
       "Côté Visiteur : tu choisis l'heure de ta visite parmi celles proposées.",
@@ -234,7 +234,11 @@
     "pseudoHint": "De 3 à 20 caractères.",
     "pseudoError": "Ce pseudo est déjà pris.",
     "city": "Ville",
-    "cities": ["Toulon", "Nice", "Hyères"],
+    "cities": [
+      "Toulon",
+      "Nice",
+      "Hyères"
+    ],
     "consent": "J'ai 18 ans ou plus",
     "badges": "Badges",
     "badgeOpen": "Ouvert aux visites",
@@ -244,7 +248,10 @@
     "fiche": "Carte Fiche",
     "ficheSamplePseudo": "Exemple",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tatoué·e"],
+    "ficheSampleSigns": [
+      "Biker — Kawasaki Z650 café racer",
+      "Tatoué·e"
+    ],
     "ficheSampleCharges": [
       "A déjà traversé l'Espagne en moto sans réserver une seule nuit",
       "A un tatouage dont il refuse d'expliquer le sens",
@@ -398,7 +405,9 @@
         },
         {
           "title": "8. Droit applicable",
-          "paragraphs": ["[À COMPLÉTER : droit applicable et juridiction compétente]"]
+          "paragraphs": [
+            "[À COMPLÉTER : droit applicable et juridiction compétente]"
+          ]
         }
       ]
     },
@@ -481,7 +490,9 @@
         },
         {
           "title": "Site",
-          "paragraphs": ["Adresse du site : [DOMAINE]"]
+          "paragraphs": [
+            "Adresse du site : [DOMAINE]"
+          ]
         }
       ]
     }

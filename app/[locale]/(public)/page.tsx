@@ -28,7 +28,7 @@ export default function LandingPage({ params }: Props) {
     bad: t.raw("steps_bad") as Step[],
     visitor: t.raw("steps_visitor") as Step[],
   };
-  const judgePoints = t.raw("judgePoints") as string[];
+  const consentPoints = t.raw("consentPoints") as string[];
   const charterPoints = t.raw("charterPoints") as string[];
 
   return (
@@ -129,19 +129,19 @@ export default function LandingPage({ params }: Props) {
         </div>
       </section>
 
-      <section aria-labelledby="judge-title" className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+      <section aria-labelledby="consent-title" className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <h2
-              id="judge-title"
+              id="consent-title"
               className="font-display flex items-center gap-3 text-4xl tracking-wide uppercase sm:text-5xl"
             >
               <KeyRound aria-hidden="true" className="text-gold size-10 shrink-0" />
-              {t("judgeTitle")}
+              {t("consentTitle")}
             </h2>
-            <p className="mt-4 max-w-prose text-lg">{t("judgeBody")}</p>
+            <p className="mt-4 max-w-prose text-lg">{t("consentBody")}</p>
             <ul className="mt-6 space-y-3">
-              {judgePoints.map((point) => (
+              {consentPoints.map((point) => (
                 <li key={point} className="flex gap-3">
                   <span
                     aria-hidden="true"

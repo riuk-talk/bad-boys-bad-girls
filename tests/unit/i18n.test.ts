@@ -14,7 +14,7 @@ function shape(value: unknown, path = ""): string[] {
   return [path];
 }
 
-/** Every displayed string, without the keys (technical names such as "judgeTitle" may stay). */
+/** Every displayed string, without the keys (vocabulary rules apply to what members read). */
 function values(value: unknown): string[] {
   if (typeof value === "string") return [value];
   if (Array.isArray(value)) return value.flatMap(values);

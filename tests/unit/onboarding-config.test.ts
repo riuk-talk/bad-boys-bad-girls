@@ -33,7 +33,7 @@ describe("onboarding steps per role (SPEC v7 §4)", () => {
 describe("role and Motif de visite validation", () => {
   it("requires a known role", () => {
     expect(roleStepSchema.safeParse({ role: "visitor" }).success).toBe(true);
-    expect(roleStepSchema.safeParse({ role: "judge" }).success).toBe(false);
+    expect(roleStepSchema.safeParse({ role: "admin" }).success).toBe(false);
     expect(roleStepSchema.safeParse({}).success).toBe(false);
   });
 

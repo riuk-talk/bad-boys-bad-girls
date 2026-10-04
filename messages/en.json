@@ -12,7 +12,7 @@
     "signature": "Guilty of charm…",
     "promise": "Bad, not toxic.",
     "forWho": "For those who've always been called too much.",
-    "judge": "Here, nothing happens without your consent.",
+    "consent": "Here, nothing happens without your consent.",
     "signup": "Sign up",
     "login": "Log in",
     "backHome": "Back to home",
@@ -51,9 +51,9 @@
     "heroTitle": "For those who've always been called too much.",
     "heroLead": "Here, Bads put themselves on show and Visitors come to see them. No photos to scroll through endlessly: a visit request, a bet on a Record, and a real conversation in the Visiting Room.",
     "logoAlt": "Bad Boys & Bad Girls, Guilty of charm…",
-    "judgeTitle": "Here, nothing happens without your consent.",
-    "judgeBody": "Bad or Visitor, everyone stays in control. The Bad chooses who to receive, the Visitor chooses who to visit and when.",
-    "judgePoints": [
+    "consentTitle": "Here, nothing happens without your consent.",
+    "consentBody": "Bad or Visitor, everyone stays in control. The Bad chooses who to receive, the Visitor chooses who to visit and when.",
+    "consentPoints": [
       "Bad side: nobody talks to you in the Visiting Room unless you've accepted their visit.",
       "Bad side: you choose how many requests can wait for you at the same time. Beyond that, your Visiting Room shows as full.",
       "Visitor side: you choose the time of your visit from the ones offered.",
@@ -234,7 +234,11 @@
     "pseudoHint": "3 to 20 characters.",
     "pseudoError": "This nickname is taken.",
     "city": "City",
-    "cities": ["Toulon", "Nice", "Hyères"],
+    "cities": [
+      "Toulon",
+      "Nice",
+      "Hyères"
+    ],
     "consent": "I am 18 or older",
     "badges": "Badges",
     "badgeOpen": "Open to visits",
@@ -244,7 +248,10 @@
     "fiche": "File card",
     "ficheSamplePseudo": "Sample",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tattooed"],
+    "ficheSampleSigns": [
+      "Biker — Kawasaki Z650 café racer",
+      "Tattooed"
+    ],
     "ficheSampleCharges": [
       "Once rode across Spain without booking a single night",
       "Has a tattoo they refuse to explain",
@@ -398,7 +405,9 @@
         },
         {
           "title": "8. Governing law",
-          "paragraphs": ["[TO COMPLETE: governing law and competent court]"]
+          "paragraphs": [
+            "[TO COMPLETE: governing law and competent court]"
+          ]
         }
       ]
     },
@@ -481,7 +490,9 @@
         },
         {
           "title": "Website",
-          "paragraphs": ["Website address: [DOMAINE]"]
+          "paragraphs": [
+            "Website address: [DOMAINE]"
+          ]
         }
       ]
     }
