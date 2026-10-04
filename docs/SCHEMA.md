@@ -1,41 +1,53 @@
-# Schéma de base — v1 validée (Phase 0)
+# Schéma de base — v2 (concept v2, en attente de validation)
 
-> **Validé** par le porteur du projet avec les corrections de `docs/PHASE0-DECISIONS.md` §B, intégrées ci-dessous. Postgres 15+ (Supabase). Tous les horodatages en `timestamptz` (UTC).
-> Les renvois **(Rxx)** pointent vers [`PHASE0.md`](./PHASE0.md) et **(Bx)** vers les corrections de [`PHASE0-DECISIONS.md`](./PHASE0-DECISIONS.md).
+> **v1** validée en Phase 0 (corrections `docs/PHASE0-DECISIONS.md` §B) et livrée en Phase 2 (migrations `supabase/migrations/2026100219*`).
+> **v2** (2026-10-03) : intègre `docs/CONCEPT-V2.md` / SPEC v7 — rôles Bad/Visiteur, demandes de parloir, heures de visite, visites, Web Push, Promenade, seuils « les Bads d'abord ». **Validée** (`docs/CONCEPT-V2-DECISIONS.md`, dont la règle 14 : pari secret pour les deux jusqu'à la visite). Migration en Phase 2b (§6).
+> Marqueurs : **[v2-modif]** = change une table ou une fonction **déjà en base** (migration de modification) ; **[v2-nouveau]** = nouvel objet ; **[v2-supprimé]** = objet prévu en v1, abandonné (jamais créé en base, sauf mention).
+> Postgres 17 (Supabase). Tous les horodatages en `timestamptz` (UTC). Renvois **(Rxx)** → [`PHASE0.md`](./PHASE0.md), **(Bx)** → [`PHASE0-DECISIONS.md`](./PHASE0-DECISIONS.md).
 
 ## 0. Principes transverses
 
 - **RLS activée sur toutes les tables, refus par défaut.** Une table sans politique n'est lisible par personne (hors clé secrète et fonctions `security definer`).
-- **Les autres membres ne lisent jamais les tables directement.** Une Fiche vue par un tiers passe toujours par une fonction `security definer` (`get_fiche`, `discover_profiles`, `get_my_hearing`…) qui applique visibilité, blocages, réciprocité, et ne renvoie que des champs publics (âge calculé, jamais la date de naissance ; jamais l'index du faux du Casier).
-- **Toutes les écritures sensibles passent par des fonctions SQL** (`send_plea`, `decide_plea`, `send_message`…) ; les tables concernées n'ont **aucune** politique `insert/update/delete` pour `authenticated`.
+- **Les autres membres ne lisent jamais les tables directement.** Une Fiche ou un Permis vu par un tiers passe toujours par une fonction `security definer` (`get_fiche`, `get_permit`, `discover_bads`, `get_my_promenade`…) qui applique rôle, visibilité, blocages, réciprocité, et ne renvoie que des champs publics (âge calculé, jamais la date de naissance ; jamais l'index du vrai du Casier).
+- **Cloisonnement par rôle** [v2] : un Visiteur ne lit que des Bads ; un Bad ne lit que les Visiteurs qui lui ont envoyé une demande ; deux Visiteurs ou deux Bads ne se voient jamais.
+- **Toutes les écritures sensibles passent par des fonctions SQL** (`send_visit_request`, `decide_visit_request`, `choose_slot`, `send_message`…) ; les tables concernées n'ont **aucune** politique `insert/update/delete` pour `authenticated`.
 - Fonctions `security definer` : `set search_path = ''`, noms entièrement qualifiés, `revoke execute … from public, anon` puis `grant execute … to authenticated` uniquement pour celles appelables par l'UI. Les fonctions internes (jobs) ne sont exécutables que par `postgres`.
-- Extensions : `citext`, `pg_trgm`, `unaccent`, `cube` + `earthdistance` (distances), `pg_cron`, `pg_net`, `pgtap` (tests), `supabase_vault` (secrets).
-- `is_seed boolean` sur les tables de contenu membre : exclusion de toutes les statistiques ; insertion impossible si le paramètre `app.env = 'production'`.
+- Extensions : `citext`, `pg_trgm`, `unaccent`, `cube` + `earthdistance`, `pg_cron`, `pg_net`, `pgtap`, `supabase_vault` ; **[v2-nouveau] `btree_gist`** (contraintes d'exclusion : pas de chevauchement de visites).
+- `is_seed boolean` sur les tables de contenu membre : exclusion de toutes les statistiques ; insertion impossible si `app.env = 'production'`.
 - Toutes les colonnes filtrées/triées sont indexées (listées par table).
 
 ## 1. Types énumérés
 
-| Type | Valeurs |
-|---|---|
-| `gender` | `man`, `woman`, `non_binary`, `other` |
-| `moderation_status` | `pending`, `approved`, `rejected` |
-| `zone_status` | `waitlist`, `open` |
-| `launch_mode` | `zones`, `open` |
-| `importance` | `low` (1), `important` (10), `essential` (50) |
-| `question_phase` | `core` (10 à l'inscription), `extra` |
-| `plea_status` | `pending`, `accepted`, `dismissed`, `auto_dismissed`, `cancelled` |
-| `conversation_status` | `open`, `closed` |
-| `close_reason` | `dismissed`, `blocked`, `account_deleted`, `banned` |
-| `venue_type` | `bar`, `cafe`, `concert`, `walk`, `activity` |
-| `date_proposal_status` | `pending`, `accepted`, `countered`, `not_yet`, `cancelled` |
-| `report_target` | `profile`, `photo`, `casier`, `message`, `plea` |
-| `report_category` | `fake_profile`, `minor`, `harassment`, `sexual_content`, `violence_threat`, `scam`, `other` |
-| `report_status` | `open`, `upheld`, `rejected` |
-| `moderation_action_type` | `warn`, `suspend`, `ban`, `unban`, `hide_profile`, `unhide_profile`, `photo_approve`, `photo_reject`, `text_clear`, `text_remove`, `revoke_reglo` |
-| `consent_type` | `terms`, `privacy`, `age_18`, `art9_seeking` |
-| `notification_type` | `plea_received`, `plea_accepted`, `plea_dismissed`, `message_received`, `date_proposed`, `date_accepted`, `date_countered`, `hearing_open`, `moderation_decision`, `zone_opened`, `profile_dormant` |
-| `email_kind` | `plea_digest`, `date_accepted`, `zone_opened`, `profile_dormant`, `weekly_digest`, `moderation_decision`, `onboarding_reminder` (J+7, priorité la plus basse) |
-| `flag_source` | `pseudo`, `bio`, `casier`, `tribe_detail`, `plea`, `message`, `date_venue` |
+| Type | Valeurs | État |
+|---|---|---|
+| `gender` | `man`, `woman`, `non_binary`, `other` | en base |
+| `member_role` | `bad`, `visitor` | **[v2-nouveau]** |
+| `moderation_status` | `pending`, `approved`, `rejected` | en base |
+| `zone_status` | `waitlist`, `open` | en base |
+| `launch_mode` | `zones`, `open` | en base |
+| `importance` | `low` (1), `important` (10), `essential` (50) | Phase 3 |
+| `question_phase` | `core` (10 à l'inscription), `extra` | Phase 3 |
+| `visit_request_status` | `pending`, `accepted`, `released`, `dismissed`, `auto_dismissed`, `cancelled`, `closed` | **[v2-nouveau]**, remplace `plea_status` |
+| `case_close_reason` | `dismissed_by_bad`, `no_answer_7d`, `no_slot_chosen`, `no_new_slots`, `second_no_show`, `not_prolonged`, `no_end_choice`, `closed_after_release`, `cancelled_by_visitor`, `role_change`, `blocked`, `account_deleted`, `banned` | **[v2-nouveau]** (sert aussi aux métriques) |
+| `slot_status` | `offered`, `chosen`, `expired`, `withdrawn` | **[v2-nouveau]** |
+| `visit_status` | `scheduled`, `in_progress`, `ended`, `no_show`, `cancelled` | **[v2-nouveau]** |
+| `visit_absence` | `bad`, `visitor`, `both` | **[v2-nouveau]** |
+| `visit_end_choice` | `prolong`, `close` | **[v2-nouveau]** |
+| `conversation_status` | `visiting` (messages permis seulement pendant une visite en cours), `open` (libéré), `closed` | **[v2-modif]** (ajout de `visiting`) |
+| `message_kind` | `text`, `system` | **[v2-nouveau]** |
+| `close_reason` | `dismissed`, `blocked`, `account_deleted`, `banned` | Phase 6 |
+| `venue_type` | `bar`, `cafe`, `concert`, `walk`, `activity` | Phase 6 |
+| `date_proposal_status` | `pending`, `accepted`, `countered`, `not_yet`, `cancelled` | Phase 6 |
+| `report_target` | `profile`, `permit`, `photo`, `casier`, `message`, `visit_request` | **[v2-modif]** (`plea` → `visit_request`, + `permit`) |
+| `report_category` | `fake_profile`, `minor`, `harassment`, `sexual_content`, `violence_threat`, `scam`, `other` | en base |
+| `report_status` | `open`, `upheld`, `rejected` | en base |
+| `moderation_action_type` | `warn`, `suspend`, `ban`, `unban`, `hide_profile`, `unhide_profile`, `photo_approve`, `photo_reject`, `text_clear`, `text_remove`, `revoke_good_conduct` | **[v2-modif]** (`revoke_reglo` renommé ; type pas encore en base) |
+| `consent_type` | `terms`, `privacy`, `age_18`, `art9_seeking` | en base |
+| `notification_type` | `request_received`, `request_accepted` (créneaux proposés), `request_dismissed`, `slot_chosen`, `slots_declined`, `slots_reproposed`, `visit_cancelled`, `visit_reminder_1h`, `visit_starting`, `visit_no_show`, `visit_released`, `visit_closed`, `message_received`, `date_proposed`, `date_accepted`, `date_countered`, `promenade_open`, `permit_granted`, `moderation_decision`, `zone_opened`, `profile_dormant` | **[v2-modif]** (type pas encore en base) |
+| `email_kind` | `request_digest`, `visit_reminder`, `permit_granted`, `date_accepted`, `zone_opened`, `profile_dormant`, `weekly_digest`, `moderation_decision`, `onboarding_reminder`, `admin_photos_pending`, `admin_zone_ready` | **[v2-modif]** en base : `plea_digest` → `request_digest` ; + `visit_reminder`, `permit_granted`, `admin_zone_ready` |
+| `flag_source` | `pseudo`, `bio`, `visit_motive`, `casier`, `tribe_detail`, `visit_request`, `message`, `date_venue` | **[v2-modif]** en base : `plea` → `visit_request` ; + `visit_motive` |
+
+`plea_status` **[v2-supprimé]** (jamais créé).
 
 ## 2. Tables
 
@@ -43,22 +55,21 @@ Notation RLS : **S** select, **I** insert, **U** update, **D** delete. « — »
 
 ### 2.1 Référentiels
 
-#### `places` — communes (seed officiel, R22)
+#### `places` — communes (seed officiel, R22) — inchangé
 | Colonne | Type | Contraintes |
 |---|---|---|
 | `id` | `bigint` identity | PK |
 | `country_code` | `char(2)` | not null, défaut `'FR'` |
 | `official_code` | `text` | code INSEE ; unique (`country_code`, `official_code`) |
 | `name` | `text` | not null |
-| `name_search` | `text` | généré : `lower(unaccent(name))` (via fonction immuable) |
+| `name_search` | `text` | généré : `lower(unaccent(name))` |
 | `postal_codes` | `text[]` | |
 | `lat`, `lng` | `double precision` | not null |
 | `population` | `integer` | |
 
-Index : GIN trigramme sur `name_search` (autocomplétion), GIST `ll_to_earth(lat,lng)`.
-RLS : **S** `authenticated` ; I/U/D —.
+Index : GIN trigramme sur `name_search`, GIST `ll_to_earth(lat,lng)`. RLS : **S** `authenticated` ; I/U/D —.
 
-#### `launch_zones`
+#### `launch_zones` — le Quartier — **[v2-modif]**
 | Colonne | Type | Contraintes |
 |---|---|---|
 | `id` | `smallint` identity | PK |
@@ -66,319 +77,336 @@ RLS : **S** `authenticated` ; I/U/D —.
 | `name` | `text` | not null |
 | `center_place_id` | `bigint` → `places` | not null |
 | `radius_km` | `smallint` | check 5–200 |
-| `timezone` | `text` | not null, défaut `'Europe/Paris'`, check `is_valid_timezone()` |
+| `timezone` | `text` | not null, défaut `'Europe/Paris'` |
 | `status` | `zone_status` | défaut `waitlist` |
-| `threshold_profiles` | `integer` | défaut 150 |
-| `threshold_women_pct` | `smallint` | défaut 40, check 0–100 |
+| ~~`threshold_profiles`~~ | | **supprimée** (était 150 Fiches) |
+| `threshold_bads` | `integer` | **[v2]** défaut **50**, check > 0 |
+| `threshold_women_pct` | `smallint` | défaut 40, check 0–100 — plancher de bad girls = `ceil(threshold_bads × pct / 100)` |
+| `threshold_men_pct` | `smallint` | **[v2]** défaut 20, check 0–100 — plancher de bad boys (0 = désactivé) |
 | `auto_open` | `boolean` | défaut false |
+| `ready_at` | `timestamptz` | **[v2]** première fois où les seuils sont atteints (prévient l'admin une seule fois) |
 | `opened_at` | `timestamptz` | |
 
-RLS : **S** `authenticated` (nom, statut, seuils — la jauge est servie par `zone_progress()`) ; écriture via fonctions admin.
-**(B1)** `admin_upsert_zone` recalcule `profiles.zone_id` de tous les membres dont la commune est dans l'ancien ou le nouveau périmètre (requête ensembliste unique), puis rafraîchit la jauge.
+RLS : **S** `authenticated` ; écriture via fonctions admin. (B1) `admin_upsert_zone` recalcule `profiles.zone_id` des membres concernés.
 
-#### `app_settings` — ligne unique
-`id boolean PK check (id)`, `launch_mode launch_mode default 'zones'`, `ban_hash_retention_months smallint default 12`, `email_daily_quota smallint default 300`, `email_auth_reserve smallint default 100` (part du quota réservée aux e-mails d'auth), `hearing_max_appearances_per_day smallint default 10` (R20, décision 12), `storage_alert_mb integer default 700`, `egress_alert_gb numeric default 3.5` (R1), `updated_at`.
+#### `app_settings` — ligne unique — **[v2-modif]**
+`launch_mode`, `ban_hash_retention_months` (12), `email_daily_quota` (300), `email_auth_reserve` (100), **`promenade_max_appearances_per_day`** (10, renommée depuis `hearing_max_appearances_per_day`), **`zone_bad_active_days`** (30, **[v2]** : un Bad compte pour le seuil s'il s'est connecté dans ce délai), `storage_alert_mb` (700), `egress_alert_gb` (3,5), `updated_at`.
 
-#### `egress_readings` — saisie mensuelle de l'egress (décision Phase 1 B1)
-`month date PK` (1er du mois), `egress_gb numeric(6,2) not null check (≥ 0)`, `entered_by uuid`, `created_at`. RLS : — (fonctions admin `admin_record_egress(month, gb)`). Alerte si deux mois consécutifs > `egress_alert_gb`.
-RLS : — (lu par les fonctions ; modifié par fonction admin).
+#### `egress_readings` — inchangé (Phase 7)
+`month date PK`, `egress_gb numeric(6,2)`, `entered_by`, `created_at`. RLS : —.
 
-#### `tribes` — signes distinctifs
-`id smallint PK`, `slug text unique`, `label jsonb not null` (`{fr, en}`, check des deux clés), `sort smallint`, `is_active boolean default true`.
-RLS : **S** `authenticated` ; écriture admin via fonction.
+#### `tribes`, `questions` / `question_options`, `moderation_keywords` — inchangés
+(voir v1 : libellés `{fr,en}`, RLS **S** `authenticated` pour les référentiels, — pour `moderation_keywords`.)
 
-#### `questions` / `question_options`
-`questions` : `id smallint PK`, `position smallint unique`, `phase question_phase`, `label jsonb` (`{fr,en}`), `is_active boolean`, `created_at`.
-`question_options` : `id smallint PK`, `question_id → questions on delete cascade`, `position smallint`, `label jsonb` ; unique (`question_id`, `position`).
-RLS : **S** `authenticated` ; écriture admin via fonction.
+### 2.2 Comptes, Fiche et Permis
 
-#### `moderation_keywords`
-`id int PK`, `term text not null`, `lang char(2)` (`fr`/`en`), `category report_category`, `is_active boolean`, unique (`lang`, `term`).
-RLS : — (utilisé par trigger `security definer` ; géré par fonctions admin).
-
-### 2.2 Comptes et Fiche
-
-#### `profiles` — la Fiche (1–1 avec `auth.users`)
+#### `profiles` — Fiche du Bad / Permis du Visiteur (1–1 avec `auth.users`) — **[v2-modif]**
 | Colonne | Type | Contraintes / remarque |
 |---|---|---|
 | `id` | `uuid` | PK, → `auth.users(id) on delete cascade` |
-| `pseudo` | `citext` | unique, check longueur 3–20 ; trigger : refus e-mails/téléphones/liens |
-| `birthdate` | `date` | **trigger : âge ≥ 18 ans** (`age(birthdate) >= 18`, recalculé à chaque insert/update) ; modifiable uniquement tant que l'onboarding n'est pas terminé |
+| `role` | `member_role` | **[v2]** null jusqu'à l'étape 3 ; obligatoire pour terminer l'onboarding — **protégé** (écrit par `set_onboarding_role()` puis `change_role()`) |
+| `role_changed_at` | `timestamptz` | **[v2]** dernier changement après l'onboarding (règle des 7 jours) — **protégé** |
+| `pseudo` | `citext` | unique, 3–20 ; refus e-mails/téléphones/liens |
+| `birthdate` | `date` | trigger âge ≥ 18 ; via `set_birthdate()` seulement |
 | `gender` | `gender` | |
-| `seeking_genders` | `gender[]` | check non vide si onboarding terminé |
-| `seek_age_min`, `seek_age_max` | `smallint` | check 18 ≤ min ≤ max ≤ 99 |
+| `seeking_genders` | `gender[]` | non vide si onboarding terminé |
+| `seek_age_min`, `seek_age_max` | `smallint` | 18 ≤ min ≤ max ≤ 99 |
 | `place_id` | `bigint` → `places` | |
-| `lat`, `lng` | `double precision` | copiés depuis `places` par trigger (centre de commune, jamais le GPS) |
-| `zone_id` | `smallint` → `launch_zones` | calculé par trigger (R17) |
-| `bio` | `varchar(500)` | masquage coordonnées + filtre mots-clés |
-| `onboarding_step` | `smallint` | 0–6 |
+| `lat`, `lng` | `double precision` | copiés depuis `places` (centre de commune) |
+| `zone_id` | `smallint` → `launch_zones` | calculé par trigger |
+| `bio` | `varchar(500)` | présentation du Bad, facultative ; masquage + mots-clés |
+| `visit_motive` | `varchar(280)` | **[v2]** Motif de visite du Visiteur, obligatoire pour terminer l'onboarding d'un Visiteur et pour passer Bad → Visiteur ; masquage + mots-clés (`flag_source = visit_motive`) |
+| `onboarding_step` | `smallint` | **[v2-modif]** 0–7 (était 0–6) |
 | `onboarding_completed_at` | `timestamptz` | |
-| `moderation_status` | `moderation_status` | défaut `pending` — **protégé** |
-| `is_reglo` | `boolean` | **protégé** |
-| `hidden_reason` | `text` | masquage auto (signalement mineur) ou admin — **protégé** |
-| `suspended_until` | `timestamptz` | **protégé** |
-| `banned_at` | `timestamptz` | **protégé** |
-| `is_paused` | `boolean` | modifiable |
-| `paused_at` | `timestamptz` | maintenu par trigger — **protégé** ; > 30 j ⇒ rotation des chemins photo (R2) |
-| `pleas_cap` | `smallint` | défaut 15, check 5–50, modifiable |
-| `pleas_closed_manual` | `boolean` | « Parloir complet » manuel, modifiable |
-| `pending_pleas_count` | `integer` | maintenu par trigger — **protégé** |
-| `pleas_open` | `boolean` | maintenu par trigger : `not pleas_closed_manual and pending_pleas_count < pleas_cap` — **protégé** |
-| `last_seen_at` | `timestamptz` | mis à jour par `touch_activity()` (max 1×/heure) — **protégé** |
-| `dormant_since` | `timestamptz` | inactivité 90 j — **protégé** |
-| `casier_updated_at` | `timestamptz` | **protégé** (trigger) |
-| `referral_code` | `text` | unique, généré — **protégé** |
-| `referred_by` | `uuid` → `profiles on delete set null` | écrit une fois côté serveur — **protégé** |
-| `consecutive_dismissals` | `smallint` | pour les conseils après 3 classements — **protégé** |
+| `moderation_status` | `moderation_status` | **protégé** |
+| `is_reglo` | `boolean` | badge **Bonne conduite** (nom technique conservé, CONCEPT-V2 §7) — **protégé** |
+| `hidden_reason`, `suspended_until`, `banned_at` | | **protégés** |
+| `is_paused` | `boolean` | modifiable (Bad) |
+| `paused_at` | `timestamptz` | trigger — **protégé** |
+| `requests_cap` | `smallint` | **[v2-modif]** renommée depuis `pleas_cap` ; défaut 15, 5–50 |
+| `requests_closed_manual` | `boolean` | **[v2-modif]** depuis `pleas_closed_manual` |
+| `pending_requests_count` | `integer` | **[v2-modif]** depuis `pending_pleas_count` — **protégé** |
+| `requests_open` | `boolean` | **[v2-modif]** depuis `pleas_open` : `not requests_closed_manual and pending_requests_count < requests_cap` — **protégé** |
+| `last_seen_at`, `dormant_since`, `casier_updated_at` | | **protégés** |
+| `referral_code`, `referred_by` | | **protégés** |
+| `consecutive_dismissals` | `smallint` | conseils au Visiteur après 3 classements — **protégé** |
 | `is_seed` | `boolean` | **protégé** |
-| `created_at`, `updated_at` | `timestamptz` | |
+| `created_at`, `updated_at` | | |
 
-Index : `pseudo` (unique), `(zone_id, moderation_status, is_paused)` partiel `where onboarding_completed_at is not null and banned_at is null and hidden_reason is null`, `gender`, `birthdate`, `last_seen_at desc`, GIST `ll_to_earth(lat,lng)`, `referral_code`.
-RLS :
-- **S** : propriétaire uniquement (`id = auth.uid()`).
-- **I** : propriétaire (`id = auth.uid()`), colonnes protégées forcées à leur défaut par trigger.
-- **U** : propriétaire, **et** privilèges de colonnes : `revoke update on profiles from authenticated; grant update (pseudo, gender, seeking_genders, seek_age_min, seek_age_max, place_id, bio, is_paused, pleas_cap, pleas_closed_manual, onboarding_step) to authenticated`. `birthdate` passe par `set_birthdate()`.
-- **D** : — (suppression via la fonction serveur de suppression de compte).
+Check de fin d'onboarding **[v2-modif]** : en plus de v1, `role is not null` et (`role <> 'visitor' or visit_motive is not null`). Le Casier (Bad) et les 10 réponses sont vérifiés par `complete_onboarding()`.
+Index **[v2-modif]** : `profiles_discovery` devient (`zone_id`, `role`, `moderation_status`, `is_paused`) partiel `where onboarding_completed_at is not null and banned_at is null and hidden_reason is null` ; + v1 (`last_seen_at desc`, GIST, `referred_by`, `place_id`).
+RLS : **S** propriétaire ; **I** propriétaire ; **U** propriétaire avec privilèges de colonnes : `grant update (pseudo, gender, seeking_genders, seek_age_min, seek_age_max, place_id, bio, visit_motive, is_paused, requests_cap, requests_closed_manual, onboarding_step)` ; `role` **n'en fait pas partie** ; **D** —.
 
-#### `profile_tribes`
-`profile_id → profiles on delete cascade`, `tribe_id → tribes`, `detail varchar(60)` (masquage + mots-clés), PK (`profile_id`, `tribe_id`). Trigger : 5 maximum.
-RLS : **S/I/U/D** propriétaire. Lecture par les autres via `get_fiche`.
+#### `profile_tribes` — inchangé
+5 maximum ; précision 60 caractères masquée. RLS propriétaire ; les autres via `get_fiche` / `get_permit`.
 
-#### `photos`
-| Colonne | Type | Contraintes |
-|---|---|---|
-| `id` | `uuid` | PK, défaut `gen_random_uuid()` |
-| `owner_id` | `uuid` → `profiles on delete cascade` | |
-| `position` | `smallint` | 0–5 (0 = photo d'identité) ; unique (`owner_id`, `position`) `deferrable initially deferred` |
-| `status` | `moderation_status` | défaut `pending` |
-| `pending_path` | `text` | chemin dans `photos-pending` (privé) ; null après décision |
-| `public_path_large`, `public_path_small` | `text` | chemin UUID dans `photos` (public), rempli à la validation ; **renouvelé** (nouvel UUID, ancien fichier supprimé) après 30 j de pause et au bannissement (R2) |
-| `width`, `height` | `smallint` | |
-| `rejection_reason` | `text` | |
-| `reviewed_by`, `reviewed_at` | `uuid`, `timestamptz` | |
-| `created_at` | `timestamptz` | |
+#### `photos` — **[v2-modif léger]**
+Inchangée en structure. Règle v2 : pour un Visiteur, seule la photo `position = 0` est renvoyée par `get_permit` ; les autres restent stockées (ex-Bad) et réapparaissent s'il redevient Bad. Le Visiteur ne peut pas ajouter de photo au-delà de la position 0 (trigger).
+Priorité de la file du Greffe (`admin_photo_queue`) : photo 0 des Visiteurs d'un quartier ouvert, puis photo 0 des Bads, puis le reste, par ancienneté.
 
-Index : (`status`, `created_at`) pour la file admin ; (`owner_id`, `position`).
-RLS : **S** propriétaire ; **I** propriétaire, `status = 'pending'` imposé, 6 max (trigger) ; **U** — (réordonner via `reorder_photos()`) ; **D** propriétaire (trigger : suppression du fichier via file de purge).
-Tailles : grande ≤ 180 Ko, vignette ≤ 30 Ko (R1). Fichiers `photos-pending` supprimés dès la décision.
-Storage : `photos-pending` privé — écriture dans `{auth.uid()}/…` par le propriétaire uniquement, lecture propriétaire + admin ; `photos` public — écriture uniquement par la clé secrète (validation admin côté serveur, qui vérifie aussi l'absence d'EXIF) ; `Cache-Control: public, max-age=31536000, immutable`.
-
-#### `casier_charges` — le Casier
+#### `casier_charges` — le Casier — **[v2-modif]**
 | Colonne | Type | Contraintes |
 |---|---|---|
 | `profile_id` | `uuid` | PK → `profiles on delete cascade` |
-| `charge_1`, `charge_2`, `charge_3` | `varchar(120)` | not null, masquage coordonnées |
-| `false_index` | `smallint` | check 1–3 |
+| `charge_1`, `charge_2`, `charge_3` | `varchar(120)` | not null, masquage |
+| `true_index` | `smallint` | **[v2]** check 1–3, remplace `false_index` (1 vrai, 2 faux) |
 | `updated_at` | `timestamptz` | |
 
-RLS : **S/I/U** propriétaire ; **D** —. Les autres voient les 3 lignes via `get_fiche` **sans** `false_index`. Trigger : filtre mots-clés → `flagged_texts`, met à jour `profiles.casier_updated_at`.
+RLS : **S/I/U** propriétaire **et** `role = 'bad'` pour I/U (un Visiteur ne crée pas de Casier ; un ex-Bad garde le sien en lecture) ; **D** —. Les Visiteurs voient les 3 lignes via `get_fiche` **sans** `true_index`.
 
-#### `answers` — réponses QCM
-`user_id → profiles on delete cascade`, `question_id → questions`, `option_id → question_options` (check appartenance via trigger), `accepted_option_ids smallint[]` (null = toutes), `importance importance default 'important'`, `updated_at`. PK (`user_id`, `question_id`).
-Index : (`question_id`, `user_id`).
-RLS : **S/I/U/D** propriétaire. Les autres : jamais en direct (indice et points communs via fonctions, R24).
-
-#### `consents` — historisé, jamais écrasé
-`id bigint identity PK`, `user_id → profiles on delete cascade`, `type consent_type`, `text_version text not null`, `granted boolean not null`, `ip_truncated inet` (/24 en IPv4, /48 en IPv6), `created_at`.
-Index : (`user_id`, `type`, `created_at desc`).
-RLS : **S** propriétaire ; **I/U/D** — (insertion par le serveur avec la clé secrète, qui lit l'IP réelle ; trigger qui refuse tout `update`/`delete` hors cascade).
-
-#### `admin_users`
-`user_id uuid PK → auth.users on delete cascade`, `created_at`, `note text`.
-RLS : aucune politique (ni lecture ni écriture). `is_admin()` (`security definer`) la consulte. Premier admin : `supabase/scripts/create_first_admin.sql`, exécuté à la main dans l'éditeur SQL.
-
-#### `banned_email_hashes`
-`hash bytea PK` (HMAC-SHA256, R18), `banned_at`, `expires_at`.
-RLS : —. **(B4)** Contrôlée par le **hook d'authentification Supabase « Before User Created »** (disponible sur l'offre Free, vérifié le 2026-10-01 dans la doc officielle des Auth Hooks), implémenté en fonction Postgres `public.hook_before_user_created(event jsonb)` : `execute` accordé uniquement à `supabase_auth_admin`, refus avec `{"error":{"http_code":403,"message":…}}`. **Aucun trigger sur `auth.users`.** À vérifier en Phase 2 sur le projet de dev : le hook s'exécute aussi pour une inscription par lien magique (la doc ne le dit pas explicitement).
+#### `answers`, `consents`, `admin_users`, `banned_email_hashes` — inchangés
+(voir v1 ; `banned_email_hashes` contrôlée par le hook « Before User Created », vérifié en Phase 2 pour le lien magique et le mot de passe.)
 
 ### 2.3 Interactions
 
-#### `blocks`
-`blocker_id`, `blocked_id` (→ `profiles on delete cascade`), `created_at`, PK (`blocker_id`, `blocked_id`), check `blocker_id <> blocked_id`.
-Index : (`blocked_id`, `blocker_id`).
-RLS : **S/D** bloqueur ; **I** — (via `block_user()` qui annule les plaidoiries et ferme la conversation de façon atomique).
+#### `blocks` — inchangé (sauf effet de `block_user`)
+`block_user()` **[v2-modif]** : annule les demandes en cours, annule les visites programmées (`cancelled`, sans pénalité pour le bloqueur), ferme la conversation (`blocked`), le tout atomiquement.
 
-#### `pleas` — plaidoiries
+#### `visit_requests` — la Demande de parloir — **[v2-nouveau]** (remplace `pleas`)
 | Colonne | Type | Contraintes |
 |---|---|---|
 | `id` | `uuid` | PK |
-| `sender_id`, `recipient_id` | `uuid` → `profiles on delete cascade` | check différents |
-| `guessed_index` | `smallint` | 1–3 |
-| `casier_snapshot` | `jsonb` | `{charges:[…3], false_index}` copié à l'envoi |
-| `guess_correct` | `boolean` | |
-| `message` | `varchar(280)` | masqué à l'insertion |
-| `message_normalized` | `text` | pour l'anti-arnaque |
-| `status` | `plea_status` | défaut `pending` |
-| `is_crossed` | `boolean` | libération mutuelle |
-| `created_at`, `decided_at` | `timestamptz` | |
+| `visitor_id` | `uuid` → `profiles on delete cascade` | rôle `visitor` à l'envoi |
+| `bad_id` | `uuid` → `profiles on delete cascade` | rôle `bad` à l'envoi ; check `visitor_id <> bad_id` |
+| `guessed_index` | `smallint` | 1–3, chef parié **vrai** |
+| `casier_snapshot` | `jsonb` | `{charges:[…3], true_index}` copié à l'envoi |
+| `guess_correct` | `boolean` | calculé à l'envoi ; **jamais renvoyé au Visiteur avant le début de la première visite** |
+| `note` | `varchar(280)` | mot facultatif, masqué |
+| `note_normalized` | `text` | anti-arnaque |
+| `status` | `visit_request_status` | défaut `pending` |
+| `close_reason` | `case_close_reason` | rempli quand le statut devient final |
+| `slots_round` | `smallint` | 0 avant acceptation ; 1 = première proposition ; +1 à chaque nouvelle proposition |
+| `slots_declined` | `boolean` | « Aucun ne me va » déjà utilisé |
+| `choose_deadline` | `timestamptz` | proposition + 48 h (le Visiteur choisit) |
+| `repropose_deadline` | `timestamptz` | + 48 h (le Bad repropose après « Aucun ne me va » ou absence) |
+| `no_show_count` | `smallint` | absences dans ce couple ; 2 → classement |
+| `conversation_id` | `uuid` → `conversations` | créée au premier créneau choisi |
+| `created_at`, `decided_at`, `closed_at` | `timestamptz` | |
+
+Index : unique partiel (`visitor_id`, `bad_id`) `where status in ('pending','accepted')` (1 en cours par couple) ; (`bad_id`, `status`, `created_at`) (« Le Juge, c'est toi ») ; (`visitor_id`, `created_at desc`) (5/24 h + anti-arnaque 7 j) ; (`status`, `created_at`) partiel `pending` (expiration 7 j) ; (`choose_deadline`) partiel et (`repropose_deadline`) partiel (tâche minute) ; (`visitor_id`, `bad_id`, `closed_at desc`) (délai de 30 j).
+RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_progress'` pour ce couple, **aucune** fonction ne renvoie `guess_correct` ni `true_index` (à personne), et `get_judge_inbox()` (Bad) ne renvoie ni `guessed_index` ni le texte du chef choisi. `get_my_requests()` (Visiteur) peut lui rappeler le chef qu'il a lui-même choisi, jamais le résultat. Chef choisi et résultat sont révélés ensemble par le message système inséré par `run_visit_ticks` au début de la visite.
+
+#### `visit_slots` — les Heures de visite — **[v2-nouveau]**
+| Colonne | Type | Contraintes |
+|---|---|---|
+| `id` | `uuid` | PK |
+| `request_id` | `uuid` → `visit_requests on delete cascade` | |
+| `round` | `smallint` | tour de proposition |
+| `starts_at` | `timestamptz` | ≥ proposition + 2 h et ≤ proposition + 7 j (contrôlé dans la fonction, pas en `CHECK`, B5) |
+| `ends_at` | `timestamptz` | `starts_at + 30 min` (écrit par la fonction ; check `ends_at = starts_at + interval '30 minutes'`) |
+| `status` | `slot_status` | défaut `offered` |
+| `created_at` | `timestamptz` | |
+
+Contraintes : 2 ou 3 créneaux par (`request_id`, `round`) (contrôlé dans `decide_visit_request` / `propose_slots`) ; pas de chevauchement entre les créneaux d'un même tour.
+Index : (`request_id`, `round`).
+RLS : **S** — (via `get_my_requests()` / `get_judge_inbox()`) ; **I/U/D** —.
+
+#### `visits` — la visite au Parloir — **[v2-nouveau]**
+| Colonne | Type | Contraintes |
+|---|---|---|
+| `id` | `uuid` | PK |
+| `request_id` | `uuid` → `visit_requests on delete cascade` | |
+| `slot_id` | `uuid` → `visit_slots` | |
+| `bad_id`, `visitor_id` | `uuid` → `profiles on delete cascade` | dénormalisés pour les contraintes d'exclusion |
 | `conversation_id` | `uuid` → `conversations` | |
+| `starts_at`, `ends_at` | `timestamptz` | copiés du créneau |
+| `status` | `visit_status` | défaut `scheduled` |
+| `bad_joined_at`, `visitor_joined_at` | `timestamptz` | présence (`join_visit()`, horloge de la base) |
+| `absent` | `visit_absence` | rempli à `starts_at + 10 min` si quelqu'un manque |
+| `cancelled_by` | `uuid` | |
+| `cancelled_late` | `boolean` | annulation < 2 h avant le début → compte comme absence de `cancelled_by` |
+| `bad_end_choice`, `visitor_end_choice` | `visit_end_choice` | |
+| `end_choice_deadline` | `timestamptz` | `ends_at + 24 h` |
+| `outcome` | `text` check in (`released`, `closed`) | **`released` = Libération** |
+| `reminder_sent_at`, `start_notified_at` | `timestamptz` | idempotence des rappels |
+| `created_at` | `timestamptz` | |
 
-Index : unique partiel (`sender_id`, `recipient_id`) `where status = 'pending'` ; (`recipient_id`, `status`, `created_at`) ; (`sender_id`, `created_at desc`) (limite 24 h **et** anti-arnaque sur 7 jours, B6) ; (`status`, `created_at`) partiel `pending` (expiration). Pas d'index trigramme global (B6) : la similarité est calculée sur les seules plaidoiries du même expéditeur.
-RLS : **S** expéditeur ou destinataire, et pas de blocage (le destinataire voit `casier_snapshot` ; l'expéditeur aussi — le faux est révélé après l'envoi) ; **I/U/D** —.
+Contraintes **(btree_gist)** :
+- `exclude using gist (bad_id with =, tstzrange(starts_at, ends_at) with &&) where (status in ('scheduled','in_progress'))` — un Bad n'a jamais deux visites qui se chevauchent ;
+- même contrainte sur `visitor_id` ;
+- unique partiel (`request_id`) `where status in ('scheduled','in_progress')` — une seule visite programmée par couple.
 
-#### `conversations`
-| Colonne | Type | Contraintes |
-|---|---|---|
-| `id` | `uuid` | PK |
-| `user_a`, `user_b` | `uuid` → `profiles on delete set null` | check `user_a < user_b` à la création (R8) |
-| `origin_plea_id` | `uuid` | |
-| `status` | `conversation_status` | |
-| `closed_by` | `uuid` | |
-| `closed_reason` | `close_reason` | |
-| `closed_at`, `last_message_at`, `created_at` | `timestamptz` | |
-| `a_last_read_at`, `b_last_read_at` | `timestamptz` | indicateur « lu » |
-| `a_message_count`, `b_message_count` | `integer` | levée du masquage à 10/10 |
-| `contacts_unmasked_at` | `timestamptz` | |
+Index : (`status`, `starts_at`) partiel `scheduled`/`in_progress` (tâche minute) ; (`bad_id`, `starts_at`), (`visitor_id`, `starts_at`) (agendas, Visites honorées) ; (`status`, `end_choice_deadline`) partiel `ended` et `outcome is null`.
+RLS : **S** participant (`auth.uid() in (bad_id, visitor_id)`) et pas de blocage — nécessaire pour l'abonnement temps réel à l'état de la visite (écran d'attente) ; ne contient aucune donnée cachée à l'autre (les choix de fin sont lus via `get_visit()`, qui ne révèle jamais le choix de l'autre) → **[à trancher en Phase 5]** : si l'on veut cacher les choix de fin même aux participants, la lecture passe uniquement par `get_visit()` et l'écran d'attente interroge la fonction toutes les 5 s. **I/U/D** —.
 
-Index : unique partiel (`least`, `greatest`) des deux utilisateurs `where status = 'open'` ; (`user_a`, `last_message_at desc`), (`user_b`, `last_message_at desc`).
-RLS : **S** membre (`auth.uid() in (user_a, user_b)`) ; **I/U/D** — (via fonctions).
+#### `conversations` — **[v2-modif]** (pas encore en base)
+Comme v1, avec : `origin_request_id uuid` (remplace `origin_plea_id`), `status conversation_status` (`visiting` à la création au premier créneau choisi → `open` à la Libération → `closed`), `released_at timestamptz`.
+Index unique partiel (`least`, `greatest`) des deux membres `where status in ('visiting','open')`.
+RLS : **S** membre ; **I/U/D** —.
 
-#### `messages`
-`id bigint identity PK`, `conversation_id → conversations on delete cascade`, `sender_id uuid → profiles on delete set null`, `body varchar(1000)` (masqué à l'insertion tant que `contacts_unmasked_at` est null ; **mis à `null`** à la suppression du compte de l'expéditeur, R8 option stricte), `sender_deleted boolean default false`, `created_at`. Check : `body is not null or sender_deleted`.
-À la suppression d'un compte, un trigger `before delete on profiles` efface le texte de ses messages (`body = null, sender_deleted = true`) avant la mise à `null` de `sender_id` ; l'UI affiche « Message supprimé ».
-Index : (`conversation_id`, `id desc`) ; (`sender_id`, `created_at desc`) pour l'anti-spam.
-RLS : **S** membre de la conversation **et** aucun blocage entre les deux ; **I/U/D** — (via `send_message`).
-Realtime : publication `supabase_realtime` sur `messages` (Postgres Changes, la RLS s'applique à chaque abonné), abonnement filtré `conversation_id=eq.<id>`, ouvert uniquement sur la conversation affichée. **(B7)** Postgres Changes vérifie la RLS pour chaque abonné à chaque changement : acceptable au lancement ; bascule vers Realtime Broadcast (canaux privés) si les mesures de la Phase 7 le justifient.
+#### `messages` — **[v2-modif]** (pas encore en base)
+Comme v1, avec :
+- `kind message_kind` défaut `text` ; `system_payload jsonb` (pour le message « résultat du pari » et les messages neutres) ; `visit_id uuid` → `visits` (message envoyé pendant une visite) ;
+- check : (`kind = 'system'` ⇒ `sender_id is null and system_payload is not null`) ; (`kind = 'text'` ⇒ `body is not null or sender_deleted`).
+- `send_message` n'accepte un message dans une conversation `visiting` que si une visite de ce couple est `in_progress`, que `now() < ends_at` et que l'expéditeur est présent ; masquage des coordonnées **toujours actif** pendant une visite.
+Realtime : Postgres Changes sur `messages` (filtre `conversation_id`), ouvert uniquement sur l'écran affiché ; repli par interrogation toutes les 3 s si la connexion est refusée (plafond de connexions de l'offre gratuite, **à vérifier**).
 
-#### `date_proposals` — la Cavale
-`id uuid PK`, `conversation_id → conversations on delete cascade`, `proposer_id`, `venue_type venue_type`, `venue_name varchar(120)`, `starts_at timestamptz` (**pas** de `CHECK` avec `now()` — non immuable ; la date future est contrôlée dans `propose_date` / `respond_date`, B5), `status date_proposal_status`, `parent_id → date_proposals` (contre-proposition), `private_place_warning boolean`, `responded_at`, `created_at`.
-Index : unique partiel (`conversation_id`) `where status = 'pending'` ; (`conversation_id`, `created_at desc`).
-RLS : **S** membres de la conversation ; **I/U/D** — (via `propose_date`, `respond_date`).
+#### `date_proposals` — la Cavale — inchangé (Phase 6)
+`propose_date` exige une conversation `open` (libérée).
 
-#### `daily_hearings` — l'Audience du soir
-`id bigint identity PK`, `viewer_id → profiles on delete cascade`, `profile_id → profiles on delete cascade`, `zone_id`, `hearing_date date` (date locale de la zone), `rank smallint` (1–5), `score smallint`, `visible_from timestamptz`, `visible_until timestamptz`, `seen_at timestamptz`.
-Contraintes : unique (`viewer_id`, `hearing_date`, `profile_id`), unique (`viewer_id`, `hearing_date`, `rank`).
-Index : (`viewer_id`, `visible_from desc`) ; (`profile_id`, `hearing_date`) (exclusion 14 jours + plafond d'apparitions).
-RLS : **S** — (lecture via `get_my_hearing()` qui filtre `visible_from <= now()` et renvoie des Fiches publiques) ; **U** — (`mark_hearing_seen()`).
+#### `promenade_picks` — la Promenade — **[v2-modif]** (remplace `daily_hearings`, jamais créée)
+`id bigint identity PK`, `visitor_id → profiles on delete cascade`, `bad_id → profiles on delete cascade`, `zone_id`, `promenade_date date` (date locale), `rank smallint` (1–5), `score smallint`, `visible_from`, `visible_until`, `seen_at`.
+Contraintes : unique (`visitor_id`, `promenade_date`, `bad_id`), unique (`visitor_id`, `promenade_date`, `rank`).
+Index : (`visitor_id`, `visible_from desc`) ; (`bad_id`, `promenade_date`) (exclusion 14 j + plafond d'apparitions).
+RLS : **S** — (via `get_my_promenade()`) ; **U** — (`mark_promenade_seen()`).
 
-#### `reports` — signalements
-`id uuid PK`, `reporter_id → profiles on delete set null`, `target_user_id → profiles on delete cascade`, `target_type report_target`, `target_id text`, `category report_category`, `comment varchar(500)`, `status report_status default 'open'`, `priority smallint` (mineur = 0, le plus urgent), `decision_reason text`, `decided_by uuid`, `decided_at`, `created_at`.
-Index : (`status`, `priority`, `created_at`) ; unique (`reporter_id`, `target_type`, `target_id`) (pas de double signalement) ; (`target_user_id`, `category`, `status`).
-RLS : **S** signaleur (ses propres signalements) ; **I** — (via `report()`).
+#### `reports`, `moderation_actions`, `flagged_texts` — inchangés sauf enums
+`reports.target_type` accepte `permit` et `visit_request`. `flagged_texts` est déjà en base.
 
-#### `moderation_actions` — historique des décisions
-`id bigint identity PK`, `admin_id uuid`, `target_user_id uuid`, `action moderation_action_type`, `reason text not null` (check non vide), `report_id uuid`, `photo_id uuid`, `expires_at`, `created_at`.
-RLS : — (admin via fonctions ; la personne concernée reçoit l'exposé des motifs par notification).
+### 2.4 Notifications, push, e-mails, activité
 
-#### `flagged_texts` — textes signalés par mots-clés
-`id bigint identity PK`, `user_id`, `source flag_source`, `source_id text`, `excerpt text`, `matched_terms text[]`, `status report_status default 'open'`, `created_at`.
-Index : (`status`, `created_at`).
-RLS : — (admin via fonctions).
+#### `notifications` — **[v2-modif]** (type `notification_type` v2 ; pas encore en base)
+`id`, `user_id`, `type`, `payload jsonb`, `read_at`, `created_at`. RLS : **S** propriétaire ; **U** via `mark_notifications_read()`.
 
-### 2.4 Notifications, e-mails, activité
-
-#### `notifications`
-`id bigint identity PK`, `user_id → profiles on delete cascade`, `type notification_type`, `payload jsonb`, `read_at`, `created_at`.
-Index : (`user_id`, `created_at desc`) ; partiel (`user_id`) `where read_at is null`.
-RLS : **S** propriétaire ; **U** — (`mark_notifications_read()`) ; **I/D** —.
-
-#### `notification_preferences`
-`user_id PK → profiles on delete cascade`, `email_plea_digest boolean default true`, `email_date_accepted default true`, `email_zone_opened default true`, `email_dormant default true`, `email_weekly default false`, `unsubscribe_token uuid unique` (lien de désinscription sans connexion).
+#### `notification_preferences` — **[v2-modif]** (en base)
+- renommée : `email_plea_digest` → **`email_request_digest`** ;
+- ajouts : `email_visit_reminder boolean default false`, `email_permit_granted default true`, `push_requests default true`, `push_visits default true` (rappels, début, Libération), `push_messages default true`, `push_promenade default true`, `push_prompt_declined_at timestamptz` (refus de la demande d'abonnement : pas de nouvelle demande avant 30 jours) ;
+- inchangés : `email_date_accepted`, `email_zone_opened`, `email_dormant`, `email_weekly`, `unsubscribe_token`.
 RLS : **S/U** propriétaire.
 
-#### `email_outbox`
-`id bigint identity PK`, `user_id → profiles on delete cascade`, `kind email_kind`, `payload jsonb`, `priority smallint`, `not_before date`, `status text check in ('queued','sent','failed','skipped')`, `attempts smallint`, `sent_at`, `created_at`. Unique partiel (`user_id`, `kind`, `not_before`) `where kind = 'plea_digest'` (1 récapitulatif par jour).
-#### `email_quota_usage`
-`day date PK`, `sent integer`.
-RLS des deux : — (route serveur avec la clé secrète).
+#### `push_subscriptions` — **[v2-nouveau]**
+| Colonne | Type | Contraintes |
+|---|---|---|
+| `id` | `uuid` | PK |
+| `user_id` | `uuid` → `profiles on delete cascade` | |
+| `endpoint` | `text` | unique ; check `endpoint ~ '^https://'` |
+| `p256dh`, `auth` | `text` | clés publiques du navigateur (pas des secrets de notre côté) |
+| `created_at`, `last_success_at` | `timestamptz` | |
+| `failure_count` | `smallint` | abonnement supprimé après réponse 404/410 du service de push, ou 5 échecs |
 
-#### `web_vitals_daily` — Core Web Vitals réels, agrégés (Phase 7, décision Phase 1 A2)
-`day date`, `route text` (gabarit de route, ex. `/fiche/[id]`, jamais l'URL réelle), `metric text check in ('LCP','CLS','INP')`, `device text check in ('mobile','desktop')`, `samples integer`, `histogram integer[]` (seaux fixes pour calculer le 75e centile). PK (`day`, `route`, `metric`, `device`). **Aucun identifiant, aucune IP.** Purge > 90 jours. RLS : — (écriture par la route serveur, lecture admin).
+Pas d'agent utilisateur, pas d'IP (minimisation). 5 abonnements maximum par membre (trigger : le plus ancien est supprimé).
+Index : (`user_id`).
+RLS : **S/D** propriétaire ; **I/U** — (via `save_push_subscription()` ; envoi par la route serveur avec la clé secrète).
 
-#### `activity_days` — rétention J7/J30 (minimisation : une ligne par jour actif, rien d'autre)
-`user_id → profiles on delete cascade`, `day date`, PK (`user_id`, `day`). Purge > 13 mois.
-RLS : —.
+#### `push_outbox` — **[v2-nouveau]**
+`id bigint identity PK`, `user_id → profiles on delete cascade`, `type notification_type`, `payload jsonb` (**texte neutre + URL interne uniquement** : pas de pseudo, pas de photo, pas de message), `not_before timestamptz`, `status text check in ('queued','sent','failed','skipped')`, `attempts`, `sent_at`, `created_at`. Unique partiel (`user_id`, `type`, `dedupe_key`) pour l'idempotence des rappels.
+Index : (`status`, `not_before`).
+RLS : — (route `/api/cron/push` avec la clé secrète).
+
+#### `email_outbox` — **[v2-modif]** (en base)
+Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pending')`. `visit_reminder` : abandonné (`skipped`) si le quota du jour est atteint ou si la visite a commencé.
+
+#### `email_quota_usage`, `web_vitals_daily`, `activity_days` — inchangés.
 
 ## 3. Fonctions SQL
 
 ### 3.1 Utilitaires (internes ou `stable`)
-| Fonction | Rôle |
-|---|---|
-| `is_admin()` | `exists` dans `admin_users` pour `auth.uid()` |
-| `age_years(date)` | âge en années révolues |
-| `normalize_text(text)` | minuscules, sans accents/ponctuation, espaces réduits |
-| `mask_contacts(text)` | remplace e-mails, téléphones (formats FR/intl), URLs et `@pseudos` de réseaux par `[masqué]` ; miroir TS `lib/masking.ts` avec tests de parité |
-| `flag_keywords(user, source, source_id, text)` | insère dans `flagged_texts` si un terme de `moderation_keywords` est trouvé (n'empêche jamais l'écriture) |
-| `is_blocked_between(a, b)` | blocage dans un sens ou l'autre |
-| `is_profile_active(p)` | onboarding terminé, photo principale validée, non banni, non suspendu, non masqué |
-| `criteria_match(a, b)` | genre de B ∈ recherchés de A, âge de B dans la tranche de A, **et réciproquement** |
-| `can_view_profile(viewer, target)` | actif, non bloqué, réciprocité, zone ouverte (sauf `launch_mode = open`), cible non en pause et active < 90 j |
-| `has_open_relation(viewer, target)` | conversation ou plaidoirie en cours entre les deux (B2) |
-| `can_unmask(conversation)` | Cavale acceptée **ou** 10/10 messages, **et** les deux comptes ont > 7 jours, **et** aucun signalement `open` entre les deux personnes, **et** aucun signalement `open` contre l'une d'elles dans les catégories `scam`, `minor`, `harassment`, `violence_threat` (R7 affiné, décision Phase 1 B3) |
-| `pair_cooldown_until(a, b)` | fin du délai de 30 jours (R13/R14) |
-| `touch_activity()` | met à jour `last_seen_at` et `activity_days` (appelé par le layout de l'app, 1×/h max) |
+| Fonction | Rôle | État |
+|---|---|---|
+| `is_admin()`, `age_years(date)`, `normalize_text(text)`, `mask_contacts(text)`, `flag_keywords(...)`, `zone_for(...)` | inchangés | en base |
+| `is_blocked_between(a, b)` | blocage dans un sens ou l'autre | Phase 4 |
+| `is_member_active(p)` | onboarding terminé, non banni, non suspendu, non masqué | **[v2]** (remplace `is_profile_active`) |
+| `has_permit(p)` | Visiteur actif dont la photo 0 est validée | **[v2-nouveau]** |
+| `is_bad_visible(p)` | Bad actif, photo 0 validée, Casier présent, non en pause, connecté < 90 j, quartier ouvert (sauf `launch_mode = open`) | **[v2-nouveau]** |
+| `counts_for_zone(p)` | Bad compté pour le seuil (SPEC §3) : `is_bad_visible` sans la condition de quartier ouvert, connecté < `zone_bad_active_days`, `is_seed = false` | **[v2-nouveau]** (remplace `is_complete_fiche`, en base) |
+| `criteria_match(a, b)` | genre et âge, **dans les deux sens** | Phase 4 |
+| `can_view_bad(viewer, bad)` | `viewer` Visiteur actif dans un quartier ouvert, `is_bad_visible(bad)`, `criteria_match`, pas de blocage | **[v2]** (remplace `can_view_profile`) |
+| `has_open_relation(a, b)` | demande en cours, visite programmée ou conversation `visiting`/`open` entre les deux (B2) | **[v2-modif]** |
+| `visitor_reputation(v)` → `(casier_vierge bool, honored int, due int)` | SPEC §5 bis | **[v2-nouveau]** |
+| `can_unmask(conversation)` | conversation `open` (libérée) **et** (Cavale acceptée ou 10/10 messages) **et** comptes > 7 j **et** aucun signalement ouvert bloquant (B3) | **[v2-modif]** |
+| `pair_cooldown_until(visitor, bad)` | fin du délai de 30 jours après un classement (sens Visiteur → Bad) | **[v2-modif]** |
+| `slot_shortcuts(zone)` | heures locales de « Ce soir », « Demain soir », « Ce week-end » (SPEC §7 bis) | **[v2-nouveau]** (miroir TS pour l'UI, tests de parité) |
+| `touch_activity()` | inchangé | Phase 4 |
 
 ### 3.2 Appelables par l'UI (`security definer`, `authenticated`)
-| Fonction | Rôle |
-|---|---|
-| `set_birthdate(date)` | une seule fois, avant la fin de l'onboarding ; trigger 18+ |
-| `complete_onboarding()` | vérifie les 6 étapes (consentements présents, 1 photo, Casier, 10 réponses `core`) |
-| `complicity_score(a, b)` → `(score smallint, common_count int, capped bool)` | §9 ; `null` si < 5 questions communes ; calcul en entiers ; plafond à 50 si un « indispensable » n'est pas satisfait ; miroir `lib/complicity.ts` |
-| `common_points(a, b, n default 3)` | réponses identiques triées par importance cumulée (R29) |
-| `get_fiche(target)` | autorisée si `can_view_profile` **ou** `has_open_relation` (B2 : Fiche d'un interlocuteur en pause ou inactif) ; refusée en cas de blocage dans tous les cas. Fiche publique : pseudo, âge, ville, photos validées, bio, signes + précisions, Casier sans le faux, « Casier modifié depuis » si plaidoirie en cours, indice + 3 points communs, Réglo, `pleas_open`, plaidoirie déjà en cours ou délai |
-| `discover_profiles(age_min, age_max, max_km, tribe_ids, reglo_only, recently_active, cursor, limit default 24)` | §12 bis, une seule requête, curseur `(sort_key, id)` ; « Parloir complet » et inactifs 21 j en fin de liste |
-| `get_my_hearing()` | sélection du jour visible (`visible_from <= now() < visible_until`), + heure de la prochaine audience |
-| `mark_hearing_seen(profile_id)` | |
-| `send_plea(recipient, guessed_index, message)` | toutes les règles §7 (voir 3.3) ; renvoie `{plea_id, guess_correct, crossed, conversation_id}` |
-| `decide_plea(plea_id, accept boolean)` | destinataire uniquement ; libère (crée la conversation) ou classe (message prédéfini, notification) |
-| `set_pleas_settings(cap, closed_manual)` | |
-| `block_user(target)` / `unblock_user(target)` | atomique : annule les plaidoiries en attente, ferme la conversation (`blocked`) |
-| `report(target_type, target_id, category, comment)` | crée le signalement ; signalement « mineur » : priorité 0, masquage auto si 2 signaleurs distincts ou 1 signaleur Réglo |
-| `send_message(conversation_id, body)` | membre, conversation ouverte, pas de blocage, ≤ 30 messages/min, masquage tant que `can_unmask` est faux |
-| `mark_conversation_read(conversation_id)` | |
-| `get_counters()` | non-lus, plaidoiries en attente, notifications non lues (interrogé toutes les 60 s) |
-| `propose_date(conversation_id, venue_type, venue_name, starts_at)` | une seule en attente ; détection « chez moi/chez toi »/adresse → `private_place_warning` |
-| `respond_date(proposal_id, response, counter jsonb)` | accepter (lève le masquage si `can_unmask`) / contre-proposer (date future contrôlée) / pas encore |
-| `close_conversation(conversation_id)` | message prédéfini, plus d'envoi, délai 30 j dans les deux sens |
-| `reorder_photos(photo_ids uuid[])` | |
-| `zone_progress()` | jauge de la zone du membre : Fiches complètes / seuil, % de femmes |
-| `referral_count()` | « X complices recrutés » |
-| `export_my_data()` → `jsonb` | périmètre R25 |
-| `mark_notifications_read(ids)` | |
+| Fonction | Rôle | État |
+|---|---|---|
+| `set_birthdate(date)` | inchangé | en base |
+| `set_onboarding_role(role)` | étape 3, uniquement avant la fin de l'onboarding | **[v2-nouveau]** |
+| `complete_onboarding()` | commun : date, identité, rôle, recherche, 4 consentements, photo 0, 10 réponses `core` ; **Bad** : Casier ; **Visiteur** : `visit_motive` | **[v2-modif]** (en base, 4 étapes) |
+| `change_role(new_role)` | 1 fois / 7 jours ; effets SPEC §2 bis (classe, annule, notifie) ; refusé vers Visiteur sans `visit_motive` | **[v2-nouveau]** |
+| `complicity_score(a, b)`, `common_points(a, b, n)` | inchangés (Phase 3) | |
+| `get_fiche(bad)` | autorisée si `can_view_bad` **ou** `has_open_relation` ; jamais en cas de blocage. Pseudo, âge, ville, photos validées, bio, signes, Casier sans le vrai, « Casier modifié depuis », indice + 3 points communs, Bonne conduite, `requests_open`, demande en cours ou délai | **[v2-modif]** |
+| `get_permit(visitor)` | appelant = le Visiteur lui-même, ou un Bad ayant une relation ouverte ou passée avec lui ; photo 0, pseudo, âge, ville, Motif, signes, `visitor_reputation`, indice + points communs | **[v2-nouveau]** |
+| `discover_bads(age_min, age_max, max_km, tribe_ids, good_conduct_only, recently_active, cursor, limit default 24)` | Visiteurs uniquement ; une seule requête, curseur `(sort_key, id)` | **[v2]** (remplace `discover_profiles`) |
+| `get_my_promenade()`, `mark_promenade_seen(bad_id)` | Visiteurs uniquement | **[v2]** (remplacent `get_my_hearing`, `mark_hearing_seen`) |
+| `send_visit_request(bad, guessed_index, note)` → `{request_id}` | voir 3.3 ; **ne renvoie pas** le résultat du pari | **[v2]** (remplace `send_plea`) |
+| `decide_visit_request(request_id, accept, slots timestamptz[])` | Bad uniquement ; accepter exige 2 ou 3 créneaux valides ; classer = message neutre | **[v2]** (remplace `decide_plea`) |
+| `propose_slots(request_id, slots timestamptz[])` | Bad ; après « Aucun ne me va » ou une absence avec report | **[v2-nouveau]** |
+| `choose_slot(slot_id)` | Visiteur ; avant `choose_deadline` et ≥ 15 min avant le début ; crée la visite (contraintes d'exclusion) et la conversation `visiting` | **[v2-nouveau]** |
+| `decline_slots(request_id)` | Visiteur ; « Aucun ne me va », une fois par demande | **[v2-nouveau]** |
+| `cancel_visit(visit_id)` | participant ; `cancelled_late` si < 2 h | **[v2-nouveau]** |
+| `join_visit(visit_id)` | participant, pendant le créneau ; enregistre la présence ; au premier `join`, rien n'est révélé tant que la visite n'a pas commencé | **[v2-nouveau]** |
+| `request_reschedule(visit_id)` | participant d'une visite `no_show` ; ouvre `repropose_deadline` côté Bad | **[v2-nouveau]** |
+| `choose_visit_end(visit_id, prolong)` | participant, avant `end_choice_deadline` ; si les deux `prolong` → Libération (`visit_requests.status = released`, conversation `open`) | **[v2-nouveau]** |
+| `get_visit(visit_id)` | état, compte à rebours, présence de l'autre (oui/non), mon choix de fin (jamais celui de l'autre) | **[v2-nouveau]** |
+| `get_my_requests()` | Visiteur : ses demandes, créneaux, statut (sans le résultat du pari avant la visite) | **[v2-nouveau]** |
+| `get_judge_inbox()` | Bad : demandes reçues avec Permis, indice, 3 points communs, mot — **ni chef choisi ni résultat** (règle 14) | **[v2-nouveau]** |
+| `get_my_visits()` | les deux rôles : agenda | **[v2-nouveau]** |
+| `set_requests_settings(cap, closed_manual)` | Bad | **[v2]** (remplace `set_pleas_settings`) |
+| `block_user(target)` / `unblock_user(target)` | voir 2.3 | **[v2-modif]** |
+| `report(target_type, target_id, category, comment)` | masquage auto « mineur » si 2 signaleurs ou 1 Bad Bonne conduite | **[v2-modif]** |
+| `send_message(conversation_id, body)` | voir `messages` | **[v2-modif]** |
+| `mark_conversation_read`, `propose_date`, `respond_date`, `close_conversation`, `reorder_photos`, `referral_count`, `mark_notifications_read` | v1 ; `close_conversation` → `visit_requests.close_reason = closed_after_release` | |
+| `get_counters()` | non-lus, demandes en attente (Bad), créneaux à choisir (Visiteur), prochaine visite, notifications | **[v2-modif]** |
+| `zone_progress()` | `(zone_id, zone_name, status, launch_mode, bads, threshold_bads, bad_girls, min_bad_girls, bad_boys, min_bad_boys, visitors_waiting, ready)` | **[v2-modif]** (en base) |
+| `save_push_subscription(endpoint, p256dh, auth)` / `delete_push_subscription(endpoint)` | | **[v2-nouveau]** |
+| `export_my_data()` → `jsonb` | + demandes, visites, abonnements push (sans clés) | **[v2-modif]** |
 
-### 3.3 `send_plea` — ordre des contrôles (tout en une transaction, `for update` sur la ligne du destinataire)
-1. Expéditeur actif, onboarding terminé, photo validée (R16), non en pause (R15), zone ouverte.
-2. Destinataire visible par l'expéditeur (`can_view_profile`) et `criteria_match` réciproque ; pas de blocage.
-3. Délai de 30 jours (`pair_cooldown_until`) ; pas de plaidoirie `pending` A→B (index unique).
-4. Limite : 5 plaidoiries / 24 h glissantes ; 2 si le compte a moins de 24 h.
-5. **Croisement** : s'il existe une plaidoirie `pending` B→A → les deux passent `accepted`, `is_crossed = true`, conversation créée, notifications « Coupables tous les deux ». (Contrôle du plafond ignoré, R9.)
-6. Sinon : `pleas_open` du destinataire doit être vrai ; insertion avec copie du Casier et calcul de `guess_correct` ; trigger qui incrémente `pending_pleas_count` et recalcule `pleas_open`.
-7. Anti-arnaque : parmi les plaidoiries **du même expéditeur** sur 7 jours (index `sender_id, created_at`), si ≥ 3 messages normalisés ont une similarité trigramme ≥ 0,9 (R19, B6) → signalement automatique (n'empêche pas l'envoi).
-8. Notification au destinataire + mise en file du récapitulatif e-mail du jour.
+`send_plea`, `decide_plea`, `set_pleas_settings`, `get_my_hearing`, `mark_hearing_seen`, `discover_profiles`, `can_view_profile`, `is_profile_active` : **[v2-supprimé]** (jamais créés).
+
+### 3.3 `send_visit_request` — ordre des contrôles (une transaction, `for update` sur la ligne du Bad)
+1. Expéditeur : rôle `visitor`, actif, `has_permit` (photo validée), quartier ouvert.
+2. Destinataire : rôle `bad`, `can_view_bad(expéditeur, destinataire)` (visibilité, réciprocité, pas de blocage).
+3. Délai de 30 jours (`pair_cooldown_until`) ; pas de demande en cours dans ce couple (index unique).
+4. Limite : 5 demandes / 24 h glissantes ; 2 si le compte a moins de 24 h.
+5. `requests_open` du Bad doit être vrai.
+6. Insertion avec copie du Casier, calcul de `guess_correct` ; trigger qui incrémente `pending_requests_count` et recalcule `requests_open`.
+7. Anti-arnaque : parmi les demandes **du même Visiteur** sur 7 jours, si ≥ 3 mots normalisés ont une similarité trigramme ≥ 0,9 → signalement automatique (n'empêche pas l'envoi).
+8. Notification au Bad (in-app + push) + mise en file du récapitulatif e-mail du jour.
 
 ### 3.4 Admin (`security definer`, contrôle `is_admin()` en première ligne)
-`admin_review_photo(photo_id, approve, reason)` (la copie de fichier vers `photos` se fait côté serveur avant l'appel), `admin_decide_report(report_id, upheld, reason, action)`, `admin_sanction(user, action, reason, until)` (bannissement : insère l'empreinte e-mail, ferme les conversations, retire Réglo), `admin_resolve_flag(id, action, reason)`, `admin_upsert_zone(...)` (recalcule `zone_id` des membres concernés, B1), `admin_open_zone(zone_id)`, `admin_storage_usage()` (somme des tailles dans `storage.objects`), `admin_record_egress(month, gb)` (saisie manuelle), `admin_upsert_tribe/question/keyword(...)`, `admin_search_users(q)`, `admin_zone_health(zone_id, from, to)` (indicateurs §15 dont la part des membres ayant reçu < 5 Fiches à l'Audience ; `is_seed` exclus).
+v1 + **[v2]** : `admin_photo_queue()` (priorité SPEC §11), `admin_upsert_zone(...)` avec `threshold_bads`, `threshold_women_pct`, `threshold_men_pct`, `admin_zone_health(zone_id, from, to)` (indicateurs SPEC §15), `admin_sanction` retire Bonne conduite (`revoke_good_conduct`).
 
 ### 3.5 Jobs (exécutables par `postgres` uniquement)
-`run_hearings_due()` → `build_daily_hearing(zone_id, local_date)`, `expire_pleas()`, `compute_reglo()`, `process_inactive_profiles()`, `auto_open_zones()`, `cleanup()`, `enqueue_*_emails()`.
-Les purges qui touchent des fichiers ou `auth.users` (comptes sans onboarding terminé après 30 jours, rotation des chemins photo) passent par la route serveur `/api/cron/cleanup` (clé secrète + API Storage/Auth Admin), appelée par `pg_net`.
+| Job | Fréquence | Rôle |
+|---|---|---|
+| `run_visit_ticks()` | **[v2-nouveau]** chaque minute (`pg_cron`) | rappels H-1 et à l'heure (notifications + `push_outbox`, idempotents) ; passage `scheduled → in_progress` à l'heure + message système « résultat du pari » ; à +10 min : `no_show` si absence (compteur du couple, 2 → classement) ; à +30 min : `ended` + `end_choice_deadline` ; décisions de fin échues (24 h) ; `choose_deadline` et `repropose_deadline` échus → classement. Puis, si `push_outbox` contient des envois dus : appel `pg_net` vers `/api/cron/push` (secret partagé). Aucun appel HTTP quand il n'y a rien à envoyer. |
+| `run_promenades_due()` → `build_daily_promenade(zone_id, local_date)` | horaire | **[v2]** (remplace `run_hearings_due`) ; SQL ensembliste, critère 5 000 Visiteurs × 1 000 Bads < 5 min |
+| `expire_visit_requests()` | horaire | demandes `pending` > 7 j → `auto_dismissed` |
+| `compute_good_conduct()` | quotidien | **[v2]** (remplace `compute_reglo`) |
+| `process_inactive_profiles()`, `auto_open_zones()`, `cleanup()`, `enqueue_*_emails()` | quotidien / horaire | `auto_open_zones` utilise `counts_for_zone` et renseigne `ready_at` |
 
-`build_daily_hearing` (**B3 : SQL ensembliste**, pas de boucle par paire — agrégation des réponses une seule fois par membre, jointure candidats × spectateurs pré-filtrée par zone/genre/âge, `row_number()` pour le top 5 et pour le plafond d'apparitions ; critère : 5 000 membres de seed dans une même zone en moins de 5 minutes) : pour chaque membre actif non en pause de la zone, candidats = `can_view_profile` réciproque, `pleas_open`, actifs < 21 j, aucune plaidoirie ni conversation passée entre eux, non proposés dans les 14 derniers jours, sous le plafond d'apparitions du jour (10 par défaut) ; classement = complicité (0–100, 0 si inconnue) + bonus d'activité (0–20) × 0,5 si plaidoiries en attente > 50 % du plafond (R20) ; top 5, sans remplissage.
+Les purges qui touchent des fichiers ou `auth.users` passent par `/api/cron/cleanup` (clé secrète), appelée par `pg_net`.
 
 ## 4. Triggers
 
 | Table | Trigger |
 |---|---|
-| `auth.users` | **aucun trigger** (B4). Empreintes bannies : hook « Before User Created ». `notification_preferences` est créée avec la Fiche à l'étape 1 de l'onboarding |
-| `profiles` | `before delete` : efface le texte des messages de la personne (R8) ; `paused_at` ; âge ≥ 18 ; validation pseudo ; colonnes protégées remises à l'ancienne valeur si modifiées hors fonction ; `place_id` → `lat/lng/zone_id` ; `updated_at` ; mots-clés sur `bio`/`pseudo` |
-| `profile_tribes` | max 5 ; masquage + mots-clés sur `detail` |
-| `photos` | max 6 ; statut `pending` imposé à l'insertion |
-| `casier_charges` | masquage ; mots-clés ; `profiles.casier_updated_at` |
-| `pleas` | maintien de `pending_pleas_count` / `pleas_open` ; `consecutive_dismissals` |
-| `conversations`, `messages` | `last_message_at`, compteurs par personne, levée du masquage |
-| `consents`, `moderation_actions` | refus de tout `update`/`delete` (append-only) |
+| `auth.users` | aucun (B4) |
+| `profiles` | v1 + **[v2]** : `role` et `role_changed_at` remis à l'ancienne valeur s'ils sont modifiés hors fonction ; masquage + mots-clés sur `visit_motive` |
+| `profile_tribes` | max 5 ; masquage + mots-clés |
+| `photos` | max 6 ; **[v2]** un Visiteur ne peut insérer qu'en position 0 ; statut `pending` imposé |
+| `casier_charges` | masquage ; mots-clés ; `casier_updated_at` ; **[v2]** insertion réservée au rôle `bad` |
+| `visit_requests` | **[v2]** maintien de `pending_requests_count` / `requests_open` ; `consecutive_dismissals` |
+| `conversations`, `messages` | `last_message_at`, compteurs par personne, levée du masquage (uniquement en `open`) |
+| `push_subscriptions` | **[v2]** 5 maximum par membre |
+| `consents`, `moderation_actions` | append-only |
 
 ## 5. Tests pgTAP prévus (extrait)
 
-- Un membre ne lit ni la Fiche brute, ni les réponses, ni le `false_index` d'un autre.
-- Un membre ne peut pas modifier `moderation_status`, `is_reglo`, `banned_at`, `pleas_open`, `is_seed`… de sa propre Fiche.
-- `birthdate` < 18 ans refusée en insert et en update, même via l'API.
-- Aucune lecture/écriture sur `admin_users`, `banned_email_hashes`, `app_settings`, `email_outbox` depuis `authenticated` ou `anon`.
-- `anon` ne lit aucune table applicative.
-- Tous les critères de la Phase 4 et de la Phase 5 (6e plaidoirie refusée, 30 jours, plafond, croisement, blocage invisible partout, tiers sans accès à une conversation).
-- **(B1)** Créer ou agrandir une zone rattache les membres déjà inscrits dont la commune entre dans le rayon ; la réduire les détache.
-- **(B2)** La Fiche d'un interlocuteur en pause ou inactif reste lisible depuis une conversation ou une plaidoirie en cours ; jamais en cas de blocage.
-- **(B4)** Une inscription normale passe le hook ; une inscription avec un e-mail banni non expiré est refusée ; une empreinte expirée ne bloque plus.
-- **(R8)** Après suppression d'un compte, ses messages n'ont plus de texte en base.
-- **(R7)** Pas de levée du masquage si un compte a moins de 7 jours ou si un signalement est ouvert.
+v1 (82 assertions en base, Phase 2) **+ [v2]** :
+- Un membre ne peut pas modifier son `role` directement ; `change_role` refuse un second changement avant 7 jours ; Bad → Visiteur classe les demandes en attente et annule les visites ; Visiteur → Bad annule les demandes envoyées.
+- Un Visiteur ne voit jamais un autre Visiteur ; un Bad ne voit jamais un autre Bad ; un Bad ne lit un Permis que s'il a reçu une demande de ce Visiteur.
+- Un Bad ne peut pas envoyer de demande ; un Visiteur sans permis délivré non plus ; la 6e demande en 24 h est refusée ; une nouvelle demande avant 30 jours est refusée ; au plafond, `requests_open` passe à faux.
+- **Règle 14** : ni le Visiteur ni le Bad ne lisent `guessed_index`, `casier_snapshot` ou `guess_correct` avant le début de la visite (aucune fonction, aucune table lisible, aucun canal temps réel) ; le message système de début de visite contient le chef choisi et le résultat.
+- Créneaux : moins de 2 h, plus de 7 jours, 1 ou 4 créneaux, créneaux qui se chevauchent → refusés ; deux visites qui se chevauchent pour un même Bad ou un même Visiteur → refusées par la contrainte d'exclusion.
+- Messages : refusés hors du créneau d'une visite tant que la conversation n'est pas libérée ; acceptés après Libération ; un tiers ne lit ni ne s'abonne à une visite ou une conversation qui n'est pas la sienne.
+- `run_visit_ticks` (horloge simulée) : rappel envoyé une seule fois ; absence à +10 min ; deuxième absence → classement ; fin de visite ; Libération seulement si les deux prolongent ; le choix de l'autre n'est jamais lisible.
+- `zone_progress` : planchers de bad girls / bad boys, Bads en pause ou inactifs non comptés, `is_seed` exclus, Visiteurs non comptés.
+- `push_subscriptions` : un membre ne lit que les siens ; endpoint non HTTPS refusé.
 - Test générique : toute table du schéma `public` a `rowsecurity = true`.
+
+## 6. Migration depuis la v1 en base (Phase 2b)
+
+Base de dev **vide de membres** (vérifié le 2026-10-03) : les renommages sont sans risque de perte de données.
+1. `create extension btree_gist` (schéma `extensions`).
+2. `create type member_role` ; `alter table profiles add role, role_changed_at, visit_motive` ; check `onboarding_step` 0–7 ; check de fin d'onboarding étendu ; index `profiles_discovery` recréé avec `role` ; privilèges de colonnes mis à jour (`visit_motive`, colonnes `requests_*` renommées, `role` exclu).
+3. `alter table profiles rename column pleas_cap to requests_cap` (+ 3 autres renommages) ; trigger `profiles_before_write` adapté.
+4. `alter table casier_charges rename column false_index to true_index` (table vide).
+5. `launch_zones` : `drop threshold_profiles`, `add threshold_bads default 50, threshold_men_pct default 20, ready_at`.
+6. `app_settings` : renommage `hearing_max_appearances_per_day` → `promenade_max_appearances_per_day` ; ajout `zone_bad_active_days`.
+7. Enums en base : `alter type email_kind rename value 'plea_digest' to 'request_digest'` + `add value` ; `alter type flag_source rename value 'plea' to 'visit_request'` + `add value 'visit_motive'`.
+8. `notification_preferences` : renommage `email_plea_digest` → `email_request_digest` + nouvelles colonnes.
+9. Fonctions remplacées : `complete_onboarding`, `is_complete_fiche` → `counts_for_zone`, `zone_progress` (nouvelle signature : `drop` puis `create`), + `set_onboarding_role`.
+10. Types TypeScript régénérés (`supabase gen types`), tests pgTAP de la Phase 2 mis à jour puis relancés.

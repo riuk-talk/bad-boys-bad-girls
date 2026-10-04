@@ -46,27 +46,39 @@ Le plan de travail par phases est dans `docs/PROMPT.md`. L'état d'avancement es
 
 ## Vocabulaire du produit (à respecter dans le code et l'UI)
 
-| Concept | Nom produit | Nom technique |
+Esprit : un site de rencontre **dans le même esprit que les prisons**, en style **cartoon et léger** (SPEC v7 §1 ter). Deux rôles : le **Bad** (reçoit des demandes de visite) et le **Visiteur** (demande des visites).
+
+| Moment / concept | Nom dans le site | Nom technique |
 |---|---|---|
-| Profil | La Fiche | `profile` |
-| 3 affirmations dont 1 fausse | Le Casier | `casier_charges` |
-| Démarche pour aborder quelqu'un | La Plaidoirie | `plea` |
-| Accepter une plaidoirie | Libérer | `plea.status = 'accepted'` |
-| Refuser / terminer | Affaire classée | `status = 'dismissed'` |
-| Messagerie | Le Parloir | `conversation`, `message` |
+| Membre qui reçoit | Le Bad | `profile.role = 'bad'` |
+| Membre qui demande | Le Visiteur | `profile.role = 'visitor'` |
+| Inscription Bad / Profil du Bad | Le Dossier / La Fiche | `profile` |
+| Inscription Visiteur / Profil du Visiteur | Le Permis de visite | `profile` (`role = 'visitor'`) |
+| Présentation du Visiteur | Le Motif de visite | `profile.visit_motive` |
+| Validation des photos, modération | Le Greffe (« Permis délivré par le Greffe ») | admin |
+| Les 3 phrases du Bad (1 vrai, 2 faux) | Le Casier | `casier_charges` (`true_index`) |
+| Sélection du soir (5 Bads à 21 h, Visiteurs uniquement) | La Promenade | `promenade_picks` |
+| Liste complète des Bads (Visiteurs uniquement) | La Découverte | `discover_bads` |
+| Pari + mot du Visiteur | La Demande de parloir | `visit_requests` |
+| Écran du Bad qui décide | Le Juge, c'est toi | `visit_requests` (côté Bad) |
+| Refus / fin | Affaire classée | `status = 'dismissed'` / `'closed'` |
+| Créneaux proposés | Les Heures de visite | `visit_slots` |
+| Visite de 30 min en direct | Le Parloir | `visits`, `conversation`, `message` |
+| Les deux veulent continuer | La Libération (messagerie libre) | `visits.outcome = 'released'` |
+| Vrai rendez-vous à deux | La Cavale | `date_proposals` |
 | Score QCM | Indice de complicité | `complicity_score` |
 | Aide à l'écriture | Le Souffleur | `lib/prompter` |
-| Badge de confiance | Réglo | `profile.is_reglo` |
-| Plafond de plaidoiries atteint | Parloir complet | `profile.pleas_open = false` |
-| Sélection quotidienne de 5 Fiches à 21 h | L'Audience du soir | `daily_hearings` |
-| Plaidoiries reçues | Le Juge, c'est toi | `pleas` (côté destinataire) |
-| Plaidoiries mutuelles | Coupables tous les deux | libération automatique |
-| Proposition de rendez-vous à deux | La Cavale | `date_proposals` |
-| Sorties de groupe (V2) | La Virée | hors MVP |
-| Ville pas encore ouverte | Ta ville ouvre bientôt | `launch_zones.status = 'waitlist'` |
+| Badge de confiance du Bad | Bonne conduite | `profile.is_reglo` |
+| Badge de confiance du Visiteur | Casier vierge | calculé |
+| Présence aux visites | Visites honorées | calculé |
+| Plafond de demandes atteint | Parloir complet | `profile.requests_open = false` |
+| Ville / zone de lancement | Le Quartier (« Ton quartier ouvre bientôt ») | `launch_zones` |
 | Tribus / centres d'intérêt | Signes distinctifs | `tribes` |
+| Sorties de groupe (V2) | La Virée | hors MVP |
 
-Termes **interdits** dans l'UI : « match », « swipe », « like ». Aucun insigne ni nom d'administration réelle (police, gendarmerie, justice).
+Termes **retirés** (v7) : Plaidoirie, Plaider, Libérer (au sens d'accepter), Coupables tous les deux, Réglo, L'Audience du soir, Ta ville ouvre bientôt.
+Termes **interdits** dans l'UI : « match », « swipe », « like ». Aucun insigne ni nom d'administration réelle (police, gendarmerie, justice, administration pénitentiaire).
+Les **fonctions de sécurité gardent des mots simples** : Signaler, Bloquer, Conseils sécurité.
 
 ## Identité visuelle
 
@@ -74,4 +86,4 @@ Termes **interdits** dans l'UI : « match », « swipe », « like ». Aucun ins
 - Polices (via `next/font/google`, auto-hébergées) : **Anton** (titres), **Inter Tight** (texte), **Special Elite** (tampons, Casier), **Yellowtail** (signature, usage rare).
 - Thème sombre par défaut. Mobile-first. Contraste WCAG AA obligatoire.
 - Logo : `public/brand/logo-3d.png` (visuel fourni, pour la home et l'image Open Graph). Crée en plus un **logo SVG plat** (monogramme : B miroir or couronné + B rouge avec cornes et queue de diable) pour le header, le favicon et l'icône PWA.
-- Éléments signature : fond « toise » sur la photo principale de la Fiche, tampons animés « COUPABLE » / « LIBÉRÉ·E » / « AFFAIRE CLASSÉE ».
+- Éléments signature : fond « toise » sur la photo principale de la Fiche, tampons animés « BONNE CONDUITE » / « PERMIS DÉLIVRÉ » / « VISITE ACCEPTÉE » / « LIBÉRÉ·E » / « AFFAIRE CLASSÉE » (« COUPABLE » reste un décor de marque).
