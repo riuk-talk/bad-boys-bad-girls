@@ -106,7 +106,11 @@
     "sign": "Ouvert aux visites",
     "doorLabel_bad": "Cellule B",
     "doorLabel_visitor": "Parloir",
-    "ticker": ["Coupables de charme", "Bad, pas toxique", "Ici, rien ne se fait sans ton accord"],
+    "ticker": [
+      "Coupables de charme",
+      "Bad, pas toxique",
+      "Ici, rien ne se fait sans ton accord"
+    ],
     "sideKicker_bad": "Tu te mets en vitrine",
     "sideKicker_visitor": "Tu viens en visite",
     "pieceLabel": "Pièce n° {number}",
@@ -123,7 +127,9 @@
       },
       {
         "title": "Côté Visiteur",
-        "points": ["Tu choisis l'heure de ta visite parmi celles proposées."]
+        "points": [
+          "Tu choisis l'heure de ta visite parmi celles proposées."
+        ]
       },
       {
         "title": "Pour tous",
@@ -259,7 +265,11 @@
     "pseudoHint": "De 3 à 20 caractères.",
     "pseudoError": "Ce pseudo est déjà pris.",
     "city": "Ville",
-    "cities": ["Toulon", "Nice", "Hyères"],
+    "cities": [
+      "Toulon",
+      "Nice",
+      "Hyères"
+    ],
     "consent": "J'ai 18 ans ou plus",
     "badges": "Badges",
     "badgeOpen": "Ouvert aux visites",
@@ -269,7 +279,10 @@
     "fiche": "Carte Fiche",
     "ficheSamplePseudo": "Exemple",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tatoué·e"],
+    "ficheSampleSigns": [
+      "Biker — Kawasaki Z650 café racer",
+      "Tatoué·e"
+    ],
     "ficheSampleCharges": [
       "A déjà traversé l'Espagne en moto sans réserver une seule nuit",
       "A un tatouage dont il refuse d'expliquer le sens",
@@ -423,7 +436,9 @@
         },
         {
           "title": "8. Droit applicable",
-          "paragraphs": ["[À COMPLÉTER : droit applicable et juridiction compétente]"]
+          "paragraphs": [
+            "[À COMPLÉTER : droit applicable et juridiction compétente]"
+          ]
         }
       ]
     },
@@ -506,7 +521,9 @@
         },
         {
           "title": "Site",
-          "paragraphs": ["Adresse du site : [DOMAINE]"]
+          "paragraphs": [
+            "Adresse du site : [DOMAINE]"
+          ]
         }
       ]
     }
@@ -531,7 +548,7 @@
       "seeking_visitor": "Qui tu viens voir",
       "photo": "Ta photo",
       "motive": "Ton Motif de visite",
-      "practice": "Un vrai, deux faux. Lequel est vrai ?"
+      "practice": "Un vrai, deux faux. Lequel est vrai ?"
     },
     "age": {
       "lead": "Bad Boys & Bad Girls est réservé aux adultes. Ta date de naissance sert uniquement à le vérifier : seul ton âge sera affiché.",

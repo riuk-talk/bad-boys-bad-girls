@@ -211,7 +211,7 @@ export default function LandingPage({ params }: Props) {
       {/* Red ticker (decorative: the same phrases are on the page as text). */}
       <div
         aria-hidden="true"
-        className="bg-red text-ink overflow-hidden py-2.5 shadow-[0_0_24px_rgb(224_35_63/0.45)]"
+        className="bg-red-bright text-ink overflow-hidden py-2.5 shadow-[0_0_24px_rgb(224_35_63/0.45)]"
       >
         <div className="landing-marquee font-display flex w-max gap-7 text-lg tracking-[0.1em] whitespace-nowrap uppercase">
           {[0, 1].map((copy) =>

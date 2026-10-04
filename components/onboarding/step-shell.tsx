@@ -18,6 +18,7 @@ export async function StepShell({ step, role, kind, children }: Props) {
       </div>
       <div
         role="progressbar"
+        aria-label={t(`title_${role}`)}
         aria-valuemin={0}
         aria-valuemax={total}
         aria-valuenow={step}
