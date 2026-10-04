@@ -7,9 +7,13 @@
 
 Principe : **tout le texte centré**, rythme vertical régulier, ambiance prison + néon de nuit.
 
+**Logo sur fond transparent** : utilise `public/brand/logo-3d-transparent.png` (fond noir retiré, recadré, 1105 × 1032) pour la page d'accueil et partout où le logo est posé sur la page ; régénère les variantes AVIF/WebP transparentes avec `pnpm brand:build` (à adapter). L'image Open Graph garde la version sur fond noir (`logo-3d.png`), car les réseaux sociaux affichent mal la transparence.
+
 1. **Hero centré** : enseigne néon rouge « OUVERT AUX VISITES » (bordure + halo, léger grésillement) → logo 3D → titre « Pour ceux qu'on a toujours trouvés trop. » avec **« trop. » en or lumineux** → accroche → les deux portes.
 2. **Fond toise** derrière le hero : lignes horizontales fines tous les 44 px et graduations (200 → 90) **des deux côtés**, discrètes (contraste faible, purement décoratif, `aria-hidden`).
-3. **Les deux portes = deux cellules** côte à côte : barreaux verticaux en fond, cadre or (« CELLULE B » / Je suis Bad) et cadre rouge (« PARLOIR » / Je viens visiter), halo lumineux, texte centré. Zone tactile entière cliquable, ≥ 44 px.
+3. **Les deux portes, côte à côte** (texte centré, halo lumineux, zone tactile entière cliquable, ≥ 44 px) :
+   - **Je suis Bad = une cellule** : cadre or, barreaux verticaux en fond, étiquette « CELLULE B ».
+   - **Je viens visiter = une vitre de parloir (pas de barreaux)** : cadre rouge, vitre avec reflets en diagonale, **hygiaphone** (cercle perforé de petits trous pour parler) au centre, **icône de combiné téléphonique** (lucide `Phone`) en haut à droite, étiquette « PARLOIR ».
 4. **Bandeau rouge défilant** pleine largeur sous le hero : « Coupables de charme ★ Bad, pas toxique ★ Ici, rien ne se fait sans ton accord ★ » (boucle CSS, `aria-hidden`, arrêté si `prefers-reduced-motion`).
 5. **Côté Bad** : sur-titre « — TU TE METS EN VITRINE — » (Special Elite), titre doré lumineux, puis 3 **« pièces à conviction »** : cartes papier crème, texte centré, bande de scotch dorée centrée en haut, « PIÈCE N° 1/2/3 ». Pas de rotation des cartes (harmonie).
 6. **Côté Visiteur** : sur-titre « — TU VIENS EN VISITE — », titre néon rouge, 3 cartes sombres centrées avec le numéro en néon au-dessus du titre.
