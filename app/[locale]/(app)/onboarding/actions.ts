@@ -9,9 +9,9 @@ import { truncateIp } from "@/lib/net/ip";
 import {
   CONSENT_VERSIONS,
   lastStep,
-  onboardingSteps,
   parseRole,
   ROLE_STEP,
+  stepNumber,
   stepPath,
   type Role,
 } from "@/lib/onboarding/config";
@@ -151,9 +151,31 @@ export async function saveRoleStep(_state: StepState, form: FormData): Promise<S
   const parsed = roleStepSchema.safeParse({ role: form.get("role") ?? undefined });
   if (!parsed.success) return fail(firstErrors(parsed.error));
   const member = await requireMember();
+  const before = await progress(member);
   const { error } = await member.supabase.rpc("set_onboarding_role", { p_role: parsed.data.role });
   if (error) return failMessage("generic");
+  // Changing the role changes the steps that follow: they must all be done (again) in order.
+  if (before.role && before.role !== parsed.data.role && before.step > ROLE_STEP) {
+    await member.supabase
+      .from("profiles")
+      .update({ onboarding_step: ROLE_STEP })
+      .eq("id", member.userId);
+  }
   return goTo(stepPath(ROLE_STEP + 1));
+}
+
+/** Visitor's « Entraîne-toi » (LANDING-DESIGN.md §2.1): the answer is never stored, only the step. */
+export async function savePracticeStep(): Promise<StepState> {
+  const member = await requireMember();
+  const { step, role } = await progress(member);
+  if (role !== "visitor") return failMessage("generic");
+  const practiceStep = stepNumber(role, "practice");
+  const { error } = await member.supabase
+    .from("profiles")
+    .update({ onboarding_step: Math.max(step, practiceStep) })
+    .eq("id", member.userId);
+  if (error) return failMessage("generic");
+  return goTo(stepPath(practiceStep + 1));
 }
 
 export async function saveSeekingStep(_state: StepState, form: FormData): Promise<StepState> {
@@ -165,7 +187,9 @@ export async function saveSeekingStep(_state: StepState, form: FormData): Promis
   });
   if (!parsed.success) return fail(firstErrors(parsed.error));
   const member = await requireMember();
-  const step = await currentStep(member);
+  const { step, role } = await progress(member);
+  if (!role) return goTo(stepPath(ROLE_STEP));
+  const seekingStep = stepNumber(role, "seeking");
   if (!(await recordConsents(member.userId, ["art9_seeking"]))) return failMessage("configuration");
   const { error } = await member.supabase
     .from("profiles")
@@ -173,11 +197,11 @@ export async function saveSeekingStep(_state: StepState, form: FormData): Promis
       seeking_genders: parsed.data.genders,
       seek_age_min: parsed.data.ageMin,
       seek_age_max: parsed.data.ageMax,
-      onboarding_step: Math.max(step, ROLE_STEP + 1),
+      onboarding_step: Math.max(step, seekingStep),
     })
     .eq("id", member.userId);
   if (error) return failMessage("generic");
-  return goTo(stepPath(ROLE_STEP + 2));
+  return goTo(stepPath(seekingStep + 1));
 }
 
 /** Where a member lands once onboarding is done: their zone's waitlist page or their Fiche/Permis. */
@@ -256,7 +280,7 @@ export async function uploadPhotoAction(_state: StepState, form: FormData): Prom
   if (form.get("onboarding") === "1") {
     const { step, role } = await progress(member);
     if (!role) return goTo(stepPath(ROLE_STEP));
-    const photoStep = onboardingSteps(role).indexOf("photo") + 1;
+    const photoStep = stepNumber(role, "photo");
     await member.supabase
       .from("profiles")
       .update({ onboarding_step: Math.max(step, photoStep) })
@@ -274,7 +298,7 @@ export async function saveMotiveStep(_state: StepState, form: FormData): Promise
   const member = await requireMember();
   const { step, role } = await progress(member);
   if (role !== "visitor") return failMessage("generic");
-  const motiveStep = onboardingSteps(role).indexOf("motive") + 1;
+  const motiveStep = stepNumber(role, "motive");
   const { error } = await member.supabase
     .from("profiles")
     .update({ visit_motive: parsed.data.motive, onboarding_step: Math.max(step, motiveStep) })

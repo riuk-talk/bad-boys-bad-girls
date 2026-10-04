@@ -8,7 +8,9 @@ export type StampKind =
   | "goodConduct"
   | "cleanRecord"
   | "permit"
-  | "visitAccepted";
+  | "visitAccepted"
+  | "rightGuess"
+  | "wrongGuess";
 
 /** Trust and welcome stamps are gold; the others red (SPEC v7 §1 bis). */
 const GOLD: readonly StampKind[] = [
@@ -49,13 +51,18 @@ export function Stamp({
   className,
 }: StampProps) {
   const t = useTranslations("Components.stamps");
-  const color = GOLD.includes(kind)
-    ? surface === "paper"
-      ? "text-gold-ink"
-      : "text-gold"
-    : surface === "paper"
-      ? "text-red-ink"
-      : "text-red-bright";
+  const color =
+    kind === "rightGuess"
+      ? surface === "paper"
+        ? "text-green-ink"
+        : "text-green-bright"
+      : GOLD.includes(kind)
+        ? surface === "paper"
+          ? "text-gold-ink"
+          : "text-gold"
+        : surface === "paper"
+          ? "text-red-ink"
+          : "text-red-bright";
   const label = t(kind);
 
   return (

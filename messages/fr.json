@@ -206,7 +206,9 @@
       "cleanRecord": "CASIER VIERGE",
       "permit": "PERMIS DÉLIVRÉ",
       "visitAccepted": "VISITE ACCEPTÉE",
-      "permanentPermit": "PERMIS PERMANENT"
+      "permanentPermit": "PERMIS PERMANENT",
+      "rightGuess": "BIEN VU !",
+      "wrongGuess": "RATÉ !"
     },
     "fiche": {
       "caseNumber": "Dossier {number}",
@@ -528,7 +530,8 @@
       "seeking_bad": "Qui tu cherches",
       "seeking_visitor": "Qui tu viens voir",
       "photo": "Ta photo",
-      "motive": "Ton Motif de visite"
+      "motive": "Ton Motif de visite",
+      "practice": "Un vrai, deux faux. Lequel est vrai ?"
     },
     "age": {
       "lead": "Bad Boys & Bad Girls est réservé aux adultes. Ta date de naissance sert uniquement à le vérifier : seul ton âge sera affiché.",
@@ -618,6 +621,24 @@
       "lead": "Ce que les Bads liront avant d'accepter ta visite. Sois toi-même, en quelques lignes.",
       "label": "Motif de visite",
       "hint": "{max} caractères maximum. Les e-mails, téléphones et liens sont masqués."
+    },
+    "practice": {
+      "kicker": "Entraîne-toi",
+      "lead": "Chaque Bad a un Casier comme celui-ci. Pour lui demander une visite, tu paries sur le chef d'accusation que tu crois vrai.",
+      "caseLabel": "Exemple fictif · Casier n° 000",
+      "charges": [
+        "A traversé l'Espagne à moto sans réserver une seule nuit.",
+        "S'est fait sortir d'un karaoké pour avoir chanté trop fort.",
+        "A un tatouage dont personne ne connaît le sens."
+      ],
+      "chooseHint": "Touche le chef d'accusation que tu crois vrai.",
+      "trueLabel": "Le vrai",
+      "yourBet": "Ton pari",
+      "revealRight": "Bien joué : c'était le vrai. Les deux autres étaient inventés.",
+      "revealWrong": "Le vrai était : « {charge} » Les deux autres étaient inventés.",
+      "secretNote": "Sur le site, le verdict reste <strong>secret jusqu'à la visite</strong>. Il s'affiche en premier message du Parloir, pour vous deux. Juste ou faux, ta demande part toujours.",
+      "cta": "J'ai compris, je prends mon Permis",
+      "skip": "Passer"
     }
   },
   "MyFiche": {

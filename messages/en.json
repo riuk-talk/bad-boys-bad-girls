@@ -206,7 +206,9 @@
       "cleanRecord": "CLEAN RECORD",
       "permit": "PERMIT ISSUED",
       "visitAccepted": "VISIT ACCEPTED",
-      "permanentPermit": "PERMANENT PERMIT"
+      "permanentPermit": "PERMANENT PERMIT",
+      "rightGuess": "SPOT ON!",
+      "wrongGuess": "MISSED!"
     },
     "fiche": {
       "caseNumber": "File {number}",
@@ -528,7 +530,8 @@
       "seeking_bad": "Who you're looking for",
       "seeking_visitor": "Who you want to visit",
       "photo": "Your photo",
-      "motive": "Your Reason for visiting"
+      "motive": "Your Reason for visiting",
+      "practice": "One true, two false. Which one is true?"
     },
     "age": {
       "lead": "Bad Boys & Bad Girls is for adults only. Your date of birth is only used to check that: only your age will be shown.",
@@ -618,6 +621,24 @@
       "lead": "What Bads will read before accepting your visit. Be yourself, in a few lines.",
       "label": "Reason for visiting",
       "hint": "{max} characters max. Emails, phone numbers and links are hidden."
+    },
+    "practice": {
+      "kicker": "Practice",
+      "lead": "Every Bad has a Record such as this one. To ask them for a visit, you bet on the charge you think is true.",
+      "caseLabel": "Fictional example · Record no. 000",
+      "charges": [
+        "Rode across Spain without booking a single night.",
+        "Got thrown out of a karaoke bar for singing too loud.",
+        "Has a tattoo nobody knows the meaning of."
+      ],
+      "chooseHint": "Tap the charge you think is true.",
+      "trueLabel": "The true one",
+      "yourBet": "Your bet",
+      "revealRight": "Well played: that was the true one. The other two were made up.",
+      "revealWrong": "The true one was: “{charge}” The other two were made up.",
+      "secretNote": "On the site, the verdict stays <strong>secret until the visit</strong>. It shows as the first message in the Visiting Room, for both of you. Right or wrong, your request always goes out.",
+      "cta": "Got it, I'm getting my Permit",
+      "skip": "Skip"
     }
   },
   "MyFiche": {

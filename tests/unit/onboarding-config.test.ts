@@ -5,6 +5,7 @@ import {
   parseRole,
   ROLE_STEP,
   stepKind,
+  stepNumber,
 } from "@/lib/onboarding/config";
 import { motiveStepSchema, roleStepSchema } from "@/lib/validation/onboarding";
 
@@ -20,6 +21,20 @@ describe("onboarding steps per role (SPEC v7 §4)", () => {
     expect(stepKind("visitor", lastStep("visitor"))).toBe("motive");
     expect(stepKind("bad", 6)).toBeNull();
     expect(stepKind("visitor", 0)).toBeNull();
+  });
+
+  it("puts « Entraîne-toi » right after the role, for the Visitor only (Phase 2c)", () => {
+    expect(stepNumber("visitor", "practice")).toBe(ROLE_STEP + 1);
+    expect(stepNumber("bad", "practice")).toBe(0);
+    expect(onboardingSteps("visitor")).toEqual([
+      "age",
+      "identity",
+      "role",
+      "practice",
+      "seeking",
+      "photo",
+      "motive",
+    ]);
   });
 
   it("only accepts the two roles", () => {

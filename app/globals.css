@@ -20,6 +20,10 @@
   --color-paper-shade: #e2d2b0;
   --color-grey: #9a9186;
   --color-grey-ink: #6a5f55;
+  /* Green: reserved for "BIEN VU !" and "LE VRAI" (SPEC §1 bis exception), always with an icon
+     and a text. -ink on paper/cream (5.06:1), -bright on ink (9.6:1). */
+  --color-green-ink: #1d6b43;
+  --color-green-bright: #3ccf86;
 
   --font-display: var(--font-anton), "Impact", "Arial Narrow", sans-serif;
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;

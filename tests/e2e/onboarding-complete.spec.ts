@@ -49,13 +49,13 @@ async function commonSteps(page: Page, email: string, password: string, gender: 
   await page.waitForURL(/onboarding\/3/, { waitUntil: "commit" });
 }
 
-async function seekingStep(page: Page, gender: string) {
+async function seekingStep(page: Page, gender: string, next: number) {
   await page.getByLabel(gender, { exact: true }).check();
   await page.getByLabel("Âge minimum").fill("25");
   await page.getByLabel("Âge maximum").fill("45");
   await page.locator("#consent").check();
   await page.getByRole("button", { name: "Continuer" }).click();
-  await page.waitForURL(/onboarding\/5/, { waitUntil: "commit" });
+  await page.waitForURL(new RegExp(`onboarding/${next}`), { waitUntil: "commit" });
 }
 
 async function choosePhoto(page: Page) {
@@ -107,7 +107,7 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
     await page.waitForURL(/onboarding\/4/, { waitUntil: "commit" });
 
     await expect(page.getByRole("heading", { name: "Qui tu cherches" })).toBeVisible();
-    await seekingStep(page, "Homme");
+    await seekingStep(page, "Homme", 5);
     await choosePhoto(page);
     await page.getByRole("button", { name: "Terminer" }).click();
     await page.waitForURL(/quartier|ma-fiche/, { waitUntil: "commit" });
@@ -187,11 +187,20 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
     await page.getByRole("button", { name: "Continuer" }).click();
     await page.waitForURL(/onboarding\/4/, { waitUntil: "commit" });
 
+    // « Entraîne-toi »: a wrong bet on the fictional Record reveals the true charge.
+    await expect(page.getByText("Exemple fictif · Casier n° 000")).toBeVisible();
+    await page.getByRole("button", { name: /traversé l'Espagne/ }).click();
+    await expect(page.getByRole("img", { name: "RATÉ !" })).toBeVisible();
+    await expect(page.getByText("Le vrai", { exact: true })).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await page.getByRole("button", { name: "J'ai compris, je prends mon Permis" }).click();
+    await page.waitForURL(/onboarding\/5/, { waitUntil: "commit" });
+
     await expect(page.getByRole("heading", { name: "Qui tu viens voir" })).toBeVisible();
-    await seekingStep(page, "Femme");
+    await seekingStep(page, "Femme", 6);
     await choosePhoto(page);
     await page.getByRole("button", { name: "Continuer" }).click();
-    await page.waitForURL(/onboarding\/6/, { waitUntil: "commit" });
+    await page.waitForURL(/onboarding\/7/, { waitUntil: "commit" });
 
     await page.getByRole("button", { name: "Terminer" }).click();
     await expect(page.getByText("Écris ton Motif de visite pour continuer.")).toBeVisible();

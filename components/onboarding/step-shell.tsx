@@ -26,7 +26,18 @@ export async function StepShell({ step, role, kind, children }: Props) {
       >
         <div className="bg-gold h-full rounded-full" style={{ width: `${percent}%` }} />
       </div>
-      <h1 className="font-display mt-6 text-4xl tracking-wide uppercase">
+      {kind === "practice" ? (
+        <p className="text-red-bright font-stamp mt-6 text-center text-sm tracking-[0.25em] uppercase">
+          {t("practice.kicker")}
+        </p>
+      ) : null}
+      <h1
+        className={
+          kind === "practice"
+            ? "font-display mt-2 text-center text-4xl tracking-wide uppercase"
+            : "font-display mt-6 text-4xl tracking-wide uppercase"
+        }
+      >
         {kind === "seeking" ? t(`steps.seeking_${role}`) : t(`steps.${kind}`)}
       </h1>
       <div className="mt-6">{children}</div>

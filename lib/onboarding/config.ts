@@ -10,14 +10,16 @@ export function parseRole(value: unknown): Role | null {
 
 /**
  * Onboarding steps per role (SPEC v7 §4). Steps 1–3 are common; the role is chosen at step 3.
- * Phase 2b: the Bad finishes at the photo, the Visitor at the Motif de visite.
+ * Phase 2b: the Bad finishes at the photo, the Visitor at the Motif de visite. Phase 2c adds
+ * « Entraîne-toi » for the Visitor, right after the role.
  * Phase 3 adds the Casier (Bad, step 6) and the 10 core questions (both, step 7).
  */
-export type StepKind = "age" | "identity" | "role" | "seeking" | "photo" | "motive";
+export type StepKind = "age" | "identity" | "role" | "practice" | "seeking" | "photo" | "motive";
 
 const STEPS: Record<Role, readonly StepKind[]> = {
   bad: ["age", "identity", "role", "seeking", "photo"],
-  visitor: ["age", "identity", "role", "seeking", "photo", "motive"],
+  // "practice" = « Entraîne-toi » (LANDING-DESIGN.md §2.1): nothing is stored but the step number.
+  visitor: ["age", "identity", "role", "practice", "seeking", "photo", "motive"],
 };
 
 export function onboardingSteps(role: Role): readonly StepKind[] {
@@ -27,6 +29,11 @@ export function onboardingSteps(role: Role): readonly StepKind[] {
 /** Kind of step `step` (1-based) for this role, or null when out of range. */
 export function stepKind(role: Role, step: number): StepKind | null {
   return STEPS[role][step - 1] ?? null;
+}
+
+/** Number (1-based) of a step kind for this role, or 0 when the role has no such step. */
+export function stepNumber(role: Role, kind: StepKind): number {
+  return STEPS[role].indexOf(kind) + 1;
 }
 
 export function lastStep(role: Role): number {

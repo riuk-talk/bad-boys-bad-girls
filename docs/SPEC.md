@@ -2,6 +2,7 @@
 
 > v6.1 : décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). v6.2 : décisions de Phase 1 (`docs/PHASE1-DECISIONS.md`).
 > **v7 : changement de concept décidé par le porteur (`docs/CONCEPT-V2.md`, 2026-10-03)** : deux rôles (Bad et Visiteur), demande de parloir à la place de la Plaidoirie, heures de visite, Parloir limité aux 30 minutes de la visite puis Permis permanent, Web Push dans le MVP, Promenade, lancement « les Bads d'abord ».
+> **v7.3 (2026-10-04, `docs/LANDING-DESIGN.md`)** : landing centrée (logo transparent, porte cellule / porte vitre de parloir avec hygiaphone), étape Visiteur « Entraîne-toi » (4), étape Bad « Teste ton Casier » (Phase 3), exception de couleur verte (§1 bis).
 > **v7.2 (2026-10-04, `docs/LANDING-COPY.md` correction n° 2, `docs/CONCEPT-V2.md` §9)** : « Le Juge, c'est toi » devient **« Le Courrier »** ; le principe « Ici, c'est toi le juge » devient **« Ici, rien ne se fait sans ton accord. »** ; plus aucun « juge » dans l'interface.
 > **v7.1 (2026-10-04, `docs/LANDING-COPY.md`)** : le Parloir est le lieu où l'on discute ; « Libération » est retiré, après une visite réussie **le Permis devient permanent** (tampon « PERMIS PERMANENT ») ; « aveux » est retiré, on dit toujours « chefs d'accusation » ; le texte de la landing est celui de LANDING-COPY.md, mot pour mot.
 > **v7 validée** par le porteur (`docs/CONCEPT-V2-DECISIONS.md`) : les 13 règles marquées **(validé v7)** sont celles que j'avais dû préciser ; la **règle 14** (pari entièrement secret jusqu'à la visite, y compris pour le Bad) est intégrée en §7 et §8. Nom de domaine provisoire : `[DOMAINE]`.
@@ -27,7 +28,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 ## 1 bis. Références visuelles (retenues des maquettes)
 
-- **Palette unique, celle du logo** : noir `#0E0E10`, or `#D4A437`, rouge `#E0233F`, crème `#F2E8D5`. Pas de rose néon ni d'orange comme couleurs principales. Un seul logo (le monogramme BB couronne/cornes) : aucun autre emblème.
+- **Palette unique, celle du logo** : noir `#0E0E10`, or `#D4A437`, rouge `#E0233F`, crème `#F2E8D5`. **Exception (v7.3, validée par le porteur)** : un vert réservé aux seuls retours « BIEN VU ! » et « LE VRAI » du jeu du Casier — `#1D6B43` sur papier/crème (5,06:1), `#3CCF86` sur fond sombre (9,6:1) — toujours accompagné d'une icône et d'un texte (jamais la couleur seule). Les néons de la landing utilisent des teintes dérivées du rouge et de l'or (`#FF3355`, `#FFD1D8`, `#F4D27A`), pas de nouvelle couleur. Pas de rose néon ni d'orange comme couleurs principales. Un seul logo (le monogramme BB couronne/cornes) : aucun autre emblème.
 - **La Fiche du Bad façon dossier** : carte papier crème légèrement vieilli, bandeau noir en en-tête avec le pseudo en Anton, numéro de dossier (dérivé de l'identifiant, ex. `BB-0427`), trombone décoratif, sections titrées en capitales (Signes distinctifs, Chefs d'accusation, Bio).
 - **Le Permis de visite** : carte plus petite, format « laissez-passer » cartoon (photo, pseudo, âge, ville, Motif de visite, badges Casier vierge / Visites honorées), tampon « PERMIS DÉLIVRÉ » une fois la photo validée. Aucune ressemblance avec un document officiel réel (pas de bande tricolore, pas de mention « République »).
 - **Mobile d'abord** : sur téléphone, la Fiche est verticale (photo sur toise en haut, puis le dossier en dessous). La mise en page en paysage est réservée aux écrans ≥ 1024 px. Corps de texte ≥ 16 px.
@@ -106,10 +107,11 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
    | 1 | Date de naissance + attestation 18+ + CGU | idem |
    | 2 | Pseudo, genre, ville | idem |
    | 3 | **Ton rôle** (présélectionné par la porte) | idem |
-   | 4 | Qui tu cherches (genres + âges) + consentement art. 9 | Qui tu viens voir (genres + âges) + consentement art. 9 |
-   | 5 | 1 photo minimum (visage visible) | 1 photo (visage visible) |
-   | 6 | Le Casier (1 vrai, 2 faux) | **Motif de visite** (présentation, 280 caractères, obligatoire) |
-   | 7 | 10 questions du QCM (le socle, §9) | 10 questions du QCM (le socle, §9) |
+   | 4 | Qui tu cherches (genres + âges) + consentement art. 9 | **Entraîne-toi** (v7.3, facultatif : pari sur un Casier fictif « Casier n° 000 », rien n'est enregistré, lien « Passer ») |
+   | 5 | 1 photo minimum (visage visible) | Qui tu viens voir (genres + âges) + consentement art. 9 |
+   | 6 | Le Casier (1 vrai, 2 faux) | 1 photo (visage visible) |
+   | 7 | **Teste ton Casier** (v7.3, Phase 3 : aperçu tel que le voient les Visiteurs, conseils du Souffleur) | **Motif de visite** (présentation, 280 caractères, obligatoire) |
+   | 8 | 10 questions du QCM (le socle, §9) | 10 questions du QCM (le socle, §9) |
 
    - La contrainte 18+ porte sur la **Fiche** : le compte d'authentification existe avant la saisie de la date de naissance, mais un profil sans date de naissance valide (≥ 18 ans, vérifiée en base) n'est visible nulle part et ne peut rien faire. Les comptes dont l'onboarding n'est pas terminé sont supprimés après 30 jours.
 4. **Le Greffe** : la photo d'identité est « en attente de validation » jusqu'à la décision de la modération (objectif < 12 h, affiché).
