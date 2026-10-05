@@ -20,6 +20,13 @@ Le plan de travail par phases est dans `docs/PROMPT.md`. L'état d'avancement es
 9. **Ne jamais affaiblir une règle de sécurité ou de vie privée** pour faire passer un test ou une fonctionnalité : arrête-toi et demande.
 10. Commits petits et atomiques, messages en anglais au format Conventional Commits.
 
+## Liaison automatique avec le conseiller (issue GitHub #10)
+
+- Le canal de travail est l'issue **#10 « 📬 Liaison conseiller ↔ développeur »** (règles dans sa description). Il remplace les copier-coller de Chris.
+- À chaque arrêt prévu (règle 1) : pousse, publie ton rapport en commentaire `[DEV → CONSEILLER]` (`gh api repos/riuk-talk/bad-boys-bad-girls/issues/10/comments -f body=...`), puis **attends** un commentaire `[CONSEILLER → DEV]` ou de Chris plus récent que ton rapport. Vérifie le fil toutes les 20 à 30 minutes (mode `/loop` si disponible), et au début de chaque session.
+- Le feu vert du conseiller vaut validation de Chris pour les étapes techniques. Les décisions de concept, de design visuel ou irréversibles restent à Chris (`[→ CHRIS]`).
+- Jamais de secret dans l'issue.
+
 ## Stack (imposée)
 
 - **pnpm** comme gestionnaire de paquets. Versions exactes figées dans `package.json` et notées dans `PROGRESS.md` en Phase 0.
