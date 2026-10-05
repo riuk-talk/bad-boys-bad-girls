@@ -230,7 +230,10 @@ export default function LandingPage({ params }: Props) {
           className="mx-auto mt-8 flex max-w-5xl flex-col items-center gap-4"
         >
           <Kicker className="text-cream">{t("sideKicker_bad")}</Kicker>
-          <h3 id="steps-bad" className="neon-cream font-display text-cream -mt-2 text-4xl uppercase">
+          <h3
+            id="steps-bad"
+            className="neon-cream font-display text-cream -mt-2 text-4xl uppercase"
+          >
             {t("stepsTitle_bad")}
           </h3>
           <ol className="grid w-full gap-6 pt-2 lg:grid-cols-3">
@@ -315,10 +318,7 @@ export default function LandingPage({ params }: Props) {
           {consentGroups.map((group) => (
             <div key={group.title} className="py-3.5">
               <h3
-                className={cn(
-                  "font-stamp mb-1 text-xs tracking-[0.18em] uppercase",
-                  "text-cream",
-                )}
+                className={cn("font-stamp mb-1 text-xs tracking-[0.18em] uppercase", "text-cream")}
               >
                 {group.title}
               </h3>

@@ -18,7 +18,10 @@ export async function Notices({ notices }: { notices: Notice[] }) {
   const reasons = await getTranslations("Greffe.reasons");
   const poses = await getTranslations("Onboarding.poses");
   return (
-    <section aria-labelledby="notices-title" className="border-accent/60 space-y-3 rounded-lg border p-4">
+    <section
+      aria-labelledby="notices-title"
+      className="border-accent/60 space-y-3 rounded-lg border p-4"
+    >
       <h2 id="notices-title" className="font-display text-xl tracking-wide uppercase">
         {t("title")}
       </h2>
@@ -34,12 +37,17 @@ export async function Notices({ notices }: { notices: Notice[] }) {
           }
           const position = notice.payload.photo_position ?? 0;
           const photo =
-            position in POSE_KEYS ? poses(POSE_KEYS[position]!) : t("photoNumber", { number: position + 1 });
+            position in POSE_KEYS
+              ? poses(POSE_KEYS[position]!)
+              : t("photoNumber", { number: position + 1 });
           return (
             <li key={notice.id}>
               {notice.payload.approved
                 ? t("approved", { photo })
-                : t("rejected", { photo, reason: reasons((notice.payload.reason ?? "other") as "other") })}
+                : t("rejected", {
+                    photo,
+                    reason: reasons((notice.payload.reason ?? "other") as "other"),
+                  })}
             </li>
           );
         })}

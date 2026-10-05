@@ -2,7 +2,11 @@ import * as z from "zod/mini";
 import type { Importance } from "@/lib/complicity";
 
 /** L'Interrogatoire (SPEC v7.4 §9): one question per screen, « Affiner » folded. */
-export const IMPORTANCES = ["low", "important", "essential"] as const satisfies readonly Importance[];
+export const IMPORTANCES = [
+  "low",
+  "important",
+  "essential",
+] as const satisfies readonly Importance[];
 export const DEFAULT_IMPORTANCE: Importance = "important";
 
 /** Error messages are i18n keys under "Interrogation.errors". */
@@ -10,7 +14,9 @@ export type AnswerErrorKey = "answerRequired" | "acceptedRequired" | "generic";
 
 export const answerSchema = z.object({
   questionId: z.coerce.number().check(z.int(), z.positive()),
-  optionId: z.coerce.number("answerRequired").check(z.int("answerRequired"), z.positive("answerRequired")),
+  optionId: z.coerce
+    .number("answerRequired")
+    .check(z.int("answerRequired"), z.positive("answerRequired")),
   accepted: z
     .array(z.coerce.number().check(z.int(), z.positive()))
     .check(z.minLength(1, "acceptedRequired")),

@@ -82,7 +82,10 @@ export function QuestionForm({
       >
         <summary className="text-accent flex min-h-11 cursor-pointer list-none items-center justify-between text-lg uppercase [&::-webkit-details-marker]:hidden">
           {t("refine")}
-          <ChevronDown aria-hidden="true" className="size-5 transition-transform group-open:rotate-180" />
+          <ChevronDown
+            aria-hidden="true"
+            className="size-5 transition-transform group-open:rotate-180"
+          />
         </summary>
         <div className="space-y-4 pt-2 pb-1">
           <fieldset
@@ -111,7 +114,11 @@ export function QuestionForm({
               ))}
             </div>
             {acceptedError ? (
-              <p id={`${id}-accepted-error`} role="alert" className="text-red-bright text-sm font-medium">
+              <p
+                id={`${id}-accepted-error`}
+                role="alert"
+                className="text-red-bright text-sm font-medium"
+              >
                 {acceptedError}
               </p>
             ) : null}

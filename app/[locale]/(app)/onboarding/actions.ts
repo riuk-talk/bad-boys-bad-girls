@@ -448,7 +448,12 @@ export async function saveCasierStep(_state: StepState, form: FormData): Promise
     crypto.getRandomValues(value);
     return value[0]! / 2 ** 32;
   });
-  const values = { charge_1: charges[0], charge_2: charges[1], charge_3: charges[2], true_index: trueIndex };
+  const values = {
+    charge_1: charges[0],
+    charge_2: charges[1],
+    charge_3: charges[2],
+    true_index: trueIndex,
+  };
   const { data: existing } = await member.supabase
     .from("casier_charges")
     .select("profile_id")
@@ -458,7 +463,8 @@ export async function saveCasierStep(_state: StepState, form: FormData): Promise
     ? await member.supabase.from("casier_charges").update(values).eq("profile_id", member.userId)
     : await member.supabase.from("casier_charges").insert({ profile_id: member.userId, ...values });
   if (error) {
-    if (error.message.includes("casier_duplicate_charges")) return fail({ charge1: "chargesDuplicate" });
+    if (error.message.includes("casier_duplicate_charges"))
+      return fail({ charge1: "chargesDuplicate" });
     return failMessage("generic");
   }
   if (form.get("context") === "file") return goTo("/mon-casier/apercu");

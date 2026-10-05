@@ -33,7 +33,9 @@ export default async function InterrogationPage() {
       <div className="space-y-2">
         <h1 className="font-display text-4xl tracking-wide uppercase">{t("title")}</h1>
         <p className="text-cream/85">{t("lead")}</p>
-        <p className="text-accent font-semibold">{t("count", { answered, total: questions.length })}</p>
+        <p className="text-accent font-semibold">
+          {t("count", { answered, total: questions.length })}
+        </p>
       </div>
       {(["core", "extra"] as const).map((phase) => (
         <section key={phase} aria-labelledby={`phase-${phase}`} className="space-y-3">
@@ -47,7 +49,7 @@ export default async function InterrogationPage() {
                 <li key={question.id}>
                   <LocalizedLink
                     href={`/interrogatoire/${question.id}`}
-                    className="flex min-h-14 items-center justify-between gap-3 px-4 py-3 no-underline hover:bg-ink-2"
+                    className="hover:bg-ink-2 flex min-h-14 items-center justify-between gap-3 px-4 py-3 no-underline"
                   >
                     <span className="font-semibold">{question.label}</span>
                     <span className="text-sm whitespace-nowrap">

@@ -170,7 +170,7 @@ export function CasierStepForm({
           onChange={(event) => setLine(event.target.value)}
           aria-invalid={error ? true : undefined}
           aria-describedby={`charge-${stage}-hint charge-${stage}-count${error ? ` charge-${stage}-error` : ""}`}
-          className="font-stamp border-paper-shade w-full rounded-md border-2 bg-white/80 p-3 text-lg text-ink focus:border-[#34343b] focus:outline-none"
+          className="font-stamp border-paper-shade text-ink w-full rounded-md border-2 bg-white/80 p-3 text-lg focus:border-[#34343b] focus:outline-none"
         />
         <div className="flex justify-between gap-3 text-xs text-[#4a4038]">
           <span id={`charge-${stage}-hint`}>{stage === 1 ? t("hint_1") : t("hint_false")}</span>
@@ -200,7 +200,14 @@ export function CasierStepForm({
           {t(`next_${stage}` as "next_1")}
         </Button>
       ) : (
-        <Button key="submit" type="submit" size="lg" className="w-full" disabled={pending} aria-busy={pending}>
+        <Button
+          key="submit"
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={pending}
+          aria-busy={pending}
+        >
           {t("submit")}
         </Button>
       )}
@@ -260,27 +267,32 @@ export function CasierCheck({
                     {index + 1}
                   </span>
                   <span className="flex-1">{charge}</span>
-                  {isTrue ? (
-                    <span className="bg-green-ink inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-sans text-xs font-bold text-white">
-                      <Check aria-hidden="true" className="size-3.5" />
-                      {t("trueLabel")}
-                    </span>
-                  ) : null}
                 </div>
+                {isTrue ? (
+                  <span className="bg-green-ink mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-xs font-bold text-white">
+                    <Check aria-hidden="true" className="size-3.5" />
+                    {t("trueLabel")}
+                  </span>
+                ) : null}
                 {warning ? (
                   <p className="text-red-ink mt-1.5 flex items-start gap-1.5 font-sans text-xs font-bold">
                     <AlertTriangle aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
                     {t(warning)}
                   </p>
                 ) : chargeLength(charge) < CHARGE_SHORT_ADVICE ? (
-                  <p className="mt-1.5 font-sans text-xs font-semibold text-[#4a4038]">{t("shortLine")}</p>
+                  <p className="mt-1.5 font-sans text-xs font-semibold text-[#4a4038]">
+                    {t("shortLine")}
+                  </p>
                 ) : null}
               </li>
             );
           })}
         </ol>
       </section>
-      <section aria-labelledby="souffleur-tips" className="border-line space-y-2 rounded-lg border bg-[#121214] p-4">
+      <section
+        aria-labelledby="souffleur-tips"
+        className="border-line space-y-2 rounded-lg border bg-[#121214] p-4"
+      >
         <h2 id="souffleur-tips" className="text-accent text-lg uppercase">
           {t("tipsTitle")}
         </h2>
@@ -293,7 +305,13 @@ export function CasierCheck({
       <div className="flex flex-col gap-2.5">
         {context === "onboarding" ? (
           <form action={formAction}>
-            <Button type="submit" size="lg" className="w-full" disabled={pending} aria-busy={pending}>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={pending}
+              aria-busy={pending}
+            >
               {t("ready")}
             </Button>
           </form>

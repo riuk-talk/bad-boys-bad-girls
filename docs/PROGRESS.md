@@ -4,12 +4,35 @@
 
 ## Phase en cours
 
-**Phase 3 — 3a et 3b terminées, arrêt pour relecture sécurité** (branche `phase-3`) avant les écrans 3c à 3e. Phase 2c validée et fusionnée (PR #8), en production.
+**Phase 3 — terminée, en attente de validation** (branche `phase-3`, preview). Relecture sécurité 3a/3b validée par le porteur le 2026-10-05 (avec corrections, appliquées). Phase 2c validée et fusionnée (PR #8), en production.
 
 ## Phase 3 — QCM, indice de complicité, Casier, Greffe (2026-10-05)
 
-### Découpage validé
-3a base (QCM, Casier, onboarding en 8 étapes) · 3b indice de complicité · **arrêt relecture sécurité** · 3c écran QCM · 3d Casier + « Teste ton Casier » · 3e Greffe minimum · 3f vérification.
+### Découpage
+3a base (QCM, Casier, onboarding en 8 étapes) · 3b indice de complicité · **arrêt relecture sécurité (validée)** · 3a-bis corrections de la relecture + `docs/PARCOURS-DESIGN.md` côté base (Casier distinct, 3 poses, notifications, fonctions du Greffe) · 3a-ter `SIGNUPS_OPEN`, contenus, docs · 3c couleurs par genre + L'Interrogatoire · 3d « Passe à la toise », Casier, « Teste ton Casier », liste des mots-clés · 3e le Greffe pose par pose · 3f vérification.
+
+### Fait après la relecture (2026-10-05, vérifié)
+- **Base** (migration `20261005125805_phase3_poses_greffe`) : deux chefs d'accusation identiques (casse et espaces ignorés) refusés ; `complete_onboarding` exige les positions 0, 1, 2 pour un Bad (0 seule pour un Visiteur) ; un Bad compte pour le quartier quand ses **3 poses sont validées** ; table `notifications` (écrite par SQL seulement) ; `admin_photo_queue` et `admin_decide_photo` (une décision par photo, motif de refus dans une liste, publication sous un nom UUID aléatoire) ; anglais Q1/Q15 corrigé.
+- **pgTAP** : `phase3_greffe` 7 groupes **27/27** ; `phase3_security` 16 groupes (+ chefs distincts, 3 poses) ; `phase2_security` adapté (3 poses), **tout passe** ; base vide après les tests.
+- **`SIGNUPS_OPEN`** : `false` sur Vercel Production (« Inscriptions bientôt ouvertes », inscription refusée côté serveur, lien magique sans création de compte), `true` en Preview et en local.
+- **Couleurs = genre** (PARCOURS-DESIGN §1) : accent de l'interface = genre du membre connecté (or / rouge `#EE3A55` / crème) ; étiquette « BAD » (barreaux) / « VISITEUR » (combiné) dans l'en-tête ; landing : portes, sur-titres, titres de section, blocs « Côté Bad / Côté Visiteur » et boutons finaux en crème ; jauges du quartier : bad girls en rouge, bad boys en or.
+- **Onboarding en 8 étapes** : Bad 5 « Passe à la toise » (3 emplacements, chaque photo envoyée dès qu'elle est choisie, « Déposer au Greffe » refusé s'il manque une pose), 6 assistant du Casier (le vrai puis deux faux, 7 thèmes, 60 amorces, « Autre idée », doublons refusés), 7 « Teste ton Casier » (ordre mélangé, « Le vrai · visible par toi seul », conseils du Souffleur, alerte ± 40 % de la moyenne des deux autres), 8 **L'Interrogatoire** pour les deux rôles (une question par écran, « Affiner » replié en `<details>` natif).
+- **Après l'onboarding** : `/interrogatoire` (les 20 questions, le socle modifiable, les 10 suivantes), `/mon-casier` (+ aperçu), Ma Fiche avec les 3 poses (statut par pose, motif de refus), photos supplémentaires 3 à 5, Casier sur l'aperçu, **nouvelles du Greffe** (« Compris » les marque lues).
+- **Le Greffe** `/admin/greffe` (admins seulement, lien dans l'en-tête) : file par priorité, une carte par photo, Valider / Refuser avec motif ; copie vers le bucket public sous un nom aléatoire puis suppression des fichiers en attente.
+- **Contenus à relire** : `docs/content/moderation-keywords.md` (liste de départ, rien en base).
+
+### Vérifications 3f
+- typecheck, lint, **105 tests unitaires** (dont équilibre ± 40 % et cas limites, doublons, ordre mélangé, namespaces client), build.
+- **e2e : 47/47** (360 et 1440 px) : les deux onboardings réels en 8 étapes (axe 0 violation sur les nouveaux écrans), puis le Greffe (2 poses validées, 1 refusée : fichiers publics sous un nom aléatoire sans EXIF, fichiers en attente supprimés, nouvelles du Greffe) ; comptes et fichiers supprimés, base revérifiée vide.
+- **Lighthouse landing** : 92 / 100 / 100 / 100, LCP 3,3 s (inchangé, tolérance 3,5 s) ; la landing n'a reçu que du CSS (aucun JS ajouté).
+- Captures (390 px et Greffe en 1280 px) : « Passe à la toise », Casier, « Teste ton Casier », L'Interrogatoire avec « Affiner », Greffe, landing.
+
+### Défauts trouvés et corrigés pendant la 3f
+1. Le namespace « Interrogation » n'était pas envoyé aux composants client (clés brutes affichées) → ajouté + test unitaire qui vérifie chaque namespace utilisé par un composant client.
+2. Le layout n'était pas recalculé après le choix du genre (accent resté or) → `revalidatePath` du layout après les étapes identité et rôle.
+3. Bouton « Suivant » / « Voir mon Casier » : React réutilisait le même bouton, le clic pouvait soumettre trop tôt → clés distinctes.
+4. Un mot interdit dans l'anglais (« like », « match ») attrapé deux fois par le test de vocabulaire → reformulé.
+5. « Le vrai · visible par toi seul » écrasait la ligne sur téléphone → étiquette sous la phrase.
 
 ### Décisions (porteur, 2026-10-05)
 | Décision | Raison |
@@ -43,9 +66,9 @@
 - **Contenus à relire** : `docs/content/casier-amorces.md` (60 amorces FR + EN), `docs/content/questions-en.md`.
 
 ### Points à connaître
-1. **Un seul projet Supabase** (`chvnmzmvcjvhxlnfmlvv`) sert le dev **et** la production Vercel. Depuis la migration 3a, `complete_onboarding` exige le Casier et le QCM alors que les écrans arrivent en 3c/3d : **un nouvel inscrit ne peut plus terminer son onboarding, en production comme en prévisualisation**, jusqu'à la fin de 3d. Impact actuel nul (0 profil). Recommandation : créer un projet Supabase de production séparé (l'offre gratuite en autorise 2) avant l'ouverture des inscriptions.
+1. **Un seul projet Supabase** (`chvnmzmvcjvhxlnfmlvv`) sert le dev **et** la production Vercel. La production actuelle (code de la Phase 2c) ne peut plus terminer un onboarding avec la base de la Phase 3 ; elle le pourra une fois la PR de la Phase 3 fusionnée, et `SIGNUPS_OPEN=false` y ferme les inscriptions. Base de production séparée : checklist avant lancement.
 2. **Le connecteur Supabase annule tout script contenant un `DELETE`**, même dans un test annulé ensuite. Les tests pgTAP de la Phase 3 vérifient donc les suppressions par les droits et les politiques (catalogue), sans exécuter de `DELETE`.
-3. **`moderation_keywords` est vide** : le signalement des chefs d'accusation fonctionne (testé avec un mot ajouté pendant le test), mais ne signalera rien tant que la liste de départ n'est pas saisie. Proposition : je la rédige en 3d avec les amorces.
+3. **`moderation_keywords` est vide** : la liste de départ est rédigée (`docs/content/moderation-keywords.md`) et sera chargée par migration après relecture.
 4. Le fichier pgTAP de parité est **généré** depuis le fichier de cas (`UPDATE_PGTAP=1 pnpm vitest run tests/unit/complicity.test.ts`) ; le test unitaire échoue s'il n'est pas à jour.
 
 ## Checklist avant lancement (ouverture des inscriptions)

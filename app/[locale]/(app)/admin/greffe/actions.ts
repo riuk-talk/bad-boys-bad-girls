@@ -26,7 +26,10 @@ const decisionSchema = z.object({
 
 async function back(error?: "notPending" | "generic"): Promise<never> {
   revalidatePath("/[locale]/admin/greffe", "page");
-  return redirect({ href: error ? `/admin/greffe?error=${error}` : "/admin/greffe?done=1", locale: await getLocale() });
+  return redirect({
+    href: error ? `/admin/greffe?error=${error}` : "/admin/greffe?done=1",
+    locale: await getLocale(),
+  });
 }
 
 const smallPath = (path: string) => path.replace(/\.webp$/, "-s.webp");
@@ -73,7 +76,9 @@ export async function decidePhotoAction(form: FormData): Promise<void> {
   // Approval: copy both sizes to the public bucket under a new random name (never the owner id).
   const name = crypto.randomUUID();
   const published = [`${name}.webp`, `${name}-s.webp`];
-  const files = await Promise.all(pending.map((path) => admin.storage.from("photos-pending").download(path)));
+  const files = await Promise.all(
+    pending.map((path) => admin.storage.from("photos-pending").download(path)),
+  );
   if (files.some((file) => file.error || !file.data)) return back("generic");
   const uploads = await Promise.all(
     files.map((file, index) =>

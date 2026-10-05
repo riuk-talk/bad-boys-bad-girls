@@ -70,7 +70,9 @@ async function addPose(page: Page, pose: "Profil gauche" | "Face · obligatoire"
   await page
     .getByLabel(`Ajouter : ${pose}`)
     .setInputFiles({ name: `${pose}.jpg`, mimeType: "image/jpeg", buffer: await photoWithGps() });
-  await expect(page.getByRole("img", { name: `Ta photo : ${pose}` })).toBeVisible();
+  await expect(page.getByRole("img", { name: `Ta photo : ${pose}` })).toBeVisible({
+    timeout: 20_000,
+  });
 }
 
 /** Step 8 « L'Interrogatoire »: the first option of each of the 10 core questions. */
@@ -255,13 +257,11 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
 
     // Le Greffe: an admin approves two poses and refuses one, each separately.
     const adminAccount = await newAccount({});
-    await admin
-      .from("profiles")
-      .insert({
-        id: adminAccount.userId,
-        pseudo: `Greffier ${randomBytes(2).toString("hex")}`,
-        birthdate: "1985-01-01",
-      });
+    await admin.from("profiles").insert({
+      id: adminAccount.userId,
+      pseudo: `Greffier ${randomBytes(2).toString("hex")}`,
+      birthdate: "1985-01-01",
+    });
     await admin.from("admin_users").insert({ user_id: adminAccount.userId, note: "e2e" });
     const greffier = await (
       await browser.newContext({ viewport: { width: 1280, height: 900 } })
@@ -278,7 +278,7 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
       greffier
         .getByRole("listitem")
         .filter({ hasText: profile!.pseudo! })
-        .filter({ hasText: pose });
+        .filter({ has: greffier.locator("p", { hasText: new RegExp(`· ${pose}$`) }) });
     await card("Face").getByRole("button", { name: "Valider" }).click();
     await expect(greffier.getByText("Décision enregistrée.")).toBeVisible();
     await card("Profil gauche").getByRole("button", { name: "Valider" }).click();

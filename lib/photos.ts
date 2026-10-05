@@ -24,12 +24,17 @@ export async function photoInfos(
     .select("position, status, pending_path, public_path_large, rejection_reason")
     .eq("owner_id", userId)
     .in("position", positions);
-  const result: Record<number, PhotoInfo | null> = Object.fromEntries(positions.map((p) => [p, null]));
-  const pending = (photos ?? []).filter((photo) => photo.status === "pending" && photo.pending_path);
+  const result: Record<number, PhotoInfo | null> = Object.fromEntries(
+    positions.map((p) => [p, null]),
+  );
+  const pending = (photos ?? []).filter(
+    (photo) => photo.status === "pending" && photo.pending_path,
+  );
   const { data: signed } = pending.length
-    ? await supabase.storage
-        .from("photos-pending")
-        .createSignedUrls(pending.map((photo) => photo.pending_path as string), SIGNED_URL_SECONDS)
+    ? await supabase.storage.from("photos-pending").createSignedUrls(
+        pending.map((photo) => photo.pending_path as string),
+        SIGNED_URL_SECONDS,
+      )
     : { data: [] };
   for (const photo of photos ?? []) {
     const url =

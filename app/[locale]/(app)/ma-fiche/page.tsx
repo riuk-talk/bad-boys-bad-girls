@@ -67,7 +67,10 @@ export default async function MyFichePage() {
       .select("charge_1, charge_2, charge_3")
       .eq("profile_id", userId)
       .maybeSingle(),
-    supabase.from("answers").select("question_id", { count: "exact", head: true }).eq("user_id", userId),
+    supabase
+      .from("answers")
+      .select("question_id", { count: "exact", head: true })
+      .eq("user_id", userId),
     supabase.from("questions").select("id", { count: "exact", head: true }),
     supabase
       .from("notifications")
@@ -223,22 +226,22 @@ export default async function MyFichePage() {
           {t(`photosTitle_${role}`)}
         </h2>
         <p className="text-grey">{t(`photosHint_${role}`)}</p>
-        {isVisitor ? null : (
-          <PosesEditor photos={await photoInfos(supabase, userId, [0, 1, 2])} />
-        )}
+        {isVisitor ? null : <PosesEditor photos={await photoInfos(supabase, userId, [0, 1, 2])} />}
         {isVisitor ? null : <h3 className="font-semibold">{t("extraPhotos")}</h3>}
         <PhotoManager
           single={isVisitor}
           positions={isVisitor ? [0] : [3, 4, 5]}
-          photos={shownPhotos.filter((photo) => isVisitor || photo.position >= 3).map((photo) => ({
-            id: photo.id,
-            position: photo.position,
-            status: photo.status,
-            url:
-              urlFor(
-                photo.pending_path ? photo.pending_path.replace(/\.webp$/, "-s.webp") : null,
-              ) ?? urlFor(photo.pending_path),
-          }))}
+          photos={shownPhotos
+            .filter((photo) => isVisitor || photo.position >= 3)
+            .map((photo) => ({
+              id: photo.id,
+              position: photo.position,
+              status: photo.status,
+              url:
+                urlFor(
+                  photo.pending_path ? photo.pending_path.replace(/\.webp$/, "-s.webp") : null,
+                ) ?? urlFor(photo.pending_path),
+            }))}
         />
       </section>
 

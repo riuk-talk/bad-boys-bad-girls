@@ -14,7 +14,13 @@ type Props = {
 };
 
 // Steps whose heading is centred under a kicker (maquettes PARCOURS-DESIGN §6).
-const CENTRED: readonly StepKind[] = ["practice", "poses", "casier", "casierCheck", "interrogation"];
+const CENTRED: readonly StepKind[] = [
+  "practice",
+  "poses",
+  "casier",
+  "casierCheck",
+  "interrogation",
+];
 
 /** Frame of an onboarding step: Le Dossier (Bad) or Le Permis de visite (Visitor), SPEC v7 §4. */
 export async function StepShell({ step, role, kind, children, heading, kicker, aside }: Props) {
@@ -24,7 +30,9 @@ export async function StepShell({ step, role, kind, children, heading, kicker, a
   const progress = t("progress", { current: step, total });
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8 sm:px-6 sm:py-12">
-      <p className="text-accent text-sm font-bold tracking-[0.2em] uppercase">{t(`title_${role}`)}</p>
+      <p className="text-accent text-sm font-bold tracking-[0.2em] uppercase">
+        {t(`title_${role}`)}
+      </p>
       <div className="text-grey mt-3 flex items-center justify-between gap-3 text-sm">
         <span>{progress}</span>
         {aside ? <span>{aside}</span> : null}

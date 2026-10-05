@@ -92,7 +92,11 @@ function PoseSlot({
       >
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element -- private signed URL or local blob
-          <img src={url} alt={t("previewAlt", { pose: label })} className="size-full object-cover" />
+          <img
+            src={url}
+            alt={t("previewAlt", { pose: label })}
+            className="size-full object-cover"
+          />
         ) : (
           <span className="flex flex-col items-center gap-1 text-sm font-bold">
             <Camera aria-hidden="true" className="size-6" />
@@ -135,7 +139,11 @@ function PoseSlot({
         )}
       </span>
       {error ? (
-        <p id={`${id}-error`} role="alert" className="text-red-bright text-center text-xs font-medium">
+        <p
+          id={`${id}-error`}
+          role="alert"
+          className="text-red-bright text-center text-xs font-medium"
+        >
           {error}
         </p>
       ) : null}
@@ -153,7 +161,12 @@ function PoseSlots({
   return (
     <div className="flex items-end gap-2.5">
       {SLOTS.map((slot) => (
-        <PoseSlot key={slot.position} slot={slot} initial={photos[slot.position] ?? null} onUploaded={onUploaded} />
+        <PoseSlot
+          key={slot.position}
+          slot={slot}
+          initial={photos[slot.position] ?? null}
+          onUploaded={onUploaded}
+        />
       ))}
     </div>
   );
@@ -162,7 +175,10 @@ function PoseSlots({
 function GreffeRules() {
   const t = useTranslations("Onboarding.poses");
   return (
-    <section aria-labelledby="greffe-rules" className="border-line space-y-2 rounded-lg border bg-[#121214] p-4">
+    <section
+      aria-labelledby="greffe-rules"
+      className="border-line space-y-2 rounded-lg border bg-[#121214] p-4"
+    >
       <h2 id="greffe-rules" className="text-accent text-lg uppercase">
         {t("rulesTitle")}
       </h2>
@@ -201,7 +217,9 @@ export function PosesStepForm({ photos }: { photos: Record<number, PhotoInfo | n
   );
   const fieldError = state.status === "error" ? state.fields?.photo : undefined;
   const message =
-    state.status === "error" ? errorT((fieldError ?? state.message ?? "generic") as "generic") : undefined;
+    state.status === "error"
+      ? errorT((fieldError ?? state.message ?? "generic") as "generic")
+      : undefined;
 
   return (
     <form action={formAction} className="space-y-6">

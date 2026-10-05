@@ -53,7 +53,7 @@ describe("shuffled order for the Visitors", () => {
   it("keeps track of the true line", () => {
     for (let seed = 0; seed < 20; seed += 1) {
       let state = seed;
-      const random = () => ((state = (state * 9301 + 49297) % 233280) / 233280);
+      const random = () => (state = (state * 9301 + 49297) % 233280) / 233280;
       const { charges, trueIndex } = shuffleCharges("VRAI", ["faux 1", "faux 2"], random);
       expect(charges[trueIndex - 1]).toBe("VRAI");
       expect([...charges].sort()).toEqual(["VRAI", "faux 1", "faux 2"].sort());

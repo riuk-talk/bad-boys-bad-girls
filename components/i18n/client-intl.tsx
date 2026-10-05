@@ -11,6 +11,8 @@ const CLIENT_NAMESPACES = [
   "Onboarding",
   "MyFiche",
   "Quarter",
+  "Interrogation",
+  "Greffe",
 ] as const;
 
 /**

@@ -17,8 +17,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("title") };
 }
 
-const REASONS = ["face_hidden", "not_alone", "sunglasses", "nudity", "contacts", "wrong_pose", "not_adult", "other"] as const;
-const POSITION_KEYS: Record<number, "face" | "left" | "right"> = { 0: "face", 1: "left", 2: "right" };
+const REASONS = [
+  "face_hidden",
+  "not_alone",
+  "sunglasses",
+  "nudity",
+  "contacts",
+  "wrong_pose",
+  "not_adult",
+  "other",
+] as const;
+const POSITION_KEYS: Record<number, "face" | "left" | "right"> = {
+  0: "face",
+  1: "left",
+  2: "right",
+};
 const SIGNED_URL_SECONDS = 300;
 
 /** Le Greffe, minimum (Phase 3): the photo queue, one decision per photo. Admins only. */
@@ -64,10 +77,15 @@ export default async function GreffePage({ searchParams }: Props) {
       <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {rows.map((row) => {
           const key = POSITION_KEYS[row.photo_position];
-          const position = key ? t(`positions.${key}`) : t("positions.extra", { number: row.photo_position + 1 });
+          const position = key
+            ? t(`positions.${key}`)
+            : t("positions.extra", { number: row.photo_position + 1 });
           const url = urlOf(row.pending_path);
           return (
-            <li key={row.photo_id} className="border-line space-y-3 rounded-lg border bg-[#121214] p-3">
+            <li
+              key={row.photo_id}
+              className="border-line space-y-3 rounded-lg border bg-[#121214] p-3"
+            >
               <div className="toise-wall aspect-[3/4] overflow-hidden rounded-sm">
                 {url ? (
                   // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL of a private file
@@ -79,7 +97,8 @@ export default async function GreffePage({ searchParams }: Props) {
                 ) : null}
               </div>
               <p className="font-semibold">
-                {row.pseudo} · {t(`roles.${row.role}`)} · <span className="text-accent">{position}</span>
+                {row.pseudo} · {t(`roles.${row.role}`)} ·{" "}
+                <span className="text-accent">{position}</span>
               </p>
               <form action={decidePhotoAction} className="space-y-2">
                 <input type="hidden" name="photoId" value={row.photo_id} />
@@ -104,7 +123,13 @@ export default async function GreffePage({ searchParams }: Props) {
                     </option>
                   ))}
                 </select>
-                <Button type="submit" name="decision" value="reject" variant="danger" className="w-full">
+                <Button
+                  type="submit"
+                  name="decision"
+                  value="reject"
+                  variant="danger"
+                  className="w-full"
+                >
                   {t("reject")}
                 </Button>
               </form>

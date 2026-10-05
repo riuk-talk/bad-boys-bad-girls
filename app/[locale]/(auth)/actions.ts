@@ -78,7 +78,8 @@ export async function signInAction(_state: AuthState, form: FormData): Promise<A
       },
     });
     // Unknown address while sign-ups are closed: same answer as for a known one (no enumeration).
-    const refusedSignup = error?.code === "otp_disabled" || /signups not allowed/i.test(error?.message ?? "");
+    const refusedSignup =
+      error?.code === "otp_disabled" || /signups not allowed/i.test(error?.message ?? "");
     if (error && !refusedSignup) return { status: "error", message: authErrorKey(error) };
     return { status: "sent", kind: "magic" };
   }
