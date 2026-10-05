@@ -40,6 +40,6 @@ export function describedBy(id: string, hint?: unknown, error?: unknown): string
 
 /** Control styles without horizontal padding, so callers can reserve room for an icon. */
 export const controlBase =
-  "min-h-11 w-full rounded-lg border border-line bg-ink-2 py-2.5 text-base text-cream placeholder:text-grey focus-visible:border-gold aria-invalid:border-red-bright";
+  "min-h-11 w-full rounded-lg border border-line bg-ink-2 py-2.5 text-base text-cream placeholder:text-grey focus-visible:border-accent aria-invalid:border-red-bright";
 
 export const controlClasses = `${controlBase} px-3.5`;

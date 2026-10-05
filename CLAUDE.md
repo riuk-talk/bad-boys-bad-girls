@@ -66,7 +66,16 @@ Esprit : un site de rencontre **dans le même esprit que les prisons**, en style
 | Lieu où l'on discute (visite de 30 min, puis sans horaire avec le Permis permanent) | Le Parloir | `visits`, `conversation`, `message` |
 | Les deux veulent continuer | Le Permis permanent (le Parloir reste ouvert entre eux, sans horaire) | `visits.outcome = 'released'` |
 | Vrai rendez-vous à deux | La Cavale | `date_proposals` |
+| Le QCM | L'Interrogatoire (« INTERROGATOIRE · 3/10 ») | `questions`, `answers` |
 | Score QCM | Indice de complicité | `complicity_score` |
+| Présentation du Bad | Note comportementale | `profile.bio` |
+| Bloc identité de la Fiche | Identité du sujet | `get_fiche` |
+| Identifiant public de la Fiche | N° d'écrou (aléatoire, jamais l'id interne) | Phase 4 |
+| Étape photos du Bad (3 poses : face, profil gauche, profil droit) | Passe à la toise / Photo signalétique | `photos.position` 0, 1, 2 |
+| Règles photo | Le règlement du Greffe ; bouton « Déposer au Greffe » | |
+| Agenda des visites | Tableau des visites | `visits` |
+| Écran de visite | Parloir · Cabine n° | `visits` |
+| Liste des demandes du Visiteur | Mes demandes de parloir | `get_my_requests` |
 | Aide à l'écriture | Le Souffleur | `lib/prompter` |
 | Badge de confiance du Bad | Bonne conduite | `profile.is_reglo` |
 | Badge de confiance du Visiteur | Casier vierge | calculé |
@@ -77,12 +86,13 @@ Esprit : un site de rencontre **dans le même esprit que les prisons**, en style
 | Sorties de groupe (V2) | La Virée | hors MVP |
 
 Termes **retirés** (v7) : Plaidoirie, Plaider, Libérer / Libération / LIBÉRÉ·E, aveux (on dit toujours « chefs d'accusation » : un faux n'est pas un aveu), « deviner le faux », Coupables tous les deux, « Le Juge, c'est toi » et « Ici, c'est toi le juge » (aucun « juge » dans l'interface), Réglo, L'Audience du soir, Ta ville ouvre bientôt. « Match » reste interdit, même pour dire qu'il n'y en a pas.
-Termes **interdits** dans l'UI : « match », « swipe », « like ». Aucun insigne ni nom d'administration réelle (police, gendarmerie, justice, administration pénitentiaire).
+Termes **interdits** dans l'UI : « match », « swipe », « like », « juge ». Aucun insigne ni nom d'administration réelle (police, gendarmerie, justice, administration pénitentiaire).
 Les **fonctions de sécurité gardent des mots simples** : Signaler, Bloquer, Conseils sécurité.
 
 ## Identité visuelle
 
-- Palette : noir `#0E0E10` (fond), or `#D4A437` (bad boys), rouge `#E0233F` (bad girls), crème `#F2E8D5` (texte), gris `#9A9186` (texte secondaire, vérifier le contraste AA).
+- Palette : noir `#0E0E10` (fond), or `#D4A437`, rouge `#E0233F`, crème `#F2E8D5` (texte), gris `#9A9186` (texte secondaire, vérifier le contraste AA).
+- **Les couleurs désignent le genre, jamais le rôle** (`docs/PARCOURS-DESIGN.md` §1) : or = homme, rouge = femme, crème = non-binaire ou autre. L'interface prend la couleur de la personne connectée ; ce qui représente quelqu'un prend la couleur de la personne affichée. Le rôle se lit à l'étiquette « BAD » (barreaux) / « VISITEUR » (combiné) et aux matières (dossier, cellule / permis, vitre). Sur la landing, les portes Bad / Visiteur sont crème.
 - Polices (via `next/font/google`, auto-hébergées) : **Anton** (titres), **Inter Tight** (texte), **Special Elite** (tampons, Casier), **Yellowtail** (signature, usage rare).
 - Thème sombre par défaut. Mobile-first. Contraste WCAG AA obligatoire.
 - Logo : `public/brand/logo-3d.png` (visuel fourni, pour la home et l'image Open Graph). Crée en plus un **logo SVG plat** (monogramme : B miroir or couronné + B rouge avec cornes et queue de diable) pour le header, le favicon et l'icône PWA.

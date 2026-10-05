@@ -71,7 +71,7 @@ function Alert({ message }: { message?: string }) {
 const richLink = (href: string) =>
   function RichLink(chunks: ReactNode) {
     return (
-      <Link href={href} target="_blank" className="text-gold underline underline-offset-2">
+      <Link href={href} target="_blank" className="text-accent underline underline-offset-2">
         {chunks}
       </Link>
     );
@@ -149,14 +149,14 @@ export function IdentityStepForm({
           {Constants.public.Enums.gender.map((value) => (
             <label
               key={value}
-              className="border-line has-checked:border-gold has-checked:bg-gold/10 has-focus-visible:outline-gold flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3.5 has-focus-visible:outline-3"
+              className="border-line has-checked:border-accent has-checked:bg-accent/10 has-focus-visible:outline-accent flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3.5 has-focus-visible:outline-3"
             >
               <input
                 type="radio"
                 name="gender"
                 value={value}
                 defaultChecked={gender === value}
-                className="accent-gold size-5"
+                className="accent-accent size-5"
               />
               {t(`identity.genders.${value}`)}
             </label>
@@ -188,7 +188,7 @@ export function RoleStepForm({ role }: { role: Role | null }) {
         {ROLES.map((value) => (
           <label
             key={value}
-            className="border-line has-checked:border-gold has-checked:bg-gold/10 has-focus-visible:outline-gold flex cursor-pointer gap-3 rounded-[var(--radius-card)] border p-4 has-focus-visible:outline-3"
+            className="border-line has-checked:border-accent has-checked:bg-accent/10 has-focus-visible:outline-accent flex cursor-pointer gap-3 rounded-[var(--radius-card)] border p-4 has-focus-visible:outline-3"
           >
             <input
               type="radio"
@@ -196,7 +196,7 @@ export function RoleStepForm({ role }: { role: Role | null }) {
               value={value}
               data-field="role"
               defaultChecked={role === value}
-              className="accent-gold mt-1 size-5 shrink-0"
+              className="accent-accent mt-1 size-5 shrink-0"
             />
             <span>
               <span className="font-display block text-2xl tracking-wide uppercase">
@@ -248,14 +248,14 @@ export function SeekingStepForm({
           {Constants.public.Enums.gender.map((value) => (
             <label
               key={value}
-              className="border-line has-checked:border-gold has-checked:bg-gold/10 has-focus-visible:outline-gold flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3.5 has-focus-visible:outline-3"
+              className="border-line has-checked:border-accent has-checked:bg-accent/10 has-focus-visible:outline-accent flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3.5 has-focus-visible:outline-3"
             >
               <input
                 type="checkbox"
                 name="genders"
                 value={value}
                 defaultChecked={genders.includes(value)}
-                className="accent-gold size-5"
+                className="accent-accent size-5"
               />
               {t(`identity.genders.${value}`)}
             </label>
@@ -293,7 +293,7 @@ export function SeekingStepForm({
       </div>
       <section
         aria-labelledby="consent-title"
-        className="border-gold/60 bg-gold/5 space-y-3 rounded-[var(--radius-card)] border p-4"
+        className="border-accent/60 bg-accent/5 space-y-3 rounded-[var(--radius-card)] border p-4"
       >
         <h2 id="consent-title" className="font-display text-xl tracking-wide uppercase">
           {t("seeking.consentTitle")}
@@ -381,7 +381,7 @@ export function PhotoStepForm({ last }: { last: boolean }) {
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor={`${id}-file`}
-          className="border-cream/80 text-cream has-focus-visible:outline-gold hover:bg-cream hover:text-ink inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border-2 px-5 py-2 font-semibold has-focus-visible:outline-3"
+          className="border-cream/80 text-cream has-focus-visible:outline-accent hover:bg-cream hover:text-ink inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border-2 px-5 py-2 font-semibold has-focus-visible:outline-3"
         >
           {preview ? t("photo.change") : t("photo.choose")}
           <input
@@ -428,7 +428,7 @@ export function MotiveStepForm({ motive }: { motive: string }) {
         hint={t("motive.hint", { max: VISIT_MOTIVE_MAX })}
         error={step.error("motive")}
       />
-      <Submit pending={step.pending}>{t("finish")}</Submit>
+      <Submit pending={step.pending}>{t("next")}</Submit>
       <Alert message={step.message} />
     </form>
   );
@@ -484,7 +484,7 @@ export function PracticeStepForm() {
                   onClick={() => setBet(index)}
                   className={cn(
                     "font-stamp relative flex min-h-11 w-full items-start gap-3 rounded-md border-2 bg-white/70 px-3 py-2.5 text-left",
-                    !answered && "border-paper-shade hover:border-gold-ink",
+                    !answered && "border-paper-shade hover:border-accent-ink",
                     answered && isTrue && "border-green-ink",
                     answered && !isTrue && isBet && "border-red-ink",
                     answered && !isTrue && !isBet && "border-paper-shade opacity-70",

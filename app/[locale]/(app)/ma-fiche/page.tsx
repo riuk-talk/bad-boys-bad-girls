@@ -4,6 +4,10 @@ import { FicheCard } from "@/components/brand/fiche-card";
 import { PermitCard } from "@/components/brand/permit-card";
 import { FicheEditor } from "@/components/fiche/fiche-editor";
 import { PhotoManager } from "@/components/fiche/photo-manager";
+import { Notices, type Notice } from "@/components/fiche/notices";
+import { PosesEditor } from "@/components/onboarding/poses";
+import { ButtonLink } from "@/components/ui/button-link";
+import { photoInfos } from "@/lib/photos";
 import { redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
 import { ageFromBirthdate, completeness } from "@/lib/fiche/completeness";
@@ -36,7 +40,16 @@ export default async function MyFichePage() {
   const role = parseRole(profile.role) ?? "bad";
   const isVisitor = role === "visitor";
 
-  const [{ data: place }, { data: photos }, { data: tribes }, { data: mine }] = await Promise.all([
+  const [
+    { data: place },
+    { data: photos },
+    { data: tribes },
+    { data: mine },
+    { data: casier },
+    { count: answered },
+    { count: questionCount },
+    { data: notices },
+  ] = await Promise.all([
     supabase
       .from("places")
       .select("name")
@@ -49,6 +62,22 @@ export default async function MyFichePage() {
       .order("position"),
     supabase.from("tribes").select("id, label").order("sort"),
     supabase.from("profile_tribes").select("tribe_id, detail").eq("profile_id", userId),
+    supabase
+      .from("casier_charges")
+      .select("charge_1, charge_2, charge_3")
+      .eq("profile_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("answers")
+      .select("question_id", { count: "exact", head: true })
+      .eq("user_id", userId),
+    supabase.from("questions").select("id", { count: "exact", head: true }),
+    supabase
+      .from("notifications")
+      .select("id, type, payload, created_at")
+      .is("read_at", null)
+      .order("created_at", { ascending: false })
+      .limit(10),
   ]);
 
   // Photos awaiting validation are private: short-lived signed URLs, owner only (storage RLS).
@@ -77,7 +106,19 @@ export default async function MyFichePage() {
     bioLength: profile.bio?.length ?? 0,
     signCount: mine?.length ?? 0,
   });
-  const statusKey = main ? main.status : "missing";
+  // A Bad's Fiche is validated once the 3 poses are (PARCOURS-DESIGN §3).
+  const poses = [0, 1, 2].map((position) => photos?.find((p) => p.position === position));
+  const statusKey = isVisitor
+    ? main
+      ? main.status
+      : "missing"
+    : poses.some((pose) => !pose)
+      ? "missing"
+      : poses.some((pose) => pose?.status === "rejected")
+        ? "rejected"
+        : poses.every((pose) => pose?.status === "approved")
+          ? "approved"
+          : "pending";
   const signs = (mine ?? []).map((row) => {
     const label = tribeLabels.get(row.tribe_id) ?? "";
     return row.detail ? `${label} — ${row.detail}` : label;
@@ -95,12 +136,25 @@ export default async function MyFichePage() {
         role="status"
         className={
           statusKey === "approved"
-            ? "border-gold/60 bg-gold/10 text-gold rounded-lg border px-4 py-3"
+            ? "border-accent/60 bg-accent/10 text-accent rounded-lg border px-4 py-3"
             : "border-line bg-ink-2 rounded-lg border px-4 py-3"
         }
       >
         {t(`status_${role}.${statusKey}`, { reason: main?.rejection_reason ?? "" })}
       </p>
+
+      <Notices notices={(notices ?? []) as Notice[]} />
+
+      <nav aria-label={t("shortcutsLabel")} className="flex flex-wrap gap-3">
+        <ButtonLink href="/interrogatoire" variant="secondary">
+          {t("interrogationLink", { answered: answered ?? 0, total: questionCount ?? 0 })}
+        </ButtonLink>
+        {isVisitor ? null : (
+          <ButtonLink href="/mon-casier" variant="secondary">
+            {t("casierLink")}
+          </ButtonLink>
+        )}
+      </nav>
 
       {isVisitor ? null : (
         <section aria-labelledby="gauge-title" className="space-y-3">
@@ -115,7 +169,7 @@ export default async function MyFichePage() {
             aria-valuenow={gauge.percent}
             className="bg-ink-3 h-3 overflow-hidden rounded-full"
           >
-            <div className="bg-gold h-full rounded-full" style={{ width: `${gauge.percent}%` }} />
+            <div className="bg-accent h-full rounded-full" style={{ width: `${gauge.percent}%` }} />
           </div>
           <p className="text-grey">{t("gaugeHint")}</p>
           {gauge.missing.length > 0 ? (
@@ -159,7 +213,7 @@ export default async function MyFichePage() {
               city: place?.name ?? "",
               photo,
               signs,
-              charges: [],
+              charges: casier ? [casier.charge_1, casier.charge_2, casier.charge_3] : [],
               bio: profile.bio,
               goodConduct: profile.is_reglo,
             }}
@@ -172,17 +226,22 @@ export default async function MyFichePage() {
           {t(`photosTitle_${role}`)}
         </h2>
         <p className="text-grey">{t(`photosHint_${role}`)}</p>
+        {isVisitor ? null : <PosesEditor photos={await photoInfos(supabase, userId, [0, 1, 2])} />}
+        {isVisitor ? null : <h3 className="font-semibold">{t("extraPhotos")}</h3>}
         <PhotoManager
           single={isVisitor}
-          photos={shownPhotos.map((photo) => ({
-            id: photo.id,
-            position: photo.position,
-            status: photo.status,
-            url:
-              urlFor(
-                photo.pending_path ? photo.pending_path.replace(/\.webp$/, "-s.webp") : null,
-              ) ?? urlFor(photo.pending_path),
-          }))}
+          positions={isVisitor ? [0] : [3, 4, 5]}
+          photos={shownPhotos
+            .filter((photo) => isVisitor || photo.position >= 3)
+            .map((photo) => ({
+              id: photo.id,
+              position: photo.position,
+              status: photo.status,
+              url:
+                urlFor(
+                  photo.pending_path ? photo.pending_path.replace(/\.webp$/, "-s.webp") : null,
+                ) ?? urlFor(photo.pending_path),
+            }))}
         />
       </section>
 

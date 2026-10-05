@@ -343,7 +343,12 @@ begin
   foreach t in array array['terms', 'privacy', 'age_18', 'art9_seeking'] loop
     insert into public.consents (user_id, type, text_version, granted) values (a, t::public.consent_type, 'v1', true);
   end loop;
-  insert into public.photos (owner_id, position, pending_path) values (a, 0, a || '/0.webp');
+  insert into public.photos (owner_id, position, pending_path)
+    select a, p, a || '/' || p || '.webp' from generate_series(0, 2) p;
+  -- Phase 3: the 3 poses, the Casier and the 10 core answers are required too (tested in phase3_security).
+  insert into public.casier_charges (profile_id, charge_1, charge_2, charge_3, true_index) values (a, 'un', 'deux', 'trois', 1);
+  insert into public.answers (user_id, question_id, option_id)
+    select a, q.id, q.id * 10 + 1 from public.questions q where q.phase = 'core' and q.is_active;
   perform pg_temp.as_user(a);
   return next is(pg_temp.try('select public.complete_onboarding()'), null, 'a Bad is accepted once the common steps are done');
   perform pg_temp.as_owner();
@@ -390,8 +395,11 @@ begin
   update public.profiles set onboarding_completed_at = now(), last_seen_at = now() - interval '31 days'
     where id = gone;
   update public.profiles set is_paused = true where id = paused;
+  -- Phase 3: a Bad counts with the 3 poses validated (a Visitor has the face photo only).
   insert into public.photos (owner_id, position, pending_path)
-    select id, 0, id || '/0.webp' from unnest(array[w1, w2, m1, paused, gone, nophoto, v]) id;
+    select id, p, id || '/' || p || '.webp' from unnest(array[w1, w2, m1, paused, gone, nophoto]) id,
+      generate_series(0, 2) p;
+  insert into public.photos (owner_id, position, pending_path) values (v, 0, v || '/0.webp');
   update public.photos set status = 'approved' where owner_id <> nophoto;
   perform pg_temp.as_user(me);
   return next is(pg_temp.val('select bads from public.zone_progress()'), '3',
@@ -439,6 +447,10 @@ begin
     'Écris-moi à moi@exemple.fr', a)), null, 'the Visitor writes the Motif');
   return next is(pg_temp.val(format('select position(''moi@exemple.fr'' in visit_motive) from public.profiles where id = %L', a)),
     '0', 'contacts are masked in the Motif');
+  perform pg_temp.as_owner();
+  insert into public.answers (user_id, question_id, option_id)
+    select a, q.id, q.id * 10 + 1 from public.questions q where q.phase = 'core' and q.is_active;
+  perform pg_temp.as_user(a);
   return next is(pg_temp.try('select public.complete_onboarding()'), null, 'a Visitor finishes with photo and Motif');
   return next matches(coalesce(pg_temp.try('select public.set_onboarding_role(''bad'')'), 'ok'),
     'role_locked', 'the role cannot be changed through the onboarding function afterwards');

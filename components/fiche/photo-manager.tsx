@@ -20,7 +20,16 @@ const IDLE: StepState = { status: "idle" };
  * Photos of the member. A Bad has up to 6; a Visitor's Permis shows a single photo, which can only
  * be replaced (SPEC v7 §5 bis; the database refuses other positions).
  */
-export function PhotoManager({ photos, single = false }: { photos: Photo[]; single?: boolean }) {
+export function PhotoManager({
+  photos,
+  single = false,
+  positions = [0, 1, 2, 3, 4, 5],
+}: {
+  photos: Photo[];
+  single?: boolean;
+  /** Free positions this manager may fill (a Bad's extra photos: 3 to 5, PARCOURS-DESIGN §3). */
+  positions?: readonly number[];
+}) {
   const t = useTranslations("MyFiche");
   const errors = useTranslations("Onboarding.errors");
   const id = useId();
@@ -31,7 +40,7 @@ export function PhotoManager({ photos, single = false }: { photos: Photo[]; sing
   const [preparing, setPreparing] = useState(false);
   const freePosition = single
     ? 0
-    : [0, 1, 2, 3, 4, 5].find((p) => !photos.some((photo) => photo.position === p));
+    : positions.find((p) => !photos.some((photo) => photo.position === p));
   const replacing = single && photos.length > 0;
 
   useEffect(() => {
@@ -78,7 +87,7 @@ export function PhotoManager({ photos, single = false }: { photos: Photo[]; sing
             <Badge
               tone={
                 photo.status === "approved"
-                  ? "gold"
+                  ? "accent"
                   : photo.status === "rejected"
                     ? "red"
                     : "neutral"
@@ -94,7 +103,7 @@ export function PhotoManager({ photos, single = false }: { photos: Photo[]; sing
         <form ref={formRef}>
           <label
             htmlFor={`${id}-add`}
-            className="border-cream/80 has-focus-visible:outline-gold hover:bg-cream hover:text-ink inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-2 px-5 py-2 font-semibold has-focus-visible:outline-3"
+            className="border-cream/80 has-focus-visible:outline-accent hover:bg-cream hover:text-ink inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-2 px-5 py-2 font-semibold has-focus-visible:outline-3"
           >
             <ImagePlus aria-hidden="true" className="size-5" />
             {replacing ? t("replacePhoto") : t("addPhoto")}

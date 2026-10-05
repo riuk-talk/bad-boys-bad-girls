@@ -16,11 +16,28 @@ describe("onboarding steps per role (SPEC v7 §4)", () => {
     expect(ROLE_STEP).toBe(3);
   });
 
-  it("ends at the photo for a Bad and at the Motif de visite for a Visitor (Phase 2b)", () => {
-    expect(stepKind("bad", lastStep("bad"))).toBe("photo");
-    expect(stepKind("visitor", lastStep("visitor"))).toBe("motive");
-    expect(stepKind("bad", 6)).toBeNull();
+  it("has 8 steps for both roles, ending with L'Interrogatoire (SPEC v7.4 §4)", () => {
+    expect(lastStep("bad")).toBe(8);
+    expect(lastStep("visitor")).toBe(8);
+    expect(stepKind("bad", 8)).toBe("interrogation");
+    expect(stepKind("visitor", 8)).toBe("interrogation");
+    expect(stepKind("bad", 9)).toBeNull();
     expect(stepKind("visitor", 0)).toBeNull();
+  });
+
+  it("gives the Bad the 3 poses, the Casier and « Teste ton Casier » (steps 5 to 7)", () => {
+    expect(onboardingSteps("bad")).toEqual([
+      "age",
+      "identity",
+      "role",
+      "seeking",
+      "poses",
+      "casier",
+      "casierCheck",
+      "interrogation",
+    ]);
+    expect(stepNumber("visitor", "poses")).toBe(0);
+    expect(stepNumber("bad", "photo")).toBe(0);
   });
 
   it("puts « Entraîne-toi » right after the role, for the Visitor only (Phase 2c)", () => {
@@ -34,6 +51,7 @@ describe("onboarding steps per role (SPEC v7 §4)", () => {
       "seeking",
       "photo",
       "motive",
+      "interrogation",
     ]);
   });
 

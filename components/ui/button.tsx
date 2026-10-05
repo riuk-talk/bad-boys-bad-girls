@@ -9,7 +9,7 @@ const base =
 
 // Every text/background pair is ≥ 4.5:1 (see globals.css).
 const variants: Record<Variant, string> = {
-  primary: "bg-gold text-ink hover:bg-[#e2b54a]",
+  primary: "bg-accent text-ink hover:bg-accent-hover",
   secondary: "border-2 border-cream/80 text-cream hover:bg-cream hover:text-ink",
   ghost: "text-cream underline-offset-4 hover:underline",
   danger: "bg-red-bright text-ink hover:bg-[#f45a71]",

@@ -1,9 +1,12 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
+import { CHARGE_MAX, duplicateIndexes, shuffleCharges } from "@/lib/casier";
+import { answerSchema, acceptedForStorage } from "@/lib/interrogation";
 import { PhotoError, processPhoto } from "@/lib/image/process";
 import { truncateIp } from "@/lib/net/ip";
 import {
@@ -143,6 +146,8 @@ export async function saveIdentityStep(_state: StepState, form: FormData): Promi
     if (error.code === "23503") return fail({ placeId: "cityRequired" });
     return failMessage("generic");
   }
+  // The gender sets the colour of the whole interface (layout, PARCOURS-DESIGN §1).
+  revalidatePath("/[locale]", "layout");
   return goTo(stepPath(ROLE_STEP));
 }
 
@@ -161,6 +166,8 @@ export async function saveRoleStep(_state: StepState, form: FormData): Promise<S
       .update({ onboarding_step: ROLE_STEP })
       .eq("id", member.userId);
   }
+  // The role tag « BAD » / « VISITEUR » is in the layout's header.
+  revalidatePath("/[locale]", "layout");
   return goTo(stepPath(ROLE_STEP + 1));
 }
 
@@ -320,4 +327,170 @@ export async function searchPlacesAction(query: string): Promise<PlaceOption[]> 
     name: place.name,
     postalCode: place.postal_codes[0] ?? "",
   }));
+}
+
+/**
+ * L'Interrogatoire (SPEC v7.4 §9): saves one answer (own rows only, RLS; consistency checked in
+ * SQL), then goes to the next question. During the onboarding, the last core answer ends it; from
+ * Ma Fiche ("file"), it goes back to the list of questions.
+ */
+export async function saveAnswerAction(_state: StepState, form: FormData): Promise<StepState> {
+  const parsed = answerSchema.safeParse({
+    questionId: form.get("questionId"),
+    optionId: form.get("optionId") ?? undefined,
+    accepted: form.getAll("accepted"),
+    importance: form.get("importance") ?? "important",
+  });
+  if (!parsed.success) return fail(firstErrors(parsed.error));
+  const { questionId, optionId, accepted, importance } = parsed.data;
+  const member = await requireMember();
+
+  const { data: options } = await member.supabase
+    .from("question_options")
+    .select("id")
+    .eq("question_id", questionId);
+  const optionIds = (options ?? []).map((option) => option.id);
+  if (!optionIds.includes(optionId) || accepted.some((id) => !optionIds.includes(id))) {
+    return failMessage("generic");
+  }
+  const values = {
+    option_id: optionId,
+    accepted_option_ids: acceptedForStorage(accepted, optionIds),
+    importance,
+  };
+  // insert or update, not upsert: members may not rewrite user_id / question_id.
+  const { data: existing } = await member.supabase
+    .from("answers")
+    .select("question_id")
+    .eq("user_id", member.userId)
+    .eq("question_id", questionId)
+    .maybeSingle();
+  const { error } = existing
+    ? await member.supabase
+        .from("answers")
+        .update(values)
+        .eq("user_id", member.userId)
+        .eq("question_id", questionId)
+    : await member.supabase
+        .from("answers")
+        .insert({ user_id: member.userId, question_id: questionId, ...values });
+  if (error) return failMessage("generic");
+
+  if (form.get("context") !== "onboarding") return goTo("/interrogatoire");
+
+  const { step, role } = await progress(member);
+  if (!role) return goTo(stepPath(ROLE_STEP));
+  const interrogationStep = stepNumber(role, "interrogation");
+  const { data: core } = await member.supabase
+    .from("questions")
+    .select("id")
+    .eq("phase", "core")
+    .order("position");
+  const { data: mine } = await member.supabase
+    .from("answers")
+    .select("question_id")
+    .eq("user_id", member.userId);
+  const answered = new Set((mine ?? []).map((row) => row.question_id));
+  const ids = (core ?? []).map((question) => question.id);
+  const next = ids.findIndex((id) => !answered.has(id));
+  if (next >= 0) return goTo(`${stepPath(interrogationStep)}?q=${next + 1}`);
+  await member.supabase
+    .from("profiles")
+    .update({ onboarding_step: Math.max(step, interrogationStep) })
+    .eq("id", member.userId);
+  return finishOnboarding(member);
+}
+
+/** Bad, step 5 « Passe à la toise » (PARCOURS-DESIGN §3): the 3 poses must all be uploaded. */
+export async function savePosesStep(): Promise<StepState> {
+  const member = await requireMember();
+  const { step, role } = await progress(member);
+  if (role !== "bad") return failMessage("generic");
+  const { data: photos } = await member.supabase
+    .from("photos")
+    .select("position")
+    .eq("owner_id", member.userId)
+    .in("position", [0, 1, 2]);
+  if (new Set((photos ?? []).map((photo) => photo.position)).size < 3) {
+    return fail({ photo: "posesRequired" });
+  }
+  const posesStep = stepNumber(role, "poses");
+  await member.supabase
+    .from("profiles")
+    .update({ onboarding_step: Math.max(step, posesStep) })
+    .eq("id", member.userId);
+  return goTo(stepPath(posesStep + 1));
+}
+
+/**
+ * Bad, step 6 « Le Casier » (SPEC §6): the true line then two false ones, stored in a random order
+ * for the Visitors (true_index is never sent to them). Masking, keywords and duplicates in SQL too.
+ * From Ma Fiche ("file"), the same form edits the Casier.
+ */
+export async function saveCasierStep(_state: StepState, form: FormData): Promise<StepState> {
+  const lines = [1, 2, 3].map((n) => String(form.get(`charge${n}`) ?? "").trim());
+  const fields: FieldErrors = {};
+  lines.forEach((line, index) => {
+    if (line.length === 0) fields[`charge${index + 1}`] = "chargeRequired";
+    else if (Array.from(line).length > CHARGE_MAX) fields[`charge${index + 1}`] = "chargeTooLong";
+  });
+  for (const index of duplicateIndexes(lines)) {
+    fields[`charge${index + 1}`] ??= "chargesDuplicate";
+  }
+  if (Object.keys(fields).length > 0) return fail(fields);
+
+  const member = await requireMember();
+  const { step, role } = await progress(member);
+  if (role !== "bad") return failMessage("generic");
+  const [trueLine, ...falseLines] = lines as [string, string, string];
+  const { charges, trueIndex } = shuffleCharges(trueLine, falseLines as [string, string], () => {
+    const value = new Uint32Array(1);
+    crypto.getRandomValues(value);
+    return value[0]! / 2 ** 32;
+  });
+  const values = {
+    charge_1: charges[0],
+    charge_2: charges[1],
+    charge_3: charges[2],
+    true_index: trueIndex,
+  };
+  const { data: existing } = await member.supabase
+    .from("casier_charges")
+    .select("profile_id")
+    .eq("profile_id", member.userId)
+    .maybeSingle();
+  const { error } = existing
+    ? await member.supabase.from("casier_charges").update(values).eq("profile_id", member.userId)
+    : await member.supabase.from("casier_charges").insert({ profile_id: member.userId, ...values });
+  if (error) {
+    if (error.message.includes("casier_duplicate_charges"))
+      return fail({ charge1: "chargesDuplicate" });
+    return failMessage("generic");
+  }
+  if (form.get("context") === "file") return goTo("/mon-casier/apercu");
+  const casierStep = stepNumber(role, "casier");
+  await member.supabase
+    .from("profiles")
+    .update({ onboarding_step: Math.max(step, casierStep) })
+    .eq("id", member.userId);
+  return goTo(stepPath(casierStep + 1));
+}
+
+/** Bad, step 7 « Teste ton Casier »: « Mon Casier est prêt » moves on to L'Interrogatoire. */
+export async function confirmCasierStep(): Promise<StepState> {
+  const member = await requireMember();
+  const { step, role } = await progress(member);
+  if (role !== "bad") return failMessage("generic");
+  const { data: casier } = await member.supabase
+    .from("casier_charges")
+    .select("profile_id")
+    .eq("profile_id", member.userId)
+    .maybeSingle();
+  const checkStep = stepNumber(role, "casierCheck");
+  if (!casier) return goTo(stepPath(checkStep - 1));
+  await member.supabase
+    .from("profiles")
+    .update({ onboarding_step: Math.max(step, checkStep) })
+    .eq("id", member.userId);
+  return goTo(stepPath(checkStep + 1));
 }

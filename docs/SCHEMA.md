@@ -25,7 +25,7 @@
 | `moderation_status` | `pending`, `approved`, `rejected` | en base |
 | `zone_status` | `waitlist`, `open` | en base |
 | `launch_mode` | `zones`, `open` | en base |
-| `importance` | `low` (1), `important` (10), `essential` (50) | Phase 3 |
+| `importance` | `low` (1), `important` (10), `essential` (50) | **en base (Phase 3a)** ; poids via `importance_weight()` |
 | `question_phase` | `core` (10 à l'inscription), `extra` | Phase 3 |
 | `visit_request_status` | `pending`, `accepted`, `released`, `dismissed`, `auto_dismissed`, `cancelled`, `closed` | **[v2-nouveau]**, remplace `plea_status` |
 | `case_close_reason` | `dismissed_by_bad`, `no_answer_7d`, `no_slot_chosen`, `no_new_slots`, `second_no_show`, `not_prolonged`, `no_end_choice`, `closed_after_release`, `cancelled_by_visitor`, `role_change`, `blocked`, `account_deleted`, `banned` | **[v2-nouveau]** (sert aussi aux métriques) |
@@ -95,7 +95,10 @@ RLS : **S** `authenticated` ; écriture via fonctions admin. (B1) `admin_upsert_
 #### `egress_readings` — inchangé (Phase 7)
 `month date PK`, `egress_gb numeric(6,2)`, `entered_by`, `created_at`. RLS : —.
 
-#### `tribes`, `questions` / `question_options`, `moderation_keywords` — inchangés
+#### `tribes`, `moderation_keywords` — inchangés
+
+#### `questions` / `question_options` — **en base (Phase 3a)**
+`questions` : `id smallint PK` (= numéro SPEC §9), `position` unique, `phase` (`core` 1–10, `extra` 11–20), `label jsonb {fr,en}`, `is_active`. `question_options` : `id smallint PK` = **id de question × 10 + position** (11–14, …, 201–204), unique (`question_id`, `position`) et (`question_id`, `id`). Seed des 20 questions dans la migration (anglais : `docs/content/questions-en.md`, à relire). RLS **S** `authenticated` sur les questions actives et leurs options ; aucune écriture membre.
 (voir v1 : libellés `{fr,en}`, RLS **S** `authenticated` pour les référentiels, — pour `moderation_keywords`.)
 
 ### 2.2 Comptes, Fiche et Permis
@@ -116,7 +119,7 @@ RLS : **S** `authenticated` ; écriture via fonctions admin. (B1) `admin_upsert_
 | `zone_id` | `smallint` → `launch_zones` | calculé par trigger |
 | `bio` | `varchar(500)` | présentation du Bad, facultative ; masquage + mots-clés |
 | `visit_motive` | `varchar(280)` | **[v2]** Motif de visite du Visiteur, obligatoire pour terminer l'onboarding d'un Visiteur et pour passer Bad → Visiteur ; masquage + mots-clés (`flag_source = visit_motive`) |
-| `onboarding_step` | `smallint` | **[v2-modif]** 0–7 (était 0–6) |
+| `onboarding_step` | `smallint` | **[Phase 3]** 0–8 (était 0–7) : 8 étapes pour les deux rôles (SPEC §4) |
 | `onboarding_completed_at` | `timestamptz` | |
 | `moderation_status` | `moderation_status` | **protégé** |
 | `is_reglo` | `boolean` | badge **Bonne conduite** (nom technique conservé, CONCEPT-V2 §7) — **protégé** |
@@ -133,7 +136,7 @@ RLS : **S** `authenticated` ; écriture via fonctions admin. (B1) `admin_upsert_
 | `is_seed` | `boolean` | **protégé** |
 | `created_at`, `updated_at` | | |
 
-Check de fin d'onboarding **[v2-modif]** : en plus de v1, `role is not null` et (`role <> 'visitor' or visit_motive is not null`). Le Casier (Bad) et les 10 réponses sont vérifiés par `complete_onboarding()`.
+Check de fin d'onboarding **[v2-modif]** : en plus de v1, `role is not null` et (`role <> 'visitor' or visit_motive is not null`). Le Casier (Bad) et les réponses à toutes les questions `core` actives sont vérifiés par `complete_onboarding()` (Phase 3a), qui passe `onboarding_step` à 8.
 Index **[v2-modif]** : `profiles_discovery` devient (`zone_id`, `role`, `moderation_status`, `is_paused`) partiel `where onboarding_completed_at is not null and banned_at is null and hidden_reason is null` ; + v1 (`last_seen_at desc`, GIST, `referred_by`, `place_id`).
 RLS : **S** propriétaire ; **I** propriétaire ; **U** propriétaire avec privilèges de colonnes : `grant update (pseudo, gender, seeking_genders, seek_age_min, seek_age_max, place_id, bio, visit_motive, is_paused, requests_cap, requests_closed_manual, onboarding_step)` ; `role` **n'en fait pas partie** ; **D** —.
 
@@ -141,10 +144,10 @@ RLS : **S** propriétaire ; **I** propriétaire ; **U** propriétaire avec privi
 5 maximum ; précision 60 caractères masquée. RLS propriétaire ; les autres via `get_fiche` / `get_permit`.
 
 #### `photos` — **[v2-modif léger]**
-Inchangée en structure. Règle v2 : pour un Visiteur, seule la photo `position = 0` est renvoyée par `get_permit` ; les autres restent stockées (ex-Bad) et réapparaissent s'il redevient Bad. Le Visiteur ne peut pas ajouter de photo au-delà de la position 0 (trigger).
+Inchangée en structure. **Positions (v7.4, PARCOURS-DESIGN §3)** : `0` = face (photo d'identité), `1` = profil gauche, `2` = profil droit, `3`–`5` = photos supplémentaires. Un Bad doit avoir les positions 0, 1 et 2 pour terminer l'onboarding (`has_three_poses()`), et les 3 validées pour être compté ou visible. Règle v2 : pour un Visiteur, seule la photo `position = 0` est renvoyée par `get_permit` ; les autres restent stockées (ex-Bad) et réapparaissent s'il redevient Bad. Le Visiteur ne peut pas ajouter de photo au-delà de la position 0 (trigger).
 Priorité de la file du Greffe (`admin_photo_queue`) : photo 0 des Visiteurs d'un quartier ouvert, puis photo 0 des Bads, puis le reste, par ancienneté.
 
-#### `casier_charges` — le Casier — **[v2-modif]**
+#### `casier_charges` — le Casier — **en base (Phase 3a)**
 | Colonne | Type | Contraintes |
 |---|---|---|
 | `profile_id` | `uuid` | PK → `profiles on delete cascade` |
@@ -152,9 +155,13 @@ Priorité de la file du Greffe (`admin_photo_queue`) : photo 0 des Visiteurs d'u
 | `true_index` | `smallint` | **[v2]** check 1–3, remplace `false_index` (1 vrai, 2 faux) |
 | `updated_at` | `timestamptz` | |
 
+Trigger : coordonnées masquées (`mask_contacts`), **trois lignes différentes** (`charge_key()` : casse et espaces ignorés, sinon `casier_duplicate_charges`), mots-clés signalés, `casier_updated_at`.
 RLS : **S/I/U** propriétaire **et** `role = 'bad'` pour I/U (un Visiteur ne crée pas de Casier ; un ex-Bad garde le sien en lecture) ; **D** —. Les Visiteurs voient les 3 lignes via `get_fiche` **sans** `true_index`.
 
-#### `answers`, `consents`, `admin_users`, `banned_email_hashes` — inchangés
+#### `answers` — **en base (Phase 3a)**
+Comme en v1 ; l'option doit appartenir à la question (clé étrangère composée vers `question_options (question_id, id)`). Trigger : question active obligatoire ; `accepted_option_ids` dédoublonné, trié, non vide, options de la même question ; « toutes les options » enregistré `null`. Droits : **I** (`user_id`, `question_id`, `option_id`, `accepted_option_ids`, `importance`), **U** (`option_id`, `accepted_option_ids`, `importance`), **S/D** ; une seule politique propriétaire `for all`.
+
+#### `consents`, `admin_users`, `banned_email_hashes` — inchangés
 (voir v1 ; `banned_email_hashes` contrôlée par le hook « Before User Created », vérifié en Phase 2 pour le lien magique et le mot de passe.)
 
 ### 2.3 Interactions
@@ -255,7 +262,8 @@ RLS : **S** — (via `get_my_promenade()`) ; **U** — (`mark_promenade_seen()`)
 
 ### 2.4 Notifications, push, e-mails, activité
 
-#### `notifications` — **[v2-modif]** (type `notification_type` v2 ; pas encore en base)
+#### `notifications` — **en base (Phase 3)** (type `notification_type` v2)
+Écrites uniquement par des fonctions SQL (le Greffe : `moderation_decision` par photo, `permit_granted` pour la face d'un Visiteur). RLS **S** propriétaire ; aucune écriture membre ; `mark_notifications_read()`.
 `id`, `user_id`, `type`, `payload jsonb`, `read_at`, `created_at`. RLS : **S** propriétaire ; **U** via `mark_notifications_read()`.
 
 #### `notification_preferences` — **[v2-modif]** (en base)
@@ -298,7 +306,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `is_member_active(p)` | onboarding terminé, non banni, non suspendu, non masqué | **[v2]** (remplace `is_profile_active`) |
 | `has_permit(p)` | Visiteur actif dont la photo 0 est validée | **[v2-nouveau]** |
 | `is_bad_visible(p)` | Bad actif, photo 0 validée, Casier présent, non en pause, connecté < 90 j, quartier ouvert (sauf `launch_mode = open`) | **[v2-nouveau]** |
-| `counts_for_zone(p)` | Bad compté pour le seuil (SPEC §3) : `is_bad_visible` sans la condition de quartier ouvert, connecté < `zone_bad_active_days`, `is_seed = false` | **[v2-nouveau]** (remplace `is_complete_fiche`, en base) |
+| `counts_for_zone(p)` | Bad compté pour le seuil (SPEC §3) : `is_bad_visible` sans la condition de quartier ouvert, connecté < `zone_bad_active_days`, `is_seed = false`, **3 poses validées** (Phase 3) | **[v2-nouveau]** (remplace `is_complete_fiche`, en base) |
 | `criteria_match(a, b)` | genre et âge, **dans les deux sens** | Phase 4 |
 | `can_view_bad(viewer, bad)` | `viewer` Visiteur actif dans un quartier ouvert, `is_bad_visible(bad)`, `criteria_match`, pas de blocage | **[v2]** (remplace `can_view_profile`) |
 | `has_open_relation(a, b)` | demande en cours, visite programmée ou conversation `visiting`/`open` entre les deux (B2) | **[v2-modif]** |
@@ -315,7 +323,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `set_onboarding_role(role)` | étape 3, uniquement avant la fin de l'onboarding | **[v2-nouveau]** |
 | `complete_onboarding()` | commun : date, identité, rôle, recherche, 4 consentements, photo 0, 10 réponses `core` ; **Bad** : Casier ; **Visiteur** : `visit_motive` | **[v2-modif]** (en base, 4 étapes) |
 | `change_role(new_role)` | 1 fois / 7 jours ; effets SPEC §2 bis (classe, annule, notifie) ; refusé vers Visiteur sans `visit_motive` | **[v2-nouveau]** |
-| `complicity_score(a, b)`, `common_points(a, b, n)` | inchangés (Phase 3) | |
+| `complicity_score(a, b)` → `(score, common_count, capped)`, `common_points(a, b, n)` | **en base (Phase 3a), internes** : aucun droit `execute` pour `authenticated` ni `anon` (sinon un membre pourrait sonder les réponses d'un autre en variant les siennes). Appelées par `get_fiche`, `get_permit`, `get_mailbox` (Phase 4), qui contrôlent la visibilité. Arrondi au demi supérieur en entiers exacts ; miroir `lib/complicity.ts`, parité sur `tests/fixtures/complicity-cases.json` | **[Phase 3]** |
 | `get_fiche(bad)` | autorisée si `can_view_bad` **ou** `has_open_relation` ; jamais en cas de blocage. Pseudo, âge, ville, photos validées, bio, signes, Casier sans le vrai, « Casier modifié depuis », indice + 3 points communs, Bonne conduite, `requests_open`, demande en cours ou délai | **[v2-modif]** |
 | `get_permit(visitor)` | appelant = le Visiteur lui-même, ou un Bad ayant une relation ouverte ou passée avec lui ; photo 0, pseudo, âge, ville, Motif, signes, `visitor_reputation`, indice + points communs | **[v2-nouveau]** |
 | `discover_bads(age_min, age_max, max_km, tribe_ids, good_conduct_only, recently_active, cursor, limit default 24)` | Visiteurs uniquement ; une seule requête, curseur `(sort_key, id)` | **[v2]** (remplace `discover_profiles`) |
@@ -356,7 +364,8 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 8. Notification au Bad (in-app + push) + mise en file du récapitulatif e-mail du jour.
 
 ### 3.4 Admin (`security definer`, contrôle `is_admin()` en première ligne)
-v1 + **[v2]** : `admin_photo_queue()` (priorité SPEC §11), `admin_upsert_zone(...)` avec `threshold_bads`, `threshold_women_pct`, `threshold_men_pct`, `admin_zone_health(zone_id, from, to)` (indicateurs SPEC §15), `admin_sanction` retire Bonne conduite (`revoke_good_conduct`).
+**En base (Phase 3)** : `admin_photo_queue(limit)` (une ligne par photo, priorité SPEC §11 : face des Visiteurs d'un quartier ouvert, puis les 3 poses des Bads, puis le reste) et `admin_decide_photo(photo, approve, reason, public_large, public_small)` (une décision par photo ; refus avec un motif de `photo_rejection_reasons()` ; publication sous un nom UUID aléatoire, jamais l'id du membre ; notifie le membre ; renvoie le fichier en attente à supprimer). Les fichiers sont copiés et supprimés par le serveur (clé secrète).
+v1 + **[v2]** : `admin_upsert_zone(...)` avec `threshold_bads`, `threshold_women_pct`, `threshold_men_pct`, `admin_zone_health(zone_id, from, to)` (indicateurs SPEC §15), `admin_sanction` retire Bonne conduite (`revoke_good_conduct`).
 
 ### 3.5 Jobs (exécutables par `postgres` uniquement)
 | Job | Fréquence | Rôle |

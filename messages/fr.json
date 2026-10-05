@@ -106,11 +106,7 @@
     "sign": "Ouvert aux visites",
     "doorLabel_bad": "Cellule B",
     "doorLabel_visitor": "Parloir",
-    "ticker": [
-      "Coupables de charme",
-      "Bad, pas toxique",
-      "Ici, rien ne se fait sans ton accord"
-    ],
+    "ticker": ["Coupables de charme", "Bad, pas toxique", "Ici, rien ne se fait sans ton accord"],
     "sideKicker_bad": "Tu passes à la toise",
     "sideKicker_visitor": "Tu viens en visite",
     "pieceLabel": "Pièce n° {number}",
@@ -127,9 +123,7 @@
       },
       {
         "title": "Côté Visiteur",
-        "points": [
-          "Tu choisis l'heure de ta visite parmi celles proposées."
-        ]
+        "points": ["Tu choisis l'heure de ta visite parmi celles proposées."]
       },
       {
         "title": "Pour tous",
@@ -144,6 +138,8 @@
     "loginTitle": "Se connecter",
     "loginLead": "Content de te revoir.",
     "signupTitle": "Créer mon compte",
+    "signupsClosedTitle": "Inscriptions bientôt ouvertes",
+    "signupsClosedBody": "Le site se prépare. Les inscriptions ouvriront très bientôt : repasse nous voir.",
     "signupLead": "Un e-mail, un mot de passe, et c'est parti. Tu choisis ensuite ton rôle : Bad ou Visiteur.",
     "forgotTitle": "Mot de passe oublié",
     "forgotLead": "Indique ton e-mail : on t'envoie un lien pour en choisir un nouveau.",
@@ -180,7 +176,8 @@
       "emailBanned": "Cette adresse ne peut plus être utilisée sur le site.",
       "linkInvalid": "Ce lien n'est plus valide. Demande-en un nouveau.",
       "generic": "Une erreur est survenue. Réessaie.",
-      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard."
+      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard.",
+      "signupsClosed": "Inscriptions bientôt ouvertes."
     },
     "checkEmailTitle": "Vérifie ta boîte mail",
     "checkEmailBody": "Si l'adresse est valide, tu vas recevoir un lien. Pense à regarder dans les indésirables.",
@@ -265,11 +262,7 @@
     "pseudoHint": "De 3 à 20 caractères.",
     "pseudoError": "Ce pseudo est déjà pris.",
     "city": "Ville",
-    "cities": [
-      "Toulon",
-      "Nice",
-      "Hyères"
-    ],
+    "cities": ["Toulon", "Nice", "Hyères"],
     "consent": "J'ai 18 ans ou plus",
     "badges": "Badges",
     "badgeOpen": "Ouvert aux visites",
@@ -279,10 +272,7 @@
     "fiche": "Carte Fiche",
     "ficheSamplePseudo": "Exemple",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": [
-      "Biker — Kawasaki Z650 café racer",
-      "Tatoué·e"
-    ],
+    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tatoué·e"],
     "ficheSampleCharges": [
       "A déjà traversé l'Espagne en moto sans réserver une seule nuit",
       "A un tatouage dont il refuse d'expliquer le sens",
@@ -436,9 +426,7 @@
         },
         {
           "title": "8. Droit applicable",
-          "paragraphs": [
-            "[À COMPLÉTER : droit applicable et juridiction compétente]"
-          ]
+          "paragraphs": ["[À COMPLÉTER : droit applicable et juridiction compétente]"]
         }
       ]
     },
@@ -521,14 +509,14 @@
         },
         {
           "title": "Site",
-          "paragraphs": [
-            "Adresse du site : [DOMAINE]"
-          ]
+          "paragraphs": ["Adresse du site : [DOMAINE]"]
         }
       ]
     }
   },
   "App": {
+    "roleTag_bad": "BAD",
+    "roleTag_visitor": "VISITEUR",
     "navLabel": "Mon espace",
     "myFiche": "Ma Fiche",
     "signOut": "Se déconnecter",
@@ -548,7 +536,11 @@
       "seeking_visitor": "Qui tu viens voir",
       "photo": "Ta photo",
       "motive": "Ton Motif de visite",
-      "practice": "Un vrai, deux faux. Lequel est vrai ?"
+      "practice": "Un vrai, deux faux. Lequel est vrai ?",
+      "poses": "Passe à la toise",
+      "casier": "Un vrai, deux faux.",
+      "casierCheck": "Voilà ce que verront les Visiteurs",
+      "interrogation": "L'Interrogatoire"
     },
     "age": {
       "lead": "Bad Boys & Bad Girls est réservé aux adultes. Ta date de naissance sert uniquement à le vérifier : seul ton âge sera affiché.",
@@ -614,7 +606,13 @@
       "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard.",
       "roleRequired": "Choisis ton rôle pour continuer.",
       "motiveRequired": "Écris ton Motif de visite pour continuer.",
-      "motiveTooLong": "280 caractères maximum."
+      "motiveTooLong": "280 caractères maximum.",
+      "answerRequired": "Choisis une réponse pour continuer.",
+      "acceptedRequired": "Accepte au moins une réponse chez l'autre.",
+      "posesRequired": "Il manque une pose : le profil gauche, la face et le profil droit sont obligatoires.",
+      "chargeRequired": "Écris ce chef d'accusation.",
+      "chargeTooLong": "120 caractères maximum.",
+      "chargesDuplicate": "Deux chefs d'accusation sont identiques : chacun doit être différent."
     },
     "title": "Ton inscription",
     "title_bad": "Ton Dossier",
@@ -640,7 +638,6 @@
       "hint": "{max} caractères maximum. Les e-mails, téléphones et liens sont masqués."
     },
     "practice": {
-      "kicker": "Entraîne-toi",
       "lead": "Chaque Bad a un Casier comme celui-ci. Pour lui demander une visite, tu paries sur le chef d'accusation que tu crois vrai.",
       "caseLabel": "Exemple fictif · Casier n° 000",
       "charges": [
@@ -656,6 +653,158 @@
       "secretNote": "Sur le site, le verdict reste <strong>secret jusqu'à la visite</strong>. Il s'affiche en premier message du Parloir, pour vous deux. Juste ou faux, ta demande part toujours.",
       "cta": "J'ai compris, je prends mon Permis",
       "skip": "Passer"
+    },
+    "kickers": {
+      "practice": "Entraîne-toi",
+      "poses": "Photo signalétique",
+      "casier": "Ton Casier",
+      "casierCheck": "Teste ton Casier",
+      "interrogation": "Interrogatoire"
+    },
+    "poses": {
+      "lead": "Trois poses, comme sur un vrai dossier : un profil, la face, l'autre profil.",
+      "left": "Profil gauche",
+      "face": "Face · obligatoire",
+      "right": "Profil droit",
+      "added": "Ajoutée",
+      "todo": "À faire",
+      "add": "Ajouter",
+      "replace": "Changer",
+      "uploading": "Envoi…",
+      "previewAlt": "Ta photo : {pose}",
+      "rulesTitle": "Le règlement du Greffe",
+      "rules": [
+        "Ton visage, bien visible, seul·e sur la photo.",
+        "Pas de lunettes de soleil sur la face.",
+        "Pas de nudité. Chaque photo est vérifiée sous 12 h."
+      ],
+      "submit": "Déposer au Greffe",
+      "approved": "Validée",
+      "rejected": "Refusée : {reason}"
+    },
+    "casier": {
+      "lead": "On commence par le vrai : ton fait le plus marquant. Les deux faux viendront après.",
+      "stage_1": "1 · Le vrai",
+      "stage_2": "2 · Un faux",
+      "stage_3": "3 · Un faux",
+      "stagesLabel": "Les trois chefs d'accusation",
+      "themesLabel": "Besoin d'une idée ? Choisis un thème.",
+      "themes": {
+        "travel": "Voyage",
+        "night": "Soirée",
+        "moto": "Moto",
+        "love": "Amour",
+        "childhood": "Enfance",
+        "work": "Travail",
+        "mischief": "Bêtises"
+      },
+      "otherIdea": "Autre idée",
+      "useIdea": "Utiliser",
+      "promptLabel": "Amorce : complète les ___ avec un fait de ta vie.",
+      "label_1": "Chef d'accusation n° 1 · Le vrai",
+      "label_2": "Chef d'accusation n° 2 · Un faux",
+      "label_3": "Chef d'accusation n° 3 · Un faux",
+      "hint_1": "Un fait précis sur ta vie.",
+      "hint_false": "Un faux qu'on pourrait croire : ni impossible, ni banal.",
+      "count": "{count} / 120",
+      "tooShort": "Un peu court : un fait précis se devine mieux.",
+      "forbidden": "Interdit dans le Casier : vrais délits, violence, drogue, coordonnées.",
+      "next_1": "Suivant : le premier faux",
+      "next_2": "Suivant : le second faux",
+      "submit": "Voir mon Casier",
+      "back": "Retour",
+      "prompts": {
+        "travel": [
+          "A déjà traversé ___ sans ___.",
+          "A dormi une nuit entière dans ___.",
+          "S'est perdu·e à ___ pendant ___.",
+          "A raté ___ à cause de ___.",
+          "A goûté ___ à ___ et ne s'en est jamais remis·e.",
+          "Est parti·e à ___ sur un coup de tête, avec seulement ___.",
+          "A fait ___ kilomètres en ___.",
+          "Connaît ___ mieux que sa propre ville.",
+          "Sait dire « ___ » en ___ langues."
+        ],
+        "night": [
+          "S'est fait sortir de ___ pour avoir ___.",
+          "A chanté ___ devant ___ personnes.",
+          "A dansé ___ heures sans s'arrêter à ___.",
+          "A fini une soirée à ___ avec ___.",
+          "Est rentré·e d'un concert de ___ sans ___.",
+          "A gagné ___ à ___ contre ___.",
+          "A organisé ___ pour ___ en une seule nuit.",
+          "Connaît par cœur ___ de ___.",
+          "A fait la fermeture de ___ ___ fois de suite."
+        ],
+        "moto": [
+          "A fait ___ kilomètres à moto en une seule ___.",
+          "A appris à conduire une moto avec ___.",
+          "A donné un nom à sa moto : ___.",
+          "A réparé ___ avec ___ au bord de la route.",
+          "A roulé sous ___ jusqu'à ___.",
+          "A fait ___ en passager·e de ___.",
+          "Garde toujours ___ dans son casque.",
+          "A rencontré ___ sur une aire d'autoroute."
+        ],
+        "love": [
+          "A écrit ___ pour ___ sans jamais l'envoyer.",
+          "A traversé ___ pour un premier rendez-vous.",
+          "A fait ___ heures de route pour un dîner de ___ minutes.",
+          "A fait ___ pour impressionner ___.",
+          "A déclaré sa flamme avec ___.",
+          "S'est fait poser un lapin à ___ et est resté·e ___.",
+          "Garde encore ___ d'un amour de ___.",
+          "A appris ___ juste pour plaire à ___."
+        ],
+        "childhood": [
+          "A été envoyé·e chez le directeur à ___ ans pour ___.",
+          "Rêvait de devenir ___.",
+          "A collectionné ___ pendant ___ ans.",
+          "A gagné ___ à l'école grâce à ___.",
+          "A construit ___ dans ___.",
+          "A eu ___ comme animal de compagnie.",
+          "A fait croire à toute sa classe que ___.",
+          "Était fan absolu·e de ___ à ___ ans.",
+          "A passé tous ses étés à ___."
+        ],
+        "work": [
+          "A été ___ pendant ___.",
+          "A démissionné de ___ pour ___.",
+          "A servi ___ à ___ sans le reconnaître.",
+          "A appris ___ en un seul ___.",
+          "A passé le pire entretien d'embauche de sa vie chez ___.",
+          "S'est endormi·e ___ au travail.",
+          "A changé ___ fois de métier avant ___.",
+          "A un talent caché pour ___."
+        ],
+        "mischief": [
+          "S'est trompé·e de ___ et a fini à ___.",
+          "A teint ___ en ___ par erreur.",
+          "A mangé ___ pour un pari.",
+          "S'est enfermé·e dehors en ___.",
+          "A cassé ___ en voulant ___.",
+          "A raté ___ parce qu'il ou elle était en train de ___.",
+          "A fait ___ en pyjama.",
+          "A appelé ___ par le mauvais prénom pendant ___.",
+          "A un tatouage de ___ qu'il ou elle ne regrette pas du tout."
+        ]
+      }
+    },
+    "casierCheck": {
+      "lead": "Ton Casier tel qu'un Visiteur le voit : les trois lignes dans le désordre, sans indication du vrai.",
+      "caseLabel": "Casier n° {number}",
+      "trueLabel": "Le vrai · visible par toi seul",
+      "long": "Attention : cette phrase est beaucoup plus longue que les deux autres.",
+      "short": "Attention : cette phrase est beaucoup plus courte que les deux autres.",
+      "shortLine": "Un peu court : un fait précis se devine mieux.",
+      "tipsTitle": "Les conseils du Souffleur",
+      "tips": [
+        "Même longueur pour les trois phrases : une phrase qui dépasse trahit souvent le vrai.",
+        "Des faux plausibles : ni impossibles, ni banals.",
+        "Un vrai surprenant : c'est lui qu'on retient."
+      ],
+      "ready": "Mon Casier est prêt",
+      "rework": "Le retravailler"
     }
   },
   "MyFiche": {
@@ -692,10 +841,10 @@
     "title_bad": "Ma Fiche",
     "title_visitor": "Mon Permis de visite",
     "status_bad": {
-      "pending": "Ta photo d'identité est au Greffe (objectif : moins de 12 heures). En attendant, ta Fiche n'est visible par personne.",
-      "approved": "Ta photo d'identité est validée par le Greffe.",
-      "rejected": "Ta photo d'identité a été refusée : {reason}. Remplace-la pour que ta Fiche soit visible.",
-      "missing": "Ajoute ta photo d'identité pour que ta Fiche puisse être validée."
+      "pending": "Tes 3 poses sont au Greffe (objectif : moins de 12 heures). En attendant, ta Fiche n'est visible par personne.",
+      "approved": "Tes 3 poses sont validées par le Greffe.",
+      "rejected": "Une de tes poses a été refusée par le Greffe. Remplace-la pour que ta Fiche soit visible.",
+      "missing": "Il manque une pose : ajoute ton profil gauche, ta face et ton profil droit pour que ta Fiche puisse être validée."
     },
     "status_visitor": {
       "pending": "Permis en attente au Greffe (objectif : moins de 12 heures). Tu pourras regarder les Bads dès l'ouverture de ton quartier ; les demandes de visite attendent ton Permis.",
@@ -707,11 +856,23 @@
     "editTitle_visitor": "Modifier mon Permis",
     "photosTitle_bad": "Mes photos",
     "photosTitle_visitor": "Ma photo",
-    "photosHint_bad": "De 1 à 6 photos. La première est ta photo d'identité.",
+    "photosHint_bad": "L'alignement 3 poses (profil gauche, face, profil droit) est obligatoire ; jusqu'à 3 photos en plus.",
     "photosHint_visitor": "Une seule photo sur le Permis, visage visible. La remplacer la renvoie au Greffe.",
     "replacePhoto": "Remplacer ma photo",
     "motive": "Motif de visite",
-    "motiveHint": "{max} caractères maximum. Les e-mails, téléphones et liens sont masqués."
+    "motiveHint": "{max} caractères maximum. Les e-mails, téléphones et liens sont masqués.",
+    "shortcutsLabel": "Raccourcis",
+    "interrogationLink": "L'Interrogatoire ({answered}/{total})",
+    "casierLink": "Mon Casier",
+    "extraPhotos": "Photos supplémentaires (facultatives, 3 au plus)",
+    "notices": {
+      "title": "Nouvelles du Greffe",
+      "permitGranted": "Ton Permis de visite est délivré : tu peux demander des visites.",
+      "approved": "{photo} : validée.",
+      "rejected": "{photo} : refusée ({reason}). Remplace-la.",
+      "photoNumber": "Photo n° {number}",
+      "dismiss": "Compris"
+    }
   },
   "Quarter": {
     "referralTitle": "Fais entrer tes complices",
@@ -736,5 +897,68 @@
     "openLink_bad": "Voir ma Fiche",
     "openLink_visitor": "Voir mon Permis",
     "referralLead": "Plus ton quartier compte de Bads, plus vite il ouvre. Partage ton lien :"
+  },
+  "Interrogation": {
+    "kicker": "Interrogatoire · {current}/{total}",
+    "questionOf": "Question {current} sur {total}",
+    "refine": "Affiner",
+    "accepted": "Ce que tu acceptes chez l'autre",
+    "acceptedHint": "Par défaut, toutes les réponses sont acceptées. Décoche celles qui ne te vont pas.",
+    "importance": "Pour toi, c'est…",
+    "importance_low": "Peu important",
+    "importance_important": "Important",
+    "importance_essential": "Indispensable",
+    "privacy": "Personne ne voit tes réponses une par une : elles servent à calculer l'indice de complicité.",
+    "next": "Question suivante",
+    "finish_bad": "Terminer mon Dossier",
+    "finish_visitor": "Terminer mon Permis",
+    "previous": "Question précédente",
+    "saving": "Enregistrement…",
+    "title": "L'Interrogatoire",
+    "lead": "Plus tu réponds, plus l'indice de complicité est juste. Tes réponses ne sont jamais affichées une par une.",
+    "core": "Le socle (inscription)",
+    "extra": "Pour aller plus loin",
+    "answered": "Répondu",
+    "todo": "Pas encore répondu",
+    "answer": "Répondre",
+    "edit": "Modifier",
+    "save": "Enregistrer",
+    "backToList": "Toutes les questions",
+    "count": "{answered} questions sur {total}"
+  },
+  "Greffe": {
+    "title": "Le Greffe",
+    "lead": "Une décision par photo. Priorité : la face des Visiteurs d'un quartier ouvert, puis les 3 poses des Bads, puis le reste. Règlement : visage visible, seul·e sur la photo, pas de lunettes de soleil sur la face, pas de nudité, pas de coordonnées, adulte.",
+    "empty": "Aucune photo en attente.",
+    "waiting": "{count, plural, one {# photo en attente} other {# photos en attente}}",
+    "roles": {
+      "bad": "Bad",
+      "visitor": "Visiteur"
+    },
+    "positions": {
+      "face": "Face",
+      "left": "Profil gauche",
+      "right": "Profil droit",
+      "extra": "Photo n° {number}"
+    },
+    "photoAlt": "{position} de {pseudo}",
+    "approve": "Valider",
+    "reject": "Refuser",
+    "reasonLabel": "Motif du refus",
+    "done": "Décision enregistrée.",
+    "errors": {
+      "notPending": "Cette photo a déjà été traitée.",
+      "generic": "La décision n'a pas pu être enregistrée. Réessaie."
+    },
+    "reasons": {
+      "face_hidden": "visage pas assez visible",
+      "not_alone": "tu n'es pas seul·e sur la photo",
+      "sunglasses": "lunettes de soleil sur la face",
+      "nudity": "nudité",
+      "contacts": "coordonnées visibles",
+      "wrong_pose": "la pose ne correspond pas (face ou profil)",
+      "not_adult": "la personne paraît mineure",
+      "other": "photo non conforme au règlement du Greffe"
+    }
   }
 }

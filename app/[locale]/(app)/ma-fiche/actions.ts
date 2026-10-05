@@ -76,3 +76,10 @@ export async function updateFicheAction(_state: FicheState, form: FormData): Pro
   revalidatePath("/[locale]/ma-fiche", "page");
   return { status: "saved" };
 }
+
+/** « Compris »: the member's unread notifications are marked as read (own rows only, in SQL). */
+export async function markNoticesReadAction(): Promise<void> {
+  const member = await requireMember();
+  await member.supabase.rpc("mark_notifications_read");
+  revalidatePath("/[locale]/ma-fiche", "page");
+}

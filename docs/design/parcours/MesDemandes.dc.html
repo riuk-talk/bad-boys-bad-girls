@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Visiteur · Mes demandes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F2E8D5}a:hover{color:#E8B84A}
+.nav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:58px;font-size:11px;color:#B8AE9C;text-decoration:none}
+.slot{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:52px;padding:0 14px;border-radius:6px;border:2px solid #2E2E34;background:#0E0E10;color:#F2E8D5;font-size:15px;font-weight:600;font-family:'Inter Tight',sans-serif}
+.row{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #222226}
+.av{width:44px;height:44px;border-radius:50%;background:#1C1C20;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0A0A0C; color: #F2E8D5; font-family: 'Inter Tight', sans-serif; display: flex; flex-direction: column">
+<div style="flex: 1; overflow: hidden; display: flex; flex-direction: column">
+<header style="padding: 20px 20px 0; text-align: center">
+<p style="margin: 0; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 3px; color: #E8B84A">MES DEMANDES DE PARLOIR</p>
+</header>
+<section style="margin: 14px 20px 0; padding: 16px; border: 1px solid #3A3A40; border-radius: 6px; background: #121214; display: flex; flex-direction: column; gap: 12px; position: relative">
+<span style="position: absolute; top: -12px; right: 14px; padding: 4px 10px; background: #0A0A0C; border: 3px solid #3CCF86; color: #3CCF86; font-family: 'Special Elite', monospace; font-size: 13px; letter-spacing: 2px; transform: rotate(-5deg)">VISITE ACCEPTÉE</span>
+<div style="display: flex; gap: 12px; align-items: center">
+<div class="av"><svg width="38" height="44" viewBox="0 0 120 140" aria-hidden="true"><circle cx="60" cy="48" r="26" fill="#3A3A40"></circle><path d="M14 140c4-34 22-52 46-52s42 18 46 52z" fill="#3A3A40"></path></svg></div>
+<div><p style="margin: 0; font-weight: 700; font-size: 16px"><span style="color: #EE3A55">Lune_Noire</span> t'ouvre le Parloir</p><p style="margin: 2px 0 0; font-size: 13px; color: #B8AE9C">Choisis ton heure de visite avant demain 21:40</p></div>
+</div>
+<h1 style="margin: 0; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase">Les Heures de visite</h1>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<button type="button" class="slot">Ce soir<span style="color: #B8AE9C; font-weight: 400">21:00 – 21:30</span></button>
+<button type="button" class="slot" aria-pressed="true" style="border-color: #D4A437; background: #1C1810">Demain soir<span>21:00 – 21:30</span></button>
+<button type="button" class="slot">Samedi<span style="color: #B8AE9C; font-weight: 400">18:00 – 18:30</span></button>
+</div>
+<a href="#aucun" style="align-self: center; min-height: 44px; display: flex; align-items: center; font-size: 14px">Aucun ne me va</a>
+<a href="Visite.dc.html" style="display: flex; justify-content: center; align-items: center; min-height: 52px; background: #D4A437; color: #0E0E10; font-family: Anton, sans-serif; font-size: 19px; text-transform: uppercase; text-decoration: none; border-radius: 4px">Confirmer demain 21:00</a>
+</section>
+<section style="margin: 18px 20px 0">
+<div class="row"><div class="av"><svg width="38" height="44" viewBox="0 0 120 140" aria-hidden="true"><circle cx="60" cy="48" r="26" fill="#3A3A40"></circle><path d="M14 140c4-34 22-52 46-52s42 18 46 52z" fill="#3A3A40"></path></svg></div><div style="flex: 1"><p style="margin: 0; font-weight: 700">Raven</p><p style="margin: 2px 0 0; font-size: 13px; color: #B8AE9C">Déposée il y a 2 jours</p></div><span style="font-size: 12px; font-weight: 700; color: #E8B84A">EN ATTENTE</span></div>
+<div class="row"><div class="av"><svg width="38" height="44" viewBox="0 0 120 140" aria-hidden="true"><circle cx="60" cy="48" r="26" fill="#3A3A40"></circle><path d="M14 140c4-34 22-52 46-52s42 18 46 52z" fill="#3A3A40"></path></svg></div><div style="flex: 1"><p style="margin: 0; font-weight: 700">Vipère</p><p style="margin: 2px 0 0; font-size: 13px; color: #B8AE9C">Pas de suite cette fois, bonne route.</p></div><span style="font-size: 12px; font-weight: 700; color: #B8AE9C">AFFAIRE CLASSÉE</span></div>
+</section>
+</div>
+<nav aria-label="Navigation" style="display: flex; border-top: 1px solid #2A2A2E; background: #0E0E10">
+<a href="Promenade.dc.html" class="nav"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Promenade</a>
+<a href="#decouverte" class="nav"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>Découverte</a>
+<a href="MesDemandes.dc.html" class="nav" aria-current="page" style="color: #E8B84A"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>Demandes</a>
+<a href="#visites" class="nav"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M8 2v4M16 2v4M3 10h18"></path></svg>Visites</a>
+<a href="#permis" class="nav"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><circle cx="8" cy="12" r="2.5"></circle><path d="M14 10h5M14 14h4"></path></svg>Mon Permis</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

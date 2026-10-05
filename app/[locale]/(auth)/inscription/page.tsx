@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SignupForm } from "@/components/auth/auth-forms";
 import { parseRole } from "@/lib/onboarding/config";
+import { signupsOpen } from "@/lib/signups";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -20,6 +21,14 @@ export default async function Page({ params, searchParams }: Props) {
   const role = parseRole(door) ?? undefined;
   setRequestLocale(locale);
   const t = await getTranslations("Auth");
+  if (!signupsOpen()) {
+    return (
+      <>
+        <h1 className="font-display text-4xl tracking-wide uppercase">{t("signupsClosedTitle")}</h1>
+        <p className="text-cream/85 mt-2 mb-8">{t("signupsClosedBody")}</p>
+      </>
+    );
+  }
   return (
     <>
       <h1 className="font-display text-4xl tracking-wide uppercase">

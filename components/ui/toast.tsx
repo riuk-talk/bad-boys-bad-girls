@@ -14,7 +14,7 @@ const DURATION_MS = 5000;
 
 const tones: Record<Tone, string> = {
   neutral: "border-line",
-  success: "border-gold",
+  success: "border-accent",
   error: "border-red-bright",
 };
 

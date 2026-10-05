@@ -5,6 +5,7 @@ import { redirect } from "@/i18n/navigation";
 import { authErrorKey, type AuthMessageKey } from "@/lib/auth/errors";
 import { confirmUrl } from "@/lib/auth/redirects";
 import { parseRole } from "@/lib/onboarding/config";
+import { signupsOpen } from "@/lib/signups";
 import { createClient } from "@/lib/supabase/server";
 import {
   fieldErrors,
@@ -42,6 +43,7 @@ export async function signUpAction(_state: AuthState, form: FormData): Promise<A
     password: form.get("password"),
   });
   if (!parsed.success) return invalid(parsed.error);
+  if (!signupsOpen()) return { status: "error", message: "signupsClosed" };
   const ref = String(form.get("ref") ?? "").toUpperCase();
   const role = parseRole(form.get("role"));
   const supabase = await createClient();
@@ -68,9 +70,17 @@ export async function signInAction(_state: AuthState, form: FormData): Promise<A
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email: parsed.data.email,
-      options: { emailRedirectTo: confirmUrl("/onboarding"), captchaToken: captchaToken(form) },
+      options: {
+        emailRedirectTo: confirmUrl("/onboarding"),
+        captchaToken: captchaToken(form),
+        // A magic link creates an account for an unknown address: not while sign-ups are closed.
+        shouldCreateUser: signupsOpen(),
+      },
     });
-    if (error) return { status: "error", message: authErrorKey(error) };
+    // Unknown address while sign-ups are closed: same answer as for a known one (no enumeration).
+    const refusedSignup =
+      error?.code === "otp_disabled" || /signups not allowed/i.test(error?.message ?? "");
+    if (error && !refusedSignup) return { status: "error", message: authErrorKey(error) };
     return { status: "sent", kind: "magic" };
   }
 

@@ -112,7 +112,7 @@ export function CityPicker({ initial, error }: Props) {
                   }}
                   className={cn(
                     "flex min-h-11 cursor-pointer items-center justify-between gap-3 px-3.5",
-                    index === active ? "bg-gold text-ink" : "text-cream",
+                    index === active ? "bg-accent text-ink" : "text-cream",
                   )}
                 >
                   <span>{option.name}</span>
