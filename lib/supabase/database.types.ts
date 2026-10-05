@@ -382,6 +382,41 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: number
+          payload: Json
+          read_at: string | null
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          payload?: Json
+          read_at?: string | null
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          payload?: Json
+          read_at?: string | null
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           email_date_accepted: boolean
@@ -793,8 +828,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_decide_photo: {
+        Args: {
+          p_approve: boolean
+          p_photo: string
+          p_public_large?: string
+          p_public_small?: string
+          p_reason?: string
+        }
+        Returns: string
+      }
+      admin_photo_queue: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          gender: Database["public"]["Enums"]["gender"]
+          owner_id: string
+          pending_path: string
+          photo_id: string
+          photo_position: number
+          priority: number
+          pseudo: string
+          role: Database["public"]["Enums"]["member_role"]
+        }[]
+      }
       age_years: { Args: { at?: string; birthdate: string }; Returns: number }
       ban_email_hash: { Args: { p_email: string }; Returns: string }
+      charge_key: { Args: { value: string }; Returns: string }
       claim_referral: { Args: { p_code: string }; Returns: boolean }
       common_points: {
         Args: { p_a: string; p_b: string; p_n?: number }
@@ -826,6 +886,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      has_three_poses: {
+        Args: { p_approved_only?: boolean; p_owner: string }
+        Returns: boolean
+      }
       has_contacts: { Args: { value: string }; Returns: boolean }
       hook_before_user_created: { Args: { event: Json }; Returns: Json }
       immutable_unaccent: { Args: { value: string }; Returns: string }
@@ -834,9 +898,11 @@ export type Database = {
         Returns: number
       }
       is_admin: { Args: never; Returns: boolean }
+      mark_notifications_read: { Args: never; Returns: undefined }
       mask_contacts: { Args: { value: string }; Returns: string }
       new_referral_code: { Args: never; Returns: string }
       normalize_text: { Args: { value: string }; Returns: string }
+      photo_rejection_reasons: { Args: never; Returns: string[] }
       recompute_profile_zones: { Args: never; Returns: number }
       referral_count: { Args: never; Returns: number }
       search_places: {
@@ -900,6 +966,28 @@ export type Database = {
       launch_mode: "zones" | "open"
       member_role: "bad" | "visitor"
       moderation_status: "pending" | "approved" | "rejected"
+      notification_type:
+        | "request_received"
+        | "request_accepted"
+        | "request_dismissed"
+        | "slot_chosen"
+        | "slots_declined"
+        | "slots_reproposed"
+        | "visit_cancelled"
+        | "visit_reminder_1h"
+        | "visit_starting"
+        | "visit_no_show"
+        | "visit_released"
+        | "visit_closed"
+        | "message_received"
+        | "date_proposed"
+        | "date_accepted"
+        | "date_countered"
+        | "promenade_open"
+        | "permit_granted"
+        | "moderation_decision"
+        | "zone_opened"
+        | "profile_dormant"
       question_phase: "core" | "extra"
       report_category:
         | "fake_profile"
@@ -1067,6 +1155,29 @@ export const Constants = {
       launch_mode: ["zones", "open"],
       member_role: ["bad", "visitor"],
       moderation_status: ["pending", "approved", "rejected"],
+      notification_type: [
+        "request_received",
+        "request_accepted",
+        "request_dismissed",
+        "slot_chosen",
+        "slots_declined",
+        "slots_reproposed",
+        "visit_cancelled",
+        "visit_reminder_1h",
+        "visit_starting",
+        "visit_no_show",
+        "visit_released",
+        "visit_closed",
+        "message_received",
+        "date_proposed",
+        "date_accepted",
+        "date_countered",
+        "promenade_open",
+        "permit_granted",
+        "moderation_decision",
+        "zone_opened",
+        "profile_dormant",
+      ],
       question_phase: ["core", "extra"],
       report_category: [
         "fake_profile",

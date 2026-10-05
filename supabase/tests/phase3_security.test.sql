@@ -86,14 +86,17 @@ create function pg_temp.answer_core(p_user uuid, p_skip smallint default null) r
   where q.phase = 'core' and q.is_active and q.id is distinct from p_skip
 $$;
 
--- Everything but the Casier and the QCM for the 8-step onboarding (consents, photo 0).
+-- Everything but the Casier and the QCM for the 8-step onboarding: consents and photos
+-- (a Bad: the 3 poses 0 face, 1 left profile, 2 right profile; a Visitor: the face photo).
 create function pg_temp.common_steps(p_user uuid) returns void language plpgsql as $$
 declare t text;
 begin
   foreach t in array array['terms', 'privacy', 'age_18', 'art9_seeking'] loop
     insert into public.consents (user_id, type, text_version, granted) values (p_user, t::public.consent_type, 'v1', true);
   end loop;
-  insert into public.photos (owner_id, position, pending_path) values (p_user, 0, p_user || '/0.webp');
+  insert into public.photos (owner_id, position, pending_path)
+    select p_user, p, p_user || '/' || p || '.webp'
+    from generate_series(0, case when (select role from public.profiles where id = p_user) = 'bad' then 2 else 0 end) p;
 end $$;
 
 ----------------------------------------------------------------------------------------------
@@ -158,6 +161,31 @@ begin
   perform pg_temp.as_owner();
 end $$;
 
+-- PARCOURS-DESIGN §3: a Bad needs the 3 poses, a Visitor the face photo only.
+create function pg_temp.test_complete_onboarding_bad_three_poses() returns setof text language plpgsql as $$
+declare a uuid := pg_temp.new_member('a@test.local', 'woman', pg_temp.new_place('Ville', 43.1, 5.9)); t text;
+begin
+  foreach t in array array['terms', 'privacy', 'age_18', 'art9_seeking'] loop
+    insert into public.consents (user_id, type, text_version, granted) values (a, t::public.consent_type, 'v1', true);
+  end loop;
+  perform pg_temp.answer_core(a);
+  insert into public.casier_charges (profile_id, charge_1, charge_2, charge_3, true_index) values (a, 'un', 'deux', 'trois', 1);
+  insert into public.photos (owner_id, position, pending_path) values (a, 0, a || '/0.webp');
+  perform pg_temp.as_user(a);
+  return next is(pg_temp.error_detail('select public.complete_onboarding()'), 'photos',
+    'a Bad with the face only cannot finish');
+  perform pg_temp.as_owner();
+  insert into public.photos (owner_id, position, pending_path) values (a, 1, a || '/1.webp'), (a, 3, a || '/3.webp');
+  perform pg_temp.as_user(a);
+  return next is(pg_temp.error_detail('select public.complete_onboarding()'), 'photos',
+    'face + left profile + an extra photo is not the 3 poses');
+  perform pg_temp.as_owner();
+  insert into public.photos (owner_id, position, pending_path) values (a, 2, a || '/2.webp');
+  perform pg_temp.as_user(a);
+  return next is(pg_temp.try('select public.complete_onboarding()'), null, 'face, left and right profiles: done');
+  perform pg_temp.as_owner();
+end $$;
+
 create function pg_temp.test_complete_onboarding_visitor() returns setof text language plpgsql as $$
 declare v uuid := pg_temp.new_member('v@test.local', 'man', pg_temp.new_place('Ville', 43.1, 5.9), 'visitor');
 begin
@@ -214,6 +242,28 @@ begin
   return next matches(coalesce(pg_temp.try(format(
     'insert into public.casier_charges (profile_id, charge_1, charge_2, charge_3, true_index) values (%L, ''un'', ''deux'', ''trois'', 1)',
     v)), 'ok'), 'casier_bad_only', 'the trigger refuses a Casier for a Visitor whatever the caller');
+end $$;
+
+-- Security review: three different charges (case and spaces ignored).
+create function pg_temp.test_casier_distinct_charges() returns setof text language plpgsql as $$
+declare a uuid := pg_temp.new_member('a@test.local');
+begin
+  perform pg_temp.as_user(a);
+  return next matches(coalesce(pg_temp.try(format(
+    'insert into public.casier_charges (profile_id, charge_1, charge_2, charge_3, true_index) values (%L, %L, %L, %L, 1)',
+    a, 'A un tatouage secret', 'a  un TATOUAGE secret ', 'A vu un ours')), 'ok'),
+    'casier_duplicate_charges', 'two charges equal but for case and spaces are refused');
+  return next matches(coalesce(pg_temp.try(format(
+    'insert into public.casier_charges (profile_id, charge_1, charge_2, charge_3, true_index) values (%L, %L, %L, %L, 1)',
+    a, 'A vu un ours', 'A gagné un concours', 'AVU UN OURS')), 'ok'),
+    'casier_duplicate_charges', 'the 1st and 3rd charges are compared too');
+  return next is(pg_temp.try(format(
+    'insert into public.casier_charges (profile_id, charge_1, charge_2, charge_3, true_index) values (%L, %L, %L, %L, 1)',
+    a, 'A vu un ours', 'A vu deux ours', 'A vu trois ours')), null, 'three different charges are accepted');
+  return next matches(coalesce(pg_temp.try(format(
+    'update public.casier_charges set charge_3 = %L where profile_id = %L', 'a vu deux OURS', a)), 'ok'),
+    'casier_duplicate_charges', 'a duplicate is refused on update too');
+  perform pg_temp.as_owner();
 end $$;
 
 create function pg_temp.test_casier_masks_contacts() returns setof text language plpgsql as $$
