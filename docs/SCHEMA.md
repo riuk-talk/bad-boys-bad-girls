@@ -109,6 +109,7 @@ RLS : **S** `authenticated` ; écriture via fonctions admin. (B1) `admin_upsert_
 | `id` | `uuid` | PK, → `auth.users(id) on delete cascade` |
 | `role` | `member_role` | **[v2]** null jusqu'à l'étape 3 ; obligatoire pour terminer l'onboarding — **protégé** (écrit par `set_onboarding_role()` puis `change_role()`) |
 | `role_changed_at` | `timestamptz` | **[v2]** dernier changement après l'onboarding (règle des 7 jours) — **protégé** |
+| `ecrou` | `char(6)` | **en base (Phase 4a)** — N° d'écrou : 6 chiffres aléatoires, unique (index partiel), donné par le trigger quand le rôle devient `bad`, jamais choisi ni modifié (même par le propriétaire de la base), conservé si le rôle change ; jamais dérivé de `id` ; aucune fonction ne le prend en entrée ; affiché seulement par `get_fiche()` — **protégé** |
 | `pseudo` | `citext` | unique, 3–20 ; refus e-mails/téléphones/liens |
 | `birthdate` | `date` | trigger âge ≥ 18 ; via `set_birthdate()` seulement |
 | `gender` | `gender` | |
@@ -166,10 +167,11 @@ Comme en v1 ; l'option doit appartenir à la question (clé étrangère composé
 
 ### 2.3 Interactions
 
-#### `blocks` — inchangé (sauf effet de `block_user`)
+#### `blocks` — **en base (Phase 4a)**
+`blocker_id`, `blocked_id`, `created_at`, `unblocked_at` (PK couple) : un blocage n'est jamais supprimé, `unblock_user()` remplit `unblocked_at` (historique gardé, aucun `DELETE`). RLS : **S** propres lignes (liste « Bloqués ») ; **I/U** via `block_user()` / `unblock_user()` seulement.
 `block_user()` **[v2-modif]** : annule les demandes en cours, annule les visites programmées (`cancelled`, sans pénalité pour le bloqueur), ferme la conversation (`blocked`), le tout atomiquement.
 
-#### `visit_requests` — la Demande de parloir — **[v2-nouveau]** (remplace `pleas`)
+#### `visit_requests` — la Demande de parloir — **en base (Phase 4a)** (remplace `pleas`)
 | Colonne | Type | Contraintes |
 |---|---|---|
 | `id` | `uuid` | PK |
@@ -187,11 +189,11 @@ Comme en v1 ; l'option doit appartenir à la question (clé étrangère composé
 | `choose_deadline` | `timestamptz` | proposition + 48 h (le Visiteur choisit) |
 | `repropose_deadline` | `timestamptz` | + 48 h (le Bad repropose après « Aucun ne me va » ou absence) |
 | `no_show_count` | `smallint` | absences dans ce couple ; 2 → classement |
-| `conversation_id` | `uuid` → `conversations` | créée au premier créneau choisi |
+| `conversation_id` | `uuid` → `conversations` | créée au premier créneau choisi (colonne sans clé étrangère jusqu'à la Phase 5) |
 | `created_at`, `decided_at`, `closed_at` | `timestamptz` | |
 
 Index : unique partiel (`visitor_id`, `bad_id`) `where status in ('pending','accepted')` (1 en cours par couple) ; (`bad_id`, `status`, `created_at`) (« Le Courrier ») ; (`visitor_id`, `created_at desc`) (5/24 h + anti-arnaque 7 j) ; (`status`, `created_at`) partiel `pending` (expiration 7 j) ; (`choose_deadline`) partiel et (`repropose_deadline`) partiel (tâche minute) ; (`visitor_id`, `bad_id`, `closed_at desc`) (délai de 30 j).
-RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_progress'` pour ce couple, **aucune** fonction ne renvoie `guess_correct` ni `true_index` (à personne), et `get_mailbox()` (Bad) ne renvoie ni `guessed_index` ni le texte du chef choisi. `get_my_requests()` (Visiteur) peut lui rappeler le chef qu'il a lui-même choisi, jamais le résultat. Chef choisi et résultat sont révélés ensemble par le message système inséré par `run_visit_ticks` au début de la visite.
+RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_progress'` pour ce couple, **aucune** fonction ne renvoie `guess_correct` ni `true_index` (à personne), et `get_mailbox()` (Bad) ne renvoie ni `guessed_index` ni le texte du chef choisi. `get_my_requests()` (Visiteur) ne renvoie **ni le chef qu'il a choisi ni le résultat** (décision du porteur, 2026-10-05 : aucune fonction ne renvoie `true_index`, le chef choisi, la copie du Casier ou le résultat du pari, au Bad, au Visiteur ou à un tiers ; prouvé par `phase4_relations.test.sql`). Chef choisi et résultat sont révélés ensemble par le message système inséré par `run_visit_ticks` au début de la visite.
 
 #### `visit_slots` — les Heures de visite — **[v2-nouveau]**
 | Colonne | Type | Contraintes |
@@ -251,13 +253,13 @@ Realtime : Postgres Changes sur `messages` (filtre `conversation_id`), ouvert un
 #### `date_proposals` — la Cavale — inchangé (Phase 6)
 `propose_date` exige une conversation `open` (Permis permanent).
 
-#### `promenade_picks` — la Promenade — **[v2-modif]** (remplace `daily_hearings`, jamais créée)
+#### `promenade_picks` — la Promenade — **en base (Phase 4a)** (remplace `daily_hearings`, jamais créée)
 `id bigint identity PK`, `visitor_id → profiles on delete cascade`, `bad_id → profiles on delete cascade`, `zone_id`, `promenade_date date` (date locale), `rank smallint` (1–5), `score smallint`, `visible_from`, `visible_until`, `seen_at`.
 Contraintes : unique (`visitor_id`, `promenade_date`, `bad_id`), unique (`visitor_id`, `promenade_date`, `rank`).
-Index : (`visitor_id`, `visible_from desc`) ; (`bad_id`, `promenade_date`) (exclusion 14 j + plafond d'apparitions).
+Index : (`visitor_id`, `visible_from desc`) ; (`bad_id`, `promenade_date`) (exclusion 14 j + plafond d'apparitions) ; (`zone_id`, `promenade_date`) (tâche horaire).
 RLS : **S** — (via `get_my_promenade()`) ; **U** — (`mark_promenade_seen()`).
 
-#### `reports`, `moderation_actions`, `flagged_texts` — inchangés sauf enums
+#### `reports`, `moderation_actions`, `flagged_texts` — **en base (Phase 4a, `flagged_texts` depuis la 2b)**
 `reports.target_type` accepte `permit` et `visit_request`. `flagged_texts` est déjà en base.
 
 ### 2.4 Notifications, push, e-mails, activité

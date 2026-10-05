@@ -149,7 +149,7 @@ begin
     'role = ''visitor''', 'role_changed_at = now()',
     'zone_id = null', 'is_seed = true', 'referral_code = ''HACKED00''', 'referred_by = null',
     'onboarding_completed_at = now()', 'last_seen_at = now()', 'consecutive_dismissals = 0',
-    'lat = 0', 'paused_at = null'] loop
+    'lat = 0', 'paused_at = null', 'ecrou = ''123456'''] loop
     return next matches(coalesce(pg_temp.try(format('update public.profiles set %s where id = %L', col, a)), 'ok'),
       '^42501', 'member cannot set ' || col);
   end loop;

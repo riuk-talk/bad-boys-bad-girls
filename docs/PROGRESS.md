@@ -4,7 +4,38 @@
 
 ## Phase en cours
 
-**Phase 3 — validée par Chris le 2026-10-05**, PR ouverte (branche `phase-3`). Relecture sécurité 3a/3b validée par le porteur le 2026-10-05 (avec corrections, appliquées). Phase 2c validée et fusionnée (PR #8), en production.
+**Phase 4 — 4a terminée, en attente de la relecture sécurité** (branche `phase-4`). Phase 3 validée et fusionnée (PR #9), en production. Après validation de la 4a : 4b à 4f d'un trait jusqu'à la preview.
+
+## Phase 4 — Demande de parloir, Promenade, Découverte, Courrier (2026-10-05)
+
+### Découpage (validé par le porteur)
+4a base + pgTAP · **arrêt relecture sécurité** · 4b Souffleur (`lib/prompter`) · 4c écrans Visiteur (Promenade, Découverte, Fiche dossier judiciaire, Demande de parloir, Mes demandes) · 4d écrans Bad (Courrier, lecture d'une demande, Accepter / Affaire classée, plafond) · 4e changement de rôle, pause, Signaler / Bloquer · 4f vérification (performance, e2e, axe, captures, preview).
+Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulement, jamais l'identifiant interne, aucune fonction de recherche par ce numéro ; données de test en pgTAP annulé ; onglets Visites et Parloir masqués ; notifications dans l'application seulement.
+
+### 4a — base (vérifié sur la base de dev)
+- **Migrations** (dans l'ordre, versions enregistrées) :
+  - `20261005172921_phase4_relations_tables` : types (`visit_request_status`, `case_close_reason`, `report_target`, `moderation_action_type`), `profiles.ecrou` + trigger, tables `blocks` (jamais de suppression, `unblocked_at`), `reports`, `moderation_actions` (ajout seul), `visit_requests`, `promenade_picks`, aides internes, RLS ;
+  - `20261005173248_phase4_relations_functions` : `get_fiche`, `get_permit`, `discover_bads`, `get_my_promenade`, `mark_promenade_seen`, `send_visit_request`, `get_mailbox`, `decide_visit_request`, `get_my_requests`, `change_role`, `block_user`, `unblock_user`, `report` (les 13 seules appelables par un membre) ; `build_daily_promenade`, `run_promenades_due`, `expire_visit_requests` (tâches pg_cron horaires, propriétaire seulement) ;
+  - 3 correctifs trouvés par les tests (voir plus bas) et `20261005190830_phase4_fk_indexes`.
+- **Règle 14** : la copie du Casier, le chef parié et le résultat ne sortent d'aucune fonction. `send_visit_request` ne renvoie que l'identifiant de la demande. `get_fiche` donne les trois chefs dans l'ordre du Bad, sans marque, identiques pour tous.
+- **Limites dans SQL** (une transaction, ligne du Bad verrouillée) : Visiteur avec Permis délivré, quartier ouvert, critères dans les deux sens, aucun blocage, 30 jours après une affaire classée, une demande en cours par couple, 5 par 24 h (2 si le compte a moins de 24 h), « Parloir complet », mot masqué et signalé, anti-arnaque (même mot une 3e fois en 7 jours → `flagged_texts`).
+- **Promenade** : construite dans l'heure avant 21 h locale, 5 Bads au plus par Visiteur, plafond d'apparitions par Bad (`app_settings`), score × 0,5 au-delà de la moitié du plafond de demandes, jamais un Bad déjà sollicité, bloqué, de test ou vu dans les 14 jours ; notification dans l'application à 21 h.
+- **pgTAP** :
+  - `phase4_relations.test.sql`, 14 groupes, **tout passe** (fuite règle 14 : 59 vérifications, dont 11 qui prouvent que chaque appel autorisé renvoie bien des données ; formes exactes des réponses ; tables fermées ; N° d'écrou ; limites ; Parloir complet ; anti-arnaque ; visibilité ; blocages ; changement de rôle ; signalement ; Promenade ; droits) ;
+  - `phase3_complicity_parity` 69/69 : la parité couvre maintenant aussi `complicity_with`, la version ensembliste utilisée par la Découverte et la Promenade ;
+  - non-régression : `phase3_security` 17/17 groupes ; `phase2_security` 14 groupes relancés sur 20 (+ `ecrou` dans les colonnes protégées). Les 6 autres (photos, signes, consentements, admin, bannissement, zones) et `phase3_greffe` n'ont pas été relancés : aucun objet qu'ils testent n'a changé.
+  - Base vérifiée vide après les tests ; `app_settings` inchangé (`zones` / 10).
+- Types TypeScript régénérés ; typecheck OK.
+
+### Défauts trouvés par les tests de la 4a (corrigés par migration)
+1. `get_mailbox` échouait pour tout Bad (colonnes `varchar` déclarées `text`) → `20261005185814_phase4_mailbox_types`. Le test de fuite seul ne l'aurait pas vu (il passait sur une erreur) : d'où les vérifications « l'appel renvoie des données ».
+2. Un changement de rôle classait les demandes reçues en `dismissed` et comptait un refus au Visiteur → seuls les refus du Bad comptent (`20261005190154_phase4_dismissals_by_bad_only`).
+3. `complicity_with` (Découverte, Promenade) rendait « pas de score » ou 50 au lieu de 0 quand aucune réponse n'était acceptée (somme filtrée nulle) → `complicity_from_sums` lit une somme absente comme 0 (`20261005190448_phase4_complicity_null_sums`).
+
+### Points à trancher à la relecture
+- Une demande **acceptée** reste « en cours » jusqu'à la Phase 5 : elle compte dans « une demande par couple » mais plus dans le plafond du Bad (seules les `pending` comptent pour « Parloir complet »).
+- L'expiration à 7 jours (`auto_dismissed`) ne compte pas comme un refus pour le conseil après 3 refus.
+- Un membre masqué pour « mineur » (2 signalements distincts, ou 1 d'un Bad « Bonne conduite ») disparaît partout immédiatement, avant toute décision d'un admin.
 
 ## Phase 3 — QCM, indice de complicité, Casier, Greffe (2026-10-05)
 

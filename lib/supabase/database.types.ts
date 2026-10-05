@@ -138,6 +138,42 @@ export type Database = {
         }
         Relationships: []
       }
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          unblocked_at: string | null
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          unblocked_at?: string | null
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          unblocked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       casier_charges: {
         Row: {
           charge_1: string
@@ -358,6 +394,51 @@ export type Database = {
           },
         ]
       }
+      moderation_actions: {
+        Row: {
+          action: Database["public"]["Enums"]["moderation_action_type"]
+          admin_id: string | null
+          created_at: string
+          id: number
+          reason: string | null
+          report_id: number | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["moderation_action_type"]
+          admin_id?: string | null
+          created_at?: string
+          id?: never
+          reason?: string | null
+          report_id?: number | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["moderation_action_type"]
+          admin_id?: string | null
+          created_at?: string
+          id?: never
+          reason?: string | null
+          report_id?: number | null
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_actions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_actions_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moderation_keywords: {
         Row: {
           category: Database["public"]["Enums"]["report_category"]
@@ -381,41 +462,6 @@ export type Database = {
           term?: string
         }
         Relationships: []
-      }
-      notifications: {
-        Row: {
-          created_at: string
-          id: number
-          payload: Json
-          read_at: string | null
-          type: Database["public"]["Enums"]["notification_type"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: never
-          payload?: Json
-          read_at?: string | null
-          type: Database["public"]["Enums"]["notification_type"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: never
-          payload?: Json
-          read_at?: string | null
-          type?: Database["public"]["Enums"]["notification_type"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       notification_preferences: {
         Row: {
@@ -471,6 +517,41 @@ export type Database = {
             foreignKeyName: "notification_preferences_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: number
+          payload: Json
+          read_at: string | null
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          payload?: Json
+          read_at?: string | null
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          payload?: Json
+          read_at?: string | null
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -610,6 +691,7 @@ export type Database = {
           consecutive_dismissals: number
           created_at: string
           dormant_since: string | null
+          ecrou: string | null
           gender: Database["public"]["Enums"]["gender"] | null
           hidden_reason: string | null
           id: string
@@ -649,6 +731,7 @@ export type Database = {
           consecutive_dismissals?: number
           created_at?: string
           dormant_since?: string | null
+          ecrou?: string | null
           gender?: Database["public"]["Enums"]["gender"] | null
           hidden_reason?: string | null
           id: string
@@ -688,6 +771,7 @@ export type Database = {
           consecutive_dismissals?: number
           created_at?: string
           dormant_since?: string | null
+          ecrou?: string | null
           gender?: Database["public"]["Enums"]["gender"] | null
           hidden_reason?: string | null
           id?: string
@@ -736,6 +820,67 @@ export type Database = {
           },
           {
             foreignKeyName: "profiles_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "launch_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promenade_picks: {
+        Row: {
+          bad_id: string
+          id: number
+          promenade_date: string
+          rank: number
+          score: number
+          seen_at: string | null
+          visible_from: string
+          visible_until: string
+          visitor_id: string
+          zone_id: number | null
+        }
+        Insert: {
+          bad_id: string
+          id?: never
+          promenade_date: string
+          rank: number
+          score: number
+          seen_at?: string | null
+          visible_from: string
+          visible_until: string
+          visitor_id: string
+          zone_id?: number | null
+        }
+        Update: {
+          bad_id?: string
+          id?: never
+          promenade_date?: string
+          rank?: number
+          score?: number
+          seen_at?: string | null
+          visible_from?: string
+          visible_until?: string
+          visitor_id?: string
+          zone_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promenade_picks_bad_id_fkey"
+            columns: ["bad_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promenade_picks_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promenade_picks_zone_id_fkey"
             columns: ["zone_id"]
             isOneToOne: false
             referencedRelation: "launch_zones"
@@ -799,6 +944,63 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          category: Database["public"]["Enums"]["report_category"]
+          comment: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: number
+          reporter_id: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["report_target"]
+          target_user_id: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["report_category"]
+          comment?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: never
+          reporter_id?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["report_target"]
+          target_user_id?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["report_category"]
+          comment?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: never
+          reporter_id?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          target_id?: string
+          target_type?: Database["public"]["Enums"]["report_target"]
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tribes: {
         Row: {
           id: number
@@ -822,6 +1024,87 @@ export type Database = {
           sort?: number
         }
         Relationships: []
+      }
+      visit_requests: {
+        Row: {
+          bad_id: string
+          casier_snapshot: Json
+          choose_deadline: string | null
+          close_reason: Database["public"]["Enums"]["case_close_reason"] | null
+          closed_at: string | null
+          conversation_id: string | null
+          created_at: string
+          decided_at: string | null
+          guess_correct: boolean
+          guessed_index: number
+          id: string
+          no_show_count: number
+          note: string | null
+          note_normalized: string | null
+          repropose_deadline: string | null
+          slots_declined: boolean
+          slots_round: number
+          status: Database["public"]["Enums"]["visit_request_status"]
+          visitor_id: string
+        }
+        Insert: {
+          bad_id: string
+          casier_snapshot: Json
+          choose_deadline?: string | null
+          close_reason?: Database["public"]["Enums"]["case_close_reason"] | null
+          closed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          guess_correct: boolean
+          guessed_index: number
+          id?: string
+          no_show_count?: number
+          note?: string | null
+          note_normalized?: string | null
+          repropose_deadline?: string | null
+          slots_declined?: boolean
+          slots_round?: number
+          status?: Database["public"]["Enums"]["visit_request_status"]
+          visitor_id: string
+        }
+        Update: {
+          bad_id?: string
+          casier_snapshot?: Json
+          choose_deadline?: string | null
+          close_reason?: Database["public"]["Enums"]["case_close_reason"] | null
+          closed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          guess_correct?: boolean
+          guessed_index?: number
+          id?: string
+          no_show_count?: number
+          note?: string | null
+          note_normalized?: string | null
+          repropose_deadline?: string | null
+          slots_declined?: boolean
+          slots_round?: number
+          status?: Database["public"]["Enums"]["visit_request_status"]
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_requests_bad_id_fkey"
+            columns: ["bad_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_requests_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -854,6 +1137,19 @@ export type Database = {
       }
       age_years: { Args: { at?: string; birthdate: string }; Returns: number }
       ban_email_hash: { Args: { p_email: string }; Returns: string }
+      block_user: { Args: { p_target: string }; Returns: undefined }
+      build_daily_promenade: {
+        Args: { p_date: string; p_zone: number }
+        Returns: number
+      }
+      can_view_bad: {
+        Args: { p_bad: string; p_viewer: string }
+        Returns: boolean
+      }
+      change_role: {
+        Args: { p_role: Database["public"]["Enums"]["member_role"] }
+        Returns: undefined
+      }
       charge_key: { Args: { value: string }; Returns: string }
       claim_referral: { Args: { p_code: string }; Returns: boolean }
       common_points: {
@@ -865,6 +1161,17 @@ export type Database = {
         }[]
       }
       complete_onboarding: { Args: never; Returns: undefined }
+      complicity_from_sums: {
+        Args: {
+          cap: boolean
+          cnt: number
+          d_a: number
+          d_b: number
+          n_a: number
+          n_b: number
+        }
+        Returns: number
+      }
       complicity_score: {
         Args: { p_a: string; p_b: string }
         Returns: {
@@ -873,10 +1180,62 @@ export type Database = {
           score: number
         }[]
       }
+      complicity_with: {
+        Args: { p_others: string[]; p_viewer: string }
+        Returns: {
+          other_id: string
+          score: number
+        }[]
+      }
       counts_for_zone: {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: boolean
       }
+      criteria_match: {
+        Args: {
+          p_a: Database["public"]["Tables"]["profiles"]["Row"]
+          p_b: Database["public"]["Tables"]["profiles"]["Row"]
+        }
+        Returns: boolean
+      }
+      decide_visit_request: {
+        Args: { p_accept: boolean; p_request: string }
+        Returns: undefined
+      }
+      discover_bads: {
+        Args: {
+          p_age_max?: number
+          p_age_min?: number
+          p_cursor_id?: string
+          p_cursor_key?: number
+          p_good_conduct_only?: boolean
+          p_limit?: number
+          p_max_km?: number
+          p_recently_active?: boolean
+          p_tribe_ids?: number[]
+        }
+        Returns: {
+          age: number
+          city: string
+          complicity: number
+          distance_km: number
+          gender: Database["public"]["Enums"]["gender"]
+          good_conduct: boolean
+          id: string
+          photo_small: string
+          pseudo: string
+          requests_open: boolean
+          sort_key: number
+        }[]
+      }
+      distance_km: {
+        Args: {
+          p_a: Database["public"]["Tables"]["profiles"]["Row"]
+          p_b: Database["public"]["Tables"]["profiles"]["Row"]
+        }
+        Returns: number
+      }
+      expire_visit_requests: { Args: never; Returns: number }
       flag_keywords: {
         Args: {
           p_source: Database["public"]["Enums"]["flag_source"]
@@ -886,11 +1245,71 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_fiche: { Args: { p_bad: string }; Returns: Json }
+      get_mailbox: {
+        Args: never
+        Returns: {
+          age: number
+          city: string
+          clean_record: boolean
+          complicity: number
+          created_at: string
+          distance_km: number
+          gender: Database["public"]["Enums"]["gender"]
+          motive: string
+          note: string
+          photo_small: string
+          pseudo: string
+          request_id: string
+          status: Database["public"]["Enums"]["visit_request_status"]
+          visitor_id: string
+          visits_due: number
+          visits_honored: number
+        }[]
+      }
+      get_my_promenade: {
+        Args: never
+        Returns: {
+          age: number
+          city: string
+          complicity: number
+          distance_km: number
+          gender: Database["public"]["Enums"]["gender"]
+          good_conduct: boolean
+          id: string
+          photo_small: string
+          pseudo: string
+          rank: number
+          requests_open: boolean
+          seen: boolean
+          visible_until: string
+        }[]
+      }
+      get_my_requests: {
+        Args: never
+        Returns: {
+          bad_id: string
+          cooldown_until: string
+          created_at: string
+          decided_at: string
+          gender: Database["public"]["Enums"]["gender"]
+          photo_small: string
+          pseudo: string
+          request_id: string
+          status: Database["public"]["Enums"]["visit_request_status"]
+        }[]
+      }
+      get_permit: { Args: { p_visitor: string }; Returns: Json }
+      has_contacts: { Args: { value: string }; Returns: boolean }
+      has_open_relation: {
+        Args: { p_a: string; p_b: string }
+        Returns: boolean
+      }
+      has_permit: { Args: { p_visitor: string }; Returns: boolean }
       has_three_poses: {
         Args: { p_approved_only?: boolean; p_owner: string }
         Returns: boolean
       }
-      has_contacts: { Args: { value: string }; Returns: boolean }
       hook_before_user_created: { Args: { event: Json }; Returns: Json }
       immutable_unaccent: { Args: { value: string }; Returns: string }
       importance_weight: {
@@ -898,13 +1317,56 @@ export type Database = {
         Returns: number
       }
       is_admin: { Args: never; Returns: boolean }
+      is_bad_visible: {
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: boolean
+      }
+      is_blocked_between: {
+        Args: { p_a: string; p_b: string }
+        Returns: boolean
+      }
+      is_member_active: {
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: boolean
+      }
       mark_notifications_read: { Args: never; Returns: undefined }
+      mark_promenade_seen: { Args: { p_bad: string }; Returns: undefined }
       mask_contacts: { Args: { value: string }; Returns: string }
+      new_ecrou: { Args: never; Returns: string }
       new_referral_code: { Args: never; Returns: string }
       normalize_text: { Args: { value: string }; Returns: string }
+      note_fingerprint: { Args: { p_note: string }; Returns: string }
+      notify: {
+        Args: {
+          p_payload?: Json
+          p_type: Database["public"]["Enums"]["notification_type"]
+          p_user: string
+        }
+        Returns: undefined
+      }
+      pair_cooldown_until: {
+        Args: { p_bad: string; p_visitor: string }
+        Returns: string
+      }
       photo_rejection_reasons: { Args: never; Returns: string[] }
+      place_name: { Args: { p_place: number }; Returns: string }
+      public_photos: {
+        Args: { p_owner: string; p_positions: number[] }
+        Returns: Json
+      }
+      public_tribes: { Args: { p_owner: string }; Returns: Json }
       recompute_profile_zones: { Args: never; Returns: number }
       referral_count: { Args: never; Returns: number }
+      report: {
+        Args: {
+          p_category: Database["public"]["Enums"]["report_category"]
+          p_comment?: string
+          p_target_id: string
+          p_target_type: Database["public"]["Enums"]["report_target"]
+        }
+        Returns: number
+      }
+      run_promenades_due: { Args: never; Returns: undefined }
       search_places: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
@@ -914,12 +1376,26 @@ export type Database = {
           postal_codes: string[]
         }[]
       }
+      send_visit_request: {
+        Args: { p_bad: string; p_guessed_index: number; p_note?: string }
+        Returns: string
+      }
       set_onboarding_role: {
         Args: { p_role: Database["public"]["Enums"]["member_role"] }
         Returns: undefined
       }
       touch_activity: { Args: never; Returns: undefined }
+      unblock_user: { Args: { p_target: string }; Returns: undefined }
+      visitor_reputation: {
+        Args: { p_visitor: string }
+        Returns: {
+          clean_record: boolean
+          due: number
+          honored: number
+        }[]
+      }
       zone_for: { Args: { p_lat: number; p_lng: number }; Returns: number }
+      zone_is_open: { Args: { p_zone: number }; Returns: boolean }
       zone_progress: {
         Args: never
         Returns: {
@@ -939,6 +1415,20 @@ export type Database = {
       }
     }
     Enums: {
+      case_close_reason:
+        | "dismissed_by_bad"
+        | "no_answer_7d"
+        | "no_slot_chosen"
+        | "no_new_slots"
+        | "second_no_show"
+        | "not_prolonged"
+        | "no_end_choice"
+        | "closed_after_release"
+        | "cancelled_by_visitor"
+        | "role_change"
+        | "blocked"
+        | "account_deleted"
+        | "banned"
       consent_type: "terms" | "privacy" | "age_18" | "art9_seeking"
       email_kind:
         | "request_digest"
@@ -965,6 +1455,18 @@ export type Database = {
       importance: "low" | "important" | "essential"
       launch_mode: "zones" | "open"
       member_role: "bad" | "visitor"
+      moderation_action_type:
+        | "warn"
+        | "suspend"
+        | "ban"
+        | "unban"
+        | "hide_profile"
+        | "unhide_profile"
+        | "photo_approve"
+        | "photo_reject"
+        | "text_clear"
+        | "text_remove"
+        | "revoke_good_conduct"
       moderation_status: "pending" | "approved" | "rejected"
       notification_type:
         | "request_received"
@@ -998,6 +1500,21 @@ export type Database = {
         | "scam"
         | "other"
       report_status: "open" | "upheld" | "rejected"
+      report_target:
+        | "profile"
+        | "permit"
+        | "photo"
+        | "casier"
+        | "message"
+        | "visit_request"
+      visit_request_status:
+        | "pending"
+        | "accepted"
+        | "released"
+        | "dismissed"
+        | "auto_dismissed"
+        | "cancelled"
+        | "closed"
       zone_status: "waitlist" | "open"
     }
     CompositeTypes: {
@@ -1126,6 +1643,21 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      case_close_reason: [
+        "dismissed_by_bad",
+        "no_answer_7d",
+        "no_slot_chosen",
+        "no_new_slots",
+        "second_no_show",
+        "not_prolonged",
+        "no_end_choice",
+        "closed_after_release",
+        "cancelled_by_visitor",
+        "role_change",
+        "blocked",
+        "account_deleted",
+        "banned",
+      ],
       consent_type: ["terms", "privacy", "age_18", "art9_seeking"],
       email_kind: [
         "request_digest",
@@ -1154,6 +1686,19 @@ export const Constants = {
       importance: ["low", "important", "essential"],
       launch_mode: ["zones", "open"],
       member_role: ["bad", "visitor"],
+      moderation_action_type: [
+        "warn",
+        "suspend",
+        "ban",
+        "unban",
+        "hide_profile",
+        "unhide_profile",
+        "photo_approve",
+        "photo_reject",
+        "text_clear",
+        "text_remove",
+        "revoke_good_conduct",
+      ],
       moderation_status: ["pending", "approved", "rejected"],
       notification_type: [
         "request_received",
@@ -1189,6 +1734,23 @@ export const Constants = {
         "other",
       ],
       report_status: ["open", "upheld", "rejected"],
+      report_target: [
+        "profile",
+        "permit",
+        "photo",
+        "casier",
+        "message",
+        "visit_request",
+      ],
+      visit_request_status: [
+        "pending",
+        "accepted",
+        "released",
+        "dismissed",
+        "auto_dismissed",
+        "cancelled",
+        "closed",
+      ],
       zone_status: ["waitlist", "open"],
     },
   },
