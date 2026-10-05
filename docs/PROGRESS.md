@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 4 — 4a terminée, en attente de la relecture sécurité** (branche `phase-4`). Phase 3 validée et fusionnée (PR #9), en production. Après validation de la 4a : 4b à 4f d'un trait jusqu'à la preview.
+**Phase 4 — 4a terminée, relecture sécurité faite (issue #10), corrections appliquées** (branche `phase-4`). Phase 3 validée et fusionnée (PR #9), en production. Après validation de la 4a : 4b à 4f d'un trait jusqu'à la preview.
 
 ## Phase 4 — Demande de parloir, Promenade, Découverte, Courrier (2026-10-05)
 
@@ -23,7 +23,7 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 - **pgTAP** :
   - `phase4_relations.test.sql`, 14 groupes, **tout passe** (fuite règle 14 : 59 vérifications, dont 11 qui prouvent que chaque appel autorisé renvoie bien des données ; formes exactes des réponses ; tables fermées ; N° d'écrou ; limites ; Parloir complet ; anti-arnaque ; visibilité ; blocages ; changement de rôle ; signalement ; Promenade ; droits) ;
   - `phase3_complicity_parity` 69/69 : la parité couvre maintenant aussi `complicity_with`, la version ensembliste utilisée par la Découverte et la Promenade ;
-  - non-régression : `phase3_security` 17/17 groupes ; `phase2_security` 14 groupes relancés sur 20 (+ `ecrou` dans les colonnes protégées). Les 6 autres (photos, signes, consentements, admin, bannissement, zones) et `phase3_greffe` n'ont pas été relancés : aucun objet qu'ils testent n'a changé.
+  - non-régression, tout relancé : `phase2_security` 22/22 groupes (+ `ecrou` dans les colonnes protégées), `phase3_security` 17/17, `phase3_greffe` 7/7.
   - Base vérifiée vide après les tests ; `app_settings` inchangé (`zones` / 10).
 - Types TypeScript régénérés ; typecheck OK.
 
@@ -32,10 +32,14 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 2. Un changement de rôle classait les demandes reçues en `dismissed` et comptait un refus au Visiteur → seuls les refus du Bad comptent (`20261005190154_phase4_dismissals_by_bad_only`).
 3. `complicity_with` (Découverte, Promenade) rendait « pas de score » ou 50 au lieu de 0 quand aucune réponse n'était acceptée (somme filtrée nulle) → `complicity_from_sums` lit une somme absente comme 0 (`20261005190448_phase4_complicity_null_sums`).
 
-### Points à trancher à la relecture
-- Une demande **acceptée** reste « en cours » jusqu'à la Phase 5 : elle compte dans « une demande par couple » mais plus dans le plafond du Bad (seules les `pending` comptent pour « Parloir complet »).
-- L'expiration à 7 jours (`auto_dismissed`) ne compte pas comme un refus pour le conseil après 3 refus.
-- Un membre masqué pour « mineur » (2 signalements distincts, ou 1 d'un Bad « Bonne conduite ») disparaît partout immédiatement, avant toute décision d'un admin.
+### Relecture sécurité 4a (conseiller, issue #10) et corrections
+- **Tranché** : demande acceptée « en cours » jusqu'à la Phase 5, hors plafond du Bad (OK) ; expiration à 7 jours hors compteur des 3 refus (OK) ; aucun rappel du chef choisi au Visiteur avant la visite (version stricte gardée) ; règle « mineur » confirmée (masquage immédiat).
+- **Corrigé** (`20261005192344_phase4_report_guard`) :
+  - `report()` : le signaleur doit avoir fini son inscription, et la cible doit lui être visible (`can_view_bad`), ou partager une demande avec lui (en cours ou passée), ou avoir été bloquée par lui ; sinon `not_found`, la même réponse qu'un identifiant inconnu ;
+  - règle « mineur » : ne comptent que les signaleurs dont la photo est validée par le Greffe et dont le compte a plus de 7 jours ; un Bad « Bonne conduite » suffit seul ;
+  - `can_report` et `is_trusted_reporter` sont internes (aucun droit pour les membres).
+- pgTAP `test_report` 15/15 : signaler un Visiteur ou un Bad invisible → refusé ; inscription non terminée → refusé ; Bad → Permis d'un Visiteur qui lui a écrit → accepté, d'un autre → refusé ; membre bloqué → accepté ; 2 signalements « mineur » de comptes non validés (moins de 7 jours, sans photo validée) → rien n'est masqué ; 2 comptes établis → masqué ; Bad « Bonne conduite » seul → masqué.
+- Reporté en Phase 7 : le cas « mineur » en tête de la file admin.
 
 ## Phase 3 — QCM, indice de complicité, Casier, Greffe (2026-10-05)
 

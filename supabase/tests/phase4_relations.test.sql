@@ -585,10 +585,13 @@ end $$;
 create function pg_temp.test_report() returns setof text language plpgsql as $$
 declare
   ville bigint := pg_temp.new_place('Ville test', 47.5, 3.5);
-  b uuid; v uuid; v2 uuid; other uuid; req uuid;
+  b uuid; hidden_bad uuid; v uuid; v2 uuid; other uuid; fresh uuid; nophoto uuid; unfinished uuid; reglo uuid;
+  req uuid;
 begin
   perform pg_temp.open_launch();
   b := pg_temp.visible_bad('b@test.local', ville);
+  hidden_bad := pg_temp.visible_bad('hb@test.local', ville);
+  update public.profiles set is_paused = true where id = hidden_bad;
   v := pg_temp.permit_visitor('v@test.local', ville);
   v2 := pg_temp.permit_visitor('v2@test.local', ville);
   other := pg_temp.permit_visitor('o@test.local', ville);
@@ -596,24 +599,69 @@ begin
   perform pg_temp.as_user(v);
   return next matches(coalesce(pg_temp.try(format('select public.report(''profile'', %L, ''fake_profile'')', v)), 'ok'),
     '^P0002', 'nobody reports themself');
+  return next matches(coalesce(pg_temp.try(format('select public.report(''profile'', %L, ''fake_profile'')', v2)), 'ok'),
+    '^P0002', 'a Visitor cannot report another Visitor they cannot see');
+  return next matches(coalesce(pg_temp.try(format('select public.report(''profile'', %L, ''minor'')', hidden_bad)), 'ok'),
+    '^P0002', 'nor a Bad who is hidden from them (paused), even knowing the id');
   perform pg_temp.as_user(other);
   return next matches(coalesce(pg_temp.try(format('select public.report(''visit_request'', %L, ''scam'')', req)), 'ok'),
     '^P0002', 'a third party cannot report a request that is not theirs');
   perform pg_temp.as_user(b);
   return next ok(pg_temp.try(format('select public.report(''visit_request'', %L, ''scam'', ''Note bizarre'')', req)) is null,
-    'the Bad reports the request');
-  -- « Mineur »: hidden at once after 2 distinct reporters.
+    'the Bad reports the request they received');
+  return next ok(pg_temp.try(format('select public.report(''permit'', %L, ''fake_profile'')', v)) is null,
+    'and the Permis of the Visitor who wrote to them');
+  return next matches(coalesce(pg_temp.try(format('select public.report(''permit'', %L, ''fake_profile'')', v2)), 'ok'),
+    '^P0002', 'but not the Permis of a Visitor who never wrote to them');
+  -- Unfinished sign-up: no report at all.
+  perform pg_temp.as_owner();
+  unfinished := pg_temp.permit_visitor('u@test.local', ville);
+  update public.profiles set onboarding_completed_at = null where id = unfinished;
+  perform pg_temp.as_user(unfinished);
+  return next matches(coalesce(pg_temp.try(format('select public.report(''profile'', %L, ''minor'')', b)), 'ok'),
+    '^P0002', 'a member who has not finished the sign-up cannot report');
+  -- A block opens the right to report the blocked member.
+  perform pg_temp.as_user(other);
+  perform public.block_user(v2);
+  return next ok(pg_temp.try(format('select public.report(''profile'', %L, ''harassment'')', v2)) is null,
+    'a member can report someone they blocked');
+  perform pg_temp.as_owner();
+
+  -- « Mineur »: two reporters who are not established do not hide anyone.
+  fresh := pg_temp.permit_visitor('fresh@test.local', ville);
+  update public.profiles set created_at = now() - interval '2 days' where id = fresh;
+  nophoto := pg_temp.new_member('np@test.local', 'man', ville, 'visitor');
+  foreach unfinished in array array[fresh, nophoto] loop
+    perform pg_temp.as_user(unfinished);
+    perform public.report('profile', b::text, 'minor');
+    perform pg_temp.as_owner();
+  end loop;
+  return next is((select count(*)::integer from public.reports where target_user_id = b and category = 'minor'), 2,
+    'their two reports are recorded');
+  return next is((select hidden_reason from public.profiles where id = b), null,
+    'but a new account (< 7 days) and an account without a validated photo do not hide the Bad');
+  -- Two established reporters: hidden at once.
   perform pg_temp.as_user(v);
   perform public.report('profile', b::text, 'minor');
   perform pg_temp.as_owner();
-  return next is((select hidden_reason from public.profiles where id = b), null, 'one report is not enough');
+  return next is((select hidden_reason from public.profiles where id = b), null, 'one established report is not enough');
   perform pg_temp.as_user(v2);
   perform public.report('profile', b::text, 'minor');
   perform pg_temp.as_owner();
-  return next is((select hidden_reason from public.profiles where id = b), 'minor_report', 'hidden after 2 distinct reporters');
+  return next is((select hidden_reason from public.profiles where id = b), 'minor_report',
+    'hidden after 2 distinct established reporters');
   perform pg_temp.as_user(other);
   return next ok(not exists (select 1 from public.discover_bads() d where d.id = b), 'and gone from the Découverte');
   perform pg_temp.as_owner();
+  -- A Bad with Bonne conduite is enough alone.
+  reglo := pg_temp.visible_bad('reglo@test.local', ville);
+  update public.profiles set is_reglo = true where id = reglo;
+  perform pg_temp.request(other, reglo, 1);
+  perform pg_temp.as_user(reglo);
+  perform public.report('permit', other::text, 'minor');
+  perform pg_temp.as_owner();
+  return next is((select hidden_reason from public.profiles where id = other), 'minor_report',
+    'one report from a Bad with Bonne conduite hides at once');
 end $$;
 
 ----------------------------------------------------------------------------------------------
@@ -689,7 +737,8 @@ begin
           'is_bad_visible', 'criteria_match', 'can_view_bad', 'has_open_relation', 'pair_cooldown_until',
           'visitor_reputation', 'complicity_from_sums', 'complicity_with', 'complicity_score', 'distance_km',
           'public_photos', 'public_tribes', 'place_name', 'notify', 'build_daily_promenade', 'run_promenades_due',
-          'note_fingerprint', 'expire_visit_requests', 'visit_requests_after_write',
+          'note_fingerprint', 'expire_visit_requests', 'visit_requests_after_write', 'can_report',
+          'is_trusted_reporter',
           'get_fiche', 'get_permit', 'discover_bads', 'get_my_promenade', 'mark_promenade_seen',
           'send_visit_request', 'get_mailbox', 'decide_visit_request', 'get_my_requests', 'change_role',
           'block_user', 'unblock_user', 'report')),

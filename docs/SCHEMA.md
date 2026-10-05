@@ -260,7 +260,7 @@ Index : (`visitor_id`, `visible_from desc`) ; (`bad_id`, `promenade_date`) (excl
 RLS : **S** — (via `get_my_promenade()`) ; **U** — (`mark_promenade_seen()`).
 
 #### `reports`, `moderation_actions`, `flagged_texts` — **en base (Phase 4a, `flagged_texts` depuis la 2b)**
-`reports.target_type` accepte `permit` et `visit_request`. `flagged_texts` est déjà en base.
+`reports.target_type` accepte `permit` et `visit_request`. `report()` (Phase 4a, relecture) : signaleur avec inscription terminée ; cible visible pour lui, ou en relation (demande en cours ou passée), ou bloquée par lui, sinon `not_found`. Règle « mineur » : masquage immédiat après 2 signaleurs distincts **établis** (photo validée par le Greffe, compte de plus de 7 jours), ou 1 Bad « Bonne conduite ». `flagged_texts` est déjà en base.
 
 ### 2.4 Notifications, push, e-mails, activité
 

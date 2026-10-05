@@ -1142,6 +1142,10 @@ export type Database = {
         Args: { p_date: string; p_zone: number }
         Returns: number
       }
+      can_report: {
+        Args: { p_reporter: string; p_target: string }
+        Returns: boolean
+      }
       can_view_bad: {
         Args: { p_bad: string; p_viewer: string }
         Returns: boolean
@@ -1329,6 +1333,7 @@ export type Database = {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: boolean
       }
+      is_trusted_reporter: { Args: { p_reporter: string }; Returns: boolean }
       mark_notifications_read: { Args: never; Returns: undefined }
       mark_promenade_seen: { Args: { p_bad: string }; Returns: undefined }
       mask_contacts: { Args: { value: string }; Returns: string }
