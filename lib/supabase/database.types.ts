@@ -32,6 +32,55 @@ export type Database = {
         }
         Relationships: []
       }
+      answers: {
+        Row: {
+          accepted_option_ids: number[] | null
+          importance: Database["public"]["Enums"]["importance"]
+          option_id: number
+          question_id: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_option_ids?: number[] | null
+          importance?: Database["public"]["Enums"]["importance"]
+          option_id: number
+          question_id: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_option_ids?: number[] | null
+          importance?: Database["public"]["Enums"]["importance"]
+          option_id?: number
+          question_id?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "answers_question_id_option_id_fkey"
+            columns: ["question_id", "option_id"]
+            isOneToOne: false
+            referencedRelation: "question_options"
+            referencedColumns: ["question_id", "id"]
+          },
+          {
+            foreignKeyName: "answers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           ban_hash_retention_months: number
@@ -88,6 +137,41 @@ export type Database = {
           hash?: string
         }
         Relationships: []
+      }
+      casier_charges: {
+        Row: {
+          charge_1: string
+          charge_2: string
+          charge_3: string
+          profile_id: string
+          true_index: number
+          updated_at: string
+        }
+        Insert: {
+          charge_1: string
+          charge_2: string
+          charge_3: string
+          profile_id: string
+          true_index: number
+          updated_at?: string
+        }
+        Update: {
+          charge_1?: string
+          charge_2?: string
+          charge_3?: string
+          profile_id?: string
+          true_index?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "casier_charges_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       consents: {
         Row: {
@@ -624,6 +708,62 @@ export type Database = {
           },
         ]
       }
+      question_options: {
+        Row: {
+          id: number
+          label: Json
+          position: number
+          question_id: number
+        }
+        Insert: {
+          id: number
+          label: Json
+          position: number
+          question_id: number
+        }
+        Update: {
+          id?: number
+          label?: Json
+          position?: number
+          question_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_options_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          created_at: string
+          id: number
+          is_active: boolean
+          label: Json
+          phase: Database["public"]["Enums"]["question_phase"]
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          id: number
+          is_active?: boolean
+          label: Json
+          phase: Database["public"]["Enums"]["question_phase"]
+          position: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          is_active?: boolean
+          label?: Json
+          phase?: Database["public"]["Enums"]["question_phase"]
+          position?: number
+        }
+        Relationships: []
+      }
       tribes: {
         Row: {
           id: number
@@ -656,7 +796,23 @@ export type Database = {
       age_years: { Args: { at?: string; birthdate: string }; Returns: number }
       ban_email_hash: { Args: { p_email: string }; Returns: string }
       claim_referral: { Args: { p_code: string }; Returns: boolean }
+      common_points: {
+        Args: { p_a: string; p_b: string; p_n?: number }
+        Returns: {
+          answer: Json
+          question: Json
+          question_id: number
+        }[]
+      }
       complete_onboarding: { Args: never; Returns: undefined }
+      complicity_score: {
+        Args: { p_a: string; p_b: string }
+        Returns: {
+          capped: boolean
+          common_count: number
+          score: number
+        }[]
+      }
       counts_for_zone: {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: boolean
@@ -673,6 +829,10 @@ export type Database = {
       has_contacts: { Args: { value: string }; Returns: boolean }
       hook_before_user_created: { Args: { event: Json }; Returns: Json }
       immutable_unaccent: { Args: { value: string }; Returns: string }
+      importance_weight: {
+        Args: { value: Database["public"]["Enums"]["importance"] }
+        Returns: number
+      }
       is_admin: { Args: never; Returns: boolean }
       mask_contacts: { Args: { value: string }; Returns: string }
       new_referral_code: { Args: never; Returns: string }
@@ -736,9 +896,11 @@ export type Database = {
         | "message"
         | "date_venue"
       gender: "man" | "woman" | "non_binary" | "other"
+      importance: "low" | "important" | "essential"
       launch_mode: "zones" | "open"
       member_role: "bad" | "visitor"
       moderation_status: "pending" | "approved" | "rejected"
+      question_phase: "core" | "extra"
       report_category:
         | "fake_profile"
         | "minor"
@@ -901,9 +1063,11 @@ export const Constants = {
         "date_venue",
       ],
       gender: ["man", "woman", "non_binary", "other"],
+      importance: ["low", "important", "essential"],
       launch_mode: ["zones", "open"],
       member_role: ["bad", "visitor"],
       moderation_status: ["pending", "approved", "rejected"],
+      question_phase: ["core", "extra"],
       report_category: [
         "fake_profile",
         "minor",
