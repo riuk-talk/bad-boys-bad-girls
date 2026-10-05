@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 3 — terminée, en attente de validation** (branche `phase-3`, preview). Relecture sécurité 3a/3b validée par le porteur le 2026-10-05 (avec corrections, appliquées). Phase 2c validée et fusionnée (PR #8), en production.
+**Phase 3 — validée par Chris le 2026-10-05**, PR ouverte (branche `phase-3`). Relecture sécurité 3a/3b validée par le porteur le 2026-10-05 (avec corrections, appliquées). Phase 2c validée et fusionnée (PR #8), en production.
 
 ## Phase 3 — QCM, indice de complicité, Casier, Greffe (2026-10-05)
 
@@ -68,14 +68,16 @@
 ### Points à connaître
 1. **Un seul projet Supabase** (`chvnmzmvcjvhxlnfmlvv`) sert le dev **et** la production Vercel. La production actuelle (code de la Phase 2c) ne peut plus terminer un onboarding avec la base de la Phase 3 ; elle le pourra une fois la PR de la Phase 3 fusionnée, et `SIGNUPS_OPEN=false` y ferme les inscriptions. Base de production séparée : checklist avant lancement.
 2. **Le connecteur Supabase annule tout script contenant un `DELETE`**, même dans un test annulé ensuite. Les tests pgTAP de la Phase 3 vérifient donc les suppressions par les droits et les politiques (catalogue), sans exécuter de `DELETE`.
-3. **`moderation_keywords` est vide** : la liste de départ est rédigée (`docs/content/moderation-keywords.md`) et sera chargée par migration après relecture.
+3. **Mots-clés de modération chargés** (migration `20261005152114_moderation_keywords`, 108 mots relus, sans « signal », `harassment` vide jusqu'à l'admin de la Phase 7) ; test pgTAP : un chef d'accusation qui contient un mot-clé est signalé.
+5. **`SIGNUPS_OPEN` fermé par défaut** : seule la valeur exacte `true` ouvre les inscriptions (absente ou autre valeur = fermées), test unitaire ; Vercel vérifié : `false` en Production, `true` en Preview et Development.
 4. Le fichier pgTAP de parité est **généré** depuis le fichier de cas (`UPDATE_PGTAP=1 pnpm vitest run tests/unit/complicity.test.ts`) ; le test unitaire échoue s'il n'est pas à jour.
 
 ## Checklist avant lancement (ouverture des inscriptions)
 - [ ] **Base Supabase de production séparée** (décision du porteur, 2026-10-05 : pas pour l'instant, une base gratuite inactive se met en pause au bout de 7 jours). La créer juste avant l'ouverture : appliquer toutes les migrations, premier admin, Turnstile, SMTP, variables Vercel Production.
 - [ ] `SIGNUPS_OPEN=true` sur Vercel Production (aujourd'hui `false` : « Inscriptions bientôt ouvertes » ; `true` en Preview et en local).
 - [ ] Interdire aussi les inscriptions directes par l'API Auth tant que la production n'est pas prête : `SIGNUPS_OPEN` ne protège que le site (Supabase Auth → « Allow new users to sign up » sur la future base de production).
-- [ ] Relecture des contenus `docs/content/` et de la liste de départ des mots-clés.
+- [x] Relecture des contenus `docs/content/` et de la liste de départ des mots-clés (chargée).
+- [ ] Remplir la catégorie `harassment` depuis l'admin (Phase 7).
 
 ### Pour plus tard (hors Phase 3)
 - Anglais : remplacer « step up to the height chart » par « step into the lineup » avant l'ouverture internationale.

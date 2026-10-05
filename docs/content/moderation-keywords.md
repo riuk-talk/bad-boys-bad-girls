@@ -1,6 +1,6 @@
 # Liste de départ des mots-clés de modération (`moderation_keywords`)
 
-> **Statut : à relire** (conseiller de Chris). Rien n'est encore en base : la table `moderation_keywords` est vide. Après relecture, la liste sera chargée par une migration.
+> **Statut : relue et chargée** (2026-10-05, migration `20261005152114_moderation_keywords`, 108 mots : 59 FR, 49 EN). « signal » retiré à la relecture ; `harassment` laissée vide (remplie depuis l'admin en Phase 7).
 > **Rôle** : un mot-clé **signale** un texte à la modération (`flagged_texts`), il **ne bloque jamais** (SPEC §6). Il s'applique au pseudo, à la présentation, au Motif de visite, aux chefs d'accusation, aux précisions des signes distinctifs, puis aux demandes et messages (Phases 4 à 6).
 > **Fonctionnement** : comparaison sans accents ni majuscules, sur des mots entiers (`normalize_text`). Une expression de plusieurs mots est cherchée telle quelle. Les coordonnées (e-mails, téléphones, liens) sont déjà **masquées** automatiquement : inutile de les lister ici.
 > **Principe** : peu de mots, mais précis. Un mot trop courant (« drogue » dans « drogué de moto ») crée du bruit : la modération jugera à l'usage et ajustera la liste dans l'admin (Phase 7).
@@ -13,7 +13,7 @@
 | `sexual_content` — contenu sexuel | nude, nudes, sexe, plan cul, escort, tarif, onlyfans, mym | nudes, sex, hookup, escort, rates, onlyfans |
 | `other` — drogues | cocaïne, coke, héroïne, crack, ecstasy, mdma, shit, beuh, dealer, deal | cocaine, coke, heroin, crack, ecstasy, mdma, weed, dealer |
 | `other` — vrais délits graves | viol, violeur, séquestration, prison ferme, condamné pour | rape, rapist, kidnapping, convicted of |
-| `other` — réseaux et sortie du site | snap, snapchat, insta, instagram, whatsapp, telegram, signal, tiktok | snap, snapchat, insta, instagram, whatsapp, telegram, signal, tiktok |
+| `other` — réseaux et sortie du site | snap, snapchat, insta, instagram, whatsapp, telegram, tiktok | snap, snapchat, insta, instagram, whatsapp, telegram, tiktok |
 | `harassment` — insultes et haine | [À COMPLÉTER par la modération : insultes et termes haineux, FR et EN] | [À COMPLÉTER] |
 
 ## Points à trancher à la relecture

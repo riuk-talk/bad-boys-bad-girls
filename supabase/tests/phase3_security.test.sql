@@ -291,10 +291,20 @@ begin
   perform pg_temp.as_owner();
 end $$;
 
+-- The starter list loaded by migration (docs/content/moderation-keywords.md, reviewed).
+create function pg_temp.test_moderation_keywords_loaded() returns setof text language plpgsql as $$
+begin
+  return next is((select count(*)::int from public.moderation_keywords where is_active), 108,
+    'the reviewed starter list is loaded (59 FR + 49 EN)');
+  return next is((select count(*)::int from public.moderation_keywords where term = 'signal'), 0,
+    '« signal » was removed at review (FR and EN)');
+  return next is((select count(*)::int from public.moderation_keywords where category = 'harassment'), 0,
+    'harassment stays empty (filled from the admin, Phase 7)');
+end $$;
+
 create function pg_temp.test_casier_flags_keywords_and_dates() returns setof text language plpgsql as $$
 declare a uuid := pg_temp.new_member('a@test.local');
 begin
-  insert into public.moderation_keywords (term, lang, category) values ('braquage', 'fr', 'other');
   perform pg_temp.as_user(a);
   return next is(pg_temp.try(format(
     'insert into public.casier_charges (profile_id, charge_1, charge_2, charge_3, true_index) values (%L, %L, %L, %L, 3)',
@@ -303,6 +313,8 @@ begin
   perform pg_temp.as_owner();
   return next is((select source::text || ' ' || source_id from public.flagged_texts where user_id = a),
     'casier ' || a || ':1', 'the charge is flagged for moderation with its line number');
+  return next is((select matched_terms from public.flagged_texts where user_id = a), array['braquage'],
+    'the keyword of the loaded list is recorded');
   return next isnt((select casier_updated_at from public.profiles where id = a), null,
     'casier_updated_at is set (« Casier modifié depuis »)');
 end $$;
