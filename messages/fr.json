@@ -144,6 +144,8 @@
     "loginTitle": "Se connecter",
     "loginLead": "Content de te revoir.",
     "signupTitle": "Créer mon compte",
+    "signupsClosedTitle": "Inscriptions bientôt ouvertes",
+    "signupsClosedBody": "Le site se prépare. Les inscriptions ouvriront très bientôt : repasse nous voir.",
     "signupLead": "Un e-mail, un mot de passe, et c'est parti. Tu choisis ensuite ton rôle : Bad ou Visiteur.",
     "forgotTitle": "Mot de passe oublié",
     "forgotLead": "Indique ton e-mail : on t'envoie un lien pour en choisir un nouveau.",
@@ -180,7 +182,8 @@
       "emailBanned": "Cette adresse ne peut plus être utilisée sur le site.",
       "linkInvalid": "Ce lien n'est plus valide. Demande-en un nouveau.",
       "generic": "Une erreur est survenue. Réessaie.",
-      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard."
+      "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard.",
+      "signupsClosed": "Inscriptions bientôt ouvertes."
     },
     "checkEmailTitle": "Vérifie ta boîte mail",
     "checkEmailBody": "Si l'adresse est valide, tu vas recevoir un lien. Pense à regarder dans les indésirables.",

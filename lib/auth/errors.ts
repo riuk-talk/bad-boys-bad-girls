@@ -8,7 +8,8 @@ export type AuthMessageKey =
   | "emailBanned"
   | "linkInvalid"
   | "generic"
-  | "configuration";
+  | "configuration"
+  | "signupsClosed";
 
 export function authErrorKey(error: {
   code?: string;

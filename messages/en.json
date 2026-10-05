@@ -138,6 +138,8 @@
     "loginTitle": "Log in",
     "loginLead": "Good to see you again.",
     "signupTitle": "Create my account",
+    "signupsClosedTitle": "Sign-ups opening soon",
+    "signupsClosedBody": "The site is getting ready. Sign-ups will open very soon: come back and see us.",
     "signupLead": "An email, a password, and you're in. You'll then choose your role: Bad or Visitor.",
     "forgotTitle": "Forgot password",
     "forgotLead": "Enter your email: we'll send you a link to choose a new one.",
@@ -174,7 +176,8 @@
       "emailBanned": "This address can no longer be used on the site.",
       "linkInvalid": "This link is no longer valid. Request a new one.",
       "generic": "Something went wrong. Try again.",
-      "configuration": "The service isn't configured yet. Come back a bit later."
+      "configuration": "The service isn't configured yet. Come back a bit later.",
+      "signupsClosed": "Sign-ups opening soon."
     },
     "checkEmailTitle": "Check your inbox",
     "checkEmailBody": "If the address is valid, you'll receive a link. Remember to check your spam folder.",
