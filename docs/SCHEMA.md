@@ -144,7 +144,7 @@ RLS : **S** propriétaire ; **I** propriétaire ; **U** propriétaire avec privi
 5 maximum ; précision 60 caractères masquée. RLS propriétaire ; les autres via `get_fiche` / `get_permit`.
 
 #### `photos` — **[v2-modif léger]**
-Inchangée en structure. Règle v2 : pour un Visiteur, seule la photo `position = 0` est renvoyée par `get_permit` ; les autres restent stockées (ex-Bad) et réapparaissent s'il redevient Bad. Le Visiteur ne peut pas ajouter de photo au-delà de la position 0 (trigger).
+Inchangée en structure. **Positions (v7.4, PARCOURS-DESIGN §3)** : `0` = face (photo d'identité), `1` = profil gauche, `2` = profil droit, `3`–`5` = photos supplémentaires. Un Bad doit avoir les positions 0, 1 et 2 pour terminer l'onboarding (`has_three_poses()`), et les 3 validées pour être compté ou visible. Règle v2 : pour un Visiteur, seule la photo `position = 0` est renvoyée par `get_permit` ; les autres restent stockées (ex-Bad) et réapparaissent s'il redevient Bad. Le Visiteur ne peut pas ajouter de photo au-delà de la position 0 (trigger).
 Priorité de la file du Greffe (`admin_photo_queue`) : photo 0 des Visiteurs d'un quartier ouvert, puis photo 0 des Bads, puis le reste, par ancienneté.
 
 #### `casier_charges` — le Casier — **en base (Phase 3a)**
@@ -155,6 +155,7 @@ Priorité de la file du Greffe (`admin_photo_queue`) : photo 0 des Visiteurs d'u
 | `true_index` | `smallint` | **[v2]** check 1–3, remplace `false_index` (1 vrai, 2 faux) |
 | `updated_at` | `timestamptz` | |
 
+Trigger : coordonnées masquées (`mask_contacts`), **trois lignes différentes** (`charge_key()` : casse et espaces ignorés, sinon `casier_duplicate_charges`), mots-clés signalés, `casier_updated_at`.
 RLS : **S/I/U** propriétaire **et** `role = 'bad'` pour I/U (un Visiteur ne crée pas de Casier ; un ex-Bad garde le sien en lecture) ; **D** —. Les Visiteurs voient les 3 lignes via `get_fiche` **sans** `true_index`.
 
 #### `answers` — **en base (Phase 3a)**
@@ -261,7 +262,8 @@ RLS : **S** — (via `get_my_promenade()`) ; **U** — (`mark_promenade_seen()`)
 
 ### 2.4 Notifications, push, e-mails, activité
 
-#### `notifications` — **[v2-modif]** (type `notification_type` v2 ; pas encore en base)
+#### `notifications` — **en base (Phase 3)** (type `notification_type` v2)
+Écrites uniquement par des fonctions SQL (le Greffe : `moderation_decision` par photo, `permit_granted` pour la face d'un Visiteur). RLS **S** propriétaire ; aucune écriture membre ; `mark_notifications_read()`.
 `id`, `user_id`, `type`, `payload jsonb`, `read_at`, `created_at`. RLS : **S** propriétaire ; **U** via `mark_notifications_read()`.
 
 #### `notification_preferences` — **[v2-modif]** (en base)
@@ -304,7 +306,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `is_member_active(p)` | onboarding terminé, non banni, non suspendu, non masqué | **[v2]** (remplace `is_profile_active`) |
 | `has_permit(p)` | Visiteur actif dont la photo 0 est validée | **[v2-nouveau]** |
 | `is_bad_visible(p)` | Bad actif, photo 0 validée, Casier présent, non en pause, connecté < 90 j, quartier ouvert (sauf `launch_mode = open`) | **[v2-nouveau]** |
-| `counts_for_zone(p)` | Bad compté pour le seuil (SPEC §3) : `is_bad_visible` sans la condition de quartier ouvert, connecté < `zone_bad_active_days`, `is_seed = false` | **[v2-nouveau]** (remplace `is_complete_fiche`, en base) |
+| `counts_for_zone(p)` | Bad compté pour le seuil (SPEC §3) : `is_bad_visible` sans la condition de quartier ouvert, connecté < `zone_bad_active_days`, `is_seed = false`, **3 poses validées** (Phase 3) | **[v2-nouveau]** (remplace `is_complete_fiche`, en base) |
 | `criteria_match(a, b)` | genre et âge, **dans les deux sens** | Phase 4 |
 | `can_view_bad(viewer, bad)` | `viewer` Visiteur actif dans un quartier ouvert, `is_bad_visible(bad)`, `criteria_match`, pas de blocage | **[v2]** (remplace `can_view_profile`) |
 | `has_open_relation(a, b)` | demande en cours, visite programmée ou conversation `visiting`/`open` entre les deux (B2) | **[v2-modif]** |
@@ -362,7 +364,8 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 8. Notification au Bad (in-app + push) + mise en file du récapitulatif e-mail du jour.
 
 ### 3.4 Admin (`security definer`, contrôle `is_admin()` en première ligne)
-v1 + **[v2]** : `admin_photo_queue()` (priorité SPEC §11), `admin_upsert_zone(...)` avec `threshold_bads`, `threshold_women_pct`, `threshold_men_pct`, `admin_zone_health(zone_id, from, to)` (indicateurs SPEC §15), `admin_sanction` retire Bonne conduite (`revoke_good_conduct`).
+**En base (Phase 3)** : `admin_photo_queue(limit)` (une ligne par photo, priorité SPEC §11 : face des Visiteurs d'un quartier ouvert, puis les 3 poses des Bads, puis le reste) et `admin_decide_photo(photo, approve, reason, public_large, public_small)` (une décision par photo ; refus avec un motif de `photo_rejection_reasons()` ; publication sous un nom UUID aléatoire, jamais l'id du membre ; notifie le membre ; renvoie le fichier en attente à supprimer). Les fichiers sont copiés et supprimés par le serveur (clé secrète).
+v1 + **[v2]** : `admin_upsert_zone(...)` avec `threshold_bads`, `threshold_women_pct`, `threshold_men_pct`, `admin_zone_health(zone_id, from, to)` (indicateurs SPEC §15), `admin_sanction` retire Bonne conduite (`revoke_good_conduct`).
 
 ### 3.5 Jobs (exécutables par `postgres` uniquement)
 | Job | Fréquence | Rôle |

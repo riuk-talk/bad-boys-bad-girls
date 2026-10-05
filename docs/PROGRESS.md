@@ -48,6 +48,12 @@
 3. **`moderation_keywords` est vide** : le signalement des chefs d'accusation fonctionne (testé avec un mot ajouté pendant le test), mais ne signalera rien tant que la liste de départ n'est pas saisie. Proposition : je la rédige en 3d avec les amorces.
 4. Le fichier pgTAP de parité est **généré** depuis le fichier de cas (`UPDATE_PGTAP=1 pnpm vitest run tests/unit/complicity.test.ts`) ; le test unitaire échoue s'il n'est pas à jour.
 
+## Checklist avant lancement (ouverture des inscriptions)
+- [ ] **Base Supabase de production séparée** (décision du porteur, 2026-10-05 : pas pour l'instant, une base gratuite inactive se met en pause au bout de 7 jours). La créer juste avant l'ouverture : appliquer toutes les migrations, premier admin, Turnstile, SMTP, variables Vercel Production.
+- [ ] `SIGNUPS_OPEN=true` sur Vercel Production (aujourd'hui `false` : « Inscriptions bientôt ouvertes » ; `true` en Preview et en local).
+- [ ] Interdire aussi les inscriptions directes par l'API Auth tant que la production n'est pas prête : `SIGNUPS_OPEN` ne protège que le site (Supabase Auth → « Allow new users to sign up » sur la future base de production).
+- [ ] Relecture des contenus `docs/content/` et de la liste de départ des mots-clés.
+
 ### Pour plus tard (hors Phase 3)
 - Anglais : remplacer « step up to the height chart » par « step into the lineup » avant l'ouverture internationale.
 

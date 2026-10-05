@@ -1,7 +1,8 @@
-# SPEC — Bad Boys & Bad Girls (v7)
+# SPEC — Bad Boys & Bad Girls (v7.4)
 
 > v6.1 : décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). v6.2 : décisions de Phase 1 (`docs/PHASE1-DECISIONS.md`).
 > **v7 : changement de concept décidé par le porteur (`docs/CONCEPT-V2.md`, 2026-10-03)** : deux rôles (Bad et Visiteur), demande de parloir à la place de la Plaidoirie, heures de visite, Parloir limité aux 30 minutes de la visite puis Permis permanent, Web Push dans le MVP, Promenade, lancement « les Bads d'abord ».
+> **v7.4 (2026-10-05, `docs/PARCOURS-DESIGN.md`, validé par Chris, fait foi sur ces points)** : les couleurs désignent le **genre**, jamais le rôle (§1 bis) ; la Fiche du Bad reprend le dossier judiciaire de la référence (§1 bis, §5) ; **alignement 3 poses obligatoire** pour les Bads (§4, §5, §11) ; le QCM s'appelle **« L'Interrogatoire »** (§9) ; le Parloir passe au style « cabine » sans néon (§7 ter) ; vocabulaire ajouté (§1 ter). Écrans des Phases 3 à 5 : maquettes de `docs/design/parcours/`.
 > **v7.3 (2026-10-04, `docs/LANDING-DESIGN.md`)** : landing centrée (logo transparent, porte cellule / porte vitre de parloir avec hygiaphone), étape Visiteur « Entraîne-toi » (4), étape Bad « Teste ton Casier » (Phase 3), exception de couleur verte (§1 bis).
 > **v7.2 (2026-10-04, `docs/LANDING-COPY.md` correction n° 2, `docs/CONCEPT-V2.md` §9)** : « Le Juge, c'est toi » devient **« Le Courrier »** ; le principe « Ici, c'est toi le juge » devient **« Ici, rien ne se fait sans ton accord. »** ; plus aucun « juge » dans l'interface.
 > **v7.1 (2026-10-04, `docs/LANDING-COPY.md`)** : le Parloir est le lieu où l'on discute ; « Libération » est retiré, après une visite réussie **le Permis devient permanent** (tampon « PERMIS PERMANENT ») ; « aveux » est retiré, on dit toujours « chefs d'accusation » ; le texte de la landing est celui de LANDING-COPY.md, mot pour mot.
@@ -28,8 +29,9 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 ## 1 bis. Références visuelles (retenues des maquettes)
 
-- **Palette unique, celle du logo** : noir `#0E0E10`, or `#D4A437`, rouge `#E0233F`, crème `#F2E8D5`. **Exception (v7.3, validée par le porteur)** : un vert réservé aux seuls retours « BIEN VU ! » et « LE VRAI » du jeu du Casier — `#1D6B43` sur papier/crème (5,06:1), `#3CCF86` sur fond sombre (9,6:1) — toujours accompagné d'une icône et d'un texte (jamais la couleur seule). Les néons de la landing utilisent des teintes dérivées du rouge et de l'or (`#FF3355`, `#FFD1D8`, `#F4D27A`), pas de nouvelle couleur. Pas de rose néon ni d'orange comme couleurs principales. Un seul logo (le monogramme BB couronne/cornes) : aucun autre emblème.
-- **La Fiche du Bad façon dossier** : carte papier crème légèrement vieilli, bandeau noir en en-tête avec le pseudo en Anton, numéro de dossier (dérivé de l'identifiant, ex. `BB-0427`), trombone décoratif, sections titrées en capitales (Signes distinctifs, Chefs d'accusation, Bio).
+- **Les couleurs désignent le genre, jamais le rôle (v7.4, PARCOURS-DESIGN §1)** : **or `#D4A437` = homme, rouge `#E0233F` = femme, crème `#F2E8D5` = non-binaire ou autre**, quel que soit le rôle. L'interface (boutons principaux, onglet actif, barre de progression) prend la couleur **de la personne connectée** ; ce qui représente quelqu'un (Fiche, carte de la Promenade, lettre du Courrier, bulle du Parloir, nom, tampon) prend la couleur **de la personne affichée**. Le rôle se reconnaît autrement : étiquette **« BAD »** (icône de barreaux) ou **« VISITEUR »** (icône de combiné) en haut de chaque écran connecté, et les matières (Bad = dossier papier, cellule ; Visiteur = permis, vitre de parloir). Sur la landing, les deux portes et tout ce qui opposait Bad et Visiteur sont **crème** ; l'or et le rouge restent pour la marque (logo, enseigne, tampons, bandeau). Petits textes AA : rouge `#EE3A55` sur fond sombre, `#B5172E` sur papier crème ; or `#8A6A12` sur papier crème.
+- **Palette unique, celle du logo** : noir `#0E0E10`, or `#D4A437`, rouge `#E0233F`, crème `#F2E8D5`. **Exception (v7.3, validée par le porteur)** : un vert réservé aux retours du jeu (« BIEN VU ! », « LE VRAI ») et aux statuts positifs (Visite acceptée, Casier vierge, Ouvert aux visites, v7.4) — `#1D6B43` sur papier/crème (5,06:1), `#3CCF86` sur fond sombre (9,6:1) — toujours accompagné d'une icône et d'un texte (jamais la couleur seule). Les néons de la landing utilisent des teintes dérivées du rouge et de l'or (`#FF3355`, `#FFD1D8`, `#F4D27A`), pas de nouvelle couleur. Pas de rose néon ni d'orange comme couleurs principales. Un seul logo (le monogramme BB couronne/cornes) : aucun autre emblème.
+- **La Fiche du Bad = le dossier judiciaire de la référence** (v7.4, PARCOURS-DESIGN §2, `docs/design/reference-dossier-judiciaire.jpg`, maquettes `Fiche.dc.html` / `FicheLarge.dc.html`) : bandeau noir « DOSSIER JUDICIAIRE · PROFIL RENCONTRE », photo signalétique 3 poses sur mur gradué, **Identité du sujet** (Nom « [●●● CONFIDENTIEL] », Surnom, Âge, Quartier, Statut, Au fichier depuis), Signes distinctifs, Profil rencontre, Chefs d'accusation (« 1 VRAI · 2 FAUX »), tampon rond BAD BOY / BAD GIRL, **Note comportementale** (présentation), pied noir avec code-barres, **N° d'écrou** et « COMPLICITÉ : X % ». Le **N° d'écrou** est un identifiant public **aléatoire** (4 à 6 chiffres, unique), jamais l'identifiant interne ni un compteur.
 - **Le Permis de visite** : carte plus petite, format « laissez-passer » cartoon (photo, pseudo, âge, ville, Motif de visite, badges Casier vierge / Visites honorées), tampon « PERMIS DÉLIVRÉ » une fois la photo validée. Aucune ressemblance avec un document officiel réel (pas de bande tricolore, pas de mention « République »).
 - **Mobile d'abord** : sur téléphone, la Fiche est verticale (photo sur toise en haut, puis le dossier en dessous). La mise en page en paysage est réservée aux écrans ≥ 1024 px. Corps de texte ≥ 16 px.
 - **Tampons** : cercle ou écusson à double contour, encre légèrement irrégulière, incliné de quelques degrés. Liste : « BONNE CONDUITE », « CASIER VIERGE », « PERMIS DÉLIVRÉ », « VISITE ACCEPTÉE », « PERMIS PERMANENT », « AFFAIRE CLASSÉE ». Le tampon « COUPABLE » reste un élément décoratif de la marque (signature « Coupables de charme… »).
@@ -57,6 +59,15 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 | Présence aux visites | Visites honorées |
 | Ville / zone de lancement | Le Quartier (« Ton quartier ouvre bientôt ») |
 | Bad trop sollicité | Parloir complet |
+| QCM | **L'Interrogatoire** (« INTERROGATOIRE · 3/10 ») — v7.4 |
+| Présentation du Bad | **Note comportementale** — v7.4 |
+| Bloc identité de la Fiche | **Identité du sujet** — v7.4 |
+| Identifiant public de la Fiche | **N° d'écrou** — v7.4 |
+| Agenda des visites | **Tableau des visites** — v7.4 |
+| Écran de visite | **Parloir · Cabine n°** — v7.4 |
+| Étape photos du Bad | **Passe à la toise** / **Photo signalétique** — v7.4 |
+| Règles photo | **Le règlement du Greffe** ; bouton « Déposer au Greffe » — v7.4 |
+| Liste des demandes du Visiteur | **Mes demandes de parloir** — v7.4 |
 
 ## 2. Principes non négociables
 
@@ -83,7 +94,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
   2. **Les Visiteurs prennent leur permis** : ils s'inscrivent, font valider leur photo, mais restent sur **liste d'attente** avec la jauge du quartier. Ils ne voient pas encore les Bads.
   3. **Le quartier ouvre aux visites** quand le seuil de Bads est atteint : l'admin ouvre le quartier (ou ouverture automatique si l'option est activée), une notification et un e-mail préviennent tous les membres du quartier.
 - **Calcul du seuil (validé v7)** :
-  - **Bad compté** = rôle `bad`, onboarding terminé (Casier compris), photo d'identité validée, non banni, non suspendu, non masqué, `is_seed = false`, **pas en pause**, connecté dans les **30 derniers jours**. Raison : ouvrir un quartier sur des Bads partis ou en pause donnerait une Promenade vide aux Visiteurs.
+  - **Bad compté** = rôle `bad`, onboarding terminé (Casier compris), **3 poses validées** (v7.4), non banni, non suspendu, non masqué, `is_seed = false`, **pas en pause**, connecté dans les **30 derniers jours**. Raison : ouvrir un quartier sur des Bads partis ou en pause donnerait une Promenade vide aux Visiteurs.
   - **Bad girl** = Bad compté de genre `femme`.
   - **Condition d'ouverture** : `bads ≥ threshold_bads` (défaut **50**) **et** `bad_girls ≥ ceil(threshold_bads × threshold_women_pct / 100)` (défaut 40 % → **20 bad girls**) **et** `bad_boys ≥ ceil(threshold_bads × threshold_men_pct / 100)` (défaut 20 % → **10 bad boys** ; mettre 0 pour désactiver).
   - Planchers **absolus** plutôt qu'un pourcentage du total : avec un pourcentage, l'arrivée de nombreux bad boys ferait **baisser** la jauge des bad girls et pourrait bloquer l'ouverture indéfiniment. Le plancher de bad boys évite d'ouvrir un quartier où les Visiteurs qui cherchent des hommes ne verraient personne.
@@ -108,14 +119,14 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
    | 2 | Pseudo, genre, ville | idem |
    | 3 | **Ton rôle** (présélectionné par la porte) | idem |
    | 4 | Qui tu cherches (genres + âges) + consentement art. 9 | **Entraîne-toi** (v7.3, facultatif : pari sur un Casier fictif « Casier n° 000 », rien n'est enregistré, lien « Passer ») |
-   | 5 | 1 photo minimum (visage visible) | Qui tu viens voir (genres + âges) + consentement art. 9 |
+   | 5 | **Passe à la toise** (v7.4) : 3 poses obligatoires — profil gauche, face, profil droit | Qui tu viens voir (genres + âges) + consentement art. 9 |
    | 6 | Le Casier (1 vrai, 2 faux) | 1 photo (visage visible) |
    | 7 | **Teste ton Casier** (v7.3, Phase 3 : aperçu tel que le voient les Visiteurs, conseils du Souffleur) | **Motif de visite** (présentation, 280 caractères, obligatoire) |
-   | 8 | 10 questions du QCM (le socle, §9) | 10 questions du QCM (le socle, §9) |
+   | 8 | **L'Interrogatoire** : 10 questions (le socle, §9) | **L'Interrogatoire** : 10 questions (le socle, §9) |
 
    - La contrainte 18+ porte sur la **Fiche** : le compte d'authentification existe avant la saisie de la date de naissance, mais un profil sans date de naissance valide (≥ 18 ans, vérifiée en base) n'est visible nulle part et ne peut rien faire. Les comptes dont l'onboarding n'est pas terminé sont supprimés après 30 jours.
-4. **Le Greffe** : la photo d'identité est « en attente de validation » jusqu'à la décision de la modération (objectif < 12 h, affiché).
-   - **Bad** : sa Fiche n'apparaît nulle part avant la validation. Il peut compléter sa Fiche (présentation, signes distinctifs, autres photos, 10 questions restantes) ; une jauge « Fiche complète à X % » l'y encourage.
+4. **Le Greffe** : chaque photo (pour un Bad, chacune des 3 poses) est « en attente de validation » jusqu'à la décision de la modération (objectif < 12 h, affiché).
+   - **Bad** : sa Fiche n'apparaît nulle part avant la validation **des 3 poses**. Il peut compléter sa Fiche (présentation, signes distinctifs, autres photos, 10 questions restantes) ; une jauge « Fiche complète à X % » l'y encourage.
    - **Visiteur** : **il regarde tout de suite, il demande après validation**. Dès l'onboarding terminé (dans un quartier ouvert), il voit la Promenade et la Découverte ; le bouton « Demander une visite » affiche « Permis en attente au Greffe » tant que la photo n'est pas validée. Validation → tampon **« PERMIS DÉLIVRÉ »**.
 5. **Visiteur** : Promenade (ou Découverte) → Fiche d'un Bad → **Demande de parloir** → le Bad accepte et propose des **Heures de visite** → le Visiteur choisit un créneau → **la visite au Parloir** (30 min) → **Permis permanent** ou Affaire classée.
 6. **Bad** : écran d'accueil = **« Le Courrier »** (demandes reçues) + **« Mes visites »** (agenda des visites programmées, compte à rebours).
@@ -126,14 +137,13 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - Pseudo (3–20 caractères, unique ; e-mails, téléphones et liens refusés).
 - Âge (calculé depuis la date de naissance, date jamais affichée), ville (pas d'adresse, pas de GPS).
 - Genre : `homme`, `femme`, `non-binaire`, `autre`. Genres recherchés : multi-sélection. **Pas de champ « orientation »** : les genres recherchés suffisent au fonctionnement (minimisation).
-- Photos : 1 à 6. La première est la « photo d'identité » : visage visible obligatoire, affichée sur un fond de toise (lignes 120–200). Pas de nudité.
-- **[P1] Option « Alignement 3 poses »** (à partir de 3 photos validées) : les 3 premières photos en triptyque façon photo signalétique. Sinon, galerie classique.
-- Présentation : 500 caractères max (facultative).
+- Photos (v7.4, PARCOURS-DESIGN §3) : **alignement 3 poses obligatoire** — position `0` = face (photo d'identité, visage visible), `1` = profil gauche, `2` = profil droit — affiché en photo signalétique sur mur gradué. Photos supplémentaires facultatives en positions `3` à `5` (galerie classique). Pas de nudité. Un ancien Visiteur qui devient Bad doit ajouter ses deux profils avant d'être visible.
+- Présentation, affichée comme **« Note comportementale »** (v7.4) : 500 caractères max (facultative).
 - Signes distinctifs (max 5), liste configurable en base (`tribes`) : Biker, Tatoué·e, Noctambule, Rockeur·se, Rap dans le sang, Street, Tête brûlée, Fêtard·e, Voyageur·se, Sport extrême, Gamer, Franc-parler.
   - Chaque signe peut recevoir **une précision facultative** (60 caractères) : « Tatoué·e — dragon sur la nuque ». Les précisions alimentent aussi le Souffleur.
 - La date de naissance, le nom réel et la taille exacte ne sont **jamais** affichés (seulement l'âge).
 - Le Casier (§6), sans indication du chef vrai.
-- Indice de complicité avec le Visiteur qui regarde + les 3 principaux points communs du QCM.
+- Indice de complicité avec le Visiteur qui regarde + les 3 principaux points communs de l'Interrogatoire.
 - Badges : **Bonne conduite**, **[P1]** « Complices recrutés ».
 - Actions (pour un Visiteur) : **Demander une visite**, **Signaler**, **Bloquer**.
 - Statut de disponibilité réglé par le Bad (§7) : « Ouvert aux visites » / « Parloir complet ».
@@ -165,6 +175,7 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
   - bouton « Autre idée » pour tirer une nouvelle amorce ; écriture libre toujours possible ;
   - un aperçu montre le Casier tel que les Visiteurs le verront (ordre mélangé, sans indication du vrai).
 - Qualité : moins de 25 caractères par ligne → conseil, sans bloquer.
+- **Trois lignes différentes** (relecture sécurité Phase 3) : deux chefs d'accusation identiques, à la casse et aux espaces près, sont refusés par la base.
 - Équilibre (v7.3, « Teste ton Casier ») : chaque ligne est comparée à la moyenne des deux autres ; plus de 40 % plus longue **ou** plus courte → conseil, sans bloquer (une ligne qui dépasse trahit souvent le vrai).
 - Coordonnées masquées dans les trois lignes (`mask_contacts`, comme la présentation et le Motif de visite).
 - **Règle du jeu** : chaque ligne est un **fait** précis sur sa propre vie, sinon il n'y a rien à deviner.
@@ -215,6 +226,8 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 ## 7 ter. La visite au Parloir (30 minutes)
 
+> **Style « cabine », pas de néon (v7.4, PARCOURS-DESIGN §5, maquettes `Visite.dc.html`, `FinVisite.dc.html`, `Permanent.dc.html`)** : en-tête en plaque métal rivetée « PARLOIR · CABINE 03 » avec hygiaphone, Signaler et Bloquer de chaque côté ; compteur « TEMPS DE VISITE » dans un cadre sombre ; fond de conversation = vitre ; bulles à contour 2 px dans la couleur du genre de l'auteur, sans halo ; premier message = la fiche papier du pari (tampon BIEN VU ! / RATÉ !). Sans horaire : plaque « PARLOIR · SANS HORAIRE », carte de Cavale épinglée, boutons Affaire classée / Proposer une Cavale au-dessus du champ toujours visible.
+
 - Le Parloir s'ouvre **uniquement pendant les 30 min du créneau**, en temps réel, avec un **compte à rebours** visible.
 - **Présence** : un membre est « présent » dès qu'il ouvre l'écran de la visite pendant le créneau (horodatage enregistré par la base, `join_visit()`). Si une seule personne est là : écran d'attente « En attente de [pseudo]… ».
 - **Premier message automatique** (message système, affiché aux deux) = le chef choisi **et** le résultat du pari, révélés ensemble : « [Pseudo] a parié sur : "…" — Bien vu ! » ou « — Raté ! Le vrai était : "…" ». C'est le brise-glace. Si la première visite n'a pas lieu (absence, annulation), la révélation attend la visite suivante ; si aucune visite n'a lieu, le pari n'est jamais révélé.
@@ -247,7 +260,9 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 - Au moins 10 modèles par type, en FR et EN dans les fichiers de messages ; choix aléatoire sans répétition immédiate.
 - Si les données manquent (moins de 5 questions communes), le Souffleur propose des accroches génériques sur le Casier, sans en citer une ligne.
 
-## 9. Le QCM et l'indice de complicité
+## 9. L'Interrogatoire (QCM) et l'indice de complicité
+
+> Dans l'interface, le QCM s'appelle **« L'Interrogatoire »** (v7.4) ; maquette `docs/design/parcours/QCM.dc.html`. Le nom technique reste `questions` / `answers`.
 
 ### Mécanique (inspirée d'OkCupid)
 Pour chaque question :
@@ -332,8 +347,8 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 ## 11. Photos et modération d'images (le Greffe)
 
 - Compression côté client avant envoi, puis ré-encodage côté serveur : WebP, deux tailles (1200 px ≤ 180 Ko, 400 px ≤ 30 Ko), sans aucune métadonnée. Vignettes partout sauf sur la Fiche ouverte.
-- Upload dans le bucket **privé** `photos-pending` → **file de validation du Greffe** (critères : adulte, visage visible sur la photo d'identité, pas de nudité, pas de coordonnées) → copie vers le bucket **public** `photos` sous un chemin UUID non devinable. Refus → suppression + motif notifié. Pour un Visiteur, la validation de la photo d'identité délivre le Permis (tampon « PERMIS DÉLIVRÉ »).
-- **Priorité de la file** : photos d'identité des Visiteurs dont le quartier est ouvert, puis Bads, puis photos secondaires. **(validé v7 : un Visiteur bloqué au Greffe ne peut rien faire)**
+- Upload dans le bucket **privé** `photos-pending` → **file de validation du Greffe**, **une décision par photo** (v7.4 : chaque pose validée ou refusée séparément, motif de refus par photo). **Le règlement du Greffe**, affiché au membre : visage visible, seul·e sur la photo, pas de lunettes de soleil sur la face, pas de nudité (et, côté modération : adulte, pas de coordonnées) → copie vers le bucket **public** `photos` sous un chemin UUID non devinable. Refus → suppression + motif notifié. Pour un Visiteur, la validation de la photo d'identité délivre le Permis (tampon « PERMIS DÉLIVRÉ »).
+- **Priorité de la file** : photos d'identité des Visiteurs dont le quartier est ouvert, puis les 3 poses des Bads, puis photos secondaires. **(validé v7 : un Visiteur bloqué au Greffe ne peut rien faire)**
 - Les fichiers de `photos-pending` sont supprimés dès la décision. Fichiers publics servis avec un `Cache-Control` long (chemins immuables).
 - **Rotation de chemin** (nouvel UUID, ancien fichier supprimé) à la suppression d'une photo, après 30 jours de pause, au bannissement ; purge totale à la suppression du compte.
 - **Seuil de bascule** : alerte admin quand le stockage dépasse 700 Mo ou l'egress saisi dépasse 3,5 Go/mois deux mois de suite (stockage calculé en SQL, egress saisi chaque mois par l'admin). La décision de payer reste humaine.

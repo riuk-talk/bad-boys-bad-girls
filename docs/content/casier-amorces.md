@@ -49,7 +49,7 @@
 |---|---|---|
 | A1 | A écrit ___ pour ___ sans jamais l'envoyer. | Wrote ___ for ___ and never sent it. |
 | A2 | A traversé ___ pour un premier rendez-vous. | Crossed ___ for a first date. |
-| A3 | N'a jamais dit à personne ___. | Has never told anyone ___. |
+| A3 | A fait ___ heures de route pour un dîner de ___ minutes. | Drove ___ hours for a ___-minute dinner. |
 | A4 | A fait ___ pour impressionner ___. | Did ___ to impress ___. |
 | A5 | A déclaré sa flamme avec ___. | Declared their feelings with ___. |
 | A6 | S'est fait poser un lapin à ___ et est resté·e ___. | Got stood up at ___ and stayed ___. |
@@ -84,7 +84,7 @@
 ## Bêtises (9)
 | # | Français | English |
 |---|---|---|
-| B1 | S'est fait ___ pour avoir ___. | Got ___ for ___. |
+| B1 | S'est trompé·e de ___ et a fini à ___. | Took the wrong ___ and ended up in ___. |
 | B2 | A teint ___ en ___ par erreur. | Accidentally dyed ___ ___. |
 | B3 | A mangé ___ pour un pari. | Ate ___ on a dare. |
 | B4 | S'est enfermé·e dehors en ___. | Got locked out in ___. |
@@ -103,6 +103,6 @@
 - E7 → « A fait croire à toute sa classe que son père était cascadeur. »
 
 ## Points à trancher à la relecture
-- S1 / B1 (« S'est fait sortir… », « S'est fait ___ pour avoir ___ ») : reprennent l'exemple de la SPEC ; le trou laisse la porte ouverte à un délit réel. Le filtre par mots-clés signale, il ne bloque pas. Les garder ou les retirer ?
+- **Tranché (relecture du 2026-10-05)** : S1 gardée ; B1 (« S'est fait ___ pour avoir ___ ») et A3 (« N'a jamais dit à personne ___ ») retirées, remplacées par deux amorces neuves (B1 Bêtises, A3 Amour).
 - E1 « envoyé·e chez le directeur » : remplace un premier jet « renvoyé·e de l'école », jugé trop proche d'une sanction réelle.
 - B6 / B9 : « il ou elle » plutôt que « il/elle » (lecteurs d'écran).

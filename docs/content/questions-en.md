@@ -11,7 +11,7 @@
 | | Une histoire sérieuse, avec du piment | A serious story, with some spice |
 | | Voir où ça mène | See where it goes |
 | | Du fun sans prise de tête | Fun without the headache |
-| | Des complices de sortie | Sidekicks for going out |
+| | Des complices de sortie | Night-out partners |
 | 2 | Enfants ? | Kids? |
 | | J'en ai | I have some |
 | | J'en veux | I want some |
@@ -76,7 +76,7 @@
 | | Bar ou club | Bar or club |
 | | Road trip | Road trip |
 | | Soirée chez des potes | An evening at friends' |
-| 15 | On te reproche le plus souvent… | What people pick on you for most… |
+| 15 | On te reproche le plus souvent… | What you get told off for most… |
 | | D'être trop franc·he | Being too blunt |
 | | D'être en retard | Being late |
 | | D'être une tête brûlée | Being a daredevil |
@@ -108,6 +108,5 @@
 | | J'éclate de rire | I burst out laughing |
 
 ## Points à trancher à la relecture
-- Q1 « Des complices de sortie » : « Sidekicks for going out » (j'ai évité « partners in crime », qui évoque le crime).
-- Q15 « On te reproche… » : « What people pick on you for most… » ; alternative plus neutre : « What you get told off for most… ».
+- **Tranché (relecture du 2026-10-05)** : Q1 « Night-out partners », Q15 « What you get told off for most… » (corrigés en base par la migration `phase3_poses_greffe`).
 - Q14 / Q18 « Concert » : « gig » (britannique, plus vivant que « concert »).
