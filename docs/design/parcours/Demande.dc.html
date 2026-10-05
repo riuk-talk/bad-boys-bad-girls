@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Visiteur · Demande de parloir</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F2E8D5}a:hover{color:#D4A437}
+.bet{display:flex;gap:12px;align-items:flex-start;width:100%;min-height:56px;padding:12px;border-radius:3px;border:2px solid #CFC4AE;background:#FFFFFF;color:#0E0E10;text-align:left;font-family:'Special Elite',monospace;font-size:15px;line-height:1.4}
+.idea{display:block;width:100%;padding:10px 12px;border-radius:6px;border:1px solid #3A3A40;background:#121214;color:#E6DCC8;font-size:13px;line-height:1.45;text-align:left;font-family:'Inter Tight',sans-serif}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: rgba(5,5,6,.92); color: #F2E8D5; font-family: 'Inter Tight', sans-serif; display: flex; flex-direction: column; justify-content: flex-end">
+<div role="dialog" aria-modal="true" aria-labelledby="dlg-title" style="background: #0E0E10; border-top: 2px solid #D4A437; border-radius: 14px 14px 0 0; padding: 10px 20px 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<p style="margin: 0; font-family: 'Special Elite', monospace; font-size: 12px; letter-spacing: 3px; color: #E8B84A">DEMANDE DE PARLOIR</p>
+<a href="Fiche.dc.html" aria-label="Fermer" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></a>
+</div>
+<h1 id="dlg-title" style="margin: -6px 0 0; font-family: Anton, sans-serif; font-size: 28px; line-height: 1.05; text-transform: uppercase">Lequel est vrai, selon toi ?</h1>
+<div style="background: #F2E8D5; border-radius: 4px; padding: 12px; display: flex; flex-direction: column; gap: 8px">
+<button type="button" class="bet"><span style="font-family: Anton, sans-serif; font-size: 20px; color: #B5172E">1</span>A dormi une nuit entière dans un photomaton.</button>
+<button type="button" class="bet" aria-pressed="true" style="border: 3px solid #B5172E; background: #FBEFF1"><span style="font-family: Anton, sans-serif; font-size: 20px; color: #B5172E">2</span>A donné un nom à sa moto : Josiane.</button>
+<button type="button" class="bet"><span style="font-family: Anton, sans-serif; font-size: 20px; color: #B5172E">3</span>A chanté sur scène devant 300 personnes.</button>
+</div>
+<p style="margin: 0; display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.45; color: #E6DCC8"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8B84A" stroke-width="2" aria-hidden="true" style="flex-shrink: 0"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span>Ton pari reste <strong style="color: #F2E8D5">secret jusqu'à la visite</strong>. Juste ou faux, ta demande part.</span></p>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mot" style="font-size: 14px; font-weight: 700">Ton mot <span style="font-weight: 400; color: #B8AE9C">(facultatif, lu avant sa décision)</span></label>
+<textarea id="mot" rows="3" style="width: 100%; box-sizing: border-box; resize: none; border: 1px solid #3A3A40; border-radius: 6px; background: #121214; color: #F2E8D5; padding: 10px; font-family: 'Inter Tight', sans-serif; font-size: 15px; line-height: 1.45">Couche-tard aussi. Ta meilleure balade de nuit en deux lignes, je te donne la mienne.</textarea>
+<span style="align-self: flex-end; font-size: 12px; color: #B8AE9C">88 / 280</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<p style="margin: 0; font-family: Anton, sans-serif; font-size: 15px; text-transform: uppercase; color: #D4A437">Le Souffleur te propose</p>
+<button type="button" class="idea">« Un de tes trois chefs d'accusation m'a fait rire. Je te dirai lequel au Parloir. »</button>
+<button type="button" class="idea">« Biker aussi. Ta pire panne, je te raconte la mienne. »</button>
+</div>
+<a href="MesDemandes.dc.html" style="display: flex; justify-content: center; align-items: center; min-height: 54px; background: #D4A437; color: #0E0E10; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; text-decoration: none; border-radius: 4px">Déposer ma demande</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
