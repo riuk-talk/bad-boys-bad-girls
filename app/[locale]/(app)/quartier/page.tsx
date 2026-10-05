@@ -17,7 +17,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("title") };
 }
 
-function Gauge({ label, value, max }: { label: string; value: number; max: number }) {
+// Bad girls in red, bad boys in gold (colours = gender, PARCOURS-DESIGN §1); the total in the accent.
+function Gauge({
+  label,
+  value,
+  max,
+  bar = "bg-accent",
+}: {
+  label: string;
+  value: number;
+  max: number;
+  bar?: string;
+}) {
   const percent = Math.min(100, Math.round((value / Math.max(max, 1)) * 100));
   return (
     <div className="space-y-2">
@@ -30,7 +41,7 @@ function Gauge({ label, value, max }: { label: string; value: number; max: numbe
         aria-valuenow={Math.min(value, max)}
         className="bg-ink-3 h-3 overflow-hidden rounded-full"
       >
-        <div className="bg-gold h-full rounded-full" style={{ width: `${percent}%` }} />
+        <div className={`${bar} h-full rounded-full`} style={{ width: `${percent}%` }} />
       </div>
     </div>
   );
@@ -83,16 +94,18 @@ export default async function QuarterPage() {
             label={t("girlsGauge", { count: zone.bad_girls, threshold: zone.min_bad_girls })}
             value={zone.bad_girls}
             max={zone.min_bad_girls}
+            bar="bg-red-bright"
           />
           {zone.min_bad_boys > 0 ? (
             <Gauge
               label={t("boysGauge", { count: zone.bad_boys, threshold: zone.min_bad_boys })}
               value={zone.bad_boys}
               max={zone.min_bad_boys}
+              bar="bg-gold"
             />
           ) : null}
           {zone.visitors_waiting !== null ? (
-            <p className="text-gold font-semibold">
+            <p className="text-accent font-semibold">
               {t("visitorsWaiting", { count: zone.visitors_waiting })}
             </p>
           ) : null}
@@ -109,7 +122,7 @@ export default async function QuarterPage() {
         </h2>
         <p>{t("referralLead")}</p>
         <CopyLink url={referralUrl} />
-        <p className="text-gold font-semibold">{t("recruited", { count: recruited ?? 0 })}</p>
+        <p className="text-accent font-semibold">{t("recruited", { count: recruited ?? 0 })}</p>
         <p className="text-grey text-sm">{t("noReward")}</p>
       </section>
     </div>

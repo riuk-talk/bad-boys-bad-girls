@@ -66,7 +66,7 @@ export function FicheEditor({ role, text, tribes, selected }: Props) {
             return (
               <div
                 key={tribe.id}
-                className="border-line has-checked:border-gold rounded-lg border p-3"
+                className="border-line has-checked:border-accent rounded-lg border p-3"
               >
                 <label className="flex min-h-11 cursor-pointer items-center gap-3">
                   <input
@@ -76,7 +76,7 @@ export function FicheEditor({ role, text, tribes, selected }: Props) {
                     checked={isOn}
                     disabled={!isOn && chosen.length >= 5}
                     onChange={(event) => toggle(tribe.id, event.target.checked)}
-                    className="accent-gold size-5"
+                    className="accent-accent size-5"
                   />
                   {tribe.label}
                 </label>

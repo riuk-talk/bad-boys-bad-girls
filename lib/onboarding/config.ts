@@ -9,17 +9,28 @@ export function parseRole(value: unknown): Role | null {
 }
 
 /**
- * Onboarding steps per role (SPEC v7 §4). Steps 1–3 are common; the role is chosen at step 3.
- * Phase 2b: the Bad finishes at the photo, the Visitor at the Motif de visite. Phase 2c adds
- * « Entraîne-toi » for the Visitor, right after the role.
- * Phase 3 adds the Casier (Bad, step 6) and the 10 core questions (both, step 7).
+ * Onboarding steps per role (SPEC v7.4 §4): 8 steps for both. Steps 1–3 are common; the role is
+ * chosen at step 3. The last step is L'Interrogatoire (the 10 core questions, SPEC §9).
  */
-export type StepKind = "age" | "identity" | "role" | "practice" | "seeking" | "photo" | "motive";
+export type StepKind =
+  | "age"
+  | "identity"
+  | "role"
+  | "practice"
+  | "seeking"
+  | "poses"
+  | "photo"
+  | "casier"
+  | "casierCheck"
+  | "motive"
+  | "interrogation";
 
 const STEPS: Record<Role, readonly StepKind[]> = {
-  bad: ["age", "identity", "role", "seeking", "photo"],
+  // "poses" = « Passe à la toise », 3 photos (PARCOURS-DESIGN §3); "casierCheck" = « Teste ton
+  // Casier » (LANDING-DESIGN §2.2).
+  bad: ["age", "identity", "role", "seeking", "poses", "casier", "casierCheck", "interrogation"],
   // "practice" = « Entraîne-toi » (LANDING-DESIGN.md §2.1): nothing is stored but the step number.
-  visitor: ["age", "identity", "role", "practice", "seeking", "photo", "motive"],
+  visitor: ["age", "identity", "role", "practice", "seeking", "photo", "motive", "interrogation"],
 };
 
 export function onboardingSteps(role: Role): readonly StepKind[] {

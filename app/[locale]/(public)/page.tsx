@@ -103,16 +103,16 @@ function DoorLink({
       href={`/inscription?role=${door}`}
       className={cn(
         "relative flex min-h-[190px] flex-col items-center justify-end gap-1.5 overflow-hidden rounded-t-md rounded-b-sm border-[3px] bg-[#121214] px-2.5 py-3.5 text-center no-underline transition-shadow",
-        bad
-          ? "door-cell border-gold shadow-[0_0_16px_rgb(212_164_55/0.35)] hover:shadow-[0_0_26px_rgb(212_164_55/0.6)]"
-          : "door-glass border-red shadow-[0_0_16px_rgb(224_35_63/0.4)] hover:shadow-[0_0_26px_rgb(224_35_63/0.65)]",
+        // PARCOURS-DESIGN §1: colours are for gender, never for the role: both doors are cream.
+        "border-cream shadow-[0_0_16px_rgb(242_232_213/0.25)] hover:shadow-[0_0_26px_rgb(242_232_213/0.45)]",
+        bad ? "door-cell" : "door-glass",
       )}
     >
       <span
         aria-hidden="true"
         className={cn(
           "font-stamp absolute inset-x-0 top-2.5 text-[11px] tracking-[0.18em] uppercase",
-          bad ? "text-gold" : "text-red-bright",
+          "text-cream",
         )}
       >
         {label}
@@ -120,13 +120,13 @@ function DoorLink({
       {bad ? null : (
         <>
           <Hygiaphone />
-          <Phone aria-hidden="true" className="absolute top-9 right-2.5 size-6 text-[#ff6680]" />
+          <Phone aria-hidden="true" className="text-cream absolute top-9 right-2.5 size-6" />
         </>
       )}
       <span
         className={cn(
           "font-display relative text-2xl leading-none uppercase",
-          bad ? "neon-gold text-[#f4d27a]" : "neon-red text-[#ffd1d8]",
+          "neon-cream text-cream",
         )}
       >
         {title}
@@ -155,7 +155,6 @@ export default function LandingPage({ params }: Props) {
   const consentGroups = t.raw("consentGroups") as ConsentGroup[];
   const charterPoints = t.raw("charterPoints") as string[];
   const ticker = t.raw("ticker") as string[];
-  const consentColors = ["text-gold", "text-red-bright", "text-cream"];
 
   return (
     <div className="overflow-x-clip text-center">
@@ -230,11 +229,8 @@ export default function LandingPage({ params }: Props) {
           aria-labelledby="steps-bad"
           className="mx-auto mt-8 flex max-w-5xl flex-col items-center gap-4"
         >
-          <Kicker className="text-gold">{t("sideKicker_bad")}</Kicker>
-          <h3
-            id="steps-bad"
-            className="neon-gold font-display -mt-2 text-4xl text-[#f4d27a] uppercase"
-          >
+          <Kicker className="text-cream">{t("sideKicker_bad")}</Kicker>
+          <h3 id="steps-bad" className="neon-cream font-display text-cream -mt-2 text-4xl uppercase">
             {t("stepsTitle_bad")}
           </h3>
           <ol className="grid w-full gap-6 pt-2 lg:grid-cols-3">
@@ -245,9 +241,9 @@ export default function LandingPage({ params }: Props) {
               >
                 <span
                   aria-hidden="true"
-                  className="absolute -top-2.5 left-1/2 h-5 w-[70px] -translate-x-1/2 bg-[rgb(212_164_55/0.75)]"
+                  className="absolute -top-2.5 left-1/2 h-5 w-[70px] -translate-x-1/2 bg-[rgb(154_145_134/0.7)]"
                 />
-                <p className="font-stamp text-gold-ink mb-1.5 text-xs tracking-[0.18em] uppercase">
+                <p className="font-stamp text-grey-ink mb-1.5 text-xs tracking-[0.18em] uppercase">
                   {t("pieceLabel", { number: index + 1 })}
                 </p>
                 <h4 className="font-display mb-2 text-2xl uppercase">{step.title}</h4>
@@ -262,10 +258,10 @@ export default function LandingPage({ params }: Props) {
           aria-labelledby="steps-visitor"
           className="mx-auto mt-11 flex max-w-5xl flex-col items-center gap-4"
         >
-          <Kicker className="text-red-bright">{t("sideKicker_visitor")}</Kicker>
+          <Kicker className="text-cream">{t("sideKicker_visitor")}</Kicker>
           <h3
             id="steps-visitor"
-            className="neon-red font-display -mt-2 text-4xl text-[#ffd1d8] uppercase"
+            className="neon-cream font-display text-cream -mt-2 text-4xl uppercase"
           >
             {t("stepsTitle_visitor")}
           </h3>
@@ -273,11 +269,11 @@ export default function LandingPage({ params }: Props) {
             {stepsVisitor.map((step, index) => (
               <li
                 key={step.title}
-                className="flex flex-col items-center gap-2 rounded-md border border-[#3a1a20] bg-[#121214] px-4.5 py-5 shadow-[0_0_14px_rgb(224_35_63/0.18)]"
+                className="border-line flex flex-col items-center gap-2 rounded-md border bg-[#121214] px-4.5 py-5 shadow-[0_0_14px_rgb(242_232_213/0.08)]"
               >
                 <span
                   aria-hidden="true"
-                  className="neon-red font-display text-[2.5rem] leading-none text-[#ffd1d8]"
+                  className="neon-cream font-display text-cream text-[2.5rem] leading-none"
                 >
                   {index + 1}
                 </span>
@@ -316,12 +312,12 @@ export default function LandingPage({ params }: Props) {
         </h2>
         <p className="text-[15px] leading-normal text-[#e6dcc8]">{t("consentBody")}</p>
         <div className="divide-line flex w-full flex-col divide-y">
-          {consentGroups.map((group, index) => (
+          {consentGroups.map((group) => (
             <div key={group.title} className="py-3.5">
               <h3
                 className={cn(
                   "font-stamp mb-1 text-xs tracking-[0.18em] uppercase",
-                  consentColors[index],
+                  "text-cream",
                 )}
               >
                 {group.title}
@@ -377,13 +373,13 @@ export default function LandingPage({ params }: Props) {
           <div className="flex w-full flex-col gap-2.5">
             <LocalizedLink
               href="/inscription?role=bad"
-              className="bg-gold text-ink font-display flex min-h-[52px] items-center justify-center rounded text-xl uppercase no-underline shadow-[0_0_18px_rgb(212_164_55/0.45)]"
+              className="bg-cream text-ink font-display flex min-h-[52px] items-center justify-center rounded text-xl uppercase no-underline shadow-[0_0_18px_rgb(242_232_213/0.3)]"
             >
               {t("finalCta_bad")}
             </LocalizedLink>
             <LocalizedLink
               href="/inscription?role=visitor"
-              className="border-red font-display flex min-h-[52px] items-center justify-center rounded border-2 text-xl text-[#ffd1d8] uppercase no-underline shadow-[0_0_18px_rgb(224_35_63/0.4)]"
+              className="border-cream font-display text-cream flex min-h-[52px] items-center justify-center rounded border-2 text-xl uppercase no-underline shadow-[0_0_18px_rgb(242_232_213/0.2)]"
             >
               {t("finalCta_visitor")}
             </LocalizedLink>

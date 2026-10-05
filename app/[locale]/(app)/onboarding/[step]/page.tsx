@@ -10,12 +10,21 @@ import {
   RoleStepForm,
   SeekingStepForm,
 } from "@/components/onboarding/forms";
+import { CasierCheck, CasierStepForm } from "@/components/onboarding/casier";
+import { PosesStepForm } from "@/components/onboarding/poses";
 import { StepShell } from "@/components/onboarding/step-shell";
-import { redirect } from "@/i18n/navigation";
+import { QuestionForm } from "@/components/interrogation/question-form";
+import { Link, redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
+import { caseNumberFromId } from "@/lib/case-number";
+import { loadQuestions } from "@/lib/interrogation-server";
 import { lastStep, parseRole, ROLE_STEP, stepKind, stepPath } from "@/lib/onboarding/config";
+import { photoInfos } from "@/lib/photos";
 
-type Props = { params: Promise<{ locale: string; step: string }> };
+type Props = {
+  params: Promise<{ locale: string; step: string }>;
+  searchParams: Promise<{ q?: string }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -23,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("title") };
 }
 
-export default async function OnboardingStep({ params }: Props) {
+export default async function OnboardingStep({ params, searchParams }: Props) {
   const step = Number((await params).step);
   if (!Number.isInteger(step) || step < 1) notFound();
 
@@ -58,6 +67,94 @@ export default async function OnboardingStep({ params }: Props) {
       .eq("id", profile.place_id)
       .maybeSingle();
     if (place) placeLabel = `${place.name} (${place.postal_codes[0] ?? ""})`;
+  }
+
+  if (kind === "poses") {
+    return (
+      <StepShell step={step} role={role} kind={kind}>
+        <PosesStepForm photos={await photoInfos(member.supabase, member.userId, [0, 1, 2])} />
+      </StepShell>
+    );
+  }
+
+  if (kind === "casier" || kind === "casierCheck") {
+    const { data: casier } = await member.supabase
+      .from("casier_charges")
+      .select("charge_1, charge_2, charge_3, true_index")
+      .eq("profile_id", member.userId)
+      .maybeSingle();
+    const charges = casier
+      ? ([casier.charge_1, casier.charge_2, casier.charge_3] as [string, string, string])
+      : null;
+    if (kind === "casierCheck") {
+      if (!casier || !charges) return redirect({ href: stepPath(step - 1), locale });
+      return (
+        <StepShell step={step} role={role} kind={kind}>
+          <CasierCheck
+            charges={charges}
+            trueIndex={casier.true_index}
+            caseNumber={caseNumberFromId(member.userId)}
+            reworkHref={stepPath(step - 1)}
+            context="onboarding"
+          />
+        </StepShell>
+      );
+    }
+    // The assistant starts with the true line, then the two false ones.
+    const initial: [string, string, string] =
+      casier && charges
+        ? [
+            charges[casier.true_index - 1] ?? "",
+            ...(charges.filter((_, index) => index !== casier.true_index - 1) as [string, string]),
+          ]
+        : ["", "", ""];
+    return (
+      <StepShell step={step} role={role} kind={kind}>
+        <CasierStepForm initial={initial} context="onboarding" />
+      </StepShell>
+    );
+  }
+
+  if (kind === "interrogation") {
+    const t = await getTranslations("Interrogation");
+    const questions = await loadQuestions(member.supabase, member.userId, locale, "core");
+    const firstOpen = questions.findIndex((question) => !question.answer);
+    const asked = Number((await searchParams).q);
+    const index =
+      Number.isInteger(asked) && asked >= 1 && asked <= questions.length
+        ? asked - 1
+        : Math.max(firstOpen, 0);
+    const question = questions[index];
+    if (!question) notFound();
+    const total = questions.length;
+    const isLast = questions.every((other, i) => i === index || other.answer);
+    return (
+      <StepShell
+        step={step}
+        role={role}
+        kind={kind}
+        kicker={t("kicker", { current: index + 1, total })}
+        heading={question.label}
+        aside={t("questionOf", { current: index + 1, total })}
+      >
+        <QuestionForm
+          key={question.id}
+          question={question}
+          context="onboarding"
+          submitLabel={isLast ? t(`finish_${role}`) : t("next")}
+        />
+        {index > 0 ? (
+          <p className="mt-2 text-center">
+            <Link
+              href={`${stepPath(step)}?q=${index}`}
+              className="text-cream inline-flex min-h-11 items-center font-semibold underline underline-offset-4"
+            >
+              {t("previous")}
+            </Link>
+          </p>
+        ) : null}
+      </StepShell>
+    );
   }
 
   return (

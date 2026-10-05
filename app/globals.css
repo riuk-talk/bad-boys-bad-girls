@@ -24,6 +24,13 @@
      and a text. -ink on paper/cream (5.06:1), -bright on ink (9.6:1). */
   --color-green-ink: #1d6b43;
   --color-green-bright: #3ccf86;
+  /* Accent of the connected interface = the colour of the member's gender, never of the role
+     (PARCOURS-DESIGN §1): gold = man, red = woman, cream = non-binary or other. Gold by default
+     (public pages); [data-accent] on the app layout switches it. -ink is the same colour on paper.
+     Every pair is AA: gold 8.6:1, #ee3a55 4.93:1 and cream with ink text or on ink. */
+  --color-accent: #d4a437;
+  --color-accent-hover: #e2b54a;
+  --color-accent-ink: #8a6a12;
 
   --font-display: var(--font-anton), "Impact", "Arial Narrow", sans-serif;
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
@@ -86,12 +93,12 @@
     text-rendering: optimizeLegibility;
   }
   :focus-visible {
-    outline: 3px solid var(--color-gold);
+    outline: 3px solid var(--color-accent);
     outline-offset: 3px;
     border-radius: 2px;
   }
   ::selection {
-    background: var(--color-gold);
+    background: var(--color-accent);
     color: var(--color-ink);
   }
 }
@@ -109,6 +116,17 @@
   .animate-stamp {
     animation: fade-in 240ms ease-out both !important;
   }
+}
+
+[data-accent="red"] {
+  --color-accent: #ee3a55;
+  --color-accent-hover: #f45a71;
+  --color-accent-ink: #b5172e;
+}
+[data-accent="cream"] {
+  --color-accent: #f2e8d5;
+  --color-accent-hover: #fffaf0;
+  --color-accent-ink: #34343b;
 }
 
 /* Aged paper texture for the Fiche, pure CSS (no image request). */
@@ -130,6 +148,11 @@
     0 0 6px #ff3355,
     0 0 18px #ff3355,
     0 0 40px #e0233f;
+}
+.neon-cream {
+  text-shadow:
+    0 0 6px rgb(242 232 213 / 0.7),
+    0 0 18px rgb(242 232 213 / 0.35);
 }
 .neon-gold {
   text-shadow:
@@ -199,4 +222,14 @@
   .landing-marquee {
     animation: none !important;
   }
+}
+
+/* « Passe à la toise » (maquette Photos.dc.html): grey wall with height-chart lines. */
+.toise-wall {
+  background-color: #1a1a1d;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 15px,
+    rgb(242 232 213 / 0.14) 15px 16px
+  );
 }

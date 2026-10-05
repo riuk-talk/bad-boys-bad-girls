@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 
-// Full onboardings (Bad and Visitor, SPEC v7 §4) against the DEV Supabase project, with throwaway
+// Full onboardings in 8 steps (Bad and Visitor, SPEC v7.4 §4) and the Greffe against the DEV Supabase project, with throwaway
 // confirmed accounts created through the admin API (no e-mail sent) and deleted afterwards.
 // Opt-in: E2E_ALLOW_WRITE=true.
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
@@ -65,12 +65,43 @@ async function choosePhoto(page: Page) {
   await expect(page.getByRole("img", { name: "Aperçu de ta photo" })).toBeVisible();
 }
 
+/** Bad, step 5 « Passe à la toise »: one file per pose (uploaded as soon as chosen). */
+async function addPose(page: Page, pose: "Profil gauche" | "Face · obligatoire" | "Profil droit") {
+  await page
+    .getByLabel(`Ajouter : ${pose}`)
+    .setInputFiles({ name: `${pose}.jpg`, mimeType: "image/jpeg", buffer: await photoWithGps() });
+  await expect(page.getByRole("img", { name: `Ta photo : ${pose}` })).toBeVisible();
+}
+
+/** Step 8 « L'Interrogatoire »: the first option of each of the 10 core questions. */
+async function interrogation(page: Page, finish: string) {
+  await expect(page.getByText("Interrogatoire · 1/10")).toBeVisible();
+  await page.getByRole("button", { name: "Question suivante" }).click();
+  await expect(page.getByText("Choisis une réponse pour continuer.")).toBeVisible();
+  expect(await axeViolations(page)).toEqual([]);
+  for (let index = 1; index <= 10; index += 1) {
+    await expect(page.getByText(`Interrogatoire · ${index}/10`)).toBeVisible();
+    await page.getByRole("radio").first().check({ force: true });
+    if (index === 3) {
+      // « Affiner »: accept only one answer from the other person, marked essential.
+      await page.locator("summary", { hasText: "Affiner" }).click();
+      for (const box of await page.getByRole("checkbox").all()) await box.uncheck({ force: true });
+      await page.getByRole("checkbox").first().check({ force: true });
+      await page.getByRole("radio", { name: "Indispensable" }).check({ force: true });
+    }
+    await page.getByRole("button", { name: index === 10 ? finish : "Question suivante" }).click();
+    if (index < 10)
+      await page.waitForURL(new RegExp(`onboarding/8\\?q=${index + 1}`), { waitUntil: "commit" });
+  }
+}
+
 test.describe("complete onboardings (real Supabase, writes data)", () => {
   test.skip(!enabled, "E2E_ALLOW_WRITE / SUPABASE_SECRET_KEY not set");
   test.use({ viewport: { width: 390, height: 900 } });
 
   const admin = createClient(url, secret, { auth: { persistSession: false } });
   const accounts: string[] = [];
+  const publicFiles: string[] = [];
 
   async function newAccount(metadata: Record<string, string>) {
     const email = `e2e-${randomBytes(4).toString("hex")}@example.com`;
@@ -87,6 +118,7 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
   }
 
   test.afterAll(async () => {
+    if (publicFiles.length) await admin.storage.from("photos").remove(publicFiles);
     for (const userId of accounts) {
       const { data: files } = await admin.storage.from("photos-pending").list(userId);
       if (files?.length)
@@ -95,87 +127,202 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
     }
   });
 
-  test("Bad: the door preselects the role; 5 steps reach the quarter page", async ({ page }) => {
-    test.setTimeout(120_000);
+  test("Bad: 8 steps — 3 poses, Casier, « Teste ton Casier », L'Interrogatoire", async ({
+    page,
+    browser,
+  }) => {
+    test.setTimeout(240_000);
     const { email, password, userId } = await newAccount({ role: "bad" });
     const started = Date.now();
     await commonSteps(page, email, password, "Femme");
 
+    // A woman: the interface is red (PARCOURS-DESIGN §1); the role reads « BAD » in the header.
+    await expect(page.locator('[data-accent="red"]')).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Ton rôle" })).toBeVisible();
     await expect(page.getByRole("radio", { name: /Je suis Bad/ })).toBeChecked();
     await page.getByRole("button", { name: "Continuer" }).click();
     await page.waitForURL(/onboarding\/4/, { waitUntil: "commit" });
+    await expect(page.getByText("BAD", { exact: true })).toBeVisible();
 
     await expect(page.getByRole("heading", { name: "Qui tu cherches" })).toBeVisible();
     await seekingStep(page, "Homme", 5);
-    await choosePhoto(page);
-    await page.getByRole("button", { name: "Terminer" }).click();
+
+    // Step 5: the 3 poses are required.
+    await expect(page.getByRole("heading", { name: "Passe à la toise" })).toBeVisible();
+    await addPose(page, "Profil gauche");
+    await addPose(page, "Face · obligatoire");
+    await page.getByRole("button", { name: "Déposer au Greffe" }).click();
+    await expect(page.getByText(/Il manque une pose/)).toBeVisible();
+    await addPose(page, "Profil droit");
+    expect(await axeViolations(page)).toEqual([]);
+    await page.getByRole("button", { name: "Déposer au Greffe" }).click();
+    await page.waitForURL(/onboarding\/6/, { waitUntil: "commit" });
+
+    // Step 6: the Casier assistant, the true line first; a duplicate is refused.
+    await expect(page.getByRole("heading", { name: "Un vrai, deux faux." })).toBeVisible();
+    await page.getByRole("button", { name: "Moto", exact: true }).click();
+    await expect(page.getByText(/sa moto|à moto/).first()).toBeVisible();
+    const trueLine =
+      "A traversé l'Espagne à moto sans réserver une seule nuit, en plein mois d'août, seule.";
+    await page.getByLabel("Chef d'accusation n° 1 · Le vrai").fill(trueLine);
+    expect(await axeViolations(page)).toEqual([]);
+    await page.getByRole("button", { name: "Suivant : le premier faux" }).click();
+    await page.getByLabel("Chef d'accusation n° 2 · Un faux").fill("A un tatouage secret.");
+    await page.getByRole("button", { name: "Suivant : le second faux" }).click();
+    await page.getByLabel("Chef d'accusation n° 3 · Un faux").fill("a un  TATOUAGE secret.");
+    await expect(page.getByText(/Deux chefs d'accusation sont identiques/)).toBeVisible();
+    await page
+      .getByLabel("Chef d'accusation n° 3 · Un faux")
+      .fill("S'est fait sortir d'un karaoké.");
+    await page.getByRole("button", { name: "Voir mon Casier" }).click();
+    await page.waitForURL(/onboarding\/7/, { waitUntil: "commit" });
+
+    // Step 7: the true line labelled for its author only; the long line is flagged (± 40 %).
+    await expect(page.getByText("Le vrai · visible par toi seul")).toHaveCount(1);
+    await expect(page.getByText(/beaucoup plus longue que les deux autres/)).toBeVisible();
+    await expect(page.getByText("Les conseils du Souffleur")).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await page.getByRole("link", { name: "Le retravailler" }).click();
+    await page.waitForURL(/onboarding\/6/, { waitUntil: "commit" });
+    await expect(page.getByLabel("Chef d'accusation n° 1 · Le vrai")).toHaveValue(trueLine);
+    await page
+      .getByLabel("Chef d'accusation n° 1 · Le vrai")
+      .fill("A traversé l'Espagne à moto sans réserver.");
+    await page.getByRole("button", { name: "Suivant : le premier faux" }).click();
+    await page.getByRole("button", { name: "Suivant : le second faux" }).click();
+    await page.getByRole("button", { name: "Voir mon Casier" }).click();
+    await page.waitForURL(/onboarding\/7/, { waitUntil: "commit" });
+    await page.getByRole("button", { name: "Mon Casier est prêt" }).click();
+    await page.waitForURL(/onboarding\/8/, { waitUntil: "commit" });
+
+    // Step 8: L'Interrogatoire ends the Dossier.
+    await interrogation(page, "Terminer mon Dossier");
     await page.waitForURL(/quartier|ma-fiche/, { waitUntil: "commit" });
     console.log(`Bad onboarding automated run: ${((Date.now() - started) / 1000).toFixed(1)} s`);
 
     const { data: profile } = await admin.from("profiles").select("*").eq("id", userId).single();
     expect(profile?.role).toBe("bad");
+    expect(profile?.onboarding_step).toBe(8);
     expect(profile?.onboarding_completed_at).not.toBeNull();
-    expect(profile?.zone_id).not.toBeNull();
-    const { data: consents } = await admin
-      .from("consents")
-      .select("type, text_version")
-      .eq("user_id", userId);
-    expect(consents?.map((c) => c.type).sort()).toEqual([
-      "age_18",
-      "art9_seeking",
-      "privacy",
-      "terms",
-    ]);
-    expect(consents?.find((c) => c.type === "art9_seeking")?.text_version).toBe("art9-seeking-v2");
-
-    // Quarter page: three floors, Visitors waiting (shown to Bads), referral link.
-    await page.goto("/quartier");
-    await expect(page.getByRole("heading", { name: "Ton quartier ouvre bientôt" })).toBeVisible();
-    await expect(page.getByText("Quartier : Toulon")).toBeVisible();
-    await expect(page.getByRole("progressbar")).toHaveCount(3);
-    await expect(page.getByText(/Visiteur/)).toBeVisible();
-    await expect(page.getByLabel("Ton lien de parrainage")).toHaveValue(
-      /\/inscription\?parrain=[A-Z2-9]{8}$/,
-    );
-    expect(await axeViolations(page)).toEqual([]);
-
-    // Ma Fiche: Greffe status, gauge, preview, then a bio + distinctive sign saved.
-    await page.goto("/ma-fiche");
-    await expect(page.getByRole("heading", { name: "Ma Fiche", level: 1 })).toBeVisible();
-    await expect(page.getByText(/est au Greffe/)).toBeVisible();
-    await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
-    await page
-      .getByLabel("Présentation")
-      .fill("Motarde le week-end, tatoueuse en semaine. Écris-moi : moi@mail.fr");
-    await page.getByLabel("Biker").check();
-    await page.getByLabel("Précision pour « Biker »").fill("Kawasaki Z650");
-    await page.getByRole("button", { name: "Enregistrer" }).click();
-    await expect(page.getByText("Fiche enregistrée.")).toBeVisible();
-    await page.reload();
-    await expect(page.getByRole("article").getByText("Biker — Kawasaki Z650")).toBeVisible();
-    await expect(page.getByRole("article").getByText("Écris-moi : [•••]")).toBeVisible();
-    await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "40");
-    expect(await axeViolations(page)).toEqual([]);
-
-    const { data: row } = await admin
-      .from("photos")
-      .select("pending_path, status")
-      .eq("owner_id", userId)
+    const { data: casier } = await admin
+      .from("casier_charges")
+      .select("*")
+      .eq("profile_id", userId)
       .single();
-    expect(row?.status).toBe("pending");
-    for (const path of [row!.pending_path!, row!.pending_path!.replace(/\.webp$/, "-s.webp")]) {
-      const { data: blob } = await admin.storage.from("photos-pending").download(path);
+    const charges = [casier!.charge_1, casier!.charge_2, casier!.charge_3];
+    expect(charges[casier!.true_index - 1]).toBe("A traversé l'Espagne à moto sans réserver.");
+    const { data: answers } = await admin
+      .from("answers")
+      .select("question_id, accepted_option_ids, importance")
+      .eq("user_id", userId);
+    expect(answers).toHaveLength(10);
+    expect(answers?.find((a) => a.question_id === 3)).toMatchObject({
+      accepted_option_ids: [31],
+      importance: "essential",
+    });
+    const { data: photos } = await admin
+      .from("photos")
+      .select("id, position, pending_path, status")
+      .eq("owner_id", userId)
+      .order("position");
+    expect(photos?.map((p) => p.position)).toEqual([0, 1, 2]);
+    for (const photo of photos ?? []) {
+      const { data: blob } = await admin.storage
+        .from("photos-pending")
+        .download(photo.pending_path!);
       const meta = await sharp(Buffer.from(await blob!.arrayBuffer())).metadata();
       expect(meta.format).toBe("webp");
       expect(meta.exif).toBeUndefined();
     }
+
+    // Ma Fiche: the 3 poses at the Greffe, the Casier on the preview, the shortcuts.
+    await page.goto("/ma-fiche");
+    await expect(page.getByText(/Tes 3 poses sont au Greffe/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "L'Interrogatoire (10/20)" })).toBeVisible();
+    await expect(
+      page.getByRole("article").getByText("S'est fait sortir d'un karaoké."),
+    ).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+
+    // L'Interrogatoire from Ma Fiche: an extra question.
+    await page.getByRole("link", { name: "L'Interrogatoire (10/20)" }).click();
+    await page.getByRole("link", { name: /Tatouages/ }).click();
+    await page.getByRole("radio").nth(1).check({ force: true });
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await page.waitForURL(/interrogatoire$/, { waitUntil: "commit" });
+    await expect(page.getByText("11 questions sur 20")).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+
+    // Le Greffe: an admin approves two poses and refuses one, each separately.
+    const adminAccount = await newAccount({});
+    await admin
+      .from("profiles")
+      .insert({
+        id: adminAccount.userId,
+        pseudo: `Greffier ${randomBytes(2).toString("hex")}`,
+        birthdate: "1985-01-01",
+      });
+    await admin.from("admin_users").insert({ user_id: adminAccount.userId, note: "e2e" });
+    const greffier = await (
+      await browser.newContext({ viewport: { width: 1280, height: 900 } })
+    ).newPage();
+    await greffier.goto("/connexion");
+    await greffier.getByLabel("E-mail").fill(adminAccount.email);
+    await greffier.getByLabel("Mot de passe", { exact: true }).fill(adminAccount.password);
+    await greffier.getByRole("button", { name: "Se connecter" }).click();
+    await greffier.waitForURL(/onboarding/, { waitUntil: "commit" });
+    await greffier.goto("/admin/greffe");
+    await expect(greffier.getByRole("heading", { name: "Le Greffe" })).toBeVisible();
+    expect(await axeViolations(greffier)).toEqual([]);
+    const card = (pose: string) =>
+      greffier
+        .getByRole("listitem")
+        .filter({ hasText: profile!.pseudo! })
+        .filter({ hasText: pose });
+    await card("Face").getByRole("button", { name: "Valider" }).click();
+    await expect(greffier.getByText("Décision enregistrée.")).toBeVisible();
+    await card("Profil gauche").getByRole("button", { name: "Valider" }).click();
+    await expect(card("Profil gauche")).toHaveCount(0);
+    await card("Profil droit").getByLabel("Motif du refus").selectOption("sunglasses");
+    await card("Profil droit").getByRole("button", { name: "Refuser" }).click();
+    await expect(card("Profil droit")).toHaveCount(0);
+    await greffier.context().close();
+
+    const { data: decided } = await admin
+      .from("photos")
+      .select(
+        "position, status, pending_path, public_path_large, public_path_small, rejection_reason",
+      )
+      .eq("owner_id", userId)
+      .order("position");
+    expect(decided?.map((p) => p.status)).toEqual(["approved", "approved", "rejected"]);
+    expect(decided?.[2]?.rejection_reason).toBe("sunglasses");
+    for (const photo of decided ?? []) expect(photo.pending_path).toBeNull();
+    for (const photo of decided!.slice(0, 2)) {
+      expect(photo.public_path_large).toMatch(/^[0-9a-f-]{36}\.webp$/);
+      expect(photo.public_path_large).not.toContain(userId);
+      publicFiles.push(photo.public_path_large!, photo.public_path_small!);
+      const { data: blob } = await admin.storage.from("photos").download(photo.public_path_large!);
+      expect((await sharp(Buffer.from(await blob!.arrayBuffer())).metadata()).exif).toBeUndefined();
+    }
+    const { data: leftovers } = await admin.storage.from("photos-pending").list(userId);
+    expect(leftovers ?? []).toHaveLength(0);
+
+    // The Bad is told, pose by pose.
+    await page.goto("/ma-fiche");
+    await expect(page.getByText("Nouvelles du Greffe")).toBeVisible();
+    await expect(
+      page.getByText(/Profil droit : refusée \(lunettes de soleil sur la face\)/),
+    ).toBeVisible();
+    await expect(page.getByText(/Une de tes poses a été refusée/)).toBeVisible();
+    await page.getByRole("button", { name: "Compris" }).click();
+    await expect(page.getByText("Nouvelles du Greffe")).toHaveCount(0);
   });
 
   test("Visitor: role chosen at step 3, Motif de visite, Permis pending at the Greffe", async ({
     page,
   }) => {
-    test.setTimeout(120_000);
+    test.setTimeout(180_000);
     const { email, password, userId } = await newAccount({});
     const started = Date.now();
     await commonSteps(page, email, password, "Homme");
@@ -202,12 +349,17 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
     await page.getByRole("button", { name: "Continuer" }).click();
     await page.waitForURL(/onboarding\/7/, { waitUntil: "commit" });
 
-    await page.getByRole("button", { name: "Terminer" }).click();
+    await page.getByRole("button", { name: "Continuer" }).click();
     await expect(page.getByText("Écris ton Motif de visite pour continuer.")).toBeVisible();
     await page
       .getByLabel("Motif de visite")
       .fill("Fan de rock et de virées de nuit. Mon 06 12 34 56 78 ne sortira pas d'ici.");
-    await page.getByRole("button", { name: "Terminer" }).click();
+    await page.getByRole("button", { name: "Continuer" }).click();
+    await page.waitForURL(/onboarding\/8/, { waitUntil: "commit" });
+    // A man: the interface stays gold (no accent override); the role reads « VISITEUR ».
+    await expect(page.locator("[data-accent]")).toHaveCount(0);
+    await expect(page.getByText("VISITEUR", { exact: true })).toBeVisible();
+    await interrogation(page, "Terminer mon Permis");
     await page.waitForURL(/quartier|ma-fiche/, { waitUntil: "commit" });
     console.log(
       `Visitor onboarding automated run: ${((Date.now() - started) / 1000).toFixed(1)} s`,

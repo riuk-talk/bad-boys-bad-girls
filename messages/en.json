@@ -515,6 +515,8 @@
     }
   },
   "App": {
+    "roleTag_bad": "BAD",
+    "roleTag_visitor": "VISITOR",
     "navLabel": "My space",
     "myFiche": "My File",
     "signOut": "Log out",
@@ -534,7 +536,11 @@
       "seeking_visitor": "Who you want to visit",
       "photo": "Your photo",
       "motive": "Your Reason for visiting",
-      "practice": "One true, two false. Which one is true?"
+      "practice": "One true, two false. Which one is true?",
+      "poses": "Step up to the height chart",
+      "casier": "One true, two false.",
+      "casierCheck": "Here's what Visitors will see",
+      "interrogation": "The Interrogation"
     },
     "age": {
       "lead": "Bad Boys & Bad Girls is for adults only. Your date of birth is only used to check that: only your age will be shown.",
@@ -600,7 +606,13 @@
       "configuration": "The service isn't configured yet. Come back a bit later.",
       "roleRequired": "Choose your role to continue.",
       "motiveRequired": "Write your Reason for visiting to continue.",
-      "motiveTooLong": "280 characters max."
+      "motiveTooLong": "280 characters max.",
+      "answerRequired": "Choose an answer to continue.",
+      "acceptedRequired": "Accept at least one answer from the other person.",
+      "posesRequired": "A pose is missing: left profile, face and right profile are all required.",
+      "chargeRequired": "Write this charge.",
+      "chargeTooLong": "120 characters maximum.",
+      "chargesDuplicate": "Two charges are identical: each one must be different."
     },
     "title": "Your sign-up",
     "title_bad": "Your Case File",
@@ -626,7 +638,6 @@
       "hint": "{max} characters max. Emails, phone numbers and links are hidden."
     },
     "practice": {
-      "kicker": "Practice",
       "lead": "Every Bad has a Record such as this one. To ask them for a visit, you bet on the charge you think is true.",
       "caseLabel": "Fictional example · Record no. 000",
       "charges": [
@@ -642,6 +653,158 @@
       "secretNote": "On the site, the verdict stays <strong>secret until the visit</strong>. It shows as the first message in the Visiting Room, for both of you. Right or wrong, your request always goes out.",
       "cta": "Got it, I'm getting my Permit",
       "skip": "Skip"
+    },
+    "kickers": {
+      "practice": "Practise",
+      "poses": "Mugshot",
+      "casier": "Your Record",
+      "casierCheck": "Test your Record",
+      "interrogation": "Interrogation"
+    },
+    "poses": {
+      "lead": "Three poses, just as on a real file: one profile, the face, the other profile.",
+      "left": "Left profile",
+      "face": "Face · required",
+      "right": "Right profile",
+      "added": "Added",
+      "todo": "To do",
+      "add": "Add",
+      "replace": "Change",
+      "uploading": "Uploading…",
+      "previewAlt": "Your photo: {pose}",
+      "rulesTitle": "The Registry's rules",
+      "rules": [
+        "Your face, clearly visible, alone in the photo.",
+        "No sunglasses on the face shot.",
+        "No nudity. Every photo is checked within 12 hours."
+      ],
+      "submit": "Hand in to the Registry",
+      "approved": "Approved",
+      "rejected": "Refused: {reason}"
+    },
+    "casier": {
+      "lead": "Start with the true one: the most striking fact about you. The two false ones come next.",
+      "stage_1": "1 · The true one",
+      "stage_2": "2 · A false one",
+      "stage_3": "3 · A false one",
+      "stagesLabel": "The three charges",
+      "themesLabel": "Need an idea? Pick a theme.",
+      "themes": {
+        "travel": "Travel",
+        "night": "Nights out",
+        "moto": "Motorbikes",
+        "love": "Love",
+        "childhood": "Childhood",
+        "work": "Work",
+        "mischief": "Mischief"
+      },
+      "otherIdea": "Another idea",
+      "useIdea": "Use it",
+      "promptLabel": "Prompt: fill in the ___ with a fact from your life.",
+      "label_1": "Charge no. 1 · The true one",
+      "label_2": "Charge no. 2 · A false one",
+      "label_3": "Charge no. 3 · A false one",
+      "hint_1": "A precise fact about your life.",
+      "hint_false": "A false one people could believe: neither impossible nor dull.",
+      "count": "{count} / 120",
+      "tooShort": "A bit short: a precise fact is easier to bet on.",
+      "forbidden": "Not allowed in the Record: real offences, violence, drugs, contact details.",
+      "next_1": "Next: the first false one",
+      "next_2": "Next: the second false one",
+      "submit": "See my Record",
+      "back": "Back",
+      "prompts": {
+        "travel": [
+          "Once crossed ___ without ___.",
+          "Spent a whole night asleep in ___.",
+          "Got lost in ___ for ___.",
+          "Missed ___ because of ___.",
+          "Tasted ___ in ___ and never got over it.",
+          "Left for ___ on a whim, with only ___.",
+          "Travelled ___ kilometres by ___.",
+          "Knows ___ better than their own town.",
+          "Can say \"___\" in ___ languages."
+        ],
+        "night": [
+          "Got shown the door at ___ for ___.",
+          "Sang ___ in front of ___ people.",
+          "Danced for ___ hours straight at ___.",
+          "Ended a night out in ___ with ___.",
+          "Came home from a ___ gig without ___.",
+          "Won ___ at ___ against ___.",
+          "Organised ___ for ___ in a single night.",
+          "Knows ___ by ___ by heart.",
+          "Stayed until closing time at ___ ___ times in a row."
+        ],
+        "moto": [
+          "Rode ___ kilometres on a motorbike in a single ___.",
+          "Learned to ride a motorbike with ___.",
+          "Named their motorbike ___.",
+          "Fixed ___ with ___ by the side of the road.",
+          "Rode through ___ all the way to ___.",
+          "Did ___ riding pillion with ___.",
+          "Always keeps ___ in their helmet.",
+          "Met ___ at a motorway service station."
+        ],
+        "love": [
+          "Wrote ___ for ___ and never sent it.",
+          "Crossed ___ for a first date.",
+          "Drove ___ hours for a ___-minute dinner.",
+          "Did ___ to impress ___.",
+          "Declared their feelings with ___.",
+          "Got stood up at ___ and stayed ___.",
+          "Still keeps ___ from a ___ romance.",
+          "Learned ___ just to win over ___."
+        ],
+        "childhood": [
+          "Got sent to the head teacher at ___ for ___.",
+          "Dreamed of becoming ___.",
+          "Collected ___ for ___ years.",
+          "Won ___ at school thanks to ___.",
+          "Built ___ in ___.",
+          "Had ___ as a pet.",
+          "Convinced the whole class that ___.",
+          "Was a die-hard fan of ___ at ___.",
+          "Spent every summer in ___."
+        ],
+        "work": [
+          "Worked as ___ for ___.",
+          "Quit ___ to ___.",
+          "Served ___ to ___ without recognising them.",
+          "Learned ___ in a single ___.",
+          "Had the worst job interview of their life at ___.",
+          "Fell asleep ___ at work.",
+          "Changed jobs ___ times before ___.",
+          "Has a hidden talent for ___."
+        ],
+        "mischief": [
+          "Took the wrong ___ and ended up in ___.",
+          "Accidentally dyed ___ ___.",
+          "Ate ___ on a dare.",
+          "Got locked out in ___.",
+          "Broke ___ while trying to ___.",
+          "Missed ___ because they were busy ___.",
+          "Did ___ in pyjamas.",
+          "Called ___ by the wrong name for ___.",
+          "Has a ___ tattoo they don't regret one bit."
+        ]
+      }
+    },
+    "casierCheck": {
+      "lead": "Your Record as a Visitor sees it: the three lines shuffled, with no sign of the true one.",
+      "caseLabel": "Record no. {number}",
+      "trueLabel": "The true one · only you can see this",
+      "long": "Careful: this line is much longer than the other two.",
+      "short": "Careful: this line is much shorter than the other two.",
+      "shortLine": "A bit short: a precise fact is easier to bet on.",
+      "tipsTitle": "The Prompter's tips",
+      "tips": [
+        "Same length for all three lines: a line that sticks out often gives the true one away.",
+        "Believable false ones: neither impossible nor dull.",
+        "A surprising true one: that's the one people remember."
+      ],
+      "ready": "My Record is ready",
+      "rework": "Rework it"
     }
   },
   "MyFiche": {
@@ -678,10 +841,10 @@
     "title_bad": "My File",
     "title_visitor": "My Visiting Permit",
     "status_bad": {
-      "pending": "Your ID photo is with the Registry (goal: under 12 hours). Until then, nobody can see your File.",
-      "approved": "Your ID photo is approved by the Registry.",
-      "rejected": "Your ID photo was refused: {reason}. Replace it so your File can be shown.",
-      "missing": "Add your ID photo so your File can be approved."
+      "pending": "Your 3 poses are at the Registry (target: under 12 hours). Until then, nobody can see your File.",
+      "approved": "Your 3 poses have been approved by the Registry.",
+      "rejected": "One of your poses was refused by the Registry. Replace it so your File can be seen.",
+      "missing": "A pose is missing: add your left profile, your face and your right profile so your File can be approved."
     },
     "status_visitor": {
       "pending": "Permit pending at the Registry (goal: under 12 hours). You'll be able to browse Bads once your block opens; visit requests wait for your Permit.",
@@ -693,11 +856,23 @@
     "editTitle_visitor": "Edit my Permit",
     "photosTitle_bad": "My photos",
     "photosTitle_visitor": "My photo",
-    "photosHint_bad": "1 to 6 photos. The first one is your ID photo.",
+    "photosHint_bad": "The 3-pose line-up (left profile, face, right profile) is required; up to 3 more photos.",
     "photosHint_visitor": "A single photo on the Permit, face visible. Replacing it sends it back to the Registry.",
     "replacePhoto": "Replace my photo",
     "motive": "Reason for visiting",
-    "motiveHint": "{max} characters max. Emails, phone numbers and links are hidden."
+    "motiveHint": "{max} characters max. Emails, phone numbers and links are hidden.",
+    "shortcutsLabel": "Shortcuts",
+    "interrogationLink": "The Interrogation ({answered}/{total})",
+    "casierLink": "My Record",
+    "extraPhotos": "Extra photos (optional, up to 3)",
+    "notices": {
+      "title": "News from the Registry",
+      "permitGranted": "Your Visiting Permit has been issued: you can now ask for visits.",
+      "approved": "{photo}: approved.",
+      "rejected": "{photo}: refused ({reason}). Replace it.",
+      "photoNumber": "Photo no. {number}",
+      "dismiss": "Got it"
+    }
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
@@ -722,5 +897,68 @@
     "openLink_bad": "See my File",
     "openLink_visitor": "See my Permit",
     "referralLead": "The more Bads your block has, the sooner it opens. Share your link:"
+  },
+  "Interrogation": {
+    "kicker": "Interrogation · {current}/{total}",
+    "questionOf": "Question {current} of {total}",
+    "refine": "Refine",
+    "accepted": "What you accept from the other person",
+    "acceptedHint": "By default, every answer is accepted. Untick the ones that don't suit you.",
+    "importance": "For you, it's…",
+    "importance_low": "Not very important",
+    "importance_important": "Important",
+    "importance_essential": "Essential",
+    "privacy": "Nobody sees your answers one by one: they are used to compute the complicity score.",
+    "next": "Next question",
+    "finish_bad": "Finish my File",
+    "finish_visitor": "Finish my Permit",
+    "previous": "Previous question",
+    "saving": "Saving…",
+    "title": "The Interrogation",
+    "lead": "The more you answer, the more accurate the complicity score. Your answers are never shown one by one.",
+    "core": "The core (sign-up)",
+    "extra": "Going further",
+    "answered": "Answered",
+    "todo": "Not answered yet",
+    "answer": "Answer",
+    "edit": "Edit",
+    "save": "Save",
+    "backToList": "All questions",
+    "count": "{answered} of {total} questions"
+  },
+  "Greffe": {
+    "title": "The Registry",
+    "lead": "One decision per photo. Priority: Visitors' face photos in an open area, then the Bads' 3 poses, then the rest. Rules: face visible, alone in the photo, no sunglasses on the face shot, no nudity, no contact details, an adult.",
+    "empty": "No photo waiting.",
+    "waiting": "{count, plural, one {# photo waiting} other {# photos waiting}}",
+    "roles": {
+      "bad": "Bad",
+      "visitor": "Visitor"
+    },
+    "positions": {
+      "face": "Face",
+      "left": "Left profile",
+      "right": "Right profile",
+      "extra": "Photo no. {number}"
+    },
+    "photoAlt": "{position} of {pseudo}",
+    "approve": "Approve",
+    "reject": "Refuse",
+    "reasonLabel": "Reason for refusal",
+    "done": "Decision recorded.",
+    "errors": {
+      "notPending": "This photo has already been handled.",
+      "generic": "The decision could not be recorded. Try again."
+    },
+    "reasons": {
+      "face_hidden": "face not visible enough",
+      "not_alone": "you are not alone in the photo",
+      "sunglasses": "sunglasses on the face shot",
+      "nudity": "nudity",
+      "contacts": "contact details visible",
+      "wrong_pose": "wrong pose (face or profile)",
+      "not_adult": "the person looks underage",
+      "other": "photo not in line with the Registry's rules"
+    }
   }
 }

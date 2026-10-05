@@ -16,7 +16,7 @@ export function Checkbox({ id, label, error, className, ...props }: CheckboxProp
           type="checkbox"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
-          className={cn("accent-gold mt-0.5 size-6 shrink-0", className)}
+          className={cn("accent-accent mt-0.5 size-6 shrink-0", className)}
           {...props}
         />
         <label htmlFor={id} className="text-base leading-snug">

@@ -22,7 +22,7 @@ export function EmptyState({
       )}
     >
       {icon ? (
-        <div aria-hidden="true" className="text-gold">
+        <div aria-hidden="true" className="text-accent">
           {icon}
         </div>
       ) : null}
