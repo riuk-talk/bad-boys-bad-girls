@@ -4,7 +4,53 @@
 
 ## Phase en cours
 
-**Phase 2c — Habillage : terminée, en attente de validation** (branche `phase-2c-habillage`). Phase 2b validée et fusionnée (PR #7, avec la PR #6).
+**Phase 3 — 3a et 3b terminées, arrêt pour relecture sécurité** (branche `phase-3`) avant les écrans 3c à 3e. Phase 2c validée et fusionnée (PR #8), en production.
+
+## Phase 3 — QCM, indice de complicité, Casier, Greffe (2026-10-05)
+
+### Découpage validé
+3a base (QCM, Casier, onboarding en 8 étapes) · 3b indice de complicité · **arrêt relecture sécurité** · 3c écran QCM · 3d Casier + « Teste ton Casier » · 3e Greffe minimum · 3f vérification.
+
+### Décisions (porteur, 2026-10-05)
+| Décision | Raison |
+|---|---|
+| `onboarding_step` 0–8 et `complete_onboarding` → 8 | 8 étapes pour les deux rôles (SPEC §4) ; « ≤ 7 » était l'état existant |
+| `complete_onboarding` exige le Casier (Bad) et le QCM socle (les deux), sans cas particulier | 0 profil en base |
+| Coordonnées masquées dans les chefs d'accusation (`mask_contacts`) | Même traitement que la présentation et le Motif |
+| Alerte d'équilibre : chaque phrase comparée à la moyenne des deux autres, ±40 %, non bloquante | Remplace « une phrase dépasse les autres de 40 % » (LANDING-DESIGN §2.2, SPEC §6) |
+| 60 amorces et anglais du QCM dans `docs/content/` | Relus par le conseiller de Chris avant la PR |
+| Ton « Bad, pas toxique » : aucune violence, drogue, crime grave ni contenu sexuel | Amorces et traductions |
+
+### Fait (vérifié)
+- **3a — migration `20261005045519_phase3_qcm_casier`** (appliquée au dev, présente dans l'historique) :
+  - types `importance`, `question_phase` ; `importance_weight()` ;
+  - `questions` / `question_options` + seed des 20 questions (français mot pour mot depuis la SPEC, vérifié par script ; anglais de `docs/content/questions-en.md`) ;
+  - `answers` : option de la même question (clé composée), acceptations dédoublonnées et validées, « toutes » = `null`, question inactive refusée ;
+  - `casier_charges` : Bads seulement (politique **et** trigger, même pour le propriétaire de la base), masquage des coordonnées, mots-clés signalés (`flag_source = casier`, ligne n° 1/2/3), `casier_updated_at`, aucune suppression via l'API, lecture seule pour un ex-Bad ;
+  - contrainte `onboarding_step` 0–8 ; `complete_onboarding()` v3 ;
+  - RLS sur les 4 tables, droits remis à zéro (Supabase les accorde par défaut), types TypeScript régénérés.
+- **3b — indice de complicité** :
+  - `complicity_score(a, b)` et `common_points(a, b, n)` en SQL, **internes** (aucun droit pour `authenticated` / `anon`) ;
+  - `lib/complicity.ts` ;
+  - arrondi au demi supérieur calculé en entiers exacts des deux côtés (aucun écart possible dû aux flottants) ;
+  - **23 cas partagés** (`tests/fixtures/complicity-cases.json`), attendus calculés par une 3e implémentation en fractions exactes : moins de 5 questions communes, compatibilité parfaite, incompatibilité totale, indispensable non satisfait (dans chaque sens, et sous 50 %), poids, demis exacts 12,5 et 87,5, 8 cas mélangés tirés au hasard (graine fixe).
+- **pgTAP (base de dev)** :
+  - `phase3_complicity_parity` : **46/46** (23 cas × 2 sens) ;
+  - `phase3_security` : 14 groupes, **63/63** ;
+  - `phase2_security` : 22 groupes, **104/104** (deux tests adaptés : terminer un onboarding demande maintenant le Casier et le QCM) ;
+  - base revérifiée vide après les tests.
+- **Vérifications** : typecheck, lint, **93 tests unitaires** (dont les 23 cas TS et le contrôle que le fichier pgTAP de parité est à jour), build.
+- **Contenus à relire** : `docs/content/casier-amorces.md` (60 amorces FR + EN), `docs/content/questions-en.md`.
+
+### Points à connaître
+1. **Un seul projet Supabase** (`chvnmzmvcjvhxlnfmlvv`) sert le dev **et** la production Vercel. Depuis la migration 3a, `complete_onboarding` exige le Casier et le QCM alors que les écrans arrivent en 3c/3d : **un nouvel inscrit ne peut plus terminer son onboarding, en production comme en prévisualisation**, jusqu'à la fin de 3d. Impact actuel nul (0 profil). Recommandation : créer un projet Supabase de production séparé (l'offre gratuite en autorise 2) avant l'ouverture des inscriptions.
+2. **Le connecteur Supabase annule tout script contenant un `DELETE`**, même dans un test annulé ensuite. Les tests pgTAP de la Phase 3 vérifient donc les suppressions par les droits et les politiques (catalogue), sans exécuter de `DELETE`.
+3. **`moderation_keywords` est vide** : le signalement des chefs d'accusation fonctionne (testé avec un mot ajouté pendant le test), mais ne signalera rien tant que la liste de départ n'est pas saisie. Proposition : je la rédige en 3d avec les amorces.
+4. Le fichier pgTAP de parité est **généré** depuis le fichier de cas (`UPDATE_PGTAP=1 pnpm vitest run tests/unit/complicity.test.ts`) ; le test unitaire échoue s'il n'est pas à jour.
+
+### Pour plus tard (hors Phase 3)
+- Anglais : remplacer « step up to the height chart » par « step into the lineup » avant l'ouverture internationale.
+
 
 ## Phase 2c — Habillage (2026-10-04, `docs/LANDING-DESIGN.md`)
 

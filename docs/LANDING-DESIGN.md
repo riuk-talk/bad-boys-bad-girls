@@ -42,7 +42,7 @@ Contraintes inchangées : budget JS (tout en CSS, aucun JS pour les animations),
 - Aperçu de **son propre Casier** tel qu'un Visiteur le voit ; le vrai porte une étiquette « LE VRAI · visible par toi seul ».
 - Encadré « Les conseils du Souffleur » : même longueur pour les trois phrases ; des faux plausibles (ni impossibles, ni banals) ; un vrai surprenant.
 - Boutons « Mon Casier est prêt » (suite) et « Le retravailler » (retour à la saisie).
-- Bonus si simple : un indicateur automatique « Attention, une phrase est beaucoup plus longue que les autres » (écart de longueur > 40 %), conseil non bloquant.
+- Bonus si simple : un indicateur automatique de longueur, conseil non bloquant. **Règle validée (2026-10-05)** : chaque phrase est comparée à la moyenne des deux autres ; alerte si elle est plus de 40 % plus longue **ou** plus de 40 % plus courte. Cas limites testés (Phase 3d).
 
 ## 3. Vérification demandée
 Captures mobile (390 px) et desktop de la nouvelle landing et des deux écrans, Lighthouse mobile de la landing (budget JS et LCP inchangés), axe-core 0 violation.

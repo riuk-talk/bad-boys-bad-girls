@@ -165,6 +165,8 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
   - bouton « Autre idée » pour tirer une nouvelle amorce ; écriture libre toujours possible ;
   - un aperçu montre le Casier tel que les Visiteurs le verront (ordre mélangé, sans indication du vrai).
 - Qualité : moins de 25 caractères par ligne → conseil, sans bloquer.
+- Équilibre (v7.3, « Teste ton Casier ») : chaque ligne est comparée à la moyenne des deux autres ; plus de 40 % plus longue **ou** plus courte → conseil, sans bloquer (une ligne qui dépasse trahit souvent le vrai).
+- Coordonnées masquées dans les trois lignes (`mask_contacts`, comme la présentation et le Motif de visite).
 - **Règle du jeu** : chaque ligne est un **fait** précis sur sa propre vie, sinon il n'y a rien à deviner.
 - **[P1] Clichés déconseillés** : liste en base (`casier_cliches`, FR + EN) qui détecte les formules génériques et affiche « Ça, tout le monde peut l'écrire. Donne un vrai fait. », avec une amorce proposée. Liste de départ : « vol de cœur(s) », « excès de charme », « trop beau / trop belle », « séduction non autorisée », « briseur / briseuse de cœurs », « coupable d'être moi-même », « tapage nocturne » (sans détail), « récidiviste de l'amour ». Conseil non bloquant.
 - **Interdit** (écrit dans l'UI et les CGU) : vrais délits, violence, drogues, références à des mineurs, coordonnées. Un filtre par mots-clés (FR + EN, table `moderation_keywords`) **signale** le texte à la modération sans le bloquer.
@@ -255,7 +257,7 @@ Pour chaque question :
 
 Calcul pour A et B sur les questions répondues par les deux (minimum 5, sinon « Pas encore assez d'indices ») :
 - `satisfaction(A→B) = Σ poids_A des questions où la réponse de B ∈ acceptées_A / Σ poids_A`
-- `indice = sqrt(satisfaction(A→B) × satisfaction(B→A))`, affiché en % arrondi.
+- `indice = sqrt(satisfaction(A→B) × satisfaction(B→A))`, affiché en % arrondi (au demi supérieur : 12,5 → 13).
 - Une question « indispensable » non satisfaite dans un sens plafonne l'indice à 50 %.
 - Implémenté en SQL (`complicity_score`) **et** en TypeScript pur (`lib/complicity.ts`), avec tests de parité.
 - **Calculé à la volée** entre un Visiteur et des Bads (Promenade, Découverte, Fiche) ou entre un Bad et un Visiteur qui lui a écrit (« Le Courrier »). Pas de table de cache au MVP.
