@@ -888,6 +888,100 @@ export type Database = {
           },
         ]
       }
+      push_outbox: {
+        Row: {
+          attempts: number
+          created_at: string
+          dedupe_key: string
+          id: number
+          not_before: string
+          payload: Json
+          sent_at: string | null
+          status: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          dedupe_key: string
+          id?: never
+          not_before?: string
+          payload?: Json
+          sent_at?: string | null
+          status?: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          dedupe_key?: string
+          id?: never
+          not_before?: string
+          payload?: Json
+          sent_at?: string | null
+          status?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_outbox_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string | null
+          created_at: string
+          endpoint: string | null
+          failure_count: number
+          id: string
+          last_success_at: string | null
+          locale: string
+          p256dh: string | null
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auth?: string | null
+          created_at?: string
+          endpoint?: string | null
+          failure_count?: number
+          id?: string
+          last_success_at?: string | null
+          locale?: string
+          p256dh?: string | null
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string | null
+          created_at?: string
+          endpoint?: string | null
+          failure_count?: number
+          id?: string
+          last_success_at?: string | null
+          locale?: string
+          p256dh?: string | null
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question_options: {
         Row: {
           id: number
@@ -1375,6 +1469,23 @@ export type Database = {
         Returns: Json
       }
       public_tribes: { Args: { p_owner: string }; Returns: Json }
+      push_claim: {
+        Args: { p_limit?: number }
+        Returns: {
+          attempts: number
+          id: number
+          payload: Json
+          subscriptions: Json
+          type: Database["public"]["Enums"]["notification_type"]
+        }[]
+      }
+      push_device_count: { Args: never; Returns: number }
+      push_dispatch: { Args: never; Returns: boolean }
+      push_path: {
+        Args: { p_type: Database["public"]["Enums"]["notification_type"] }
+        Returns: string
+      }
+      push_report: { Args: { p_report: Json }; Returns: undefined }
       recompute_profile_zones: { Args: never; Returns: number }
       referral_count: { Args: never; Returns: number }
       report: {
@@ -1386,7 +1497,21 @@ export type Database = {
         }
         Returns: number
       }
+      revoke_push_row: { Args: { p_id: string }; Returns: undefined }
+      revoke_push_subscription: {
+        Args: { p_endpoint: string }
+        Returns: undefined
+      }
       run_promenades_due: { Args: never; Returns: undefined }
+      save_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_locale?: string
+          p_p256dh: string
+        }
+        Returns: undefined
+      }
       search_places: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
@@ -1402,6 +1527,10 @@ export type Database = {
       }
       set_onboarding_role: {
         Args: { p_role: Database["public"]["Enums"]["member_role"] }
+        Returns: undefined
+      }
+      set_push_secret: {
+        Args: { p_name: string; p_value: string }
         Returns: undefined
       }
       touch_activity: { Args: never; Returns: undefined }
