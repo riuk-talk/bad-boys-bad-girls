@@ -109,6 +109,7 @@ RLS : **S** `authenticated` ; écriture via fonctions admin. (B1) `admin_upsert_
 | `id` | `uuid` | PK, → `auth.users(id) on delete cascade` |
 | `role` | `member_role` | **[v2]** null jusqu'à l'étape 3 ; obligatoire pour terminer l'onboarding — **protégé** (écrit par `set_onboarding_role()` puis `change_role()`) |
 | `role_changed_at` | `timestamptz` | **[v2]** dernier changement après l'onboarding (règle des 7 jours) — **protégé** |
+| `ecrou` | `char(6)` | **en base (Phase 4a)** — N° d'écrou : 6 chiffres aléatoires, unique (index partiel), donné par le trigger quand le rôle devient `bad`, jamais choisi ni modifié (même par le propriétaire de la base), conservé si le rôle change ; jamais dérivé de `id` ; aucune fonction ne le prend en entrée ; affiché seulement par `get_fiche()` — **protégé** |
 | `pseudo` | `citext` | unique, 3–20 ; refus e-mails/téléphones/liens |
 | `birthdate` | `date` | trigger âge ≥ 18 ; via `set_birthdate()` seulement |
 | `gender` | `gender` | |
@@ -166,10 +167,11 @@ Comme en v1 ; l'option doit appartenir à la question (clé étrangère composé
 
 ### 2.3 Interactions
 
-#### `blocks` — inchangé (sauf effet de `block_user`)
+#### `blocks` — **en base (Phase 4a)**
+`blocker_id`, `blocked_id`, `created_at`, `unblocked_at` (PK couple) : un blocage n'est jamais supprimé, `unblock_user()` remplit `unblocked_at` (historique gardé, aucun `DELETE`). RLS : **S** propres lignes (liste « Bloqués ») ; **I/U** via `block_user()` / `unblock_user()` seulement.
 `block_user()` **[v2-modif]** : annule les demandes en cours, annule les visites programmées (`cancelled`, sans pénalité pour le bloqueur), ferme la conversation (`blocked`), le tout atomiquement.
 
-#### `visit_requests` — la Demande de parloir — **[v2-nouveau]** (remplace `pleas`)
+#### `visit_requests` — la Demande de parloir — **en base (Phase 4a)** (remplace `pleas`)
 | Colonne | Type | Contraintes |
 |---|---|---|
 | `id` | `uuid` | PK |
@@ -187,11 +189,11 @@ Comme en v1 ; l'option doit appartenir à la question (clé étrangère composé
 | `choose_deadline` | `timestamptz` | proposition + 48 h (le Visiteur choisit) |
 | `repropose_deadline` | `timestamptz` | + 48 h (le Bad repropose après « Aucun ne me va » ou absence) |
 | `no_show_count` | `smallint` | absences dans ce couple ; 2 → classement |
-| `conversation_id` | `uuid` → `conversations` | créée au premier créneau choisi |
+| `conversation_id` | `uuid` → `conversations` | créée au premier créneau choisi (colonne sans clé étrangère jusqu'à la Phase 5) |
 | `created_at`, `decided_at`, `closed_at` | `timestamptz` | |
 
 Index : unique partiel (`visitor_id`, `bad_id`) `where status in ('pending','accepted')` (1 en cours par couple) ; (`bad_id`, `status`, `created_at`) (« Le Courrier ») ; (`visitor_id`, `created_at desc`) (5/24 h + anti-arnaque 7 j) ; (`status`, `created_at`) partiel `pending` (expiration 7 j) ; (`choose_deadline`) partiel et (`repropose_deadline`) partiel (tâche minute) ; (`visitor_id`, `bad_id`, `closed_at desc`) (délai de 30 j).
-RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_progress'` pour ce couple, **aucune** fonction ne renvoie `guess_correct` ni `true_index` (à personne), et `get_mailbox()` (Bad) ne renvoie ni `guessed_index` ni le texte du chef choisi. `get_my_requests()` (Visiteur) peut lui rappeler le chef qu'il a lui-même choisi, jamais le résultat. Chef choisi et résultat sont révélés ensemble par le message système inséré par `run_visit_ticks` au début de la visite.
+RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_progress'` pour ce couple, **aucune** fonction ne renvoie `guess_correct` ni `true_index` (à personne), et `get_mailbox()` (Bad) ne renvoie ni `guessed_index` ni le texte du chef choisi. `get_my_requests()` (Visiteur) ne renvoie **ni le chef qu'il a choisi ni le résultat** (décision du porteur, 2026-10-05 : aucune fonction ne renvoie `true_index`, le chef choisi, la copie du Casier ou le résultat du pari, au Bad, au Visiteur ou à un tiers ; prouvé par `phase4_relations.test.sql`). Chef choisi et résultat sont révélés ensemble par le message système inséré par `run_visit_ticks` au début de la visite.
 
 #### `visit_slots` — les Heures de visite — **[v2-nouveau]**
 | Colonne | Type | Contraintes |
@@ -251,19 +253,19 @@ Realtime : Postgres Changes sur `messages` (filtre `conversation_id`), ouvert un
 #### `date_proposals` — la Cavale — inchangé (Phase 6)
 `propose_date` exige une conversation `open` (Permis permanent).
 
-#### `promenade_picks` — la Promenade — **[v2-modif]** (remplace `daily_hearings`, jamais créée)
+#### `promenade_picks` — la Promenade — **en base (Phase 4a)** (remplace `daily_hearings`, jamais créée)
 `id bigint identity PK`, `visitor_id → profiles on delete cascade`, `bad_id → profiles on delete cascade`, `zone_id`, `promenade_date date` (date locale), `rank smallint` (1–5), `score smallint`, `visible_from`, `visible_until`, `seen_at`.
 Contraintes : unique (`visitor_id`, `promenade_date`, `bad_id`), unique (`visitor_id`, `promenade_date`, `rank`).
-Index : (`visitor_id`, `visible_from desc`) ; (`bad_id`, `promenade_date`) (exclusion 14 j + plafond d'apparitions).
+Index : (`visitor_id`, `visible_from desc`) ; (`bad_id`, `promenade_date`) (exclusion 14 j + plafond d'apparitions) ; (`zone_id`, `promenade_date`) (tâche horaire).
 RLS : **S** — (via `get_my_promenade()`) ; **U** — (`mark_promenade_seen()`).
 
-#### `reports`, `moderation_actions`, `flagged_texts` — inchangés sauf enums
-`reports.target_type` accepte `permit` et `visit_request`. `flagged_texts` est déjà en base.
+#### `reports`, `moderation_actions`, `flagged_texts` — **en base (Phase 4a, `flagged_texts` depuis la 2b)**
+`reports.target_type` accepte `permit` et `visit_request`. `report()` (Phase 4a, relecture) : signaleur avec inscription terminée ; cible visible pour lui, ou en relation (demande en cours ou passée), ou bloquée par lui, sinon `not_found`. Règle « mineur » : masquage immédiat après 2 signaleurs distincts **établis** (photo validée par le Greffe, compte de plus de 7 jours), ou 1 Bad « Bonne conduite ». `flagged_texts` est déjà en base.
 
 ### 2.4 Notifications, push, e-mails, activité
 
 #### `notifications` — **en base (Phase 3)** (type `notification_type` v2)
-Écrites uniquement par des fonctions SQL (le Greffe : `moderation_decision` par photo, `permit_granted` pour la face d'un Visiteur). RLS **S** propriétaire ; aucune écriture membre ; `mark_notifications_read()`.
+Écrites uniquement par des fonctions SQL (le Greffe : `moderation_decision` par photo, `permit_granted` pour la face d'un Visiteur). RLS **S** propriétaire ; aucune écriture membre ; `mark_notifications_read()` (toutes, Greffe) et `mark_notifications_read(types[])` (Phase 4 : chaque écran ne marque lues que ses propres types ; la version sans argument n'est plus appelée par l'application).
 `id`, `user_id`, `type`, `payload jsonb`, `read_at`, `created_at`. RLS : **S** propriétaire ; **U** via `mark_notifications_read()`.
 
 #### `notification_preferences` — **[v2-modif]** (en base)
@@ -326,7 +328,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `complicity_score(a, b)` → `(score, common_count, capped)`, `common_points(a, b, n)` | **en base (Phase 3a), internes** : aucun droit `execute` pour `authenticated` ni `anon` (sinon un membre pourrait sonder les réponses d'un autre en variant les siennes). Appelées par `get_fiche`, `get_permit`, `get_mailbox` (Phase 4), qui contrôlent la visibilité. Arrondi au demi supérieur en entiers exacts ; miroir `lib/complicity.ts`, parité sur `tests/fixtures/complicity-cases.json` | **[Phase 3]** |
 | `get_fiche(bad)` | autorisée si `can_view_bad` **ou** `has_open_relation` ; jamais en cas de blocage. Pseudo, âge, ville, photos validées, bio, signes, Casier sans le vrai, « Casier modifié depuis », indice + 3 points communs, Bonne conduite, `requests_open`, demande en cours ou délai | **[v2-modif]** |
 | `get_permit(visitor)` | appelant = le Visiteur lui-même, ou un Bad ayant une relation ouverte ou passée avec lui ; photo 0, pseudo, âge, ville, Motif, signes, `visitor_reputation`, indice + points communs | **[v2-nouveau]** |
-| `discover_bads(age_min, age_max, max_km, tribe_ids, good_conduct_only, recently_active, cursor, limit default 24)` | Visiteurs uniquement ; une seule requête, curseur `(sort_key, id)` | **[v2]** (remplace `discover_profiles`) |
+| `discover_bads(age_min, age_max, max_km, tribe_ids, good_conduct_only, recently_active, cursor, limit default 24)` | Visiteurs uniquement ; une seule requête, curseur `(sort_key, id)` ; conditions de `is_bad_visible` / `criteria_match` / blocages écrites dans la requête (Phase 4f : une fonction SQL avec `set search_path` n'est jamais inlinée), distance, ville et photo calculées pour la page seulement ; équivalence avec `can_view_bad` vérifiée par pgTAP | **[v2]** (remplace `discover_profiles`) |
 | `get_my_promenade()`, `mark_promenade_seen(bad_id)` | Visiteurs uniquement | **[v2]** (remplacent `get_my_hearing`, `mark_hearing_seen`) |
 | `send_visit_request(bad, guessed_index, note)` → `{request_id}` | voir 3.3 ; **ne renvoie pas** le résultat du pari | **[v2]** (remplace `send_plea`) |
 | `decide_visit_request(request_id, accept, slots timestamptz[])` | Bad uniquement ; accepter exige 2 ou 3 créneaux valides ; classer = message neutre | **[v2]** (remplace `decide_plea`) |
@@ -345,6 +347,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `block_user(target)` / `unblock_user(target)` | voir 2.3 | **[v2-modif]** |
 | `report(target_type, target_id, category, comment)` | masquage auto « mineur » si 2 signaleurs ou 1 Bad Bonne conduite | **[v2-modif]** |
 | `send_message(conversation_id, body)` | voir `messages` | **[v2-modif]** |
+| `get_my_blocks()` | Phase 4 : mes blocages actifs (pseudo, date), pour débloquer depuis Ma Fiche | |
 | `mark_conversation_read`, `propose_date`, `respond_date`, `close_conversation`, `reorder_photos`, `referral_count`, `mark_notifications_read` | v1 ; `close_conversation` → `visit_requests.close_reason = closed_after_release` | |
 | `get_counters()` | non-lus, demandes en attente (Bad), créneaux à choisir (Visiteur), prochaine visite, notifications | **[v2-modif]** |
 | `zone_progress()` | `(zone_id, zone_name, status, launch_mode, bads, threshold_bads, bad_girls, min_bad_girls, bad_boys, min_bad_boys, visitors_waiting, ready)` | **[v2-modif]** (en base) |
@@ -371,7 +374,7 @@ v1 + **[v2]** : `admin_upsert_zone(...)` avec `threshold_bads`, `threshold_women
 | Job | Fréquence | Rôle |
 |---|---|---|
 | `run_visit_ticks()` | **[v2-nouveau]** chaque minute (`pg_cron`) | rappels H-1 et à l'heure (notifications + `push_outbox`, idempotents) ; passage `scheduled → in_progress` à l'heure + message système « résultat du pari » ; à +10 min : `no_show` si absence (compteur du couple, 2 → classement) ; à +30 min : `ended` + `end_choice_deadline` ; décisions de fin échues (24 h) ; `choose_deadline` et `repropose_deadline` échus → classement. Puis, si `push_outbox` contient des envois dus : appel `pg_net` vers `/api/cron/push` (secret partagé). Aucun appel HTTP quand il n'y a rien à envoyer. |
-| `run_promenades_due()` → `build_daily_promenade(zone_id, local_date)` | horaire | **[v2]** (remplace `run_hearings_due`) ; SQL ensembliste, critère 5 000 Visiteurs × 1 000 Bads < 5 min |
+| `run_promenades_due()` → `build_daily_promenade(zone_id, local_date)` | horaire | **[v2]** (remplace `run_hearings_due`) ; SQL ensembliste par lots de 500 Visiteurs, réponses en bitsets (complicité = ET + comptes de bits, arrondi exact), places données par paliers (1 Bad pour chaque Visiteur, puis un 2e… jusqu'à 5, plafond par Bad inchangé), tours avec curseur par Visiteur, `work_mem` 32 Mo pour ce job ; sans saturation, mêmes choix que la version 4a (pgTAP) ; 600 × 1 000 en 7,8 s mesuré, 5 000 × 1 000 ≈ 1 min extrapolé |
 | `expire_visit_requests()` | horaire | demandes `pending` > 7 j → `auto_dismissed` |
 | `compute_good_conduct()` | quotidien | **[v2]** (remplace `compute_reglo`) |
 | `process_inactive_profiles()`, `auto_open_zones()`, `cleanup()`, `enqueue_*_emails()` | quotidien / horaire | `auto_open_zones` utilise `counts_for_zone` et renseigne `ready_at` |

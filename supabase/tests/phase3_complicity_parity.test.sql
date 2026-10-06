@@ -1,5 +1,6 @@
 -- GENERATED from tests/fixtures/complicity-cases.json by tests/unit/complicity.test.ts. Do not edit.
--- Parity of public.complicity_score with lib/complicity.ts (SPEC §9), in both directions.
+-- Parity of public.complicity_score with lib/complicity.ts (SPEC §9), in both directions,
+-- and of the set-based public.complicity_with (Découverte, Promenade).
 -- Run: `supabase test db`, or paste this file into the SQL editor / Supabase connector.
 
 create function pg_temp.complicity_member() returns uuid language plpgsql as $$
@@ -40,6 +41,8 @@ begin
       expected, (c ->> 3) || ' (A → B)');
     return next is((select row(score, common_count, capped)::text from public.complicity_score(b, a)),
       expected, (c ->> 3) || ' (B → A)');
+    return next is((select w.score from public.complicity_with(a, array[b]) w),
+      (c -> 2 ->> 0)::smallint, (c ->> 3) || ' (set-based, Découverte and Promenade)');
   end loop;
 end $$;
 

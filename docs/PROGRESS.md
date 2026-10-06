@@ -4,7 +4,72 @@
 
 ## Phase en cours
 
-**Phase 3 — validée par Chris le 2026-10-05**, PR ouverte (branche `phase-3`). Relecture sécurité 3a/3b validée par le porteur le 2026-10-05 (avec corrections, appliquées). Phase 2c validée et fusionnée (PR #8), en production.
+**Phase 4 — terminée, PR ouverte** (branche `phase-4`). 4a validée par le conseiller (relecture sécurité) ; 4b–4f relues par le conseiller, preview confirmée sur `0f68133`, décisions de Chris appliquées (Promenade par paliers, or `#765A0E`, anglais). Phase 3 validée et fusionnée (PR #9), en production. Liaison par l'issue #10 abandonnée (retour au relais manuel).
+
+## Phase 4 — Demande de parloir, Promenade, Découverte, Courrier (2026-10-05)
+
+### Découpage (validé par le porteur)
+4a base + pgTAP · **arrêt relecture sécurité** · 4b Souffleur (`lib/prompter`) · 4c écrans Visiteur (Promenade, Découverte, Fiche dossier judiciaire, Demande de parloir, Mes demandes) · 4d écrans Bad (Courrier, lecture d'une demande, Accepter / Affaire classée, plafond) · 4e changement de rôle, pause, Signaler / Bloquer · 4f vérification (performance, e2e, axe, captures, preview).
+Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulement, jamais l'identifiant interne, aucune fonction de recherche par ce numéro ; données de test en pgTAP annulé ; onglets Visites et Parloir masqués ; notifications dans l'application seulement.
+
+### 4b à 4f — fait (2026-10-06, vérifié)
+- **4b Souffleur** (`lib/prompter`) : 3 amorces par Demande (points communs, tribu, Casier sans jamais en citer un chef, générique), « Autre idée » sans répétition immédiate, 11 modèles par famille en fr/en ; tests unitaires.
+- **4c Visiteur** : barre d'onglets par rôle (Visites / Parloir masqués en Phase 4) ; **Promenade** (compte à rebours jusqu'à 21 h locale, `Europe/Paris`) ; **Découverte** (filtres par formulaire GET sans JS, pagination par curseur) ; **Fiche dossier judiciaire** (poses, chefs, N° d'écrou, complicité, Signaler / Bloquer) ; **Demande de parloir** (pari, mot facultatif ≤ 280, Souffleur, tampon « DEMANDE DÉPOSÉE ») ; **Mes demandes** (délai de 30 jours affiché, conseil après 3 refus).
+- **4d Bad** : **Courrier** (liste, réglages plafond / fermeture), lecture d'une demande (Permis de visite, mot, sans jamais le chef parié ni le résultat), **Accepter la visite** (tampon vert) / **Affaire classée**.
+- **4e** : changement de rôle (Motif requis pour devenir Visiteur, 7 jours entre deux), pause, Signaler / Bloquer depuis la Fiche et le Courrier, liste de mes blocages dans Ma Fiche (`get_my_blocks`), notifications in-app marquées lues par écran (`mark_notifications_read(types[])`).
+- **4f performance** (données synthétiques non-seed créées dans des transactions pgTAP annulées : la base n'a aucun profil `is_seed`, et ces fonctions les excluent de toute façon) :
+  - **Découverte** : 1,1 s par page sur 1 000 Bads au départ (cause : petites fonctions SQL avec `set search_path` jamais inlinées, ~0,1–0,3 ms par appel et par ligne). Conditions écrites dans la requête → **62 ms** (filtres : 10 à 37 ms). Test d'équivalence : en suivant toutes les pages, exactement les Bads autorisés par `can_view_bad` (743 sur 1 000, avec pauses, bannis, critères, photo refusée, blocages dans les deux sens).
+  - **Promenade** : réécrite en 4 passes (`20261006055943` … `20261006062808`). Réponses en bitsets, lots de 500 Visiteurs, tours avec curseur par Visiteur, `work_mem` 32 Mo pour le job. **Mesuré : 600 Visiteurs × 1 000 Bads = 6,9 s** ; saturé (1 000 Visiteurs × 200 Bads, 5 demandes par place) = 2,9 s. **5 000 × 1 000 non mesuré, extrapolé linéairement ≈ 1 min** (créer 6 000 membres passe par les triggers de production, ~25 ms chacun, et le connecteur coupe un appel à 60 s). Test « même résultat que le builder 4a » : mêmes paires, rangs et scores sur 80 × 80 avec réponses sautées, < 5 questions communes, plusieurs options acceptées et blocages.
+  - Bad au-dessus de la moitié de son plafond : 0 apparition contre 3,75 en moyenne pour les autres (600 × 1 000).
+- **pgTAP relancé** : parité complicité 69/69 ; `phase4_relations` : les 7 groupes qui appellent une fonction modifiée (règle 14 59/59, formes 9/9, visibilité 13/13, blocages 14/14, signalement 15/15, Promenade 13/13 dont « deuxième build dans la même transaction », droits) + nouveau groupe `get_my_blocks` / `mark_notifications_read` 8/8 ; base revérifiée vide, `app_settings` inchangé.
+- **App** : typecheck, lint, Prettier, **142 tests unitaires**, build ; **e2e 49/49** (9 ignorés à dessein : parcours Phase 4 une seule fois en 360 px, compte E2E manuel absent) dont les 3 parcours Phase 4 réels avec axe 0 violation ; Lighthouse landing 91 / 100 / 100 / 100, LCP 3,3 s (inchangé).
+
+### Défauts trouvés et corrigés en 4f
+1. Découverte 5× trop lente (voir ci-dessus).
+2. Promenade : une première optimisation (garder les 60 meilleurs candidats par Visiteur) changeait le résultat — un Bad plein est sauté sans consommer de tour, des Visiteurs se retrouvaient sans Promenade. Corrigé (`20261006061446`), puis vérifié contre le builder 4a.
+3. Promenade : CTE inlinées par le planificateur → chaque comptage de bits recalculé des dizaines de fois (7,9 s au lieu de 0,4 s) → `materialized`.
+4. Test e2e Bad : 30 s trop court quand toute la suite tourne en parallèle → 120 s pour le bloc Phase 4 (comme l'onboarding, 180–240 s).
+
+### Décisions de Chris (2026-10-06, après relecture du conseiller)
+- **Promenade par paliers** (`20261006112943_phase4_promenade_tiers`) : d'abord 1 Bad pour chaque Visiteur, puis un 2e, et ainsi de suite jusqu'à 5, dans la limite inchangée de 10 apparitions par Bad et par jour. Mesuré : saturé 1 000 Visiteurs × 200 Bads → **1 000 servis sur 1 000, 2 Bads chacun**, 3,8 s (avant : 17 % sans aucun Bad) ; 600 × 1 000 → 7,8 s, tous servis. Test pgTAP saturé : 0 % de Visiteurs sans Bad tant qu'il reste des places, écart d'au plus 1 Bad entre Visiteurs. Sans saturation, le résultat reste identique au builder 4a (test d'équivalence, plafond relevé à 1 000).
+- **Encre or sur crème `#765A0E`** validée : PARCOURS-DESIGN, SPEC et la maquette du Courrier mis à jour.
+- **Anglais validé** : Promenade = « The Yard », Courrier = « Mailbox », Casier = « Record », Parloir = « visiting room », Greffe = « Registry ».
+- Limites Phase 4 (inchangées) : pas de créneaux de visite (Phase 5), onglets Visites / Parloir masqués, notifications dans l'application seulement.
+
+### pgTAP complet relancé après les paliers (2026-10-06, tout vert)
+- `phase4_relations` : **14/14 groupes, 194 vérifications** (règle 14 59, formes 9, tables fermées 12, N° d'écrou 10, limites 17, Parloir complet 6, anti-arnaque 2, visibilité 13, blocages 14, mes blocages / notifications 8, changement de rôle 10, signalement 15, Promenade 13, droits 6).
+- `phase4_perf` : Découverte 6/6 (40 ms par page sur 1 000 Bads), Promenade 600 × 1 000 3/3, équivalence 4a 2/2, saturé 4/4.
+- `phase3_complicity_parity` 69/69 ; `phase3_security` 17/17 groupes ; `phase3_greffe` 7/7 ; `phase2_security` 22/22.
+- Base revérifiée vide, `app_settings` inchangé (`zones` / 10).
+
+### 4a — base (vérifié sur la base de dev)
+- **Migrations** (dans l'ordre, versions enregistrées) :
+  - `20261005172921_phase4_relations_tables` : types (`visit_request_status`, `case_close_reason`, `report_target`, `moderation_action_type`), `profiles.ecrou` + trigger, tables `blocks` (jamais de suppression, `unblocked_at`), `reports`, `moderation_actions` (ajout seul), `visit_requests`, `promenade_picks`, aides internes, RLS ;
+  - `20261005173248_phase4_relations_functions` : `get_fiche`, `get_permit`, `discover_bads`, `get_my_promenade`, `mark_promenade_seen`, `send_visit_request`, `get_mailbox`, `decide_visit_request`, `get_my_requests`, `change_role`, `block_user`, `unblock_user`, `report` (les 13 seules appelables par un membre) ; `build_daily_promenade`, `run_promenades_due`, `expire_visit_requests` (tâches pg_cron horaires, propriétaire seulement) ;
+  - 3 correctifs trouvés par les tests (voir plus bas) et `20261005190830_phase4_fk_indexes`.
+- **Règle 14** : la copie du Casier, le chef parié et le résultat ne sortent d'aucune fonction. `send_visit_request` ne renvoie que l'identifiant de la demande. `get_fiche` donne les trois chefs dans l'ordre du Bad, sans marque, identiques pour tous.
+- **Limites dans SQL** (une transaction, ligne du Bad verrouillée) : Visiteur avec Permis délivré, quartier ouvert, critères dans les deux sens, aucun blocage, 30 jours après une affaire classée, une demande en cours par couple, 5 par 24 h (2 si le compte a moins de 24 h), « Parloir complet », mot masqué et signalé, anti-arnaque (même mot une 3e fois en 7 jours → `flagged_texts`).
+- **Promenade** : construite dans l'heure avant 21 h locale, 5 Bads au plus par Visiteur, plafond d'apparitions par Bad (`app_settings`), score × 0,5 au-delà de la moitié du plafond de demandes, jamais un Bad déjà sollicité, bloqué, de test ou vu dans les 14 jours ; notification dans l'application à 21 h.
+- **pgTAP** :
+  - `phase4_relations.test.sql`, 14 groupes, **tout passe** (fuite règle 14 : 59 vérifications, dont 11 qui prouvent que chaque appel autorisé renvoie bien des données ; formes exactes des réponses ; tables fermées ; N° d'écrou ; limites ; Parloir complet ; anti-arnaque ; visibilité ; blocages ; changement de rôle ; signalement ; Promenade ; droits) ;
+  - `phase3_complicity_parity` 69/69 : la parité couvre maintenant aussi `complicity_with`, la version ensembliste utilisée par la Découverte et la Promenade ;
+  - non-régression, tout relancé : `phase2_security` 22/22 groupes (+ `ecrou` dans les colonnes protégées), `phase3_security` 17/17, `phase3_greffe` 7/7.
+  - Base vérifiée vide après les tests ; `app_settings` inchangé (`zones` / 10).
+- Types TypeScript régénérés ; typecheck OK.
+
+### Défauts trouvés par les tests de la 4a (corrigés par migration)
+1. `get_mailbox` échouait pour tout Bad (colonnes `varchar` déclarées `text`) → `20261005185814_phase4_mailbox_types`. Le test de fuite seul ne l'aurait pas vu (il passait sur une erreur) : d'où les vérifications « l'appel renvoie des données ».
+2. Un changement de rôle classait les demandes reçues en `dismissed` et comptait un refus au Visiteur → seuls les refus du Bad comptent (`20261005190154_phase4_dismissals_by_bad_only`).
+3. `complicity_with` (Découverte, Promenade) rendait « pas de score » ou 50 au lieu de 0 quand aucune réponse n'était acceptée (somme filtrée nulle) → `complicity_from_sums` lit une somme absente comme 0 (`20261005190448_phase4_complicity_null_sums`).
+
+### Relecture sécurité 4a (conseiller, issue #10) et corrections
+- **Tranché** : demande acceptée « en cours » jusqu'à la Phase 5, hors plafond du Bad (OK) ; expiration à 7 jours hors compteur des 3 refus (OK) ; aucun rappel du chef choisi au Visiteur avant la visite (version stricte gardée) ; règle « mineur » confirmée (masquage immédiat).
+- **Corrigé** (`20261005192344_phase4_report_guard`) :
+  - `report()` : le signaleur doit avoir fini son inscription, et la cible doit lui être visible (`can_view_bad`), ou partager une demande avec lui (en cours ou passée), ou avoir été bloquée par lui ; sinon `not_found`, la même réponse qu'un identifiant inconnu ;
+  - règle « mineur » : ne comptent que les signaleurs dont la photo est validée par le Greffe et dont le compte a plus de 7 jours ; un Bad « Bonne conduite » suffit seul ;
+  - `can_report` et `is_trusted_reporter` sont internes (aucun droit pour les membres).
+- pgTAP `test_report` 15/15 : signaler un Visiteur ou un Bad invisible → refusé ; inscription non terminée → refusé ; Bad → Permis d'un Visiteur qui lui a écrit → accepté, d'un autre → refusé ; membre bloqué → accepté ; 2 signalements « mineur » de comptes non validés (moins de 7 jours, sans photo validée) → rien n'est masqué ; 2 comptes établis → masqué ; Bad « Bonne conduite » seul → masqué.
+- Reporté en Phase 7 : le cas « mineur » en tête de la file admin.
 
 ## Phase 3 — QCM, indice de complicité, Casier, Greffe (2026-10-05)
 

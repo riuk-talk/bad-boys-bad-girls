@@ -30,7 +30,7 @@
      Every pair is AA: gold 8.6:1, #ee3a55 4.93:1 and cream with ink text or on ink. */
   --color-accent: #d4a437;
   --color-accent-hover: #e2b54a;
-  --color-accent-ink: #8a6a12;
+  --color-accent-ink: #765a0e;
 
   --font-display: var(--font-anton), "Impact", "Arial Narrow", sans-serif;
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
@@ -118,6 +118,11 @@
   }
 }
 
+[data-accent="gold"] {
+  --color-accent: #d4a437;
+  --color-accent-hover: #e2b54a;
+  --color-accent-ink: #765a0e;
+}
 [data-accent="red"] {
   --color-accent: #ee3a55;
   --color-accent-hover: #f45a71;
@@ -231,5 +236,42 @@
     to bottom,
     transparent 0 15px,
     rgb(242 232 213 / 0.14) 15px 16px
+  );
+}
+
+/* The Bad's Fiche as a case file (PARCOURS-DESIGN §2, maquette Fiche.dc.html). */
+.dossier-paper {
+  background-color: #efe6d2;
+  background-image: radial-gradient(rgb(120 100 70 / 0.1) 1px, transparent 1px);
+  background-size: 5px 5px;
+  color: var(--color-ink);
+}
+.dossier-wall {
+  background-color: #bdb7ac;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 13px,
+    rgb(14 14 16 / 0.35) 13px 14px
+  );
+}
+.dossier-barcode {
+  background-color: #efe6d2;
+  background-image: repeating-linear-gradient(
+    to right,
+    #0e0e10 0 2px,
+    transparent 2px 4px,
+    #0e0e10 4px 5px,
+    transparent 5px 8px,
+    #0e0e10 8px 11px,
+    transparent 11px 13px
+  );
+}
+/* La Promenade: dark height-chart lines behind each Bad (maquette Promenade.dc.html). */
+.yard-wall {
+  background-color: #17171a;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 21px,
+    rgb(242 232 213 / 0.1) 21px 22px
   );
 }

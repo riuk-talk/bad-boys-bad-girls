@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AppHeader } from "@/components/app/app-header";
+import { TabBar } from "@/components/app/tab-bar";
 import { ClientIntl } from "@/components/i18n/client-intl";
 import { ToastProvider } from "@/components/ui/toast";
 import { accentForGender } from "@/lib/accent";
@@ -22,11 +23,12 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   // The interface takes the colour of the connected member's gender (PARCOURS-DESIGN §1).
   const accent = accentForGender(profile?.gender);
+  const role = parseRole(profile?.role);
   return (
     <div className="flex min-h-dvh flex-col" data-accent={accent === "gold" ? undefined : accent}>
       <AppHeader
         onboardingDone={Boolean(profile?.onboarding_completed_at)}
-        role={parseRole(profile?.role)}
+        role={role}
         isAdmin={isAdmin === true}
       />
       <ClientIntl>
@@ -36,6 +38,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           </main>
         </ToastProvider>
       </ClientIntl>
+      {profile?.onboarding_completed_at && role ? <TabBar role={role} /> : null}
     </div>
   );
 }

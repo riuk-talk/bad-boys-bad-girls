@@ -77,9 +77,11 @@ export async function updateFicheAction(_state: FicheState, form: FormData): Pro
   return { status: "saved" };
 }
 
-/** « Compris »: the member's unread notifications are marked as read (own rows only, in SQL). */
+/** « Compris »: the Greffe's unread notifications are marked as read (own rows only, in SQL). */
 export async function markNoticesReadAction(): Promise<void> {
   const member = await requireMember();
-  await member.supabase.rpc("mark_notifications_read");
+  await member.supabase.rpc("mark_notifications_read", {
+    p_types: ["moderation_decision", "permit_granted"],
+  });
   revalidatePath("/[locale]/ma-fiche", "page");
 }
