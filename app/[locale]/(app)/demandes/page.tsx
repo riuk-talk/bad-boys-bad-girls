@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Stamp } from "@/components/brand/stamp";
+import { PushPrompt } from "@/components/push/push-prompt";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { ButtonLink } from "@/components/ui/button-link";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -37,13 +38,18 @@ const STATUS_TONE: Record<RequestStatus, string> = {
 export default async function MyRequestsPage() {
   const { supabase, userId, locale, profile } = await requireRole("visitor");
   const t = await getTranslations("Relations.myRequests");
-  const [{ data: requests }, { count: answered }] = await Promise.all([
+  const [{ data: requests }, { count: answered }, , { data: prefs }] = await Promise.all([
     supabase.rpc("get_my_requests"),
     supabase
       .from("answers")
       .select("question_id", { count: "exact", head: true })
       .eq("user_id", userId),
     supabase.rpc("mark_notifications_read", { p_types: ["request_accepted", "request_dismissed"] }),
+    supabase
+      .from("notification_preferences")
+      .select("push_prompt_declined_at")
+      .eq("user_id", userId)
+      .maybeSingle(),
   ]);
   const rows = requests ?? [];
   const accepted = rows.filter((row) => row.status === "accepted");
@@ -71,6 +77,9 @@ export default async function MyRequestsPage() {
         <p className="font-stamp text-accent text-xs tracking-[0.25em]">{t("eyebrow")}</p>
         <h1 className="sr-only">{t("title")}</h1>
       </header>
+
+      {/* Notifications are offered after the first request sent, never on arrival. */}
+      {rows.length > 0 ? <PushPrompt declinedAt={prefs?.push_prompt_declined_at ?? null} /> : null}
 
       {advice.length > 0 ? (
         <section

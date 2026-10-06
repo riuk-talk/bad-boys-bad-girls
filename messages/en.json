@@ -459,7 +459,8 @@
           "title": "4. Cookies and notifications",
           "paragraphs": [
             "We only use strictly necessary cookies (login session, language). No advertising trackers, no external analytics: that's why no consent banner is shown.",
-            "Notifications: if you accept them, we send you notifications (visit reminders, new requests) through your browser's notification service (Google for Chrome and Android, Mozilla for Firefox, Apple for Safari). Their content is encrypted and deliberately neutral: never a nickname, a photo or a message. These services only see that a notification is being sent to you. You can turn them off at any time in your settings or your browser's."
+            "Notifications: if you accept them, we send you notifications (visit reminders, new requests) through your browser's notification service (Google for Chrome and Android, Mozilla for Firefox, Apple for Safari). Their content is encrypted and deliberately neutral: never a nickname, a photo or a message. These services only see that a notification is being sent to you. You can turn them off at any time in your settings or your browser's.",
+            "To send you these notifications, we keep, for each browser where you turn them on, the subscription address given by that service, two encryption keys and the language of the notifications. This data is erased as soon as you turn notifications off on that browser, or when the service tells us the subscription has expired. You can subscribe 5 browsers at most."
           ]
         },
         {
@@ -875,7 +876,8 @@
       "dismiss": "Got it"
     },
     "seeAsVisitors": "See my File as Visitors do",
-    "accountTitle": "My account"
+    "accountTitle": "My account",
+    "notificationsTitle": "Notifications"
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
@@ -1321,6 +1323,53 @@
       "blockedTitle": "Blocked members",
       "blockedEmpty": "You haven't blocked anyone.",
       "unblock": "Unblock"
+    }
+  },
+  "Push": {
+    "prompt": {
+      "title": "Want to know when things move?",
+      "body": "Turn notifications on to know when you get an answer. Their content stays neutral: never a nickname, a photo or a message.",
+      "installBody": "On iPhone, notifications only work from the home screen (iOS 16.4 or later). Add the site to your home screen, then turn them on from the icon.",
+      "installLink": "Show me how",
+      "enable": "Turn notifications on",
+      "later": "Later",
+      "doneTitle": "Notifications on",
+      "doneBody": "You can choose which ones you get, or turn them off, in My File."
+    },
+    "settings": {
+      "deviceTitle": "On this device",
+      "device_on": "Notifications are on for this browser.",
+      "device_off": "Notifications are off for this browser.",
+      "device_blocked": "Your browser blocks notifications from this site. Allow them in its settings to turn them on.",
+      "device_install": "On iPhone, first add the site to your home screen (iOS 16.4 or later).",
+      "device_unsupported": "This browser cannot receive the site's notifications.",
+      "switchOn": "Turn on for this device",
+      "switchOff": "Turn off for this device",
+      "installLink": "Installation guide",
+      "devices": "{count, plural, =0 {No device subscribed.} one {# device subscribed.} other {# devices subscribed (5 at most).}}",
+      "kindsTitle": "What you get",
+      "kind_requests": "Visit requests",
+      "kindHint_requests": "A request received, accepted or turned down.",
+      "kind_promenade": "The Yard",
+      "kindHint_promenade": "When tonight's selection opens.",
+      "kind_visits": "Visits, Permit and Registry",
+      "kindHint_visits": "The Registry's decisions, your Permit, then your visits.",
+      "save": "Save",
+      "saved": "Saved.",
+      "error": "That didn't work. Try again in a moment.",
+      "neutral": "Notification content is always neutral: never a nickname, a photo or a message."
+    },
+    "install": {
+      "title": "Notifications on iPhone",
+      "lead": "On iPhone and iPad, Apple only allows a site's notifications when it is opened from the home screen, on iOS 16.4 or later.",
+      "step1": "Open the site in Safari.",
+      "step2": "Tap the Share button (the square with an arrow pointing up).",
+      "step3": "Choose “Add to Home Screen”, then “Add”.",
+      "step4": "Open the site from the new icon and log in.",
+      "step5": "In My File, under Notifications, tap “Turn on for this device” and accept.",
+      "version": "To check your version: Settings › General › About › iOS Version.",
+      "android": "On Android and on a computer, nothing to install: turn notifications on from My File.",
+      "back": "Back to My File"
     }
   }
 }

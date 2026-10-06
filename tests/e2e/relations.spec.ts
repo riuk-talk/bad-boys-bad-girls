@@ -332,7 +332,29 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await page.goto("/demandes");
     await expect(page.getByText("EN ATTENTE")).toBeVisible();
     for (const charge of CHARGES) await expect(page.getByText(charge)).toHaveCount(0);
+    // Notifications are offered now (first request sent), not before; nothing is registered
+    // until the member says yes, and « Plus tard » is remembered (30 days).
+    const prompt = page.getByTestId("push-prompt");
+    if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+      await expect(prompt).toBeVisible();
+      await expect(prompt.getByRole("button", { name: "Activer les notifications" })).toBeVisible();
+    }
     expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "visitor-demandes-push");
+    expect(
+      await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
+    ).toBe(0);
+    if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+      await prompt.getByRole("button", { name: "Plus tard" }).click();
+      await expect(prompt).toHaveCount(0);
+      await expect
+        .poll(async () => {
+          await page.reload();
+          await expect(page.getByText("EN ATTENTE")).toBeVisible();
+          return page.getByTestId("push-prompt").count();
+        })
+        .toBe(0);
+    }
     await page.context().close();
   });
 

@@ -6,6 +6,7 @@ import { FicheEditor } from "@/components/fiche/fiche-editor";
 import { PhotoManager } from "@/components/fiche/photo-manager";
 import { Notices, type Notice } from "@/components/fiche/notices";
 import { PosesEditor } from "@/components/onboarding/poses";
+import { PushSettings } from "@/components/push/push-settings";
 import { AccountSettings } from "@/components/relations/account-settings";
 import { ButtonLink } from "@/components/ui/button-link";
 import { photoInfos } from "@/lib/photos";
@@ -51,6 +52,8 @@ export default async function MyFichePage() {
     { count: questionCount },
     { data: notices },
     { data: blocked },
+    { data: prefs },
+    { data: devices },
   ] = await Promise.all([
     supabase
       .from("places")
@@ -82,6 +85,12 @@ export default async function MyFichePage() {
       .order("created_at", { ascending: false })
       .limit(10),
     supabase.rpc("get_my_blocks"),
+    supabase
+      .from("notification_preferences")
+      .select("push_requests, push_promenade, push_visits")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase.rpc("push_device_count"),
   ]);
 
   // Photos awaiting validation are private: short-lived signed URLs, owner only (storage RLS).
@@ -263,6 +272,20 @@ export default async function MyFichePage() {
           text={(isVisitor ? profile.visit_motive : profile.bio) ?? ""}
           tribes={(tribes ?? []).map((tribe) => ({ id: tribe.id, label: labelOf(tribe.label) }))}
           selected={selected}
+        />
+      </section>
+
+      <section aria-labelledby="notifications-title" className="space-y-4">
+        <h2 id="notifications-title" className="font-display text-2xl tracking-wide uppercase">
+          {t("notificationsTitle")}
+        </h2>
+        <PushSettings
+          devices={devices ?? 0}
+          preferences={{
+            requests: prefs?.push_requests ?? true,
+            promenade: prefs?.push_promenade ?? true,
+            visits: prefs?.push_visits ?? true,
+          }}
         />
       </section>
 

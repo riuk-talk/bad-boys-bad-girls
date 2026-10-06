@@ -459,7 +459,8 @@
           "title": "4. Cookies et notifications",
           "paragraphs": [
             "On utilise uniquement des cookies strictement nécessaires (session de connexion, langue). Aucun traceur publicitaire, aucun outil de mesure d'audience externe : c'est pourquoi aucun bandeau de consentement n'est affiché.",
-            "Notifications : si tu les acceptes, on t'envoie des notifications (rappels de visite, nouvelles demandes) par le service de notification de ton navigateur (Google pour Chrome et Android, Mozilla pour Firefox, Apple pour Safari). Leur contenu est chiffré et volontairement neutre : jamais de pseudo, de photo ni de message. Ces services voient seulement qu'une notification t'est envoyée. Tu peux les couper à tout moment dans tes paramètres ou ceux de ton navigateur."
+            "Notifications : si tu les acceptes, on t'envoie des notifications (rappels de visite, nouvelles demandes) par le service de notification de ton navigateur (Google pour Chrome et Android, Mozilla pour Firefox, Apple pour Safari). Leur contenu est chiffré et volontairement neutre : jamais de pseudo, de photo ni de message. Ces services voient seulement qu'une notification t'est envoyée. Tu peux les couper à tout moment dans tes paramètres ou ceux de ton navigateur.",
+            "Pour t'envoyer ces notifications, on conserve, pour chaque navigateur où tu les actives, l'adresse d'abonnement fournie par ce service, deux clés de chiffrement et la langue des notifications. Ces données sont effacées dès que tu coupes les notifications sur ce navigateur, ou quand le service nous signale que l'abonnement a expiré. Tu peux en abonner 5 au plus."
           ]
         },
         {
@@ -875,7 +876,8 @@
       "dismiss": "Compris"
     },
     "seeAsVisitors": "Voir ma Fiche comme les Visiteurs",
-    "accountTitle": "Mon compte"
+    "accountTitle": "Mon compte",
+    "notificationsTitle": "Notifications"
   },
   "Quarter": {
     "referralTitle": "Fais entrer tes complices",
@@ -1321,6 +1323,53 @@
       "blockedTitle": "Membres bloqués",
       "blockedEmpty": "Tu n'as bloqué personne.",
       "unblock": "Débloquer"
+    }
+  },
+  "Push": {
+    "prompt": {
+      "title": "Être prévenu·e quand ça bouge ?",
+      "body": "Active les notifications pour savoir quand on te répond. Leur contenu reste neutre : jamais de pseudo, de photo ni de message.",
+      "installBody": "Sur iPhone, les notifications ne marchent que depuis l'écran d'accueil (iOS 16.4 ou plus récent). Ajoute le site à ton écran d'accueil, puis active-les depuis l'icône.",
+      "installLink": "Voir comment faire",
+      "enable": "Activer les notifications",
+      "later": "Plus tard",
+      "doneTitle": "Notifications activées",
+      "doneBody": "Tu peux choisir lesquelles recevoir, ou les couper, dans Ma Fiche."
+    },
+    "settings": {
+      "deviceTitle": "Sur cet appareil",
+      "device_on": "Les notifications sont activées sur ce navigateur.",
+      "device_off": "Les notifications sont coupées sur ce navigateur.",
+      "device_blocked": "Ton navigateur bloque les notifications de ce site. Autorise-les dans ses réglages pour pouvoir les activer.",
+      "device_install": "Sur iPhone, ajoute d'abord le site à ton écran d'accueil (iOS 16.4 ou plus récent).",
+      "device_unsupported": "Ce navigateur ne reçoit pas les notifications du site.",
+      "switchOn": "Activer sur cet appareil",
+      "switchOff": "Couper sur cet appareil",
+      "installLink": "Guide d'installation",
+      "devices": "{count, plural, =0 {Aucun appareil abonné.} one {# appareil abonné.} other {# appareils abonnés (5 au plus).}}",
+      "kindsTitle": "Ce que tu reçois",
+      "kind_requests": "Demandes de visite",
+      "kindHint_requests": "Une demande reçue, acceptée ou refusée.",
+      "kind_promenade": "La Promenade",
+      "kindHint_promenade": "L'ouverture de ta sélection du soir.",
+      "kind_visits": "Visites, Permis et Greffe",
+      "kindHint_visits": "Les décisions du Greffe, ton Permis, puis tes visites.",
+      "save": "Enregistrer",
+      "saved": "Enregistré.",
+      "error": "Ça n'a pas marché. Réessaie dans un instant.",
+      "neutral": "Le contenu des notifications est toujours neutre : jamais de pseudo, de photo ni de message."
+    },
+    "install": {
+      "title": "Les notifications sur iPhone",
+      "lead": "Sur iPhone et iPad, Apple n'autorise les notifications d'un site que s'il est ouvert depuis l'écran d'accueil, avec iOS 16.4 ou plus récent.",
+      "step1": "Ouvre le site dans Safari.",
+      "step2": "Touche le bouton Partager (le carré avec une flèche vers le haut).",
+      "step3": "Choisis « Sur l'écran d'accueil », puis « Ajouter ».",
+      "step4": "Ouvre le site depuis la nouvelle icône et connecte-toi.",
+      "step5": "Dans Ma Fiche, rubrique Notifications, touche « Activer sur cet appareil » et accepte.",
+      "version": "Pour connaître ta version : Réglages › Général › Informations › Version d'iOS.",
+      "android": "Sur Android et sur ordinateur, rien à installer : active les notifications depuis Ma Fiche.",
+      "back": "Retour à Ma Fiche"
     }
   }
 }
