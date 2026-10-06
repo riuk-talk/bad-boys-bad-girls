@@ -960,5 +960,59 @@
       "not_adult": "la personne paraît mineure",
       "other": "photo non conforme au règlement du Greffe"
     }
+  },
+  "Prompter": {
+    "common": [
+      "On a tous les deux répondu « {answer} » à « {question} ». Raconte-moi la dernière fois.",
+      "« {question} » : « {answer} » pour nous deux. Je veux ta version de l'histoire.",
+      "Même réponse à « {question} » : « {answer} ». Ça mérite une explication au Parloir.",
+      "« {answer} », comme moi, à « {question} ». Qu'est-ce qui t'a fait répondre ça ?",
+      "Tu as répondu « {answer} » à « {question} ». Moi aussi. Coïncidence ou complicité ?",
+      "À « {question} », on a coché pareil : « {answer} ». Donne-moi un exemple, je te donne le mien.",
+      "« {answer} » à « {question} » : on part sur de bonnes bases. Ton meilleur souvenir là-dessus ?",
+      "On est d'accord sur « {question} » (« {answer} »). Prouve-le-moi avec une anecdote.",
+      "« {question} » — « {answer} ». Je parie qu'on n'a pas la même raison.",
+      "Même réponse, « {answer} », à « {question} ». Raconte-moi comment tu en es arrivé là.",
+      "« {answer} » à « {question} » : pareil ici. La dernière fois que ça t'a servi ?"
+    ],
+    "tribe": [
+      "{tribe} aussi. Ta meilleure histoire en 2 lignes, je te donne la mienne.",
+      "« {tribe} » sur ta Fiche, « {tribe} » sur mon Permis. Ça commence bien.",
+      "{tribe} : moi aussi. Ton souvenir le plus fou là-dessus ?",
+      "Signe distinctif commun : {tribe}. Je veux tout savoir.",
+      "{tribe}, toi aussi ? Dis-moi comment ça a commencé.",
+      "On a « {tribe} » en commun. Raconte, je te dirai ma version.",
+      "{tribe} des deux côtés de la vitre. Ta meilleure anecdote ?",
+      "J'ai vu « {tribe} » dans tes signes distinctifs. Moi aussi. La suite au Parloir ?",
+      "{tribe} : on aura de quoi parler. Commence par ta pire histoire.",
+      "{tribe} aussi. Prouve-le-moi en une anecdote.",
+      "Même signe distinctif : {tribe}. Qui a la meilleure histoire, d'après toi ?"
+    ],
+    "casier": [
+      "Un de tes trois chefs d'accusation m'a fait rire. Je te dirai lequel au Parloir.",
+      "J'ai mon idée sur ton Casier. Je garde la réponse pour la visite.",
+      "Ton Casier m'a fait douter jusqu'au bout. Bien joué.",
+      "J'ai lu ton Casier trois fois. J'ai parié, mais je ne dis rien.",
+      "Un de tes chefs d'accusation m'intrigue plus que les autres. Je te dirai pourquoi au Parloir.",
+      "Ton Casier est trop bien ficelé. Tu t'entraînes ?",
+      "J'ai une question sur un de tes chefs d'accusation. Je la garde pour le Parloir.",
+      "Si j'ai bien parié, tu me dois une histoire. Si j'ai raté, je t'en dois une.",
+      "J'ai hésité longtemps sur ton Casier. Tu mens bien.",
+      "Ton Casier m'a donné envie d'en savoir plus. Sur les trois chefs d'accusation.",
+      "Mon pari est fait. Prépare-toi à te justifier au Parloir."
+    ],
+    "generic": [
+      "Ton Casier m'a décidé à demander une visite. Le reste, au Parloir.",
+      "Je n'ai pas encore tout compris de toi. C'est pour ça que je viens.",
+      "Ta Fiche donne envie d'en savoir plus. Je commence : qu'est-ce qu'on ne devinerait jamais sur toi ?",
+      "J'ai parié sur ton Casier. On verra au Parloir qui a eu le nez fin.",
+      "Une question simple pour commencer : ta meilleure soirée de l'année ?",
+      "Je viens pour le Casier, je reste pour l'histoire. Raconte.",
+      "Ton dossier m'a fait sourire. Tu es comme ça en vrai ?",
+      "Dis-moi une chose sur toi qui n'est pas dans ton dossier.",
+      "Ton dossier est bien rempli. Il manque juste ta version des faits.",
+      "Je tente ma chance au Parloir. Prépare ta meilleure défense.",
+      "Trois chefs d'accusation, un seul vrai. J'ai mon idée. Et toi, qu'est-ce que tu devines sur moi ?"
+    ]
   }
 }

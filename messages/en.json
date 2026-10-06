@@ -960,5 +960,59 @@
       "not_adult": "the person looks underage",
       "other": "photo not in line with the Registry's rules"
     }
+  },
+  "Prompter": {
+    "common": [
+      "We both answered “{answer}” to “{question}”. Tell me about the last time.",
+      "“{question}”: “{answer}” for both of us. I want your side of the story.",
+      "Same answer to “{question}”: “{answer}”. That deserves an explanation in the visiting room.",
+      "“{answer}”, same as me, to “{question}”. What made you answer that?",
+      "You answered “{answer}” to “{question}”. So did I. Coincidence or complicity?",
+      "On “{question}”, we ticked the same box: “{answer}”. Give me an example, I'll give you mine.",
+      "“{answer}” to “{question}”: off to a good start. Your best memory of it?",
+      "We agree on “{question}” (“{answer}”). Prove it with a story.",
+      "“{question}” — “{answer}”. I bet we don't have the same reason.",
+      "Same answer, “{answer}”, to “{question}”. Tell me how you got there.",
+      "“{answer}” to “{question}”: same here. When did it last come in handy?"
+    ],
+    "tribe": [
+      "{tribe} too. Your best story in 2 lines, I'll give you mine.",
+      "“{tribe}” on your File, “{tribe}” on my Permit. Good start.",
+      "{tribe}: me too. Your wildest memory of it?",
+      "Shared distinctive sign: {tribe}. I want to know everything.",
+      "{tribe}, you too? Tell me how it started.",
+      "We have “{tribe}” in common. Tell me yours, I'll tell you mine.",
+      "{tribe} on both sides of the glass. Your best story?",
+      "I saw “{tribe}” in your distinctive signs. Me too. To be continued in the visiting room?",
+      "{tribe}: we'll have plenty to talk about. Start with your worst story.",
+      "{tribe} too. Prove it with one story.",
+      "Same distinctive sign: {tribe}. Who has the better story, you think?"
+    ],
+    "casier": [
+      "One of your three charges made me laugh. I'll tell you which one in the visiting room.",
+      "I have my idea about your Record. I'm keeping the answer for the visit.",
+      "Your Record kept me guessing until the end. Well played.",
+      "I read your Record three times. I placed my bet, but I'm not telling.",
+      "One of your charges intrigues me more than the others. I'll tell you why in the visiting room.",
+      "Your Record is too well put together. Do you practise?",
+      "I have a question about one of your charges. I'm saving it for the visiting room.",
+      "If I bet right, you owe me a story. If I got it wrong, I owe you one.",
+      "I hesitated a long time over your Record. You're a good liar.",
+      "Your Record made me want to know more. About all three charges.",
+      "My bet is placed. Get ready to explain yourself in the visiting room."
+    ],
+    "generic": [
+      "Your Record made me ask for a visit. The rest, in the visiting room.",
+      "I haven't figured you out yet. That's why I'm coming.",
+      "Your File makes me want to know more. I'll start: what would nobody ever guess about you?",
+      "I placed my bet on your Record. We'll see in the visiting room who guessed right.",
+      "A simple question to start: your best night out this year?",
+      "I came for the Record, I'm staying for the story. Tell me.",
+      "Your File made me smile. Is that the real you?",
+      "Tell me one thing about you that isn't in your File.",
+      "Your File is well filled. Only your version of the facts is missing.",
+      "I'm trying my luck in the visiting room. Prepare your best defence.",
+      "Three charges, only one true. I have my idea. And what do you guess about me?"
+    ]
   }
 }
