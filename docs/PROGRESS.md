@@ -27,11 +27,13 @@
 
 ### 5a — reste
 - [x] Migration `phase5a_push_vault_reads` (appliquée hors du repo) versionnée, puis neutralisée par `phase5a_push_secret_names` : le coffre n'accepte plus que `push_endpoint_url`, `push_cron_secret`, `vercel_protection_bypass` ; la clé privée VAPID y est refusée (test pgTAP). La fonction `push_route_config()` reste en base (le connecteur a annulé son `DROP`, qui demande une confirmation) : réservée à la clé secrète, inutilisée, elle ne renvoie rien puisqu'aucun secret correspondant n'existe.
-- [ ] `DROP FUNCTION push_route_config()` confirmé par Chris : migration `20261006190000_phase5a_drop_push_route_config` versionnée et assertion pgTAP `hasnt_function` ajoutée, mais **non appliquée** : le connecteur Supabase a annulé deux fois le `DROP` (2026-10-06). À exécuter dans le SQL Editor, puis relancer `phase5a_push.test.sql`.
-- [ ] Secrets (2026-10-06, 2e essai) : `VERCEL_TOKEN` présent, mais `api.vercel.com` injoignable depuis le shell (échec TLS au proxy) et le diagnostic est refusé par le contrôle de sécurité. Aucun secret généré. À poser par le conseiller.
+- [x] `DROP FUNCTION push_route_config()` : exécuté par Chris dans le SQL Editor (version `20261006190000` enregistrée). pgTAP `phase5a_push.test.sql` relancé : **7 groupes, 45/45**, dont `hasnt_function('push_route_config')`.
+- [x] Secrets posés par le conseiller (2026-10-06) : sur Vercel (Preview et Production) les 4 variables, `VAPID_PRIVATE_KEY` et `PUSH_CRON_SECRET` en sensitive, `VAPID_SUBJECT` = URL du site ; dans le coffre `push_cron_secret` et `vercel_protection_bypass`.
 - [x] Coffre : `push_endpoint_url` → `https://bad-boys-bad-girls-git-phase-5-riuk.vercel.app/api/cron/push`.
-- [ ] Secrets : l'environnement de Claude refuse d'afficher un secret, même pour le passer au connecteur Vercel, et `VERCEL_TOKEN` est absent. À poser par Chris ou le conseiller (voir le rapport 5a) : sur Vercel `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (sensitive), `VAPID_SUBJECT`, `PUSH_CRON_SECRET` (sensitive), plus le jeton « Protection Bypass for Automation » ; dans le coffre, `push_cron_secret` et `vercel_protection_bypass` avec les mêmes valeurs.
-- [ ] Redéployer la preview, vérifier l'envoi de bout en bout, test sur téléphone (Android et iPhone).
+- [x] **Défaut trouvé à la vérification** : `NEXT_PUBLIC_SUPABASE_URL` valait `…supabase.co/rest/v1/` sur Vercel depuis le 2026-10-03 → toutes les requêtes du site déployé partaient vers `/rest/v1/rest/v1/…` (404 PGRST125 ; la route push répondait 500 `claim_failed`). Corrigée en URL de base (Preview et Production ; la production la prendra au prochain déploiement). Les tests locaux ne pouvaient pas le voir (`.env.local` correct).
+- [x] Preview redéployée (`dpl_J4YpzxZ8W5c8dNnZV727iXcQu81b`, `800e46d`). Appel pg_net avec les secrets du coffre : **200 `{"sent":0}`** (secret, jeton de contournement, variables VAPID et clé secrète Supabase validés) ; sans secret : 401.
+- [ ] `push_outbox` → `sent` : impossible sans un vrai navigateur abonné (aucun abonnement en base) ; c'est le test Android qui le prouvera.
+- [ ] Test sur téléphone (Android, puis iPhone).
 - [ ] SCHEMA : écarts (révocation douce, pas de lecture des abonnements par les membres, colonne `locale`, message = chemin seulement).
 
 ### Points à connaître
