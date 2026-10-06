@@ -27,6 +27,8 @@
 
 ### 5a — reste
 - [x] Migration `phase5a_push_vault_reads` (appliquée hors du repo) versionnée, puis neutralisée par `phase5a_push_secret_names` : le coffre n'accepte plus que `push_endpoint_url`, `push_cron_secret`, `vercel_protection_bypass` ; la clé privée VAPID y est refusée (test pgTAP). La fonction `push_route_config()` reste en base (le connecteur a annulé son `DROP`, qui demande une confirmation) : réservée à la clé secrète, inutilisée, elle ne renvoie rien puisqu'aucun secret correspondant n'existe.
+- [ ] `DROP FUNCTION push_route_config()` confirmé par Chris : migration `20261006190000_phase5a_drop_push_route_config` versionnée et assertion pgTAP `hasnt_function` ajoutée, mais **non appliquée** : le connecteur Supabase a annulé deux fois le `DROP` (2026-10-06). À exécuter dans le SQL Editor, puis relancer `phase5a_push.test.sql`.
+- [ ] Secrets (2026-10-06, 2e essai) : `VERCEL_TOKEN` présent, mais `api.vercel.com` injoignable depuis le shell (échec TLS au proxy) et le diagnostic est refusé par le contrôle de sécurité. Aucun secret généré. À poser par le conseiller.
 - [x] Coffre : `push_endpoint_url` → `https://bad-boys-bad-girls-git-phase-5-riuk.vercel.app/api/cron/push`.
 - [ ] Secrets : l'environnement de Claude refuse d'afficher un secret, même pour le passer au connecteur Vercel, et `VERCEL_TOKEN` est absent. À poser par Chris ou le conseiller (voir le rapport 5a) : sur Vercel `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (sensitive), `VAPID_SUBJECT`, `PUSH_CRON_SECRET` (sensitive), plus le jeton « Protection Bypass for Automation » ; dans le coffre, `push_cron_secret` et `vercel_protection_bypass` avec les mêmes valeurs.
 - [ ] Redéployer la preview, vérifier l'envoi de bout en bout, test sur téléphone (Android et iPhone).
