@@ -4,7 +4,36 @@
 
 ## Phase en cours
 
-**Phase 4 — terminée, PR ouverte** (branche `phase-4`). 4a validée par le conseiller (relecture sécurité) ; 4b–4f relues par le conseiller, preview confirmée sur `0f68133`, décisions de Chris appliquées (Promenade par paliers, or `#765A0E`, anglais). Phase 3 validée et fusionnée (PR #9), en production. Liaison par l'issue #10 abandonnée (retour au relais manuel).
+**Phase 5a — Web Push, en cours** (branche `phase-5`). Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et test sur téléphone après chacune.
+
+## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
+
+### Découpage (validé)
+5a Web Push → 5b Heures de visite → 5c Visite. Arrêt, rapport et test sur téléphone après chacune.
+
+### Décisions (Chris, 2026-10-06)
+- Option A pour les secrets : clé publique VAPID, clé privée VAPID, contact VAPID et secret de la route en **variables Vercel** (clé privée et secret en type « sensitive »). Le **coffre Supabase (Vault)** ne contient que ce dont pg_net a besoin : l'URL appelée, le secret de la route, le jeton de contournement de la preview. La clé privée VAPID ne va jamais dans le coffre.
+- Les secrets sont générés dans le shell et posés sans jamais être affichés. Chris autorise le connecteur Vercel pour les poser, en connaissance de cause.
+- Test réel sur la preview : jeton de contournement de la protection Vercel, réservé à la preview, rangé dans le coffre.
+- iPhone : accepté, avec le guide d'installation (`/installer`).
+- Fin de visite (5c) : choix cachés aux deux participants, lus uniquement par une fonction, attente qui interroge toutes les 5 s.
+
+### 5a — fait (vérifié)
+- **Base** (`20261006173557_phase5a_web_push`) : `push_subscriptions` (aucun droit direct des membres, uniquement des fonctions ; 5 navigateurs au plus ; un abonnement coupé ou expiré garde sa ligne mais perd adresse et clés), `push_outbox` alimentée par un déclencheur sur `notifications` (préférences par type, une seule notification Greffe par jour, contenu = un chemin interne seulement), `push_claim` (bail de 5 min) / `push_report`, `push_dispatch` lancé chaque minute par pg_cron, qui n'appelle la route via pg_net que s'il y a quelque chose à envoyer. pgTAP `phase5a_push.test.sql` : 7 groupes, 44 assertions vertes ; contrôles globaux propres (RLS partout, rien pour anon).
+- **Route** `/api/cron/push` (Node) : secret comparé en temps constant, envoi par `web-push` (TTL 24 h), 404/410 → abonnement coupé, autre échec → nouvel essai, abandon après 3 tentatives, abonnement coupé après 5 échecs de suite.
+- **Service worker** `public/sw.js` : textes neutres FR/EN par type (jamais de pseudo, de photo ni de message), aucun cache, aucun `fetch`. Enregistré seulement quand le membre active les notifications, jamais sur la landing. `/sw.js` servi en `no-cache` avec sa propre CSP.
+- **Interface** : proposition après la 1re demande envoyée (Visiteur, `/demandes`) ou la 1re acceptée (Bad, `/courrier`), jamais à l'arrivée ; « Plus tard » ou un refus du navigateur respectés 30 jours ; guide iPhone `/installer` (écran d'accueil, iOS 16.4+) ; Ma Fiche › Notifications (cet appareil, nombre d'appareils, 3 types). Politique de confidentialité complétée (ce qui est gardé, quand c'est effacé).
+- **Vérifications** : lint, typecheck, Prettier, build ; 151 tests unitaires ; e2e 51 verts, 9 sautés (doublons desktop prévus), dont : aucun service worker sur `/`, route 401 sans secret, proposition visible puis masquée par « Plus tard ».
+
+### 5a — reste
+- [ ] Retirer de la base la migration `phase5a_push_vault_reads` (appliquée hors du repo, inutile pour l'option A) par une migration versionnée.
+- [ ] Générer et poser les secrets : Vercel (Preview + Production) et coffre (`push_endpoint_url` → preview, `push_cron_secret`, `vercel_protection_bypass`).
+- [ ] Déployer la preview, vérifier l'envoi de bout en bout, rapport, test sur téléphone (Android et iPhone).
+- [ ] SCHEMA : écarts (révocation douce, pas de lecture des abonnements par les membres, colonne `locale`, message = chemin seulement).
+
+### Points à connaître
+- Si un navigateur renouvelle de lui-même son abonnement, l'ancien est coupé au premier envoi refusé (410) ; il faut réactiver dans Ma Fiche (pas de `pushsubscriptionchange`).
+- Le titre affiché par le téléphone est le nom de l'app installée (iPhone) ou le domaine (Android) : il révèle le site, pas le contenu.
 
 ## Phase 4 — Demande de parloir, Promenade, Découverte, Courrier (2026-10-05)
 
@@ -143,6 +172,8 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 - [ ] Interdire aussi les inscriptions directes par l'API Auth tant que la production n'est pas prête : `SIGNUPS_OPEN` ne protège que le site (Supabase Auth → « Allow new users to sign up » sur la future base de production).
 - [x] Relecture des contenus `docs/content/` et de la liste de départ des mots-clés (chargée).
 - [ ] Remplir la catégorie `harassment` depuis l'admin (Phase 7).
+- [ ] **Rebrancher l'URL appelée par pg_net sur la production** : secret `push_endpoint_url` du coffre → `https://<domaine de production>/api/cron/push` (aujourd'hui la preview), et supprimer `vercel_protection_bypass` du coffre si la production n'est pas protégée.
+- [ ] **Poser les clés Turnstile sur Vercel** (`NEXT_PUBLIC_TURNSTILE_SITE_KEY`, absente aujourd'hui ; la clé secrète va dans Supabase Auth → Captcha).
 
 ### Pour plus tard (hors Phase 3)
 - Anglais : remplacer « step up to the height chart » par « step into the lineup » avant l'ouverture internationale.
