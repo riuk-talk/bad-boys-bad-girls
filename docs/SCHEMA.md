@@ -265,7 +265,7 @@ RLS : **S** — (via `get_my_promenade()`) ; **U** — (`mark_promenade_seen()`)
 ### 2.4 Notifications, push, e-mails, activité
 
 #### `notifications` — **en base (Phase 3)** (type `notification_type` v2)
-Écrites uniquement par des fonctions SQL (le Greffe : `moderation_decision` par photo, `permit_granted` pour la face d'un Visiteur). RLS **S** propriétaire ; aucune écriture membre ; `mark_notifications_read()`.
+Écrites uniquement par des fonctions SQL (le Greffe : `moderation_decision` par photo, `permit_granted` pour la face d'un Visiteur). RLS **S** propriétaire ; aucune écriture membre ; `mark_notifications_read()` (toutes, Greffe) et `mark_notifications_read(types[])` (Phase 4 : chaque écran ne marque lues que ses propres types ; la version sans argument n'est plus appelée par l'application).
 `id`, `user_id`, `type`, `payload jsonb`, `read_at`, `created_at`. RLS : **S** propriétaire ; **U** via `mark_notifications_read()`.
 
 #### `notification_preferences` — **[v2-modif]** (en base)
@@ -328,7 +328,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `complicity_score(a, b)` → `(score, common_count, capped)`, `common_points(a, b, n)` | **en base (Phase 3a), internes** : aucun droit `execute` pour `authenticated` ni `anon` (sinon un membre pourrait sonder les réponses d'un autre en variant les siennes). Appelées par `get_fiche`, `get_permit`, `get_mailbox` (Phase 4), qui contrôlent la visibilité. Arrondi au demi supérieur en entiers exacts ; miroir `lib/complicity.ts`, parité sur `tests/fixtures/complicity-cases.json` | **[Phase 3]** |
 | `get_fiche(bad)` | autorisée si `can_view_bad` **ou** `has_open_relation` ; jamais en cas de blocage. Pseudo, âge, ville, photos validées, bio, signes, Casier sans le vrai, « Casier modifié depuis », indice + 3 points communs, Bonne conduite, `requests_open`, demande en cours ou délai | **[v2-modif]** |
 | `get_permit(visitor)` | appelant = le Visiteur lui-même, ou un Bad ayant une relation ouverte ou passée avec lui ; photo 0, pseudo, âge, ville, Motif, signes, `visitor_reputation`, indice + points communs | **[v2-nouveau]** |
-| `discover_bads(age_min, age_max, max_km, tribe_ids, good_conduct_only, recently_active, cursor, limit default 24)` | Visiteurs uniquement ; une seule requête, curseur `(sort_key, id)` | **[v2]** (remplace `discover_profiles`) |
+| `discover_bads(age_min, age_max, max_km, tribe_ids, good_conduct_only, recently_active, cursor, limit default 24)` | Visiteurs uniquement ; une seule requête, curseur `(sort_key, id)` ; conditions de `is_bad_visible` / `criteria_match` / blocages écrites dans la requête (Phase 4f : une fonction SQL avec `set search_path` n'est jamais inlinée), distance, ville et photo calculées pour la page seulement ; équivalence avec `can_view_bad` vérifiée par pgTAP | **[v2]** (remplace `discover_profiles`) |
 | `get_my_promenade()`, `mark_promenade_seen(bad_id)` | Visiteurs uniquement | **[v2]** (remplacent `get_my_hearing`, `mark_hearing_seen`) |
 | `send_visit_request(bad, guessed_index, note)` → `{request_id}` | voir 3.3 ; **ne renvoie pas** le résultat du pari | **[v2]** (remplace `send_plea`) |
 | `decide_visit_request(request_id, accept, slots timestamptz[])` | Bad uniquement ; accepter exige 2 ou 3 créneaux valides ; classer = message neutre | **[v2]** (remplace `decide_plea`) |
@@ -347,6 +347,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `block_user(target)` / `unblock_user(target)` | voir 2.3 | **[v2-modif]** |
 | `report(target_type, target_id, category, comment)` | masquage auto « mineur » si 2 signaleurs ou 1 Bad Bonne conduite | **[v2-modif]** |
 | `send_message(conversation_id, body)` | voir `messages` | **[v2-modif]** |
+| `get_my_blocks()` | Phase 4 : mes blocages actifs (pseudo, date), pour débloquer depuis Ma Fiche | |
 | `mark_conversation_read`, `propose_date`, `respond_date`, `close_conversation`, `reorder_photos`, `referral_count`, `mark_notifications_read` | v1 ; `close_conversation` → `visit_requests.close_reason = closed_after_release` | |
 | `get_counters()` | non-lus, demandes en attente (Bad), créneaux à choisir (Visiteur), prochaine visite, notifications | **[v2-modif]** |
 | `zone_progress()` | `(zone_id, zone_name, status, launch_mode, bads, threshold_bads, bad_girls, min_bad_girls, bad_boys, min_bad_boys, visitors_waiting, ready)` | **[v2-modif]** (en base) |
@@ -373,7 +374,7 @@ v1 + **[v2]** : `admin_upsert_zone(...)` avec `threshold_bads`, `threshold_women
 | Job | Fréquence | Rôle |
 |---|---|---|
 | `run_visit_ticks()` | **[v2-nouveau]** chaque minute (`pg_cron`) | rappels H-1 et à l'heure (notifications + `push_outbox`, idempotents) ; passage `scheduled → in_progress` à l'heure + message système « résultat du pari » ; à +10 min : `no_show` si absence (compteur du couple, 2 → classement) ; à +30 min : `ended` + `end_choice_deadline` ; décisions de fin échues (24 h) ; `choose_deadline` et `repropose_deadline` échus → classement. Puis, si `push_outbox` contient des envois dus : appel `pg_net` vers `/api/cron/push` (secret partagé). Aucun appel HTTP quand il n'y a rien à envoyer. |
-| `run_promenades_due()` → `build_daily_promenade(zone_id, local_date)` | horaire | **[v2]** (remplace `run_hearings_due`) ; SQL ensembliste, critère 5 000 Visiteurs × 1 000 Bads < 5 min |
+| `run_promenades_due()` → `build_daily_promenade(zone_id, local_date)` | horaire | **[v2]** (remplace `run_hearings_due`) ; SQL ensembliste par lots de 500 Visiteurs, réponses en bitsets (complicité = ET + comptes de bits, arrondi exact), tours avec curseur par Visiteur, `work_mem` 32 Mo pour ce job ; mêmes choix que la version 4a (pgTAP) ; 600 × 1 000 en 6,9 s mesuré, 5 000 × 1 000 ≈ 1 min extrapolé |
 | `expire_visit_requests()` | horaire | demandes `pending` > 7 j → `auto_dismissed` |
 | `compute_good_conduct()` | quotidien | **[v2]** (remplace `compute_reglo`) |
 | `process_inactive_profiles()`, `auto_open_zones()`, `cleanup()`, `enqueue_*_emails()` | quotidien / horaire | `auto_open_zones` utilise `counts_for_zone` et renseigne `ready_at` |

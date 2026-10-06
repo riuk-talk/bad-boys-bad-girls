@@ -79,7 +79,8 @@ async function login(
 
 test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Supabase, writes data)", () => {
   test.skip(!enabled, "E2E_ALLOW_WRITE / SUPABASE_SECRET_KEY not set");
-  test.describe.configure({ mode: "serial" });
+  // Each test walks through many screens (axe audits, captures) while other suites write in parallel.
+  test.describe.configure({ mode: "serial", timeout: 120_000 });
   // One run is enough (the flow is the same at every width); the screens are checked at 390 px.
   test.skip(({ viewport }) => (viewport?.width ?? 0) > 1000, "runs once, on the mobile project");
 

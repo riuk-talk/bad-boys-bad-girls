@@ -541,6 +541,49 @@ begin
   perform pg_temp.as_owner();
 end $$;
 
+-- Ma Fiche lists my own blocks only; opening a screen marks read only my notifications of its types.
+create function pg_temp.test_my_blocks_and_notifications() returns setof text language plpgsql as $$
+declare
+  ville bigint := pg_temp.new_place('Ville test', 47.5, 3.5);
+  b uuid; v uuid; v2 uuid; v_pseudo text;
+begin
+  perform pg_temp.open_launch();
+  b := pg_temp.visible_bad('b@test.local', ville);
+  v := pg_temp.permit_visitor('v@test.local', ville);
+  v2 := pg_temp.permit_visitor('v2@test.local', ville);
+  v_pseudo := (select pseudo from public.profiles where id = v);
+  perform pg_temp.as_user(b);
+  perform public.block_user(v);
+  perform pg_temp.as_user(v2);
+  perform public.block_user(b);
+  perform pg_temp.as_user(b);
+  return next is((select array_agg(blocked_id) from public.get_my_blocks()), array[v],
+    'get_my_blocks: my blocks only (not the ones against me)');
+  return next is((select pseudo from public.get_my_blocks()), v_pseudo, 'with the pseudo, to unblock from Ma Fiche');
+  perform public.unblock_user(v);
+  return next is((select count(*)::integer from public.get_my_blocks()), 0, 'an unblocked member leaves the list');
+  perform pg_temp.as_anon();
+  return next matches(coalesce(pg_temp.try('select * from public.get_my_blocks()'), 'ok'), '^42501', 'anon cannot call it');
+
+  perform pg_temp.as_owner();
+  perform public.notify(b, 'request_received');
+  perform public.notify(b, 'moderation_decision');
+  perform public.notify(v, 'request_received');
+  perform pg_temp.as_user(b);
+  perform public.mark_notifications_read(array['request_received']::public.notification_type[]);
+  perform pg_temp.as_owner();
+  return next is((select read_at is not null from public.notifications where user_id = b and type = 'request_received'), true,
+    'mark_notifications_read: the types given are read');
+  return next is((select read_at from public.notifications where user_id = b and type = 'moderation_decision'), null,
+    'the other types stay unread (the Greffe''s notices)');
+  return next is((select read_at from public.notifications where user_id = v and type = 'request_received'), null,
+    'and another member''s are untouched');
+  perform pg_temp.as_anon();
+  return next matches(coalesce(pg_temp.try('select public.mark_notifications_read(array[''request_received'']::public.notification_type[])'), 'ok'),
+    '^42501', 'anon cannot call it');
+  perform pg_temp.as_owner();
+end $$;
+
 ----------------------------------------------------------------------------------------------
 -- Role change, report
 ----------------------------------------------------------------------------------------------
@@ -712,6 +755,8 @@ begin
   return next ok(not exists (select 1 from public.promenade_picks a join public.promenade_picks c
       on c.visitor_id = a.visitor_id and c.bad_id = a.bad_id and c.promenade_date = a.promenade_date + 1
     where a.promenade_date = current_date), 'a Bad is not shown again to the same Visitor within 14 days');
+  return next is((select count(*)::integer from public.promenade_picks where promenade_date = current_date + 1) > 0, true,
+    'the second build gives a Promenade too');
 end $$;
 
 ----------------------------------------------------------------------------------------------
