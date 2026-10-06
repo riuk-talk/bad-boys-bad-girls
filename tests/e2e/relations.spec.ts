@@ -71,9 +71,9 @@ async function login(browser: Browser, email: string, password: string) {
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Mot de passe", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Se connecter" }).click();
-  await page.waitForURL((target) => !target.pathname.startsWith("/connexion"), {
-    waitUntil: "commit",
-  });
+  // The login goes to /onboarding, which redirects a finished member once more: wait for the
+  // final page, or the next navigation is interrupted (WebKit).
+  await page.waitForURL((target) => !/^\/(connexion|onboarding)$/.test(target.pathname));
   return page;
 }
 

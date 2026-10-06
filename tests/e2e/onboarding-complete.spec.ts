@@ -270,7 +270,9 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
     await greffier.getByLabel("E-mail").fill(adminAccount.email);
     await greffier.getByLabel("Mot de passe", { exact: true }).fill(adminAccount.password);
     await greffier.getByRole("button", { name: "Se connecter" }).click();
-    await greffier.waitForURL(/onboarding/, { waitUntil: "commit" });
+    // /onboarding redirects once more (to the first unfinished step): wait for it, or the next
+    // navigation is interrupted (WebKit).
+    await greffier.waitForURL(/onboarding\/\d/);
     await greffier.goto("/admin/greffe");
     await expect(greffier.getByRole("heading", { name: "Le Greffe" })).toBeVisible();
     expect(await axeViolations(greffier)).toEqual([]);
