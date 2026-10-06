@@ -1,0 +1,91 @@
+# Continuous integration (Phase 5a-bis). Linux only, one job, 15 minutes at most (private
+# repository: GitHub Actions minutes are counted).
+#
+# Everything runs against a LOCAL Supabase stack started inside the job (`supabase start`): the
+# remote project is never contacted, and no repository secret is used. The VAPID keys, the push
+# route secret and a throwaway TLS certificate are generated in the job (scripts/ci/local-env.mjs);
+# the Supabase keys are the local stack's own.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    # A pull request from a branch of this repository is already checked by the push of that
+    # branch (same commit): only pull requests from forks run again.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The two slow downloads (Docker images, browsers) run in the background while the static
+      # checks run; each one writes its exit code to a file that a later step waits for.
+      - name: Start local Supabase and install browsers (background)
+        run: |
+          (pnpm exec supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta \
+            > "$RUNNER_TEMP/supabase.log" 2>&1; echo $? > "$RUNNER_TEMP/supabase.exit") &
+          (pnpm exec playwright install --with-deps chromium webkit \
+            > "$RUNNER_TEMP/browsers.log" 2>&1; echo $? > "$RUNNER_TEMP/browsers.exit") &
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format
+        run: pnpm format:check
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Wait for the local Supabase stack
+        run: scripts/ci/wait-for.sh supabase
+
+      - name: Local environment (generated secrets, local stack only)
+        run: node scripts/ci/local-env.mjs "$GITHUB_ENV"
+
+      - name: Build
+        run: pnpm build
+
+      - name: Database tests (pgTAP)
+        run: pnpm exec supabase test db
+
+      - name: Wait for the browsers
+        run: scripts/ci/wait-for.sh browsers
+
+      - name: End-to-end (Pixel 7, iPhone 14)
+        run: pnpm exec playwright test --project=pixel-7 --project=iphone-14
+
+      - name: Keep the traces of failed tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 3
+          if-no-files-found: ignore
