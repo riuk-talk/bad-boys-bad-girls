@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 4 — 4a à 4f terminées, preview en attente de validation** (branche `phase-4`). 4a validée par le conseiller (relecture sécurité). Phase 3 validée et fusionnée (PR #9), en production. Liaison par l'issue #10 abandonnée (retour au relais manuel).
+**Phase 4 — terminée, PR ouverte** (branche `phase-4`). 4a validée par le conseiller (relecture sécurité) ; 4b–4f relues par le conseiller, preview confirmée sur `0f68133`, décisions de Chris appliquées (Promenade par paliers, or `#765A0E`, anglais). Phase 3 validée et fusionnée (PR #9), en production. Liaison par l'issue #10 abandonnée (retour au relais manuel).
 
 ## Phase 4 — Demande de parloir, Promenade, Découverte, Courrier (2026-10-05)
 
@@ -30,11 +30,17 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 3. Promenade : CTE inlinées par le planificateur → chaque comptage de bits recalculé des dizaines de fois (7,9 s au lieu de 0,4 s) → `materialized`.
 4. Test e2e Bad : 30 s trop court quand toute la suite tourne en parallèle → 120 s pour le bloc Phase 4 (comme l'onboarding, 180–240 s).
 
-### Écarts / points à trancher
-- **Encre or sur crème** `#765a0e` (5,33:1) au lieu de `#8a6a12` (4,16:1, refusé par axe) : écart à PARCOURS-DESIGN.
-- **Capacité de la Promenade** (produit, pas performance) : avec un plafond de 10 apparitions par Bad et par jour, 5 000 Visiteurs pour 1 000 Bads = 10 000 places pour 25 000 demandées ; en saturé, 17 % des Visiteurs n'ont **aucun** Bad ce soir-là. À trancher par Chris : plafond plus haut, ou garantir au moins 1 Bad par Visiteur avant d'en donner 5 à d'autres.
-- Anglais : Promenade = « The Yard », Courrier = « Mailbox », Casier = « Record », Parloir = « visiting room », Greffe = « Registry ».
-- Limites Phase 4 : pas de créneaux de visite (Phase 5), onglets Visites / Parloir masqués, notifications dans l'application seulement.
+### Décisions de Chris (2026-10-06, après relecture du conseiller)
+- **Promenade par paliers** (`20261006112943_phase4_promenade_tiers`) : d'abord 1 Bad pour chaque Visiteur, puis un 2e, et ainsi de suite jusqu'à 5, dans la limite inchangée de 10 apparitions par Bad et par jour. Mesuré : saturé 1 000 Visiteurs × 200 Bads → **1 000 servis sur 1 000, 2 Bads chacun**, 3,8 s (avant : 17 % sans aucun Bad) ; 600 × 1 000 → 7,8 s, tous servis. Test pgTAP saturé : 0 % de Visiteurs sans Bad tant qu'il reste des places, écart d'au plus 1 Bad entre Visiteurs. Sans saturation, le résultat reste identique au builder 4a (test d'équivalence, plafond relevé à 1 000).
+- **Encre or sur crème `#765A0E`** validée : PARCOURS-DESIGN, SPEC et la maquette du Courrier mis à jour.
+- **Anglais validé** : Promenade = « The Yard », Courrier = « Mailbox », Casier = « Record », Parloir = « visiting room », Greffe = « Registry ».
+- Limites Phase 4 (inchangées) : pas de créneaux de visite (Phase 5), onglets Visites / Parloir masqués, notifications dans l'application seulement.
+
+### pgTAP complet relancé après les paliers (2026-10-06, tout vert)
+- `phase4_relations` : **14/14 groupes, 194 vérifications** (règle 14 59, formes 9, tables fermées 12, N° d'écrou 10, limites 17, Parloir complet 6, anti-arnaque 2, visibilité 13, blocages 14, mes blocages / notifications 8, changement de rôle 10, signalement 15, Promenade 13, droits 6).
+- `phase4_perf` : Découverte 6/6 (40 ms par page sur 1 000 Bads), Promenade 600 × 1 000 3/3, équivalence 4a 2/2, saturé 4/4.
+- `phase3_complicity_parity` 69/69 ; `phase3_security` 17/17 groupes ; `phase3_greffe` 7/7 ; `phase2_security` 22/22.
+- Base revérifiée vide, `app_settings` inchangé (`zones` / 10).
 
 ### 4a — base (vérifié sur la base de dev)
 - **Migrations** (dans l'ordre, versions enregistrées) :

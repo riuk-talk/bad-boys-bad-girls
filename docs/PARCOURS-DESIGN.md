@@ -12,7 +12,7 @@
   - une étiquette en haut de chaque écran connecté : **« BAD »** avec une icône de barreaux, **« VISITEUR »** avec une icône de combiné ;
   - les matières : le Bad = dossier papier, cellule ; le Visiteur = permis, vitre de parloir.
 - **Page d'accueil (déjà en ligne)** : les deux portes passent en **crème** (cadre, halo, texte). La porte Bad garde ses barreaux et « CELLULE B », la porte Visiteur sa vitre, son hygiaphone et « PARLOIR ». Les autres éléments or/rouge de la landing qui opposaient Bad et Visiteur (sur-titres, titres de section côté Bad / côté Visiteur, blocs « CÔTÉ BAD » / « CÔTÉ VISITEUR ») passent aussi en crème. L'or et le rouge restent pour la marque (logo, « BAD BOYS & BAD GIRLS », tampons, bandeau).
-- Contrastes AA inchangés : le rouge en petit texte sur fond sombre = `#EE3A55` ; sur papier crème = `#B5172E` ; l'or sur papier crème = `#8A6A12`.
+- Contrastes AA inchangés : le rouge en petit texte sur fond sombre = `#EE3A55` ; sur papier crème = `#B5172E` ; l'or sur papier crème = `#765A0E` (5,33:1 ; `#8A6A12` ne faisait que 4,16:1, refusé par axe — validé par Chris le 2026-10-06).
 - Le vert (exception §1 bis) reste réservé aux retours du jeu et aux statuts positifs (Bien vu, Le vrai, Visite acceptée, Casier vierge, Ouvert aux visites).
 
 ## 2. La Fiche du Bad = le dossier judiciaire de la référence

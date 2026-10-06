@@ -197,7 +197,8 @@ begin
 end $$;
 
 ----------------------------------------------------------------------------------------------
--- La Promenade: the faster builder gives exactly the picks of the Phase 4a one
+-- La Promenade: the faster builder scores and orders exactly as the Phase 4a one (no Bad full,
+-- so that the tiers decided on 2026-10-06 do not come into play)
 ----------------------------------------------------------------------------------------------
 -- The Phase 4a builder (20261005173248), kept here as the reference the faster one must match.
 create function pg_temp.build_original(p_zone smallint, p_date date)
@@ -310,6 +311,7 @@ begin
   insert into public.blocks (blocker_id, blocked_id)
     select b.id, v.id from perf_ids b join perf_ids v on v.role = 'visitor' and v.i = b.i + 80
     where b.role = 'bad' and b.i % 9 = 0;
+  update public.app_settings set promenade_max_appearances_per_day = 1000 where id;
   a := pg_temp.build_original(z, current_date);
   b := public.build_daily_promenade(z, current_date + 30);
   return next ok(a > 0, format('%s picks', a));
@@ -318,17 +320,20 @@ begin
      from public.promenade_picks where promenade_date = current_date),
     (select array_agg(row(visitor_id, bad_id, rank, score)::text order by visitor_id, bad_id)
      from public.promenade_picks where promenade_date = current_date + 30),
-    'same picks, same ranks, same scores as the Phase 4a builder');
+    'same picks, same ranks, same scores as the Phase 4a builder when no Bad is full');
 end $$;
 
 ----------------------------------------------------------------------------------------------
--- La Promenade saturated: 5 Visitors per Bad (as 5,000 Visitors × 1,000 Bads), so that Bads fill
--- up, rounds run long and Visitors walk far down their lists; the cap is never exceeded.
+-- La Promenade saturated: 5 Visitors per Bad (as 5,000 Visitors × 1,000 Bads). Places are given
+-- out by tiers (Chris, 2026-10-06): nobody is left without a Bad while places remain, and with
+-- fewer than 5 places per Visitor, everyone gets the same number, give or take one.
 ----------------------------------------------------------------------------------------------
 create function pg_temp.test_perf_promenade_saturated() returns setof text language plpgsql as $$
 declare
   n_bads integer := current_setting('perf.saturated_bads')::integer;
+  cap integer := (select promenade_max_appearances_per_day from public.app_settings);
   z smallint; t0 timestamptz; build numeric; built integer; served integer; max_shown integer;
+  fewest integer; most integer;
 begin
   z := pg_temp.perf_zone();
   perform pg_temp.perf_members(n_bads, n_bads * 5);
@@ -339,19 +344,25 @@ begin
   select count(distinct visitor_id) into served from public.promenade_picks where promenade_date = current_date;
   select max(n) into max_shown from (select count(*) n from public.promenade_picks
     where promenade_date = current_date group by bad_id) t;
-  return next diag(format('build %s s for %s Visitors × %s Bads: %s picks, %s Visitors served',
-    build, n_bads * 5, n_bads, built, served));
+  select min(coalesce(n, 0)), max(coalesce(n, 0)) into fewest, most
+  from perf_ids i left join (select visitor_id, count(*) n from public.promenade_picks
+    where promenade_date = current_date group by visitor_id) t on t.visitor_id = i.id
+  where i.role = 'visitor';
+  return next diag(format('build %s s for %s Visitors × %s Bads: %s picks, %s Visitors served, %s to %s Bads each',
+    build, n_bads * 5, n_bads, built, served, fewest, most));
   return next cmp_ok(build, '<', 300::numeric, 'built in under 5 minutes');
-  return next is(max_shown, (select promenade_max_appearances_per_day from public.app_settings),
-    'Bads are filled up to the daily cap, never beyond');
+  return next is(served, n_bads * 5, '0 % of Visitors without a Bad while places remain');
+  return next ok(most - fewest <= 1, 'places given out by tiers: everyone has the same number, give or take one');
+  return next is(max_shown, cap, 'Bads are filled up to the daily cap, never beyond');
 end $$;
 
 ----------------------------------------------------------------------------------------------
 -- Sizes. Creating members goes through the production triggers (about 25 ms each: keywords,
 -- N° d'écrou, zone), and the Supabase connector stops a call after 60 s: run one test per call
 -- there (regex below), e.g. '^test_perf_discover$'. Measured on 2026-10-06 (see PROGRESS.md):
--- Découverte 62 ms for 1,000 Bads; Promenade 6.9 s for 600 Visitors × 1,000 Bads, 2.9 s
--- saturated (1,000 × 200). 5,000 Visitors × 1,000 Bads is extrapolated (≈ 1 min), not measured.
+-- Découverte 62 ms for 1,000 Bads; Promenade 6.9 s for 600 Visitors × 1,000 Bads (before the
+-- tiers), saturated 1,000 × 200 measured again with the tiers. 5,000 Visitors × 1,000 Bads is
+-- extrapolated (≈ 1 min), not measured.
 select set_config('perf.bads', '1000', false), set_config('perf.visitors', '600', false),
   set_config('perf.saturated_bads', '200', false);
 select * from runtests(pg_my_temp_schema()::regnamespace::name, '^test_perf_');
