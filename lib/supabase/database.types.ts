@@ -1486,6 +1486,13 @@ export type Database = {
         Returns: string
       }
       push_report: { Args: { p_report: Json }; Returns: undefined }
+      push_route_config: {
+        Args: never
+        Returns: {
+          cron_secret_sha256: string
+          vapid_private_key: string
+        }[]
+      }
       recompute_profile_zones: { Args: never; Returns: number }
       referral_count: { Args: never; Returns: number }
       report: {

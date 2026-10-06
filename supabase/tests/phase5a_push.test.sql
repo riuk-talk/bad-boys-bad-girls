@@ -237,6 +237,8 @@ begin
   perform pg_temp.as_owner();
   return next matches(coalesce(pg_temp.try('select public.set_push_secret(''service_role_key'', repeat(''x'', 40))'), 'ok'),
     'unknown_secret', 'only the three push secrets can be written');
+  return next matches(coalesce(pg_temp.try('select public.set_push_secret(''vapid_private_key'', repeat(''x'', 40))'), 'ok'),
+    'unknown_secret', 'the VAPID private key never goes in the Vault (Vercel only)');
 end $$;
 
 ----------------------------------------------------------------------------------------------
