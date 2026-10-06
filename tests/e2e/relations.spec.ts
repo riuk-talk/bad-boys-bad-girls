@@ -4,7 +4,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
 
-// Phase 4 end to end against the DEV Supabase project: a Visitor finds a Bad, files a Demande de
+// Phase 4 end to end against a Supabase project (the local stack in CI, or the DEV project): a Visitor finds a Bad, files a Demande de
 // parloir with the Souffleur, the Bad reads it in the Courrier and accepts; reports, blocks,
 // pause. Throwaway accounts (admin API), a throwaway open zone around a fictitious place in the
 // Atlantic (nobody real can be in it), everything deleted afterwards. Opt-in: E2E_ALLOW_WRITE=true.
@@ -59,13 +59,13 @@ async function shot(page: Page, name: string) {
   await page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true });
 }
 
-async function login(
-  browser: Browser,
-  email: string,
-  password: string,
-  viewport = { width: 390, height: 900 },
-) {
-  const context = await browser.newContext({ viewport, ignoreHTTPSErrors: true });
+async function login(browser: Browser, email: string, password: string) {
+  // Device projects (Pixel 7, iPhone 14) keep their own screen; the others are checked at 390 px.
+  const viewport = test.info().project.use.isMobile ? undefined : { width: 390, height: 900 };
+  const context = await browser.newContext({
+    ...(viewport ? { viewport } : {}),
+    ignoreHTTPSErrors: true,
+  });
   const page = await context.newPage();
   await page.goto("/connexion");
   await page.getByLabel("E-mail").fill(email);
