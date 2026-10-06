@@ -337,7 +337,17 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     const prompt = page.getByTestId("push-prompt");
     if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
       await expect(prompt).toBeVisible();
-      await expect(prompt.getByRole("button", { name: "Activer les notifications" })).toBeVisible();
+      // An iPhone outside the home screen cannot subscribe: the prompt leads to the guide instead.
+      if (/iPhone/.test(await page.evaluate(() => navigator.userAgent))) {
+        await expect(prompt.getByRole("link", { name: "Voir comment faire" })).toHaveAttribute(
+          "href",
+          "/installer",
+        );
+      } else {
+        await expect(
+          prompt.getByRole("button", { name: "Activer les notifications" }),
+        ).toBeVisible();
+      }
     }
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "visitor-demandes-push");
