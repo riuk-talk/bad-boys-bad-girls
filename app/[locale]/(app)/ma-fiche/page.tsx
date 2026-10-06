@@ -6,6 +6,7 @@ import { FicheEditor } from "@/components/fiche/fiche-editor";
 import { PhotoManager } from "@/components/fiche/photo-manager";
 import { Notices, type Notice } from "@/components/fiche/notices";
 import { PosesEditor } from "@/components/onboarding/poses";
+import { AccountSettings } from "@/components/relations/account-settings";
 import { ButtonLink } from "@/components/ui/button-link";
 import { photoInfos } from "@/lib/photos";
 import { redirect } from "@/i18n/navigation";
@@ -49,6 +50,7 @@ export default async function MyFichePage() {
     { count: answered },
     { count: questionCount },
     { data: notices },
+    { data: blocked },
   ] = await Promise.all([
     supabase
       .from("places")
@@ -75,9 +77,11 @@ export default async function MyFichePage() {
     supabase
       .from("notifications")
       .select("id, type, payload, created_at")
+      .in("type", ["moderation_decision", "permit_granted"])
       .is("read_at", null)
       .order("created_at", { ascending: false })
       .limit(10),
+    supabase.rpc("get_my_blocks"),
   ]);
 
   // Photos awaiting validation are private: short-lived signed URLs, owner only (storage RLS).
@@ -152,6 +156,11 @@ export default async function MyFichePage() {
         {isVisitor ? null : (
           <ButtonLink href="/mon-casier" variant="secondary">
             {t("casierLink")}
+          </ButtonLink>
+        )}
+        {isVisitor || statusKey !== "approved" ? null : (
+          <ButtonLink href={`/fiche/${profile.id}`} variant="secondary">
+            {t("seeAsVisitors")}
           </ButtonLink>
         )}
       </nav>
@@ -254,6 +263,26 @@ export default async function MyFichePage() {
           text={(isVisitor ? profile.visit_motive : profile.bio) ?? ""}
           tribes={(tribes ?? []).map((tribe) => ({ id: tribe.id, label: labelOf(tribe.label) }))}
           selected={selected}
+        />
+      </section>
+
+      <section aria-labelledby="account-title" className="space-y-4">
+        <h2 id="account-title" className="font-display text-2xl tracking-wide uppercase">
+          {t("accountTitle")}
+        </h2>
+        <AccountSettings
+          role={role}
+          paused={profile.is_paused}
+          nextRoleChange={
+            profile.role_changed_at
+              ? new Date(
+                  new Date(profile.role_changed_at).getTime() + 7 * 24 * 3600 * 1000,
+                ).toISOString()
+              : null
+          }
+          hasMotive={Boolean(profile.visit_motive)}
+          blocked={(blocked ?? []).map((row) => ({ id: row.blocked_id, pseudo: row.pseudo }))}
+          locale={locale}
         />
       </section>
     </div>

@@ -1271,6 +1271,14 @@ export type Database = {
           visits_honored: number
         }[]
       }
+      get_my_blocks: {
+        Args: never
+        Returns: {
+          blocked_at: string
+          blocked_id: string
+          pseudo: string
+        }[]
+      }
       get_my_promenade: {
         Args: never
         Returns: {
@@ -1334,7 +1342,14 @@ export type Database = {
         Returns: boolean
       }
       is_trusted_reporter: { Args: { p_reporter: string }; Returns: boolean }
-      mark_notifications_read: { Args: never; Returns: undefined }
+      mark_notifications_read:
+        | { Args: never; Returns: undefined }
+        | {
+            Args: {
+              p_types: Database["public"]["Enums"]["notification_type"][]
+            }
+            Returns: undefined
+          }
       mark_promenade_seen: { Args: { p_bad: string }; Returns: undefined }
       mask_contacts: { Args: { value: string }; Returns: string }
       new_ecrou: { Args: never; Returns: string }

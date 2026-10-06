@@ -35,7 +35,7 @@ export async function AppHeader({ onboardingDone, role, isAdmin = false }: Props
     <header className="border-line/60 border-b">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2 sm:px-6">
         <LocalizedLink
-          href={onboardingDone ? "/ma-fiche" : "/onboarding"}
+          href={!onboardingDone ? "/onboarding" : role === "bad" ? "/courrier" : "/promenade"}
           aria-label={t("Nav.homeLabel")}
           className="inline-flex min-h-11 items-center"
         >
@@ -45,9 +45,6 @@ export async function AppHeader({ onboardingDone, role, isAdmin = false }: Props
         <nav aria-label={t("App.navLabel")} className="ml-auto flex items-center gap-1">
           {onboardingDone ? (
             <>
-              <LocalizedLink href="/ma-fiche" className={linkClass}>
-                {role === "visitor" ? t("App.myPermit") : t("App.myFiche")}
-              </LocalizedLink>
               <LocalizedLink href="/quartier" className={linkClass}>
                 {t("App.myQuarter")}
               </LocalizedLink>

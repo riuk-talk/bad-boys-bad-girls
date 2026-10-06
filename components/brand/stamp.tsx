@@ -10,16 +10,20 @@ export type StampKind =
   | "permit"
   | "visitAccepted"
   | "rightGuess"
-  | "wrongGuess";
+  | "wrongGuess"
+  | "requestFiled";
 
 /** Trust and welcome stamps are gold; the others red (SPEC v7 §1 bis). */
 const GOLD: readonly StampKind[] = [
   "goodConduct",
   "cleanRecord",
   "permit",
-  "visitAccepted",
   "permanentPermit",
+  "requestFiled",
 ];
+
+/** Green is kept for the game's feedback and positive statuses (PARCOURS-DESIGN §1). */
+const GREEN: readonly StampKind[] = ["rightGuess", "visitAccepted"];
 
 type StampProps = {
   kind: StampKind;
@@ -51,18 +55,17 @@ export function Stamp({
   className,
 }: StampProps) {
   const t = useTranslations("Components.stamps");
-  const color =
-    kind === "rightGuess"
+  const color = GREEN.includes(kind)
+    ? surface === "paper"
+      ? "text-green-ink"
+      : "text-green-bright"
+    : GOLD.includes(kind)
       ? surface === "paper"
-        ? "text-green-ink"
-        : "text-green-bright"
-      : GOLD.includes(kind)
-        ? surface === "paper"
-          ? "text-gold-ink"
-          : "text-gold"
-        : surface === "paper"
-          ? "text-red-ink"
-          : "text-red-bright";
+        ? "text-gold-ink"
+        : "text-gold"
+      : surface === "paper"
+        ? "text-red-ink"
+        : "text-red-bright";
   const label = t(kind);
 
   return (
