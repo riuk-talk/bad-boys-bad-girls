@@ -13,6 +13,23 @@ export function isAuthorizedCron(header: string | null, secret: string | undefin
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
+/**
+ * VAPID contact (RFC 8292): an https: URL or a mailto: address, nothing else. web-push throws on
+ * anything else, and each message would then fail silently until given up: the route refuses to
+ * run instead (503 push_misconfigured).
+ */
+export function isValidVapidSubject(subject: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(subject);
+  } catch {
+    return false;
+  }
+  if (url.protocol === "https:") return url.hostname !== "";
+  if (url.protocol === "mailto:") return /^[^@\s]+@[^@\s]+$/.test(url.pathname);
+  return false;
+}
+
 export type PushLocale = "fr" | "en";
 
 /**

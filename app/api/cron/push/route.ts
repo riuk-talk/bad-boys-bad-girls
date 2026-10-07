@@ -4,6 +4,7 @@ import {
   classifyPushError,
   emptyReport,
   isAuthorizedCron,
+  isValidVapidSubject,
   messageOutcome,
   pushPayload,
   type PushLocale,
@@ -41,6 +42,9 @@ export async function POST(request: NextRequest) {
   const subject = process.env.VAPID_SUBJECT;
   if (!publicKey || !privateKey || !subject) {
     return NextResponse.json({ error: "push_not_configured" }, { status: 503 });
+  }
+  if (!isValidVapidSubject(subject)) {
+    return NextResponse.json({ error: "push_misconfigured" }, { status: 503 });
   }
 
   const supabase = createAdminClient();
