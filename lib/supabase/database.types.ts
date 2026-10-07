@@ -1095,6 +1095,24 @@ export type Database = {
           },
         ]
       }
+      super_admins: {
+        Row: {
+          created_at: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       tribes: {
         Row: {
           id: number
@@ -1446,6 +1464,7 @@ export type Database = {
           }
       mark_promenade_seen: { Args: { p_bad: string }; Returns: undefined }
       mask_contacts: { Args: { value: string }; Returns: string }
+      my_admin_role: { Args: never; Returns: string }
       new_ecrou: { Args: never; Returns: string }
       new_referral_code: { Args: never; Returns: string }
       normalize_text: { Args: { value: string }; Returns: string }
@@ -1486,13 +1505,6 @@ export type Database = {
         Returns: string
       }
       push_report: { Args: { p_report: Json }; Returns: undefined }
-      push_route_config: {
-        Args: never
-        Returns: {
-          cron_secret_sha256: string
-          vapid_private_key: string
-        }[]
-      }
       recompute_profile_zones: { Args: never; Returns: number }
       referral_count: { Args: never; Returns: number }
       report: {
