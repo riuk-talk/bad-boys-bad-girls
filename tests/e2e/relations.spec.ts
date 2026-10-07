@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
+import { settled } from "./helpers/settle";
 
 // Phase 4 end to end against a Supabase project (the local stack in CI, or the DEV project): a Visitor finds a Bad, files a Demande de
 // parloir with the Souffleur, the Bad reads it in the Courrier and accepts; reports, blocks,
@@ -21,6 +22,8 @@ const CHARGES = [
 ];
 
 async function axeViolations(page: Page) {
+  // Measured on the final rendering, never in the middle of a fade (dialogs fade in).
+  await settled(page);
   const result = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   return result.violations.map(
     (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,

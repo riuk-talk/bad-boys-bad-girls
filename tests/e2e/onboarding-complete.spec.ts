@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
 import { randomBytes } from "node:crypto";
 import sharp from "sharp";
+import { settled } from "./helpers/settle";
 import { openGreffe } from "./helpers/admin";
 
 // Full onboardings in 8 steps (Bad and Visitor, SPEC v7.4 §4) and the Greffe against the DEV Supabase project, with throwaway
@@ -14,6 +15,8 @@ const enabled = process.env.E2E_ALLOW_WRITE === "true" && url !== "" && secret !
 const WCAG = ["wcag2a", "wcag2aa", "wcag21aa"];
 
 async function axeViolations(page: Page) {
+  // Measured on the final rendering, never in the middle of a fade (dialogs fade in).
+  await settled(page);
   const result = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   return result.violations.map(
     (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,

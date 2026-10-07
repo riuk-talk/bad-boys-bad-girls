@@ -43,11 +43,14 @@ export async function openGreffe(
   await page.getByLabel("E-mail").fill(account.email);
   await page.getByLabel("Mot de passe", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Se connecter" }).click();
-  // The login goes to /onboarding, which redirects once more: wait for the final page, or the
+  // The login goes to /onboarding, which redirects once or twice more (an admin: the first
+  // onboarding step; the super admin: /admin, then /acces-admin). Wait for the final page, or the
   // next navigation is interrupted (WebKit).
-  await page.waitForURL((url) => !/^\/(connexion|onboarding)$/.test(url.pathname));
-  await page.goto("/admin/greffe");
-  await page.waitForURL(/\/acces-admin/);
+  await page.waitForURL((url) => /^\/(onboarding\/\d+|acces-admin)$/.test(url.pathname));
+  if (!page.url().includes("/acces-admin")) {
+    await page.goto("/admin/greffe");
+    await page.waitForURL(/\/acces-admin/);
+  }
   await expect(page.getByRole("heading", { name: "Double authentification" })).toBeVisible();
   let secret = account.totpSecret;
   if (!secret) {
