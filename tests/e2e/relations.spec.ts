@@ -254,13 +254,14 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
   }) => {
     const page = await login(browser, visitor.email, visitor.password);
 
-    // The tab bar of a Visitor: Promenade, Découverte, Demandes, Mon Permis (no Visites tab yet).
+    // The tab bar of a Visitor: Promenade, Découverte, Demandes, Visites, Mon Permis.
     await page.goto("/promenade");
     const tabs = page.getByRole("navigation", { name: "Navigation principale" });
     await expect(tabs.getByRole("link")).toHaveText([
       "Promenade",
       "Découverte",
       "Demandes",
+      "Visites",
       "Mon Permis",
     ]);
     await expect(page.getByText(/Prochaine Promenade dans/)).toBeVisible();
@@ -375,7 +376,7 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     const page = await login(browser, bad.email, bad.password);
     await page.goto("/courrier");
     const tabs = page.getByRole("navigation", { name: "Navigation principale" });
-    await expect(tabs.getByRole("link")).toHaveText(["Courrier", "Ma Fiche"]);
+    await expect(tabs.getByRole("link")).toHaveText(["Courrier", "Visites", "Ma Fiche"]);
     await expect(page.getByRole("heading", { name: "1 demande de visite" })).toBeVisible();
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "bad-courrier");
@@ -390,8 +391,18 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "bad-lire-demande");
 
-    await page.getByRole("button", { name: "Accepter la visite" }).click();
+    // Accepting means sending the Heures de visite (Phase 5b): « Demain soir » and a slot of one's own.
+    await page.getByRole("link", { name: "Accepter la visite" }).click();
+    await expect(page.getByRole("heading", { name: "Tes Heures de visite" })).toBeVisible();
     await expect(page.getByRole("img", { name: /visite acceptée/i })).toBeVisible();
+    await page.getByRole("button", { name: /^Demain soir/ }).click();
+    await page.getByRole("button", { name: "+ Choisir un autre jour et une autre heure" }).click();
+    await page.getByRole("button", { name: "Ajouter ce créneau" }).click();
+    await expect(page.getByText("Tes créneaux (2 sur 3)")).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "bad-heures-de-visite");
+    await page.getByRole("button", { name: "Envoyer mes Heures de visite" }).click();
+    await expect(page.getByText(/Heures de visite envoyées/)).toBeVisible();
     await shot(page, "bad-visite-acceptee");
     const { data: request } = await admin
       .from("visit_requests")

@@ -13,8 +13,10 @@ import { FakePushService } from "./helpers/fake-push-service";
 //      (copy to the public storage included).
 //   3. Toulon is opened (local database only); the Bad is visible to the Visitor (can_view_bad),
 //      who finds the Fiche in the Découverte and files a Demande de parloir.
-//   4. The Bad accepts it in the Courrier.
-//   5. Both notifications leave through /api/cron/push to a fake push service.
+//   4. The Bad accepts it in the Courrier by sending 2 Heures de visite (Phase 5b).
+//   5. The Visitor chooses one of them in « Mes demandes »: the visit is scheduled, both see it
+//      in the Tableau des visites.
+//   6. The notifications leave through /api/cron/push to a fake push service.
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const publishable = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const secret = process.env.SUPABASE_SECRET_KEY ?? "";
@@ -50,7 +52,7 @@ async function login(browser: Browser, email: string, password: string): Promise
   return page;
 }
 
-test.describe("journey: Greffe → Découverte → Demande → Courrier → notifications (local stack)", () => {
+test.describe("journey: Greffe → Découverte → Demande → Heures de visite → notifications (local stack)", () => {
   test.skip(!enabled, "local stack environment not set (scripts/ci/local-env.mjs)");
   test.describe.configure({ mode: "serial", timeout: 120_000 });
 
@@ -261,23 +263,81 @@ test.describe("journey: Greffe → Découverte → Demande → Courrier → noti
     await page.context().close();
   });
 
-  test("4. the Bad accepts it in the Courrier", async ({ browser }) => {
+  test("4. the Bad accepts it in the Courrier with 2 Heures de visite", async ({ browser }) => {
     const page = await login(browser, bad.email, bad.password);
     await page.goto("/courrier");
     await page.getByRole("link", { name: new RegExp(visitor.pseudo) }).click();
-    await page.getByRole("button", { name: "Accepter la visite" }).click();
-    await expect(page.getByRole("img", { name: /visite acceptée/i })).toBeVisible();
+    await page.getByRole("link", { name: "Accepter la visite" }).click();
+    await expect(page.getByRole("heading", { name: "Tes Heures de visite" })).toBeVisible();
+    await page.getByRole("button", { name: /^Demain soir/ }).click();
+    await page.getByRole("button", { name: "+ Choisir un autre jour et une autre heure" }).click();
+    await page.getByRole("button", { name: "Ajouter ce créneau" }).click();
+    await expect(page.getByText("Tes créneaux (2 sur 3)")).toBeVisible();
+    await page.getByRole("button", { name: "Envoyer mes Heures de visite" }).click();
+    await expect(page.getByText(/Heures de visite envoyées/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tes créneaux" })).toBeVisible();
     await page.context().close();
     const { data } = await admin
       .from("visit_requests")
-      .select("status")
+      .select("id, status, slots_round, choose_deadline")
       .eq("bad_id", bad.id)
       .eq("visitor_id", visitor.id)
       .single();
     expect(data?.status).toBe("accepted");
+    expect(data?.slots_round).toBe(1);
+    expect(data?.choose_deadline).not.toBeNull();
+    const { data: slots } = await admin
+      .from("visit_slots")
+      .select("status")
+      .eq("request_id", data!.id);
+    expect(slots?.map((slot) => slot.status)).toEqual(["offered", "offered"]);
   });
 
-  test("5. both notifications leave: the Bad's mail, the Visitor's good news", async ({
+  test("5. the Visitor chooses a slot: the visit is scheduled", async ({ browser }) => {
+    const page = await login(browser, visitor.email, visitor.password);
+    await page.goto("/demandes");
+    await expect(page.getByRole("img", { name: /visite acceptée/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Les Heures de visite" })).toBeVisible();
+    const offered = page.getByRole("group", { name: "Les Heures de visite" }).getByRole("button");
+    await expect(offered).toHaveCount(2);
+    const label = (await offered.first().textContent()) ?? "";
+    await offered.first().click();
+    await expect(offered.first()).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: `Confirmer : ${label}` }).click();
+    await expect(page.getByText(`Visite programmée avec ${bad.pseudo}`)).toBeVisible();
+
+    // Le Tableau des visites, on both sides.
+    await page.goto("/visites");
+    await expect(page.getByRole("heading", { name: "Tableau des visites" })).toBeVisible();
+    await expect(page.getByText(label)).toBeVisible();
+    await expect(page.getByText(`avec ${bad.pseudo}`)).toBeVisible();
+    await page.context().close();
+
+    const { data: visits } = await admin
+      .from("visits")
+      .select("status, slot_id, starts_at, ends_at")
+      .eq("bad_id", bad.id)
+      .eq("visitor_id", visitor.id);
+    expect(visits).toHaveLength(1);
+    expect(visits?.[0]?.status).toBe("scheduled");
+    const minutes =
+      (new Date(visits![0]!.ends_at).getTime() - new Date(visits![0]!.starts_at).getTime()) /
+      60_000;
+    expect(minutes).toBe(30);
+    const { data: slots } = await admin
+      .from("visit_slots")
+      .select("id, status")
+      .eq("id", visits![0]!.slot_id);
+    expect(slots?.[0]?.status).toBe("chosen");
+
+    const badPage = await login(browser, bad.email, bad.password);
+    await badPage.goto("/visites");
+    await expect(badPage.getByText(label)).toBeVisible();
+    await expect(badPage.getByText(`avec ${visitor.pseudo}`)).toBeVisible();
+    await badPage.context().close();
+  });
+
+  test("6. the notifications leave: the Bad's mail and slot chosen, the Visitor's good news", async ({
     request,
   }) => {
     const response = await request.post("/api/cron/push", {
@@ -291,6 +351,7 @@ test.describe("journey: Greffe → Découverte → Demande → Courrier → noti
         .map((r) => JSON.parse(r.plaintext) as { t: string; u: string });
     // Besides the Greffe's own news (decision, Permis delivered), queued since step 2.
     expect(mine(endpoints.bad)).toContainEqual({ t: "request_received", u: "/courrier" });
+    expect(mine(endpoints.bad)).toContainEqual({ t: "slot_chosen", u: "/visites" });
     expect(mine(endpoints.visitor)).toContainEqual({ t: "request_accepted", u: "/demandes" });
     expect(mine(endpoints.visitor)).toContainEqual({ t: "permit_granted", u: "/ma-fiche" });
     for (const received of push.received) {
