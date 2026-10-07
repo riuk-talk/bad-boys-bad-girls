@@ -10,7 +10,7 @@ import { parseRole } from "@/lib/onboarding/config";
 // Every page of this group requires a session (SPEC §2: nothing is public).
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const member = await requireMember();
-  const [{ data: profile }, , { data: isAdmin }] = await Promise.all([
+  const [{ data: profile }, , { data: adminRole }] = await Promise.all([
     member.supabase
       .from("profiles")
       .select("onboarding_completed_at, role, gender")
@@ -18,7 +18,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       .maybeSingle(),
     // Last activity (at most one write per hour, in SQL): only active Bads count for a zone.
     member.supabase.rpc("touch_activity"),
-    member.supabase.rpc("is_admin"),
+    // The Admin link shows for admins whatever the factor level: /admin asks for the second one.
+    member.supabase.rpc("my_admin_role"),
   ]);
 
   // The interface takes the colour of the connected member's gender (PARCOURS-DESIGN §1).
@@ -29,7 +30,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <AppHeader
         onboardingDone={Boolean(profile?.onboarding_completed_at)}
         role={role}
-        isAdmin={isAdmin === true}
+        isAdmin={adminRole === "admin" || adminRole === "super_admin"}
       />
       <ClientIntl>
         <ToastProvider>

@@ -12,5 +12,7 @@ export async function requireMember() {
     return redirect({ href: "/connexion", locale: await getLocale() });
   }
   const metadata = (claims.user_metadata ?? {}) as Record<string, unknown>;
-  return { supabase, userId: claims.sub, metadata };
+  // Authenticator assurance level of this session: "aal2" once a second factor is verified.
+  const aal = typeof claims.aal === "string" ? claims.aal : "aal1";
+  return { supabase, userId: claims.sub, metadata, aal };
 }

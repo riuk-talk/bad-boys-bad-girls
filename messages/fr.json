@@ -1371,5 +1371,17 @@
       "android": "Sur Android et sur ordinateur, rien à installer : active les notifications depuis Ma Fiche.",
       "back": "Retour à Ma Fiche"
     }
+  },
+  "AdminAccess": {
+    "title": "Double authentification",
+    "loading": "Préparation…",
+    "leadEnroll": "L'administration exige un second facteur. Scanne ce QR code avec une application d'authentification (Aegis, Google Authenticator, 1Password…), puis saisis le code à 6 chiffres qu'elle affiche.",
+    "leadVerify": "Saisis le code à 6 chiffres affiché par ton application d'authentification.",
+    "qrAlt": "QR code à scanner avec ton application d'authentification",
+    "secretLabel": "Ou saisis cette clé à la main :",
+    "codeLabel": "Code à 6 chiffres",
+    "submit": "Vérifier",
+    "invalid": "Code incorrect ou expiré. Réessaie avec le code suivant.",
+    "error": "La double authentification n'a pas pu démarrer. Recharge la page."
   }
 }

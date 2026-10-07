@@ -1371,5 +1371,17 @@
       "android": "On Android and on a computer, nothing to install: turn notifications on from My File.",
       "back": "Back to My File"
     }
+  },
+  "AdminAccess": {
+    "title": "Two-step verification",
+    "loading": "Getting ready…",
+    "leadEnroll": "Administration requires a second factor. Scan this QR code with an authenticator app (Aegis, Google Authenticator, 1Password…), then enter the 6-digit code it shows.",
+    "leadVerify": "Enter the 6-digit code shown by your authenticator app.",
+    "qrAlt": "QR code to scan with your authenticator app",
+    "secretLabel": "Or type this key by hand:",
+    "codeLabel": "6-digit code",
+    "submit": "Verify",
+    "invalid": "Wrong or expired code. Try again with the next one.",
+    "error": "Two-step verification could not start. Reload the page."
   }
 }
