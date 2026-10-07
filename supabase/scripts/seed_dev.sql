@@ -4,6 +4,9 @@
 --   2. refused when the database already holds more than 20 real finished Fiches
 --      (a sign of a production database).
 -- Seeded rows have is_seed = true and are excluded from every statistic.
+-- Minimal fix (2026-10-07): every seeded member is a Bad (a finished profile needs a role since
+-- concept v2). Not rewritten for v2: no Casier, no photos, no answers; seeded members stay excluded
+-- from the Promenade, the Découverte and the requests by design.
 -- Usage (SQL editor / connector):  set app.allow_dev_seed = 'true';  then run this file.
 -- Parameters: change seed_count to generate more (Phase 4 uses 5000).
 do $$
@@ -37,7 +40,7 @@ begin
       'seed-' || i || '-' || substr(uid::text, 1, 8) || '@seed.invalid', '', now(), '{"seed":true}', '{}',
       now() - (random() * interval '120 days'), now(), '', '', '', '', '', '', '', '');
     insert into public.profiles (id, pseudo, birthdate, gender, seeking_genders, seek_age_min, seek_age_max,
-      place_id, bio, onboarding_step, onboarding_completed_at, is_seed, last_seen_at)
+      place_id, bio, onboarding_step, onboarding_completed_at, is_seed, last_seen_at, role)
     values (uid, 'Seed ' || i, (current_date - (18 + floor(random() * 40))::int * interval '1 year'
         - floor(random() * 360)::int * interval '1 day')::date,
       genders[1 + floor(random() * array_length(genders, 1))::int],
@@ -48,7 +51,7 @@ begin
       end,
       18, 99, zone_places[1 + floor(random() * array_length(zone_places, 1))::int],
       'Fiche de démonstration générée pour le développement.', 4, now(), true,
-      now() - (random() * interval '30 days'));
+      now() - (random() * interval '30 days'), 'bad');
   end loop;
 end;
 $$;
