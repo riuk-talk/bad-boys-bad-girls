@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; **5a-ter (super admin, double authentification) et parcours de bout en bout en CI terminés, en attente de validation**. Ensuite : 5b. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
+**Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; 5a-ter (super admin, double authentification) et parcours de bout en bout validés et fusionnés ; **5b (Heures de visite) en cours**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
 
@@ -35,7 +35,7 @@
 - [x] `push_outbox` → `sent` : prouvé en CI par la route contre un faux service de push (déchiffrement, VAPID) et par le parcours de bout en bout. Le test sur vrais téléphones passe dans la checklist d'avant lancement (décision du porteur, 2026-10-07).
 - [ ] SCHEMA : écarts (révocation douce, pas de lecture des abonnements par les membres, colonne `locale`, message = chemin seulement).
 
-### 5a-ter — Super admin et double authentification (2026-10-07, en attente de validation)
+### 5a-ter — Super admin et double authentification (2026-10-07, validée et fusionnée dans `phase-5`)
 Décisions du porteur : aucun rôle admin sur un compte de test, Toulon jamais ouvert sur la base partagée ; **c'est Claude qui teste** ; super admin intouchable ; TOTP obligatoire pour `/admin`.
 Découpage annoncé : a base (super_admins, gardes, aal2, script, pgTAP) · b double authentification (`/acces-admin`) · c invisibilité · parcours de bout en bout en CI · docs.
 - **Base** (`20261007100308_phase5a_ter_super_admin`, appliquée sur dev) : table `super_admins` (RLS, aucun droit pour aucun rôle) ; garde `private.is_database_owner_session()` = session **et** rôle courant `postgres`, aucune identité JWT, pas pg_cron (vérifié sur le projet hébergé : connecteur et SQL Editor tournent en `postgres/postgres` sans claims). Triggers (droits de l'appelant, jamais `security definer`) : `super_admins` (ajout, modification, suppression, vidage), `auth.users` (suppression, suppression douce `deleted_at`, `banned_until`), `profiles` (création, modification, suppression : pas de profil, donc ni suspension ni masquage), `banned_email_hashes` (empreinte de son e-mail). Fonctions d'aide dans le schéma **`private`** (non exposé par l'API : un membre ne peut pas demander si un id est super admin) ; `usage` accordé à `authenticated`, `service_role`, `supabase_auth_admin` (sinon chaque connexion, qui met à jour `auth.users`, échouerait — vérifié sur dev). `is_admin()` exige **aal2** ; `my_admin_role()` (sans exigence aal) sert au lien Admin et à la redirection.
@@ -211,6 +211,7 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 - [ ] **Rebrancher l'URL appelée par pg_net sur la production** : secret `push_endpoint_url` du coffre → `https://<domaine de production>/api/cron/push` (aujourd'hui la preview), et supprimer `vercel_protection_bypass` du coffre si la production n'est pas protégée.
 - [ ] **Test sur vrais téléphones** (Android et iPhone, Web Push réel de bout en bout : abonnement, notification écran verrouillé, texte neutre, ouverture du bon écran, désactivation) — sorti de la Phase 5a par décision du porteur (2026-10-07).
 - [ ] Créer le compte super admin et lancer `supabase/scripts/grant_super_admin.sql` sur la base de production.
+- [ ] **Base de production : aucun connecteur d'IA avec droits d'écriture** (ils tournent en `postgres` et contourneraient la protection du super admin), ou connecteur retiré après la mise en place (décision du porteur, 2026-10-07).
 - [ ] **Poser les clés Turnstile sur Vercel** (`NEXT_PUBLIC_TURNSTILE_SITE_KEY`, absente aujourd'hui ; la clé secrète va dans Supabase Auth → Captcha).
 
 ### Pour plus tard (hors Phase 3)
