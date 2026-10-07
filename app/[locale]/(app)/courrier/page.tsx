@@ -28,7 +28,7 @@ export default async function MailboxPage() {
   const t = await getTranslations("Relations.mailbox");
   const [{ data }, , { data: prefs }] = await Promise.all([
     supabase.rpc("get_mailbox"),
-    supabase.rpc("mark_notifications_read", { p_types: ["request_received"] }),
+    supabase.rpc("mark_notifications_read", { p_types: ["request_received", "slots_declined"] }),
     supabase
       .from("notification_preferences")
       .select("push_prompt_declined_at")

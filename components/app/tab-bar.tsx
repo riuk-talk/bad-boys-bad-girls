@@ -1,4 +1,4 @@
-import { Compass, IdCard, Mail, Send, Sun } from "lucide-react";
+import { CalendarClock, Compass, IdCard, Mail, Send, Sun } from "lucide-react";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { LocalizedLink } from "@/components/i18n/localized-link";
@@ -10,10 +10,17 @@ import { createClient } from "@/lib/supabase/server";
 type NotificationType = Database["public"]["Enums"]["notification_type"];
 
 /**
- * Bottom navigation (maquettes Promenade, Courrier). Phase 4: the « Visites » and « Parloir »
- * tabs stay hidden until the visits exist (Phase 5).
+ * Bottom navigation (maquettes Promenade, Courrier). Phase 5b adds « Visites » (Tableau des
+ * visites) for both roles; the « Parloir » tab stays hidden until the Parloir exists (Phase 5c).
  */
 type Tab = { href: string; key: string; Icon: typeof Sun; news?: readonly NotificationType[] };
+
+const VISIT_NEWS: readonly NotificationType[] = [
+  "slot_chosen",
+  "visit_cancelled",
+  "visit_reminder_1h",
+  "visit_starting",
+];
 
 const TABS: Record<Role, readonly Tab[]> = {
   visitor: [
@@ -23,12 +30,14 @@ const TABS: Record<Role, readonly Tab[]> = {
       href: "/demandes",
       key: "requests",
       Icon: Send,
-      news: ["request_accepted", "request_dismissed"],
+      news: ["request_accepted", "request_dismissed", "slots_reproposed", "visit_cancelled"],
     },
+    { href: "/visites", key: "visits", Icon: CalendarClock, news: VISIT_NEWS },
     { href: "/ma-fiche", key: "myPermit", Icon: IdCard },
   ],
   bad: [
-    { href: "/courrier", key: "mailbox", Icon: Mail, news: ["request_received"] },
+    { href: "/courrier", key: "mailbox", Icon: Mail, news: ["request_received", "slots_declined"] },
+    { href: "/visites", key: "visits", Icon: CalendarClock, news: VISIT_NEWS },
     { href: "/ma-fiche", key: "myFiche", Icon: IdCard },
   ],
 };

@@ -1,14 +1,19 @@
-import { Lightbulb, Send, UserRound } from "lucide-react";
+import { CalendarClock, Lightbulb, Send, UserRound } from "lucide-react";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Stamp } from "@/components/brand/stamp";
 import { PushPrompt } from "@/components/push/push-prompt";
+import { CancelVisit } from "@/components/relations/cancel-visit";
+import { SlotChooser } from "@/components/relations/slot-chooser";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { ButtonLink } from "@/components/ui/button-link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { accentForGender } from "@/lib/accent";
 import { cn } from "@/lib/cn";
+import { formatSlot } from "@/lib/hours";
+import { loadSchedule, memberTimezone } from "@/lib/relations/schedule";
 import { publicPhotoUrl, requireRole } from "@/lib/relations/server";
 import type { RequestStatus } from "@/lib/relations/types";
 
@@ -34,7 +39,7 @@ const STATUS_TONE: Record<RequestStatus, string> = {
   closed: "text-grey",
 };
 
-/** Mes demandes de parloir (maquette MesDemandes.dc.html, Phase 4 part: no visiting hours yet). */
+/** Mes demandes de parloir (maquette MesDemandes.dc.html), with the Heures de visite (Phase 5b). */
 export default async function MyRequestsPage() {
   const { supabase, userId, locale, profile } = await requireRole("visitor");
   const t = await getTranslations("Relations.myRequests");
@@ -44,7 +49,9 @@ export default async function MyRequestsPage() {
       .from("answers")
       .select("question_id", { count: "exact", head: true })
       .eq("user_id", userId),
-    supabase.rpc("mark_notifications_read", { p_types: ["request_accepted", "request_dismissed"] }),
+    supabase.rpc("mark_notifications_read", {
+      p_types: ["request_accepted", "request_dismissed", "slots_reproposed", "visit_cancelled"],
+    }),
     supabase
       .from("notification_preferences")
       .select("push_prompt_declined_at")
@@ -53,6 +60,24 @@ export default async function MyRequestsPage() {
   ]);
   const rows = requests ?? [];
   const accepted = rows.filter((row) => row.status === "accepted");
+  // Les Heures de visite of each accepted request (Phase 5b), in the local time of the quartier.
+  const [tz, s, scheduleList] = await Promise.all([
+    memberTimezone(supabase, userId),
+    getTranslations("Relations.schedule"),
+    Promise.all(accepted.map((row) => loadSchedule(supabase, row.request_id))),
+  ]);
+  const schedules = new Map(accepted.map((row, index) => [row.request_id, scheduleList[index]]));
+  const deadline = (iso: string | null) =>
+    iso
+      ? new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "fr-FR", {
+          timeZone: tz,
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date(iso))
+      : "";
   const others = rows.filter((row) => row.status !== "accepted");
   const dateFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" });
   const relative = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
@@ -105,27 +130,69 @@ export default async function MyRequestsPage() {
         </section>
       ) : null}
 
-      {accepted.map((row) => (
-        <section
-          key={row.request_id}
-          data-accent={accentForGender(row.gender)}
-          className="border-line bg-ink-2 relative flex flex-col gap-3 rounded-md border p-4"
-        >
-          <span className="absolute -top-3 right-3.5">
-            <Stamp kind="visitAccepted" surface="dark" size="sm" tilt={-5} />
-          </span>
-          <div className="flex items-center gap-3">
-            <Avatar url={publicPhotoUrl(supabase, row.photo_small)} />
-            <p className="font-bold">
-              {t.rich("acceptedBy", {
-                pseudo: row.pseudo,
-                name: (chunks) => <span className="text-accent">{chunks}</span>,
-              })}
-            </p>
-          </div>
-          <p className="text-grey text-sm">{t("acceptedNext")}</p>
-        </section>
-      ))}
+      {accepted.map((row) => {
+        const schedule = schedules.get(row.request_id) ?? null;
+        const name = (chunks: ReactNode) => <span className="text-accent">{chunks}</span>;
+        const choosing =
+          schedule && !schedule.visit && schedule.choose_deadline && schedule.slots.length > 0;
+        return (
+          <section
+            key={row.request_id}
+            aria-label={row.pseudo}
+            data-accent={accentForGender(row.gender)}
+            className="border-line bg-ink-2 relative flex flex-col gap-3 rounded-md border p-4"
+          >
+            <span className="absolute -top-3 right-3.5">
+              <Stamp kind="visitAccepted" surface="dark" size="sm" tilt={-5} />
+            </span>
+            <div className="flex items-center gap-3">
+              <Avatar url={publicPhotoUrl(supabase, row.photo_small)} />
+              <div>
+                <p className="font-bold">
+                  {schedule?.visit
+                    ? s.rich("scheduledWith", { pseudo: row.pseudo, name })
+                    : s.rich("opensParloir", { pseudo: row.pseudo, name })}
+                </p>
+                {choosing ? (
+                  <p className="text-grey text-[13px]">
+                    {s("chooseBefore", { deadline: deadline(schedule.choose_deadline) })}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            {schedule?.visit ? (
+              <>
+                <p className="text-cream flex items-center gap-2 font-bold">
+                  <CalendarClock aria-hidden="true" className="text-accent size-5" />
+                  {formatSlot(new Date(schedule.visit.starts_at), tz, locale)}
+                </p>
+                <p className="text-grey text-sm">{s("reminder")}</p>
+                <CancelVisit visitId={schedule.visit.id} pseudo={row.pseudo} />
+              </>
+            ) : choosing ? (
+              <>
+                <h2 className="font-display text-xl uppercase">{s("hoursTitle")}</h2>
+                <SlotChooser
+                  requestId={row.request_id}
+                  pseudo={row.pseudo}
+                  tz={tz}
+                  slots={schedule.slots}
+                  canDecline={!schedule.slots_declined}
+                />
+              </>
+            ) : schedule?.repropose_deadline ? (
+              <p className="text-grey text-sm">
+                {s("waitingNew", {
+                  pseudo: row.pseudo,
+                  deadline: deadline(schedule.repropose_deadline),
+                })}
+              </p>
+            ) : (
+              <p className="text-grey text-sm">{t("acceptedNext")}</p>
+            )}
+          </section>
+        );
+      })}
 
       {others.length > 0 ? (
         <ul>

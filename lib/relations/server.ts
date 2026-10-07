@@ -70,6 +70,20 @@ export function requestErrorKey(message: string | undefined): string {
     "visit_motive_required",
     "report_limit",
     "invalid_target",
+    // Les Heures de visite (Phase 5b).
+    "slots_count",
+    "slot_duplicate",
+    "slot_invalid",
+    "slot_too_soon",
+    "slot_too_far",
+    "slot_busy",
+    "slot_unavailable",
+    "visitor_busy",
+    "not_open",
+    "already_declined",
+    "not_expected",
+    "not_cancellable",
+    "not_accepted",
   ];
   return known.find((key) => message?.includes(key)) ?? "generic";
 }

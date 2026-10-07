@@ -5,12 +5,16 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { Decision } from "@/components/relations/decision";
+import { ScheduleStatus } from "@/components/relations/schedule-status";
 import { SafetyActions } from "@/components/relations/safety-actions";
 import { accentForGender } from "@/lib/accent";
 import { loadPermit, publicPhotoUrl, requireRole } from "@/lib/relations/server";
 import { localize, tribeText } from "@/lib/relations/types";
 
-type Props = { params: Promise<{ locale: string; id: string }> };
+type Props = {
+  params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ envoye?: string }>;
+};
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -24,8 +28,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * Reading a Demande de parloir (SPEC §7, maquette LireDemande.dc.html): the Permis, the
  * complicity, the common points and the note. Never the chosen charge nor the result (rule 14).
  */
-export default async function LetterPage({ params }: Props) {
+export default async function LetterPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { envoye: sent } = await searchParams;
   if (!UUID.test(id)) notFound();
   const { supabase, locale } = await requireRole("bad");
   const { data: mailbox } = await supabase.rpc("get_mailbox");
@@ -161,11 +166,11 @@ export default async function LetterPage({ params }: Props) {
       </p>
 
       <div className="border-line bg-ink -mx-4 flex flex-col gap-2 border-t p-5 sm:mx-0 sm:rounded-md sm:border">
-        <Decision
-          requestId={row.request_id}
-          pseudo={permit.pseudo}
-          accepted={row.status === "accepted"}
-        />
+        {row.status === "accepted" ? (
+          <ScheduleStatus requestId={row.request_id} pseudo={permit.pseudo} sent={sent === "1"} />
+        ) : (
+          <Decision requestId={row.request_id} pseudo={permit.pseudo} />
+        )}
         <SafetyActions
           memberId={permit.id}
           pseudo={permit.pseudo}
