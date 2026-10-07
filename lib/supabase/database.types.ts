@@ -1218,11 +1218,133 @@ export type Database = {
           },
         ]
       }
+      visit_slots: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          request_id: string
+          round: number
+          starts_at: string
+          status: Database["public"]["Enums"]["slot_status"]
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          request_id: string
+          round: number
+          starts_at: string
+          status?: Database["public"]["Enums"]["slot_status"]
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          request_id?: string
+          round?: number
+          starts_at?: string
+          status?: Database["public"]["Enums"]["slot_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_slots_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "visit_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visits: {
+        Row: {
+          bad_id: string
+          cancelled_at: string | null
+          cancelled_by: string | null
+          cancelled_late: boolean
+          created_at: string
+          ends_at: string
+          id: string
+          reminder_sent_at: string | null
+          request_id: string
+          slot_id: string
+          start_notified_at: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["visit_status"]
+          visitor_id: string
+        }
+        Insert: {
+          bad_id: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_late?: boolean
+          created_at?: string
+          ends_at: string
+          id?: string
+          reminder_sent_at?: string | null
+          request_id: string
+          slot_id: string
+          start_notified_at?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["visit_status"]
+          visitor_id: string
+        }
+        Update: {
+          bad_id?: string
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          cancelled_late?: boolean
+          created_at?: string
+          ends_at?: string
+          id?: string
+          reminder_sent_at?: string | null
+          request_id?: string
+          slot_id?: string
+          start_notified_at?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["visit_status"]
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visits_bad_id_fkey"
+            columns: ["bad_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visits_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "visit_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visits_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "visit_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visits_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      accept_visit_request: {
+        Args: { p_request: string; p_slots: string[] }
+        Returns: undefined
+      }
       admin_decide_photo: {
         Args: {
           p_approve: boolean
@@ -1262,11 +1384,17 @@ export type Database = {
         Args: { p_bad: string; p_viewer: string }
         Returns: boolean
       }
+      cancel_visit: { Args: { p_visit: string }; Returns: undefined }
       change_role: {
         Args: { p_role: Database["public"]["Enums"]["member_role"] }
         Returns: undefined
       }
       charge_key: { Args: { value: string }; Returns: string }
+      checked_slots: {
+        Args: { p_bad: string; p_slots: string[] }
+        Returns: string[]
+      }
+      choose_slot: { Args: { p_slot: string }; Returns: string }
       claim_referral: { Args: { p_code: string }; Returns: boolean }
       common_points: {
         Args: { p_a: string; p_b: string; p_n?: number }
@@ -1318,6 +1446,7 @@ export type Database = {
         Args: { p_accept: boolean; p_request: string }
         Returns: undefined
       }
+      decline_slots: { Args: { p_request: string }; Returns: undefined }
       discover_bads: {
         Args: {
           p_age_max?: number
@@ -1423,7 +1552,23 @@ export type Database = {
           status: Database["public"]["Enums"]["visit_request_status"]
         }[]
       }
+      get_my_visits: {
+        Args: never
+        Returns: {
+          ends_at: string
+          i_am_bad: boolean
+          other_gender: Database["public"]["Enums"]["gender"]
+          other_id: string
+          other_photo_small: string
+          other_pseudo: string
+          request_id: string
+          starts_at: string
+          status: Database["public"]["Enums"]["visit_status"]
+          visit_id: string
+        }[]
+      }
       get_permit: { Args: { p_visitor: string }; Returns: Json }
+      get_request_schedule: { Args: { p_request: string }; Returns: Json }
       has_contacts: { Args: { value: string }; Returns: boolean }
       has_open_relation: {
         Args: { p_a: string; p_b: string }
@@ -1439,6 +1584,10 @@ export type Database = {
       importance_weight: {
         Args: { value: Database["public"]["Enums"]["importance"] }
         Returns: number
+      }
+      insert_slots: {
+        Args: { p_request: string; p_round: number; p_slots: string[] }
+        Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
       is_bad_visible: {
@@ -1483,6 +1632,10 @@ export type Database = {
       }
       photo_rejection_reasons: { Args: never; Returns: string[] }
       place_name: { Args: { p_place: number }; Returns: string }
+      propose_slots: {
+        Args: { p_request: string; p_slots: string[] }
+        Returns: undefined
+      }
       public_photos: {
         Args: { p_owner: string; p_positions: number[] }
         Returns: Json
@@ -1522,6 +1675,7 @@ export type Database = {
         Returns: undefined
       }
       run_promenades_due: { Args: never; Returns: undefined }
+      run_visit_schedule: { Args: never; Returns: Json }
       save_push_subscription: {
         Args: {
           p_auth: string
@@ -1675,6 +1829,7 @@ export type Database = {
         | "casier"
         | "message"
         | "visit_request"
+      slot_status: "offered" | "chosen" | "declined" | "expired"
       visit_request_status:
         | "pending"
         | "accepted"
@@ -1683,6 +1838,12 @@ export type Database = {
         | "auto_dismissed"
         | "cancelled"
         | "closed"
+      visit_status:
+        | "scheduled"
+        | "in_progress"
+        | "ended"
+        | "cancelled"
+        | "no_show"
       zone_status: "waitlist" | "open"
     }
     CompositeTypes: {
@@ -1910,6 +2071,7 @@ export const Constants = {
         "message",
         "visit_request",
       ],
+      slot_status: ["offered", "chosen", "declined", "expired"],
       visit_request_status: [
         "pending",
         "accepted",
@@ -1918,6 +2080,13 @@ export const Constants = {
         "auto_dismissed",
         "cancelled",
         "closed",
+      ],
+      visit_status: [
+        "scheduled",
+        "in_progress",
+        "ended",
+        "cancelled",
+        "no_show",
       ],
       zone_status: ["waitlist", "open"],
     },
