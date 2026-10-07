@@ -1,5 +1,6 @@
-# SPEC — Bad Boys & Bad Girls (v7.4)
+# SPEC — Bad Boys & Bad Girls (v7.5)
 
+> **v7.5 (2026-10-07, décisions du porteur)** : **super admin** distinct d'admin, intouchable sauf par le propriétaire de la base, sans profil (§10, §15) ; **double authentification TOTP obligatoire** pour `/admin` (§10, §15) ; **c'est Claude qui teste** : un parcours de bout en bout en CI, prolongé à chaque phase avant de la déclarer terminée ; le test sur vrais téléphones passe dans la liste d'avant lancement (§19 bis).
 > v6.1 : décisions de Phase 0 (`docs/PHASE0-DECISIONS.md`). v6.2 : décisions de Phase 1 (`docs/PHASE1-DECISIONS.md`).
 > **v7 : changement de concept décidé par le porteur (`docs/CONCEPT-V2.md`, 2026-10-03)** : deux rôles (Bad et Visiteur), demande de parloir à la place de la Plaidoirie, heures de visite, Parloir limité aux 30 minutes de la visite puis Permis permanent, Web Push dans le MVP, Promenade, lancement « les Bads d'abord ».
 > **v7.4 (2026-10-05, `docs/PARCOURS-DESIGN.md`, validé par Chris, fait foi sur ces points)** : les couleurs désignent le **genre**, jamais le rôle (§1 bis) ; la Fiche du Bad reprend le dossier judiciaire de la référence (§1 bis, §5) ; **alignement 3 poses obligatoire** pour les Bads (§4, §5, §11) ; le QCM s'appelle **« L'Interrogatoire »** (§9) ; le Parloir passe au style « cabine » sans néon (§7 ter) ; vocabulaire ajouté (§1 ter). Écrans des Phases 3 à 5 : maquettes de `docs/design/parcours/`.
@@ -336,6 +337,8 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 ### Sécurité technique
 - RLS activée sur **toutes** les tables, refus par défaut ; politiques testées avec **pgTAP**.
 - Rôle admin dans une table séparée `admin_users`, **non modifiable** par les utilisateurs ; premier admin créé par un script SQL documenté.
+- **Double authentification** (v7.5) : `/admin` exige le niveau d'authentification **aal2** (TOTP, Supabase Auth MFA ; enrôlement par QR code à la première visite, code à 6 chiffres à chaque session, page `/acces-admin`). Toutes les fonctions d'administration le vérifient aussi en base (`is_admin()` exige `aal = aal2`).
+- **Super admin** (v7.5) : rôle distinct d'admin (table `super_admins`), accordé **à la main** par le propriétaire (`supabase/scripts/grant_super_admin.sql`) sur un compte créé par lui. Personne d'autre que le propriétaire de la base (session `postgres`, sans identité de membre, hors tâches planifiées) ne peut supprimer ce compte (`auth.users`, suppression définitive ou douce), lui retirer ou modifier son rôle, le bannir (bannissement Auth ou empreinte d'e-mail), lui créer un profil, donc le suspendre ou le masquer — ni lui-même, ni un autre admin, ni le service Auth, ni la clé secrète, ni une fonction `security definer` (triggers en base, tests pgTAP par interdiction et test de bout en bout contre le vrai service Auth). Il n'a **aucun profil** Bad ou Visiteur : invisible partout ; à la connexion il va directement à `/admin` (double authentification comprise), jamais à l'onboarding.
 - Colonnes sensibles de `profiles` (rôle, statut de modération, badge Bonne conduite, bannissement, compteurs) non modifiables directement par l'utilisateur : privilèges de colonnes ; le rôle change uniquement via `change_role()`.
 - Server Actions : authentification vérifiée + Zod + limites en base.
 - En-têtes : CSP stricte (+ `worker-src 'self'` pour le service worker), `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` restrictive.
@@ -404,7 +407,7 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 
 ## 15. Administration et pilotage
 
-- `/admin` (réservé à `admin_users`) : **le Greffe** (file photos, prioritaire), file signalements, textes signalés par mots-clés, recherche d'utilisateur, suspension/bannissement (motif obligatoire), historique des décisions, gestion des quartiers (seuils compris), des tribus, des mots-clés et des questions.
+- `/admin` (réservé à `admin_users` et au super admin, **avec double authentification**, §10) : **le Greffe** (file photos, prioritaire), file signalements, textes signalés par mots-clés, recherche d'utilisateur, suspension/bannissement (motif obligatoire), historique des décisions, gestion des quartiers (seuils compris), des tribus, des mots-clés et des questions.
 - **Tableau de santé par quartier** (calculé depuis nos propres tables, sans outil tiers ; `is_seed` exclus) :
   - inscrits, **répartition Bads/Visiteurs par genre** (l'indicateur n° 1), Dossiers et Permis complets ;
   - jauge d'ouverture (Bads comptés, bad girls, bad boys, Visiteurs en attente) ;
@@ -445,6 +448,13 @@ UI : une question par écran, réponse en un tap, « acceptées » et « importa
 
 - Un script de seed génère des Bads et des Visiteurs **fictifs** pour le développement et les tests de charge uniquement : colonne `is_seed = true`, jamais exécuté en production, visuels neutres (avatars générés).
 - Ce n'est pas une exception à « ne jamais inventer » : c'est un outil de développement, jamais montré au public.
+- Le seed (`supabase/scripts/seed_dev.sql`) ne crée que des Bads (`role = 'bad'`) sans Casier ni photos : ils sont exclus par conception de la Promenade, de la Découverte et des demandes. Les tests de bout en bout ne s'en servent pas (comptes jetables non-seed dans la base locale de la CI).
+
+## 19 bis. Tests (v7.5)
+
+- **C'est Claude qui teste.** La CI (GitHub Actions, base Supabase locale, aucun secret réel) joue à chaque push : typecheck, lint, tests unitaires, build, pgTAP, et les parcours critiques sur les profils Pixel 7 (Chromium) et iPhone 14 (WebKit sous Linux).
+- **Le parcours de bout en bout** (`tests/e2e/journey.spec.ts`) : un admin de test valide les photos au vrai Greffe (double authentification, copie vers le stockage public), le quartier est ouvert dans la base locale, le Visiteur voit la Fiche dans la Découverte, envoie une Demande, le Bad l'accepte dans le Courrier, les notifications partent vers un faux service de push qui les déchiffre. **Chaque phase suivante le prolonge** (visite, Parloir, Permis permanent, Cavale) avant d'être déclarée terminée.
+- Le test sur de **vrais téléphones** (Android et iPhone, Web Push réel) fait partie de la liste d'avant lancement.
 
 ## 20. Hors périmètre du MVP (feuille de route)
 

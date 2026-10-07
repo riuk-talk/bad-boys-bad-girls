@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5a — Web Push, en cours** (branche `phase-5`) ; **5a-bis (CI GitHub Actions) validée et fusionnée dans `phase-5`**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et test sur téléphone après chacune.
+**Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; **5a-ter (super admin, double authentification) et parcours de bout en bout en CI terminés, en attente de validation**. Ensuite : 5b. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
 
@@ -32,9 +32,20 @@
 - [x] Coffre : `push_endpoint_url` → `https://bad-boys-bad-girls-git-phase-5-riuk.vercel.app/api/cron/push`.
 - [x] **Défaut trouvé à la vérification** : `NEXT_PUBLIC_SUPABASE_URL` valait `…supabase.co/rest/v1/` sur Vercel depuis le 2026-10-03 → toutes les requêtes du site déployé partaient vers `/rest/v1/rest/v1/…` (404 PGRST125 ; la route push répondait 500 `claim_failed`). Corrigée en URL de base (Preview et Production ; la production la prendra au prochain déploiement). Les tests locaux ne pouvaient pas le voir (`.env.local` correct).
 - [x] Preview redéployée (`dpl_J4YpzxZ8W5c8dNnZV727iXcQu81b`, `800e46d`). Appel pg_net avec les secrets du coffre : **200 `{"sent":0}`** (secret, jeton de contournement, variables VAPID et clé secrète Supabase validés) ; sans secret : 401.
-- [ ] `push_outbox` → `sent` : impossible sans un vrai navigateur abonné (aucun abonnement en base) ; c'est le test Android qui le prouvera.
-- [ ] Test sur téléphone (Android, puis iPhone).
+- [x] `push_outbox` → `sent` : prouvé en CI par la route contre un faux service de push (déchiffrement, VAPID) et par le parcours de bout en bout. Le test sur vrais téléphones passe dans la checklist d'avant lancement (décision du porteur, 2026-10-07).
 - [ ] SCHEMA : écarts (révocation douce, pas de lecture des abonnements par les membres, colonne `locale`, message = chemin seulement).
+
+### 5a-ter — Super admin et double authentification (2026-10-07, en attente de validation)
+Décisions du porteur : aucun rôle admin sur un compte de test, Toulon jamais ouvert sur la base partagée ; **c'est Claude qui teste** ; super admin intouchable ; TOTP obligatoire pour `/admin`.
+Découpage annoncé : a base (super_admins, gardes, aal2, script, pgTAP) · b double authentification (`/acces-admin`) · c invisibilité · parcours de bout en bout en CI · docs.
+- **Base** (`20261007100308_phase5a_ter_super_admin`, appliquée sur dev) : table `super_admins` (RLS, aucun droit pour aucun rôle) ; garde `private.is_database_owner_session()` = session **et** rôle courant `postgres`, aucune identité JWT, pas pg_cron (vérifié sur le projet hébergé : connecteur et SQL Editor tournent en `postgres/postgres` sans claims). Triggers (droits de l'appelant, jamais `security definer`) : `super_admins` (ajout, modification, suppression, vidage), `auth.users` (suppression, suppression douce `deleted_at`, `banned_until`), `profiles` (création, modification, suppression : pas de profil, donc ni suspension ni masquage), `banned_email_hashes` (empreinte de son e-mail). Fonctions d'aide dans le schéma **`private`** (non exposé par l'API : un membre ne peut pas demander si un id est super admin) ; `usage` accordé à `authenticated`, `service_role`, `supabase_auth_admin` (sinon chaque connexion, qui met à jour `auth.users`, échouerait — vérifié sur dev). `is_admin()` exige **aal2** ; `my_admin_role()` (sans exigence aal) sert au lien Admin et à la redirection.
+- **Script** `supabase/scripts/grant_super_admin.sql` : propriétaire seulement, compte existant, **aucun profil** (sinon refus), idempotent (vérifié).
+- **Double authentification** : `/admin` (layout) → 404 si pas admin, `/acces-admin` si aal1 ; `/acces-admin` : enrôlement TOTP (QR code + clé à saisir), puis code à 6 chiffres (`components/admin/admin-mfa.tsx`, Supabase Auth MFA côté navigateur) ; MFA TOTP activée dans `supabase/config.toml`. Lien Admin de l'en-tête via `my_admin_role()`.
+- **Invisibilité** : le super admin n'a pas de profil ; `/onboarding` et `/onboarding/[step]` le renvoient à `/admin`.
+- **Tests** : pgTAP `phase5a_ter_super_admin` **7 groupes, 49 vérifications** (octroi, retrait, suppression, bannissement, profil, aal2, structure ; appelants : lui-même, autre admin aal2, clé secrète, fonction `security definer`, pg_cron ; contrôle : les autres comptes ne sont pas concernés ; le propriétaire peut tout) ; `phase2_security` et `phase3_greffe` adaptés (admin sans aal2 refusé) ; Vitest `admin-guard` (4) ; e2e `super-admin.spec.ts` contre le **vrai service Auth** local (`deleteUser`, suppression douce, `ban_duration` refusés ; clé secrète refusée ; connexion → `/acces-admin` → Greffe, jamais l'onboarding). Le greffier de `onboarding-complete` passe maintenant la double authentification (`tests/e2e/helpers/admin.ts`, TOTP RFC 6238 calculé dans le test).
+- **Parcours de bout en bout** `tests/e2e/journey.spec.ts` (Pixel 7 et iPhone 14) : Bad et Visiteur à Toulon avec photos en attente → admin de test (TOTP) valide les 4 photos au vrai Greffe, **fichiers présents dans le stockage public** sous un nom aléatoire → Toulon ouvert (base locale) → `can_view_bad` vrai → Découverte → Fiche → Demande de parloir → Courrier → « Accepter la visite » → `/api/cron/push` : le Bad reçoit `request_received` (/courrier), le Visiteur `permit_granted` (/ma-fiche) et `request_accepted` (/demandes), chaque message = type + chemin seulement. Toulon remis en liste d'attente à la fin. **À prolonger à chaque phase** (visite, Parloir, Permis permanent, Cavale).
+- **Vérifié en local** : typecheck, lint, Prettier, Vitest 160/160, build, pgTAP 8 fichiers (79), Pixel 7 **17/17** ; iPhone 14 en CI.
+- **À vérifier par toi** : TOTP activé sur le projet hébergé (Authentication → Multi-Factor ; activé par défaut chez Supabase, non vérifiable depuis le connecteur). Le super admin s'accorde avec le script, puis la première connexion à `/admin` enrôle l'application d'authentification.
 
 ### 5a-bis — Intégration continue (2026-10-06, validée le 2026-10-07)
 Découpage annoncé : 1 socle CI · 2 base locale reproductible · 3 Playwright Pixel 7 / iPhone 14 · 4 test de la route push · 5 mesure, PROGRESS, arrêt.
@@ -197,6 +208,8 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 - [x] Relecture des contenus `docs/content/` et de la liste de départ des mots-clés (chargée).
 - [ ] Remplir la catégorie `harassment` depuis l'admin (Phase 7).
 - [ ] **Rebrancher l'URL appelée par pg_net sur la production** : secret `push_endpoint_url` du coffre → `https://<domaine de production>/api/cron/push` (aujourd'hui la preview), et supprimer `vercel_protection_bypass` du coffre si la production n'est pas protégée.
+- [ ] **Test sur vrais téléphones** (Android et iPhone, Web Push réel de bout en bout : abonnement, notification écran verrouillé, texte neutre, ouverture du bon écran, désactivation) — sorti de la Phase 5a par décision du porteur (2026-10-07).
+- [ ] Créer le compte super admin et lancer `supabase/scripts/grant_super_admin.sql` sur la base de production.
 - [ ] **Poser les clés Turnstile sur Vercel** (`NEXT_PUBLIC_TURNSTILE_SITE_KEY`, absente aujourd'hui ; la clé secrète va dans Supabase Auth → Captcha).
 
 ### Pour plus tard (hors Phase 3)
