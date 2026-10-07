@@ -58,6 +58,7 @@ Découpage annoncé : 5b-1 base · 5b-2 logique pure · 5b-3 écrans du Bad · 5
 - **Tableau des visites** `/visites` + onglet **« Visites »** pour les deux rôles (pastille : créneau choisi, annulation, rappels).
 - **Parcours de bout en bout** prolongé : le Bad accepte avec « Demain soir » + un créneau au choix → base : tour 1, 2 créneaux `offered`, délai de choix posé → le Visiteur choisit le premier et confirme → base : 1 visite `scheduled` de 30 min, créneau `chosen` → les deux la voient dans le Tableau des visites → push : le Bad reçoit aussi `slot_chosen` (/visites). `relations.spec.ts` adapté (acceptation par les Heures de visite, axe sur l'écran, onglets).
 - **Vérifié en local** : typecheck, lint, Prettier, Vitest 170/170, build, pgTAP 9 fichiers (90), Pixel 7 **18/18**.
+- **CI** : passage n° 9 **vert en 5 min 03 s** (`e476774`, run 37668792130), parcours de bout en bout vert sur Pixel 7 et iPhone 14.
 - **Écarts** : `visits` sans conversation, présence, absence ni choix de fin (5c) ; pas de lecture directe de `visits` (temps réel à décider en 5c) ; e-mails de rappel non branchés (SMTP, plus tard) ; pas d'écran « bas de page » de compteurs (`get_counters`).
 - **Questions pour toi** :
   1. Après une **annulation**, j'ai appliqué la règle de « Aucun ne me va » : le Bad a 48 h pour reproposer, sinon classement automatique. La SPEC ne le dit pas. D'accord ?
