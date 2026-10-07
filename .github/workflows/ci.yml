@@ -10,6 +10,8 @@ name: CI
 on:
   push:
     branches: ["**"]
+    # Documentation only: no run (Actions minutes are counted on a private repository).
+    paths-ignore: ["docs/**", "**/*.md"]
   pull_request:
 
 permissions:
