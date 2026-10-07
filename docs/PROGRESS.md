@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5a — Web Push, en cours** (branche `phase-5`) ; **5a-bis (CI GitHub Actions) terminée sur `ccr-7f52246f-59ami6`, en attente de validation**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et test sur téléphone après chacune.
+**Phase 5a — Web Push, en cours** (branche `phase-5`) ; **5a-bis (CI GitHub Actions) validée et fusionnée dans `phase-5`**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et test sur téléphone après chacune.
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
 
@@ -36,18 +36,24 @@
 - [ ] Test sur téléphone (Android, puis iPhone).
 - [ ] SCHEMA : écarts (révocation douce, pas de lecture des abonnements par les membres, colonne `locale`, message = chemin seulement).
 
-### 5a-bis — Intégration continue (2026-10-06, terminée, en attente de validation)
+### 5a-bis — Intégration continue (2026-10-06, validée le 2026-10-07)
 Découpage annoncé : 1 socle CI · 2 base locale reproductible · 3 Playwright Pixel 7 / iPhone 14 · 4 test de la route push · 5 mesure, PROGRESS, arrêt.
 - **Workflow** `.github/workflows/ci.yml` : un seul job `ubuntu-24.04`, `timeout-minutes: 15`, Node 24 (comme Vercel), sur chaque push ; une PR depuis une branche du dépôt n'est pas relancée (le push du même commit la vérifie déjà), seules les PR de forks le sont. `supabase start` et l'installation des navigateurs tournent en arrière-plan pendant typecheck / lint / Prettier / Vitest (`scripts/ci/wait-for.sh`).
 - **Aucun secret** : `scripts/ci/local-env.mjs` refuse de tourner si la pile n'est pas en `127.0.0.1`, génère clés VAPID, secret de la route et certificat TLS jetable, masqués dans les journaux ; les clés Supabase sont celles de la pile locale.
-- **Base locale** : les 29 migrations passent depuis une base vide ; pgTAP complet (`supabase test db`) 7 fichiers verts en 58 s. Fixtures locales chargées par `supabase start` : communes 83/06 (`supabase/fixtures/places-83-06.sql`, geo.api.gouv.fr) et quartiers Toulon / Nice en liste d'attente (`launch-zones.sql`, copiés du projet de dev où ils ont été créés à la main). Confirmation d'inscription par e-mail activée en local (Mailpit), comme en production.
+- **Base locale** : les 29 migrations passent depuis une base vide ; pgTAP complet (`supabase test db`) 7 fichiers verts en 58 s. Fixtures locales chargées par `supabase start` : communes 83/06 (`supabase/fixtures/places-83-06.sql`, geo.api.gouv.fr) ; les quartiers Toulon / Nice viennent de la migration `20261007074353_launch_zones_toulon_nice` (voir décisions du 2026-10-07). Confirmation d'inscription par e-mail activée en local (Mailpit), comme en production.
 - **E2E** (projets `pixel-7` Chromium et `iphone-14` WebKit Linux, en CI ou avec `E2E_DEVICES=true`) : `signup` (porte Visiteur → formulaire → e-mail Mailpit → lien → étapes 1-2 → rôle présélectionné), `onboarding-complete`, `relations` (Demande de parloir, Courrier, acceptation), `push-route`. Local Pixel 7 : **10/10 en 33 s** ; iPhone 14 non exécutable ici (WebKit absent), vérifié en CI seulement.
 - **Test push** (`tests/e2e/push-route.spec.ts`, `helpers/fake-push-service.ts`) : faux service de push HTTPS ; 401 sans secret, avec un mauvais secret, ou sans « Bearer » ; 200 avec ; signature VAPID ES256 vérifiée (clé, audience, sujet, expiration ≤ 24 h) ; message déchiffré (aes128gcm) = exactement `{"t":"request_received","u":"/courrier"}`, ni pseudo ni mot ; outbox `sent` ; le vrai service worker (Chromium, CDP) affiche le texte neutre « Du courrier » sous l'origine du site ; 410 → abonnement révoqué.
 - **Défaut trouvé** : `web-push` refuse un `VAPID_SUBJECT` en `http:` (seuls `https:` et `mailto:`) ; l'erreur est alors classée en échec et le message abandonné après 3 essais, sans trace. En production la valeur est l'URL https du site : OK. En CI : `https://localhost:3100`.
 - **Écarts / limites** : Turnstile non chargé (pas de clé locale ; le captcha est vérifié par Supabase Auth en production) ; iPhone 14 = moteur WebKit sous Linux, pas iOS Safari, et sans Web Push ; « titre = domaine » : le titre affiché est le texte neutre du service worker, le domaine est la ligne d'origine qu'Android ajoute (vérifié : origine du service worker = site).
 - **Passages GitHub Actions** : n° 1 rouge (4 échecs), n° 2 rouge (1), **n° 3 vert en 7 min 06 s** (`5b8e65a`, run 37534962220) : install 17 s, typecheck 50 s, lint 23 s, Prettier 11 s, Vitest 151/151 19 s, attente Supabase 7 s, build 51 s, **pgTAP 7 fichiers 65 s**, **e2e 16 réussis + 4 sautés à dessein (route push sur WebKit) en 2 min 23 s**. Environ 7 min facturées par push : ~280 passages par mois dans les 2 000 minutes gratuites.
 - **Défauts trouvés par la CI** (tests, pas application) : le Chromium « headless shell » n'a ni `Notification` ni `PushManager` → projet Pixel 7 sur le Chromium complet (`channel: "chromium"`) ; WebKit interrompait la navigation suivante pendant la redirection de `/onboarding` → attente de la page finale ; sur iPhone hors écran d'accueil l'invite mène au guide `/installer` (comportement voulu), le test l'attend désormais.
-- **Question ouverte** : le seed de dev (`supabase/scripts/seed_dev.sql`) échoue sur le schéma actuel (`profiles_completion_role_check` : aucun rôle) et ses membres (`is_seed`) sont exclus par conception de la Promenade, de la Découverte et des demandes. Les parcours utilisent donc des comptes jetables non-seed créés dans la base locale.
+- **Décisions de Chris (2026-10-07)** et suites :
+  1. La CI reste sur des comptes jetables (« avec le seed » abandonné). `seed_dev.sql` réparé a minima : chaque membre fictif est un Bad (`role = 'bad'`), sans réécriture v2 (ni Casier, ni photos) ; vérifié sur pile neuve : 200 membres créés.
+  2. Production : déjà redéployée après la correction de `NEXT_PUBLIC_SUPABASE_URL` (`dpl_A6DTC8HeFY6m6BXi6hWKJnZkDTQ5`, `main` 78b4693) ; CSP = URL de base. Vérifié : `/` et `/connexion` en 200 ; une connexion avec un compte inexistant appelle `POST /auth/v1/token` → 400 (identifiants), aucun 404, aucun `/rest/v1/rest/v1` depuis.
+  3. `/api/cron/push` : un `VAPID_SUBJECT` ni `https:` ni `mailto:` → **503 `push_misconfigured`** avant tout accès à la base (`isValidVapidSubject`, `tests/unit/push-route.test.ts`, 5 tests).
+  4. Migration idempotente `20261007074353_launch_zones_toulon_nice` (communes centres + quartiers, `on conflict do nothing`), appliquée sur dev (aucun changement : 2 quartiers) ; `supabase/fixtures/launch-zones.sql` retiré. La future base de production les aura par les migrations.
+  5. CI : `paths-ignore: ["docs/**", "**/*.md"]` sur le push.
+- ~~Question ouverte~~ (tranchée ci-dessus) : le seed de dev (`supabase/scripts/seed_dev.sql`) échoue sur le schéma actuel (`profiles_completion_role_check` : aucun rôle) et ses membres (`is_seed`) sont exclus par conception de la Promenade, de la Découverte et des demandes. Les parcours utilisent donc des comptes jetables non-seed créés dans la base locale.
 
 ### Points à connaître
 - Si un navigateur renouvelle de lui-même son abonnement, l'ancien est coupé au premier envoi refusé (410) ; il faut réactiver dans Ma Fiche (pas de `pushsubscriptionchange`).
