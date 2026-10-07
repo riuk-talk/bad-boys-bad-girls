@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; 5a-ter (super admin, double authentification) et parcours de bout en bout validés et fusionnés ; **5b (Heures de visite) en cours**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
+**Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; 5a-ter (super admin, double authentification) et parcours de bout en bout validés et fusionnés ; **5b (Heures de visite) terminée côté code, en attente de validation**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
 
@@ -47,6 +47,23 @@ Découpage annoncé : a base (super_admins, gardes, aal2, script, pgTAP) · b do
 - **Vérifié en local** : typecheck, lint, Prettier, Vitest 160/160, build, pgTAP 8 fichiers (79), Pixel 7 **17/17**.
 - **CI** : passage n° 6 rouge (2 défauts de test, corrigés à la racine : axe mesurait les contrastes pendant le fondu d'ouverture d'une fenêtre ; le helper admin n'attendait pas la dernière redirection du super admin sous WebKit) ; **passage n° 7 vert en 5 min 54 s** (`00a01b3`, run 37607074349) : **30 réussis, 4 sautés à dessein (route push sur WebKit), aucun second essai**, parcours de bout en bout vert sur Pixel 7 **et** iPhone 14.
 - **À vérifier par toi** : TOTP activé sur le projet hébergé (Authentication → Multi-Factor ; activé par défaut chez Supabase, non vérifiable depuis le connecteur). Le super admin s'accorde avec le script, puis la première connexion à `/admin` enrôle l'application d'authentification.
+
+### 5b — Heures de visite (2026-10-07, en attente de validation)
+Découpage annoncé : 5b-1 base · 5b-2 logique pure · 5b-3 écrans du Bad · 5b-4 écrans du Visiteur · 5b-5 parcours prolongé, specs adaptées, CI, docs, arrêt.
+- **Base** (`20261007184105_phase5b_visiting_hours`, **appliquée sur dev**, types régénérés) : `visit_slots`, `visits` (contraintes d'exclusion btree_gist Bad et Visiteur, une visite programmée par demande), aucun droit direct des membres. Fonctions : `accept_visit_request` (accepter = 2 ou 3 créneaux), `decide_visit_request` (ne fait plus que classer, signature gardée), `propose_slots`, `choose_slot`, `decline_slots` (une fois), `cancel_visit` (< 2 h = `cancelled_late`), `get_request_schedule`, `get_my_visits`, `run_visit_schedule` (pg_cron `visit-schedule` chaque minute : classements à 48 h, rappel 1 h, début). Déclencheur : une demande qui quitte « acceptée » annule sa visite et expire ses créneaux. `push_path` : `slot_chosen`, `visit_reminder_1h`, `visit_starting` → `/visites`. Advisors sécurité : rien de nouveau hors les avertissements attendus (fonctions membres `security definer`, tables sans politique lues par fonctions).
+- **pgTAP** `phase5b_hours.test.sql` : 11 groupes (structure, règles d'acceptation, choix, chevauchements Bad et Visiteur, « Aucun ne me va » puis nouveaux créneaux, délais, rappels, annulation, blocage, règle 14 et push). `phase4_relations` adapté. **9 fichiers, 90 tests verts.**
+- **Logique pure** `lib/hours.ts` (heure locale du quartier, raccourcis « Ce soir » / « Demain soir » / « Ce week-end » selon SPEC §7 bis, jours et heures au choix, libellés) : Vitest 10 tests.
+- **Bad** : « Accepter la visite » → `/courrier/[id]/heures` (maquette Heures.dc.html : raccourcis, liste des créneaux retirables, jour et heure au choix, « Envoyer mes Heures de visite ») ; la demande affiche ensuite les créneaux en attente, la visite programmée (annulable) ou l'invitation à reproposer.
+- **Visiteur** : « Mes demandes » montre les créneaux à choisir (grisés « plus disponible »), « Confirmer : … », « Aucun ne me va » (une fois), l'attente de nouveaux créneaux, ou la visite programmée (annulable).
+- **Tableau des visites** `/visites` + onglet **« Visites »** pour les deux rôles (pastille : créneau choisi, annulation, rappels).
+- **Parcours de bout en bout** prolongé : le Bad accepte avec « Demain soir » + un créneau au choix → base : tour 1, 2 créneaux `offered`, délai de choix posé → le Visiteur choisit le premier et confirme → base : 1 visite `scheduled` de 30 min, créneau `chosen` → les deux la voient dans le Tableau des visites → push : le Bad reçoit aussi `slot_chosen` (/visites). `relations.spec.ts` adapté (acceptation par les Heures de visite, axe sur l'écran, onglets).
+- **Vérifié en local** : typecheck, lint, Prettier, Vitest 170/170, build, pgTAP 9 fichiers (90), Pixel 7 **18/18**.
+- **Écarts** : `visits` sans conversation, présence, absence ni choix de fin (5c) ; pas de lecture directe de `visits` (temps réel à décider en 5c) ; e-mails de rappel non branchés (SMTP, plus tard) ; pas d'écran « bas de page » de compteurs (`get_counters`).
+- **Questions pour toi** :
+  1. Après une **annulation**, j'ai appliqué la règle de « Aucun ne me va » : le Bad a 48 h pour reproposer, sinon classement automatique. La SPEC ne le dit pas. D'accord ?
+  2. L'acceptation n'existe plus sans créneaux : un Bad qui ouvre l'écran puis s'en va laisse la demande « en attente » (le délai de 7 jours continue). D'accord ?
+  3. Onglet « Visites » ajouté dès maintenant pour les deux rôles (le Parloir viendra dans le même onglet en 5c, ou un onglet à part ?).
+  4. La migration est sur la base partagée dev/prod : tant que la production n'est pas redéployée avec la 5b, « Accepter la visite » y répond une erreur (l'ancien écran appelle `decide_visit_request(true)`). Aucun membre réel n'est concerné aujourd'hui (Toulon fermé), mais à garder en tête pour l'ordre migration → déploiement à l'avenir.
 
 ### 5a-bis — Intégration continue (2026-10-06, validée le 2026-10-07)
 Découpage annoncé : 1 socle CI · 2 base locale reproductible · 3 Playwright Pixel 7 / iPhone 14 · 4 test de la route push · 5 mesure, PROGRESS, arrêt.

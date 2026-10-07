@@ -208,7 +208,7 @@ RLS : **S** — ; **I/U/D** —. **Règle 14** : avant `visits.status = 'in_prog
 
 Contraintes : 2 ou 3 créneaux par (`request_id`, `round`) (contrôlé dans `decide_visit_request` / `propose_slots`) ; pas de chevauchement entre les créneaux d'un même tour.
 Index : (`request_id`, `round`).
-RLS : **S** — (via `get_my_requests()` / `get_mailbox()`) ; **I/U/D** —.
+RLS : **S** — (via `get_request_schedule()`) ; **I/U/D** —. Phase 5b : 2 ou 3 créneaux et absence de doublon contrôlés dans `checked_slots` (appelée par `accept_visit_request` / `propose_slots`) ; chevauchement entre créneaux d'un même tour impossible (créneaux de 30 min alignés sur :00/:30 et distincts).
 
 #### `visits` — la visite au Parloir — **[v2-nouveau]**
 | Colonne | Type | Contraintes |
@@ -235,6 +235,7 @@ Contraintes **(btree_gist)** :
 - même contrainte sur `visitor_id` ;
 - unique partiel (`request_id`) `where status in ('scheduled','in_progress')` — une seule visite programmée par couple.
 
+Phase 5b (`20261007184105_phase5b_visiting_hours`) : créées sans `conversation_id`, `bad_joined_at`, `visitor_joined_at`, `absent`, choix de fin, `outcome` (ajoutés en 5c) ; en plus `cancelled_at`. RLS activée **sans aucune lecture directe** pour l'instant (lecture par `get_my_visits()` / `get_request_schedule()`) ; la lecture participant pour le temps réel sera décidée en 5c.
 Index : (`status`, `starts_at`) partiel `scheduled`/`in_progress` (tâche minute) ; (`bad_id`, `starts_at`), (`visitor_id`, `starts_at`) (agendas, Visites honorées) ; (`status`, `end_choice_deadline`) partiel `ended` et `outcome is null`.
 RLS : **S** participant (`auth.uid() in (bad_id, visitor_id)`) et pas de blocage — nécessaire pour l'abonnement temps réel à l'état de la visite (écran d'attente) ; ne contient aucune donnée cachée à l'autre (les choix de fin sont lus via `get_visit()`, qui ne révèle jamais le choix de l'autre) → **[à trancher en Phase 5]** : si l'on veut cacher les choix de fin même aux participants, la lecture passe uniquement par `get_visit()` et l'écran d'attente interroge la fonction toutes les 5 s. **I/U/D** —.
 
@@ -331,9 +332,12 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `discover_bads(age_min, age_max, max_km, tribe_ids, good_conduct_only, recently_active, cursor, limit default 24)` | Visiteurs uniquement ; une seule requête, curseur `(sort_key, id)` ; conditions de `is_bad_visible` / `criteria_match` / blocages écrites dans la requête (Phase 4f : une fonction SQL avec `set search_path` n'est jamais inlinée), distance, ville et photo calculées pour la page seulement ; équivalence avec `can_view_bad` vérifiée par pgTAP | **[v2]** (remplace `discover_profiles`) |
 | `get_my_promenade()`, `mark_promenade_seen(bad_id)` | Visiteurs uniquement | **[v2]** (remplacent `get_my_hearing`, `mark_hearing_seen`) |
 | `send_visit_request(bad, guessed_index, note)` → `{request_id}` | voir 3.3 ; **ne renvoie pas** le résultat du pari | **[v2]** (remplace `send_plea`) |
-| `decide_visit_request(request_id, accept, slots timestamptz[])` | Bad uniquement ; accepter exige 2 ou 3 créneaux valides ; classer = message neutre | **[v2]** (remplace `decide_plea`) |
-| `propose_slots(request_id, slots timestamptz[])` | Bad ; après « Aucun ne me va » ou une absence avec report | **[v2-nouveau]** |
-| `choose_slot(slot_id)` | Visiteur ; avant `choose_deadline` et ≥ 15 min avant le début ; crée la visite (contraintes d'exclusion) et la conversation `visiting` | **[v2-nouveau]** |
+| `decide_visit_request(request_id, accept)` | Bad uniquement ; **classer seulement** (accepter → erreur `slots_required`) ; message neutre | **[v2]** (remplace `decide_plea`) ; Phase 5b : signature de la Phase 4 gardée (pas de `DROP`) |
+| `accept_visit_request(request_id, slots timestamptz[])` | Bad ; accepter = 2 ou 3 créneaux valides (`checked_slots`) ; aussi pour une demande acceptée en Phase 4 sans créneau | **[5b]** |
+| `get_request_schedule(request_id)` → `jsonb` | participants ; tour, délais, créneaux (`available`), visite programmée, `can_propose` (Bad) ; rien sur le pari | **[5b]** |
+| `run_visit_schedule()` | pg_cron chaque minute : classements à 48 h, rappels 1 h et début | **[5b]** |
+| `propose_slots(request_id, slots timestamptz[])` | Bad ; après « Aucun ne me va » ou une annulation (48 h) — l'absence avec report viendra en 5c | **[v2-nouveau]** |
+| `choose_slot(slot_id)` → `visit_id` | Visiteur ; avant `choose_deadline` et ≥ 15 min avant le début ; crée la visite (contraintes d'exclusion) ; la conversation `visiting` viendra en 5c | **[v2-nouveau]** |
 | `decline_slots(request_id)` | Visiteur ; « Aucun ne me va », une fois par demande | **[v2-nouveau]** |
 | `cancel_visit(visit_id)` | participant ; `cancelled_late` si < 2 h | **[v2-nouveau]** |
 | `join_visit(visit_id)` | participant, pendant le créneau ; enregistre la présence ; au premier `join`, rien n'est révélé tant que la visite n'a pas commencé | **[v2-nouveau]** |

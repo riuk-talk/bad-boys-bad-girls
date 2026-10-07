@@ -225,6 +225,13 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 5. **Rappels** : notification **1 h avant** et **à l'heure** (Web Push + in-app ; e-mail seulement si le membre l'a activé, dans la limite du quota).
 6. **Une seule visite programmée à la fois par couple.** Un Bad peut avoir plusieurs visites programmées avec des Visiteurs différents, sans chevauchement.
 
+**Mise en œuvre (Phase 5b, 2026-10-07)** :
+- « Accepter la visite » ouvre l'écran des Heures de visite ; l'acceptation est enregistrée **avec** les créneaux (`accept_visit_request`), jamais sans. Une demande acceptée en Phase 4 sans créneau garde son statut ; le Bad y propose ses premières Heures de visite depuis le Courrier.
+- Après une **annulation**, le Bad a **48 h** pour reproposer des créneaux (même règle qu'après « Aucun ne me va »), sinon la demande est classée automatiquement (`no_new_slots`). **[choix par défaut, à valider]**
+- Une demande qui quitte l'état « acceptée » (classée, blocage, changement de rôle) annule sa visite programmée et expire ses créneaux.
+- Tâche chaque minute (`run_visit_schedule`, pg_cron) : classements automatiques à 48 h, rappel 1 h avant, notification au début (une seule fois chacun, aux deux).
+- Web Push : créneau choisi, rappel 1 h, visite qui commence → `/visites` (Tableau des visites, nouvel onglet « Visites » des deux rôles). « Aucun ne me va », nouveaux créneaux et annulation : in-app seulement.
+
 ## 7 ter. La visite au Parloir (30 minutes)
 
 > **Style « cabine », pas de néon (v7.4, PARCOURS-DESIGN §5, maquettes `Visite.dc.html`, `FinVisite.dc.html`, `Permanent.dc.html`)** : en-tête en plaque métal rivetée « PARLOIR · CABINE 03 » avec hygiaphone, Signaler et Bloquer de chaque côté ; compteur « TEMPS DE VISITE » dans un cadre sombre ; fond de conversation = vitre ; bulles à contour 2 px dans la couleur du genre de l'auteur, sans halo ; premier message = la fiche papier du pari (tampon BIEN VU ! / RATÉ !). Sans horaire : plaque « PARLOIR · SANS HORAIRE », carte de Cavale épinglée, boutons Affaire classée / Proposer une Cavale au-dessus du champ toujours visible.
