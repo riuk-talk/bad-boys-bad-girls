@@ -6,6 +6,21 @@
 
 **Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; 5a-ter (super admin, double authentification) et parcours de bout en bout validés et fusionnés ; **5b (Heures de visite) terminée côté code, en attente de validation**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
 
+## Bases Supabase : preview et production (2026-10-17)
+
+- **Preview** : `bad-boys-preview` (`chvnmzmvcjvhxlnfmlvv`, eu-west-1) — l'ancienne base « dev », branches et previews Vercel ; c'est là que vont les migrations des phases en cours.
+- **Production** : `bad-boys-prod` (`hmmobtyherwuhrhymfbk`, eu-west-3, Postgres 17). Réglée par le porteur : inscriptions coupées, URL du site, TOTP ; `SUPABASE_SECRET_KEY` posée en Production sur Vercel.
+- **Mise en place (2026-10-17, par Claude via le connecteur)** : uniquement les **25 migrations de `main`** (`20261002192027_extensions` → `20261006112943_phase4_promenade_tiers`), contenu exact des fichiers.
+  - 23 passées par le connecteur : le SQL enregistré par Supabase est identique octet pour octet aux fichiers (MD5 comparés ; seul le dernier saut de ligne diffère).
+  - 2 avec `DROP` (`20261003223804_concept_v2_recreate`, `20261005045519_phase3_qcm_casier`) : le connecteur les annule avant toute demande de confirmation → exécutées par le porteur dans le SQL Editor. L'éditeur a ré-indenté le corps de 5 fonctions (`zone_progress`, `importance_weight`, `answers_before_write`, `casier_charges_after_write`, `common_points`) : même logique, texte différent → redéfinies par Claude avec le texte exact des fichiers (`create or replace`, droits inchangés).
+  - Ordre : `moderation_keywords` (n° 10) appliquée par erreur avant `phase3_poses_greffe` (n° 9) ; sans effet (aucune dépendance entre les deux, état final identique, vérifié).
+  - Historique `supabase_migrations.schema_migrations` remis aux versions et noms exacts des fichiers (25 lignes) ; les deux migrations du SQL Editor y sont sans texte enregistré (`statements` vide).
+  - Communes 83/06 chargées (`supabase/fixtures/places-83-06.sql`, 316 communes). Aucun quartier (la migration Toulon / Nice n'est pas sur `main`).
+- **Vérifié** contre une base de référence locale construite avec ces 25 migrations et les communes (empreinte MD5) : fonctions (79, texte et droits), colonnes, contraintes, index, politiques RLS (public et storage), déclencheurs, types, droits des tables, tâches pg_cron (2), buckets (2), extensions, données (questions, options, signes, mots-clés, communes) : **identiques**. Écarts attendus seulement : dates de création (`app_settings.updated_at`, `questions.created_at`) et droits par défaut de schémas propres à la plateforme (`supabase_functions` en local).
+- **Sécurité** : 24 tables, **0 sans RLS**, aucun droit de table ni de fonction pour `anon`. Audit Supabase : rien de plus qu'en preview (10 tables sans politique et 26 fonctions membres, toutes aussi en preview ; « Leaked password protection » désactivée, comme en preview).
+- **À savoir** : la migration `core_schema` crée elle-même dans le coffre de la prod le poivre `ban_email_pepper` (généré dans la base, jamais affiché) : 1 secret dans le coffre, rien d'autre n'y a été touché. `auth.users` contient 1 compte (créé hors de cette mise en place), aucun profil.
+- **Reste** (avant de brancher la production sur cette base) : migrations des phases 5a, 5a-ter, 5b et quartiers une fois fusionnées dans `main` ; super admin ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
+
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
 
 ### Découpage (validé)
@@ -214,7 +229,7 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 - **Contenus à relire** : `docs/content/casier-amorces.md` (60 amorces FR + EN), `docs/content/questions-en.md`.
 
 ### Points à connaître
-1. **Un seul projet Supabase** (`chvnmzmvcjvhxlnfmlvv`) sert le dev **et** la production Vercel. La production actuelle (code de la Phase 2c) ne peut plus terminer un onboarding avec la base de la Phase 3 ; elle le pourra une fois la PR de la Phase 3 fusionnée, et `SIGNUPS_OPEN=false` y ferme les inscriptions. Base de production séparée : checklist avant lancement.
+1. ~~**Un seul projet Supabase** (`chvnmzmvcjvhxlnfmlvv`) sert le dev **et** la production Vercel.~~ Depuis le 2026-10-17 : preview `bad-boys-preview` (`chvnmzmvcjvhxlnfmlvv`) et production `bad-boys-prod` (`hmmobtyherwuhrhymfbk`), voir « Bases Supabase ». La production actuelle (code de la Phase 2c) ne peut plus terminer un onboarding avec la base de la Phase 3 ; elle le pourra une fois la PR de la Phase 3 fusionnée, et `SIGNUPS_OPEN=false` y ferme les inscriptions. Base de production séparée : checklist avant lancement.
 2. **Le connecteur Supabase annule tout script contenant un `DELETE`**, même dans un test annulé ensuite. Les tests pgTAP de la Phase 3 vérifient donc les suppressions par les droits et les politiques (catalogue), sans exécuter de `DELETE`.
 3. **Mots-clés de modération chargés** (migration `20261005152114_moderation_keywords`, 108 mots relus, sans « signal », `harassment` vide jusqu'à l'admin de la Phase 7) ; test pgTAP : un chef d'accusation qui contient un mot-clé est signalé.
 5. **`SIGNUPS_OPEN` fermé par défaut** : seule la valeur exacte `true` ouvre les inscriptions (absente ou autre valeur = fermées), test unitaire ; Vercel vérifié : `false` en Production, `true` en Preview et Development.
@@ -222,6 +237,7 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 
 ## Checklist avant lancement (ouverture des inscriptions)
 - [ ] **Base Supabase de production séparée** (décision du porteur, 2026-10-05 : pas pour l'instant, une base gratuite inactive se met en pause au bout de 7 jours). La créer juste avant l'ouverture : appliquer toutes les migrations, premier admin, Turnstile, SMTP, variables Vercel Production.
+  - 2026-10-17 : créée (`bad-boys-prod`, `hmmobtyherwuhrhymfbk`), inscriptions coupées, URL du site, TOTP ; 25 migrations de `main` + communes appliquées et vérifiées. Restent : migrations suivantes, premier admin, Turnstile, SMTP, branchement Vercel Production.
 - [ ] `SIGNUPS_OPEN=true` sur Vercel Production (aujourd'hui `false` : « Inscriptions bientôt ouvertes » ; `true` en Preview et en local).
 - [ ] Interdire aussi les inscriptions directes par l'API Auth tant que la production n'est pas prête : `SIGNUPS_OPEN` ne protège que le site (Supabase Auth → « Allow new users to sign up » sur la future base de production).
 - [x] Relecture des contenus `docs/content/` et de la liste de départ des mots-clés (chargée).

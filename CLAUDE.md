@@ -34,6 +34,7 @@ Le plan de travail par phases est dans `docs/PROMPT.md`. L'état d'avancement es
 - Tests : **Vitest** (logique), **pgTAP** via `supabase test db` (RLS et fonctions SQL), **Playwright** (parcours critiques).
 - Types de la base générés avec `supabase gen types` (jamais écrits à la main).
 - Dev local : Supabase CLI en local si Docker est disponible, sinon un projet Supabase de développement séparé de la production.
+- Projets Supabase : **preview** `bad-boys-preview` (`chvnmzmvcjvhxlnfmlvv`, phases en cours et previews Vercel) et **production** `bad-boys-prod` (`hmmobtyherwuhrhymfbk`, uniquement les migrations de `main`, contenu exact des fichiers).
 - Tâches planifiées : `pg_cron` dans Supabase si disponible sur l'offre gratuite, sinon cron Vercel quotidien (vérifier en Phase 0).
 
 ## Conventions de code
