@@ -239,17 +239,19 @@ Phase 5b (`20261007184105_phase5b_visiting_hours`) : créées sans `conversation
 Index : (`status`, `starts_at`) partiel `scheduled`/`in_progress` (tâche minute) ; (`bad_id`, `starts_at`), (`visitor_id`, `starts_at`) (agendas, Visites honorées) ; (`status`, `end_choice_deadline`) partiel `ended` et `outcome is null`.
 RLS : **S** participant (`auth.uid() in (bad_id, visitor_id)`) et pas de blocage — nécessaire pour l'abonnement temps réel à l'état de la visite (écran d'attente) ; ne contient aucune donnée cachée à l'autre (les choix de fin sont lus via `get_visit()`, qui ne révèle jamais le choix de l'autre) → **[à trancher en Phase 5]** : si l'on veut cacher les choix de fin même aux participants, la lecture passe uniquement par `get_visit()` et l'écran d'attente interroge la fonction toutes les 5 s. **I/U/D** —.
 
-#### `conversations` — **[v2-modif]** (pas encore en base)
+#### `conversations` — **[v2-modif]** (en base, Phase 5c `20261018104313_phase5c_parloir`)
 Comme v1, avec : `origin_request_id uuid` (remplace `origin_plea_id`), `status conversation_status` (`visiting` à la création au premier créneau choisi → `open` à la Permis permanent → `closed`), `released_at timestamptz`.
 Index unique partiel (`least`, `greatest`) des deux membres `where status in ('visiting','open')`.
 RLS : **S** membre ; **I/U/D** —.
 
-#### `messages` — **[v2-modif]** (pas encore en base)
+#### `messages` — **[v2-modif]** (en base, Phase 5c)
 Comme v1, avec :
 - `kind message_kind` défaut `text` ; `system_payload jsonb` (pour le message « résultat du pari » et les messages neutres) ; `visit_id uuid` → `visits` (message envoyé pendant une visite) ;
 - check : (`kind = 'system'` ⇒ `sender_id is null and system_payload is not null`) ; (`kind = 'text'` ⇒ `body is not null or sender_deleted`).
 - `send_message` n'accepte un message dans une conversation `visiting` que si une visite de ce couple est `in_progress`, que `now() < ends_at` et que l'expéditeur est présent ; masquage des coordonnées **toujours actif** pendant une visite.
 Realtime : Postgres Changes sur `messages` (filtre `conversation_id`), ouvert uniquement sur l'écran affiché ; repli par interrogation toutes les 3 s si la connexion est refusée (plafond de connexions de l'offre gratuite, **à vérifier**).
+
+Phase 5c, écarts : `conversations` (`request_id` unique, `bad_id`, `visitor_id`, `status`, `released_at`, `closed_at`, `last_message_at`) créée au **début** de la visite, aucune lecture directe (fonctions `get_conversation`, `get_my_parloirs`) ; `messages.body varchar(1100)` (le jeton de masquage peut allonger un message de 1 000 caractères), payloads système `bet` / `note` / `released` / `closed`, lecture directe **autorisée aux deux membres** (politique `private.can_read_conversation`, nécessaire à Realtime) et publication `supabase_realtime`. `visits` : présence, `absent`, choix de fin, `end_choice_deadline`, `outcome` ajoutés ; toujours aucune lecture directe (choix cachés : `get_visit` interrogée toutes les 5 s, décision 2026-10-06). Fonctions : `join_visit`, `get_visit`, `choose_visit_end`, `send_message`, `get_messages`, `get_conversation`, `get_my_parloirs`, `close_conversation` ; internes `start_visit`, `reveal_bet`, `resolve_visit`, `run_parloir_ticks` (pg_cron `parloir-ticks` chaque minute, à côté de `visit-schedule` de la 5b ; pas de `run_visit_ticks` unique). Pas de `request_reschedule` : le report s'ouvre automatiquement après une absence.
 
 #### `date_proposals` — la Cavale — inchangé (Phase 6)
 `propose_date` exige une conversation `open` (Permis permanent).

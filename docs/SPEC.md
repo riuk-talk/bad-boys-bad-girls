@@ -250,6 +250,15 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
   - Les deux choisissent Prolonger → **Permis permanent** : tampon « PERMIS PERMANENT », le Parloir reste ouvert entre eux, **sans horaire** (§13) et la **Cavale** devient disponible.
   - Sinon → affaire classée, message neutre (le choix de chacun n'est jamais révélé : l'autre voit seulement « Affaire classée »), délai de 30 jours.
 
+**Mise en œuvre (Phase 5c, 2026-10-18)** :
+- Le Parloir vit dans l'onglet « Visites » : `/visites/[visite]` (Parloir · Cabine n°, attente, 30 minutes, fin de visite) et `/visites/parloir/[conversation]` (sans horaire). Ouvrir l'écran = être présent (`join_visit`, horloge de la base).
+- La conversation est créée **au début de la visite** (une par affaire, gardée d'une visite à l'autre). Le pari et le mot du Visiteur sont révélés **quand les deux sont présents** : une visite manquée ne révèle rien.
+- Absence à +10 min : la visite est marquée absente (qui), les deux sont prévenus ; le Bad a **48 h** pour reproposer (le « report » est ouvert automatiquement, sans bouton) ; deuxième absence → affaire classée (`second_no_show`). **[à valider]**
+- Fin de visite : chaque choix est définitif ; l'issue est décidée quand les deux ont choisi ou au bout de 24 h (sans réponse = classée, `no_end_choice`).
+- Messages : 1 000 caractères, 30 par minute, coordonnées **toujours masquées** (y compris sans horaire, la levée du masquage viendra avec la Cavale), mots-clés signalés au Greffe. Temps réel par Supabase Realtime (RLS : les deux membres), lecture de secours toutes les 3 s ; l'état de la visite est lu toutes les 5 s (les choix de fin ne sont jamais lisibles par l'autre).
+- Notification de message (sans horaire seulement) au plus une fois par 15 min et par conversation ; Web Push : absence, Permis permanent, affaire classée, message → `/visites`.
+- Bloquer pendant une visite l'annule et ferme le Parloir ; un changement de rôle classe aussi les Parloirs sans horaire.
+
 ## 7 quater. Web Push (dans le MVP)
 
 - Les heures de visite ne fonctionnent pas sans rappels fiables : **Web Push** standard (clés **VAPID**, service worker, gratuit).
