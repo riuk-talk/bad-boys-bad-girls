@@ -458,6 +458,38 @@ begin
   return next is((select cancelled_late from public.visits where id = visit), true,
     'less than 2 h before: late (counts as an absence)');
   return next is(pg_temp.notified(v, 'visit_cancelled'), 1, 'the Visitor is told');
+  -- Only one new proposal after a cancellation: the second one classes the case (owner, 2026-10-18).
+  return next is((select status::text || '/' || close_reason::text from public.visit_requests where id = req),
+    'closed/second_cancellation', 'second cancellation: the case is classed');
+  return next is(pg_temp.notified(v, 'request_dismissed'), 1, 'the Visitor gets the neutral message');
+  perform pg_temp.as_user(b);
+  return next matches(pg_temp.err(format('select public.propose_slots(%L, %L::timestamptz[])', req,
+    array[pg_temp.h(12), pg_temp.h(13)])), 'not_accepted', 'no third round of slots');
+  perform pg_temp.as_owner();
+end $$;
+
+-- « Visites honorées »: a late cancellation by the Visitor is a visit due and not honored.
+create function pg_temp.test_hours_late_cancel_reputation() returns setof text language plpgsql as $$
+declare
+  ville bigint := pg_temp.new_place();
+  b uuid; v uuid; req uuid; visit uuid; rep record;
+begin
+  perform pg_temp.open();
+  b := pg_temp.bad('b@test.local', ville);
+  v := pg_temp.visitor('v@test.local', ville);
+  req := pg_temp.request(v, b);
+  perform pg_temp.accept(b, req, 6, 7);
+  visit := pg_temp.choose(v, pg_temp.slot_at(req, 6));
+  update public.visits set starts_at = now() + interval '60 minutes', ends_at = now() + interval '90 minutes' where id = visit;
+  perform pg_temp.as_user(v);
+  perform public.cancel_visit(visit);
+  perform pg_temp.as_owner();
+  select * into rep from public.visitor_reputation(v);
+  return next is(rep.honored || '/' || rep.due, '0/1', 'late cancellation by the Visitor: 0 honored out of 1');
+  select * into rep from public.visitor_reputation(b);
+  return next is(rep.honored || '/' || rep.due, '0/0', 'a cancellation by the other side does not count');
+  return next is((select status::text from public.visit_requests where id = req), 'accepted',
+    'a first cancellation leaves the case open (48 h for new slots)');
 end $$;
 
 create function pg_temp.test_hours_block_cancels() returns setof text language plpgsql as $$
