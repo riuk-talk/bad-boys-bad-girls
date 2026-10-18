@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { execFileSync } from "node:child_process";
@@ -5,6 +6,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { openGreffe } from "./helpers/admin";
 import { FakePushService } from "./helpers/fake-push-service";
+import { settled } from "./helpers/settle";
 
 // THE end-to-end journey, LOCAL STACK ONLY (scripts/ci/local-env.mjs). Owner's rule (2026-10-07):
 // every later phase extends it (visit, Parloir, Permis permanent, Cavale) before it is done.
@@ -16,7 +18,11 @@ import { FakePushService } from "./helpers/fake-push-service";
 //   4. The Bad accepts it in the Courrier by sending 2 Heures de visite (Phase 5b).
 //   5. The Visitor chooses one of them in « Mes demandes »: the visit is scheduled, both see it
 //      in the Tableau des visites.
-//   6. The notifications leave through /api/cron/push to a fake push service.
+//   6. The visit time comes (moved to « now », local database only): both enter the Parloir, the
+//      bet is revealed once both are there, then the messages (contacts masked).
+//   7. The 30 minutes end: both choose « Prolonger » in secret → Permis permanent.
+//   8. Le Parloir sans horaire: the conversation goes on without a visit.
+//   9. The notifications leave through /api/cron/push to a fake push service.
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const publishable = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const secret = process.env.SUPABASE_SECRET_KEY ?? "";
@@ -35,6 +41,16 @@ const CHARGES = [
   "Collectionne les cartes postales de phares.",
 ];
 
+const WCAG = ["wcag2a", "wcag2aa", "wcag21aa"];
+
+async function axeViolations(page: Page) {
+  await settled(page);
+  const result = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  return result.violations.map(
+    (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
+  );
+}
+
 /** SQL as the database owner, local stack only; returns the single value printed. */
 function asOwner(sql: string): string {
   return execFileSync("psql", [dbUrl, "-v", "ON_ERROR_STOP=1", "-At", "-c", sql], {
@@ -52,7 +68,7 @@ async function login(browser: Browser, email: string, password: string): Promise
   return page;
 }
 
-test.describe("journey: Greffe → Découverte → Demande → Heures de visite → notifications (local stack)", () => {
+test.describe("journey: Greffe → Demande → Heures de visite → Parloir → Permis permanent → notifications (local stack)", () => {
   test.skip(!enabled, "local stack environment not set (scripts/ci/local-env.mjs)");
   test.describe.configure({ mode: "serial", timeout: 120_000 });
 
@@ -337,7 +353,131 @@ test.describe("journey: Greffe → Découverte → Demande → Heures de visite 
     await badPage.context().close();
   });
 
-  test("6. the notifications leave: the Bad's mail and slot chosen, the Visitor's good news", async ({
+  test("6. the visit: both in the Parloir, the bet revealed, messages", async ({ browser }) => {
+    asOwner(
+      `update public.visits set starts_at = now() - interval '1 minute', ends_at = now() + interval '29 minutes'
+       where visitor_id = '${visitor.id}' and status = 'scheduled'`,
+    );
+    asOwner("select public.run_parloir_ticks()");
+    const visitId = asOwner(`select id from public.visits where visitor_id = '${visitor.id}'`);
+
+    const visitorPage = await login(browser, visitor.email, visitor.password);
+    await visitorPage.goto("/visites");
+    await visitorPage.getByRole("link", { name: "Entrer au Parloir" }).click();
+    await visitorPage.waitForURL(new RegExp(`/visites/${visitId}$`));
+    await expect(visitorPage.getByRole("heading", { name: /PARLOIR · CABINE \d\d/ })).toBeVisible();
+    await expect(visitorPage.getByText(`En attente de ${bad.pseudo}…`)).toBeVisible();
+
+    const badPage = await login(browser, bad.email, bad.password);
+    await badPage.goto(`/visites/${visitId}`);
+    // Both present: the bet opens the conversation (the Visitor bet on the true charge).
+    await expect(badPage.getByText(`LE PARI DE ${visitor.pseudo.toUpperCase()}`)).toBeVisible();
+    await expect(badPage.getByRole("img", { name: /bien vu/i })).toBeVisible();
+    await expect(badPage.getByText(`« ${CHARGES[0]} »`)).toBeVisible();
+    await expect(visitorPage.getByText(`LE PARI DE ${visitor.pseudo.toUpperCase()}`)).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(visitorPage.getByRole("timer").first()).toHaveText(/^\d\d:\d\d$/);
+    expect(await axeViolations(visitorPage)).toEqual([]);
+
+    await visitorPage
+      .getByPlaceholder("Ton message")
+      .fill("Ta meilleure balade de nuit ? Mon 06 12 34 56 78");
+    await visitorPage.getByRole("button", { name: "Envoyer" }).click();
+    await expect(badPage.getByText("Ta meilleure balade de nuit ? Mon [•••]")).toBeVisible({
+      timeout: 15_000,
+    });
+    await badPage.getByPlaceholder("Ton message").fill("Le long de la mer, jusqu'au phare.");
+    await badPage.getByRole("button", { name: "Envoyer" }).click();
+    await expect(visitorPage.getByText("Le long de la mer, jusqu'au phare.")).toBeVisible({
+      timeout: 15_000,
+    });
+    await visitorPage.context().close();
+    await badPage.context().close();
+
+    const bet = JSON.parse(
+      asOwner(`select system_payload from public.messages m join public.visits v on v.conversation_id = m.conversation_id
+               where v.id = '${visitId}' and m.system_payload ->> 'type' = 'bet'`),
+    ) as { correct: boolean; charge: string };
+    expect(bet).toMatchObject({ correct: true, charge: CHARGES[0] });
+    expect(
+      asOwner(`select count(*) from public.messages m join public.visits v on v.conversation_id = m.conversation_id
+               where v.id = '${visitId}' and m.kind = 'text'`),
+    ).toBe("2");
+    expect(
+      asOwner(
+        `select bad_joined_at is not null and visitor_joined_at is not null from public.visits where id = '${visitId}'`,
+      ),
+    ).toBe("t");
+  });
+
+  test("7. the end of the visit: both prolong in secret → Permis permanent", async ({
+    browser,
+  }) => {
+    const visitId = asOwner(`select id from public.visits where visitor_id = '${visitor.id}'`);
+    asOwner(
+      `update public.visits set starts_at = now() - interval '31 minutes', ends_at = now() - interval '1 minute'
+       where id = '${visitId}'`,
+    );
+    asOwner("select public.run_parloir_ticks()");
+    expect(asOwner(`select status from public.visits where id = '${visitId}'`)).toBe("ended");
+
+    const visitorPage = await login(browser, visitor.email, visitor.password);
+    await visitorPage.goto(`/visites/${visitId}`);
+    await expect(
+      visitorPage.getByRole("heading", { name: `Et maintenant, avec ${bad.pseudo} ?` }),
+    ).toBeVisible();
+    expect(await axeViolations(visitorPage)).toEqual([]);
+    await visitorPage.getByRole("button", { name: "Prolonger" }).click();
+    await expect(visitorPage.getByText(/Ton choix est enregistré/)).toBeVisible();
+
+    const badPage = await login(browser, bad.email, bad.password);
+    await badPage.goto("/visites");
+    await badPage.getByRole("link", { name: "Fin de visite : à toi de choisir" }).click();
+    await expect(
+      badPage.getByRole("heading", { name: `Et maintenant, avec ${visitor.pseudo} ?` }),
+    ).toBeVisible();
+    // The Visitor's choice is never shown to the Bad.
+    expect((await badPage.locator("main").textContent()) ?? "").not.toMatch(/enregistré|prolongé/i);
+    await badPage.getByRole("button", { name: "Prolonger" }).click();
+    await expect(badPage.getByRole("img", { name: /permis permanent/i })).toBeVisible();
+    await expect(visitorPage.getByRole("img", { name: /permis permanent/i })).toBeVisible({
+      timeout: 15_000,
+    });
+    await visitorPage.context().close();
+    await badPage.context().close();
+
+    expect(asOwner(`select outcome from public.visits where id = '${visitId}'`)).toBe("released");
+    expect(
+      asOwner(`select r.status || '/' || c.status from public.visit_requests r join public.conversations c on c.request_id = r.id
+               where r.visitor_id = '${visitor.id}' and r.bad_id = '${bad.id}'`),
+    ).toBe("released/open");
+  });
+
+  test("8. le Parloir sans horaire: the conversation goes on", async ({ browser }) => {
+    const badPage = await login(browser, bad.email, bad.password);
+    await badPage.goto("/visites");
+    await badPage.getByRole("link", { name: `Permis permanent avec ${visitor.pseudo}` }).click();
+    await badPage.waitForURL(/\/visites\/parloir\//);
+    await expect(badPage.getByRole("heading", { name: "PARLOIR · SANS HORAIRE" })).toBeVisible();
+    // The messages of the visit stay at the top.
+    await expect(badPage.getByText("Le long de la mer, jusqu'au phare.")).toBeVisible();
+    await badPage.getByPlaceholder("Ton message").fill("On se refait ça quand tu veux.");
+    await badPage.getByRole("button", { name: "Envoyer" }).click();
+    await expect(badPage.getByText("On se refait ça quand tu veux.")).toBeVisible();
+    await expect(badPage.getByRole("button", { name: "Affaire classée" })).toBeVisible();
+    await expect(badPage.getByRole("link", { name: "Conseils sécurité" })).toBeVisible();
+    expect(await axeViolations(badPage)).toEqual([]);
+    await badPage.context().close();
+
+    const visitorPage = await login(browser, visitor.email, visitor.password);
+    await visitorPage.goto("/visites");
+    await visitorPage.getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` }).click();
+    await expect(visitorPage.getByText("On se refait ça quand tu veux.")).toBeVisible();
+    await visitorPage.context().close();
+  });
+
+  test("9. the notifications leave: mail, slot, visit, Permis permanent, a message", async ({
     request,
   }) => {
     const response = await request.post("/api/cron/push", {
@@ -352,6 +492,10 @@ test.describe("journey: Greffe → Découverte → Demande → Heures de visite 
     // Besides the Greffe's own news (decision, Permis delivered), queued since step 2.
     expect(mine(endpoints.bad)).toContainEqual({ t: "request_received", u: "/courrier" });
     expect(mine(endpoints.bad)).toContainEqual({ t: "slot_chosen", u: "/visites" });
+    expect(mine(endpoints.bad)).toContainEqual({ t: "visit_starting", u: "/visites" });
+    expect(mine(endpoints.bad)).toContainEqual({ t: "visit_released", u: "/visites" });
+    expect(mine(endpoints.visitor)).toContainEqual({ t: "visit_released", u: "/visites" });
+    expect(mine(endpoints.visitor)).toContainEqual({ t: "message_received", u: "/visites" });
     expect(mine(endpoints.visitor)).toContainEqual({ t: "request_accepted", u: "/demandes" });
     expect(mine(endpoints.visitor)).toContainEqual({ t: "permit_granted", u: "/ma-fiche" });
     for (const received of push.received) {
