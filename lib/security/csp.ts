@@ -9,7 +9,8 @@ export function buildCsp(
   options: { isDev: boolean; supabaseUrl?: string; https?: boolean },
 ): string {
   const supabase = options.supabaseUrl ?? "";
-  const supabaseWs = supabase.replace(/^https:/, "wss:");
+  // Realtime: wss:// for https://, ws:// for the local stack (WebKit does not derive one from the other).
+  const supabaseWs = supabase.replace(/^http(s?):/, "ws$1:");
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
     "script-src": [
