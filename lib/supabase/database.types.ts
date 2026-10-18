@@ -247,6 +247,64 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          bad_id: string
+          closed_at: string | null
+          created_at: string
+          id: string
+          last_message_at: string | null
+          released_at: string | null
+          request_id: string
+          status: Database["public"]["Enums"]["conversation_status"]
+          visitor_id: string
+        }
+        Insert: {
+          bad_id: string
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          released_at?: string | null
+          request_id: string
+          status?: Database["public"]["Enums"]["conversation_status"]
+          visitor_id: string
+        }
+        Update: {
+          bad_id?: string
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          released_at?: string | null
+          request_id?: string
+          status?: Database["public"]["Enums"]["conversation_status"]
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_bad_id_fkey"
+            columns: ["bad_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "visit_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_outbox: {
         Row: {
           attempts: number
@@ -390,6 +448,61 @@ export type Database = {
             columns: ["center_place_id"]
             isOneToOne: false
             referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: number
+          kind: Database["public"]["Enums"]["message_kind"]
+          sender_id: string | null
+          system_payload: Json | null
+          visit_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: never
+          kind?: Database["public"]["Enums"]["message_kind"]
+          sender_id?: string | null
+          system_payload?: Json | null
+          visit_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: never
+          kind?: Database["public"]["Enums"]["message_kind"]
+          sender_id?: string | null
+          system_payload?: Json | null
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
             referencedColumns: ["id"]
           },
         ]
@@ -1210,6 +1323,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "visit_requests_conversation_fk"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "visit_requests_visitor_id_fkey"
             columns: ["visitor_id"]
             isOneToOne: false
@@ -1258,52 +1378,86 @@ export type Database = {
       }
       visits: {
         Row: {
+          absent: Database["public"]["Enums"]["visit_absence"] | null
+          bad_end_choice: Database["public"]["Enums"]["visit_end_choice"] | null
           bad_id: string
+          bad_joined_at: string | null
           cancelled_at: string | null
           cancelled_by: string | null
           cancelled_late: boolean
+          conversation_id: string | null
           created_at: string
+          end_choice_deadline: string | null
           ends_at: string
           id: string
+          outcome: string | null
           reminder_sent_at: string | null
           request_id: string
           slot_id: string
           start_notified_at: string | null
           starts_at: string
           status: Database["public"]["Enums"]["visit_status"]
+          visitor_end_choice:
+            | Database["public"]["Enums"]["visit_end_choice"]
+            | null
           visitor_id: string
+          visitor_joined_at: string | null
         }
         Insert: {
+          absent?: Database["public"]["Enums"]["visit_absence"] | null
+          bad_end_choice?:
+            | Database["public"]["Enums"]["visit_end_choice"]
+            | null
           bad_id: string
+          bad_joined_at?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
           cancelled_late?: boolean
+          conversation_id?: string | null
           created_at?: string
+          end_choice_deadline?: string | null
           ends_at: string
           id?: string
+          outcome?: string | null
           reminder_sent_at?: string | null
           request_id: string
           slot_id: string
           start_notified_at?: string | null
           starts_at: string
           status?: Database["public"]["Enums"]["visit_status"]
+          visitor_end_choice?:
+            | Database["public"]["Enums"]["visit_end_choice"]
+            | null
           visitor_id: string
+          visitor_joined_at?: string | null
         }
         Update: {
+          absent?: Database["public"]["Enums"]["visit_absence"] | null
+          bad_end_choice?:
+            | Database["public"]["Enums"]["visit_end_choice"]
+            | null
           bad_id?: string
+          bad_joined_at?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
           cancelled_late?: boolean
+          conversation_id?: string | null
           created_at?: string
+          end_choice_deadline?: string | null
           ends_at?: string
           id?: string
+          outcome?: string | null
           reminder_sent_at?: string | null
           request_id?: string
           slot_id?: string
           start_notified_at?: string | null
           starts_at?: string
           status?: Database["public"]["Enums"]["visit_status"]
+          visitor_end_choice?:
+            | Database["public"]["Enums"]["visit_end_choice"]
+            | null
           visitor_id?: string
+          visitor_joined_at?: string | null
         }
         Relationships: [
           {
@@ -1311,6 +1465,13 @@ export type Database = {
             columns: ["bad_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visits_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
           {
@@ -1395,7 +1556,15 @@ export type Database = {
         Returns: string[]
       }
       choose_slot: { Args: { p_slot: string }; Returns: string }
+      choose_visit_end: {
+        Args: { p_prolong: boolean; p_visit: string }
+        Returns: Json
+      }
       claim_referral: { Args: { p_code: string }; Returns: boolean }
+      close_conversation: {
+        Args: { p_conversation: string }
+        Returns: undefined
+      }
       common_points: {
         Args: { p_a: string; p_b: string; p_n?: number }
         Returns: {
@@ -1490,6 +1659,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_conversation: { Args: { p_conversation: string }; Returns: Json }
       get_fiche: { Args: { p_bad: string }; Returns: Json }
       get_mailbox: {
         Args: never
@@ -1512,12 +1682,35 @@ export type Database = {
           visits_honored: number
         }[]
       }
+      get_messages: {
+        Args: { p_after?: number; p_conversation: string }
+        Returns: {
+          body: string
+          created_at: string
+          id: number
+          kind: Database["public"]["Enums"]["message_kind"]
+          mine: boolean
+          payload: Json
+        }[]
+      }
       get_my_blocks: {
         Args: never
         Returns: {
           blocked_at: string
           blocked_id: string
           pseudo: string
+        }[]
+      }
+      get_my_parloirs: {
+        Args: never
+        Returns: {
+          conversation_id: string
+          last_message_at: string
+          other_gender: Database["public"]["Enums"]["gender"]
+          other_id: string
+          other_photo_small: string
+          other_pseudo: string
+          released_at: string
         }[]
       }
       get_my_promenade: {
@@ -1569,6 +1762,7 @@ export type Database = {
       }
       get_permit: { Args: { p_visitor: string }; Returns: Json }
       get_request_schedule: { Args: { p_request: string }; Returns: Json }
+      get_visit: { Args: { p_visit: string }; Returns: Json }
       has_contacts: { Args: { value: string }; Returns: boolean }
       has_open_relation: {
         Args: { p_a: string; p_b: string }
@@ -1603,6 +1797,7 @@ export type Database = {
         Returns: boolean
       }
       is_trusted_reporter: { Args: { p_reporter: string }; Returns: boolean }
+      join_visit: { Args: { p_visit: string }; Returns: Json }
       mark_notifications_read:
         | { Args: never; Returns: undefined }
         | {
@@ -1669,11 +1864,14 @@ export type Database = {
         }
         Returns: number
       }
+      resolve_visit: { Args: { p_visit: string }; Returns: undefined }
+      reveal_bet: { Args: { p_visit: string }; Returns: undefined }
       revoke_push_row: { Args: { p_id: string }; Returns: undefined }
       revoke_push_subscription: {
         Args: { p_endpoint: string }
         Returns: undefined
       }
+      run_parloir_ticks: { Args: never; Returns: Json }
       run_promenades_due: { Args: never; Returns: undefined }
       run_visit_schedule: { Args: never; Returns: Json }
       save_push_subscription: {
@@ -1694,6 +1892,10 @@ export type Database = {
           postal_codes: string[]
         }[]
       }
+      send_message: {
+        Args: { p_body: string; p_conversation: string }
+        Returns: number
+      }
       send_visit_request: {
         Args: { p_bad: string; p_guessed_index: number; p_note?: string }
         Returns: string
@@ -1706,6 +1908,7 @@ export type Database = {
         Args: { p_name: string; p_value: string }
         Returns: undefined
       }
+      start_visit: { Args: { p_visit: string }; Returns: undefined }
       touch_activity: { Args: never; Returns: undefined }
       unblock_user: { Args: { p_target: string }; Returns: undefined }
       visitor_reputation: {
@@ -1753,6 +1956,7 @@ export type Database = {
         | "banned"
         | "second_cancellation"
       consent_type: "terms" | "privacy" | "age_18" | "art9_seeking"
+      conversation_status: "visiting" | "open" | "closed"
       email_kind:
         | "request_digest"
         | "date_accepted"
@@ -1778,6 +1982,7 @@ export type Database = {
       importance: "low" | "important" | "essential"
       launch_mode: "zones" | "open"
       member_role: "bad" | "visitor"
+      message_kind: "text" | "system"
       moderation_action_type:
         | "warn"
         | "suspend"
@@ -1831,6 +2036,8 @@ export type Database = {
         | "message"
         | "visit_request"
       slot_status: "offered" | "chosen" | "declined" | "expired"
+      visit_absence: "bad" | "visitor" | "both"
+      visit_end_choice: "prolong" | "close"
       visit_request_status:
         | "pending"
         | "accepted"
@@ -1990,6 +2197,7 @@ export const Constants = {
         "second_cancellation",
       ],
       consent_type: ["terms", "privacy", "age_18", "art9_seeking"],
+      conversation_status: ["visiting", "open", "closed"],
       email_kind: [
         "request_digest",
         "date_accepted",
@@ -2017,6 +2225,7 @@ export const Constants = {
       importance: ["low", "important", "essential"],
       launch_mode: ["zones", "open"],
       member_role: ["bad", "visitor"],
+      message_kind: ["text", "system"],
       moderation_action_type: [
         "warn",
         "suspend",
@@ -2074,6 +2283,8 @@ export const Constants = {
         "visit_request",
       ],
       slot_status: ["offered", "chosen", "declined", "expired"],
+      visit_absence: ["bad", "visitor", "both"],
+      visit_end_choice: ["prolong", "close"],
       visit_request_status: [
         "pending",
         "accepted",
