@@ -58,8 +58,15 @@ function asOwner(sql: string): string {
   }).trim();
 }
 
+/** Uncaught exceptions and console errors of the pages of the current step (printed if it fails). */
+const pageErrors: string[] = [];
+
 async function login(browser: Browser, email: string, password: string): Promise<Page> {
   const page = await (await browser.newContext()).newPage();
+  page.on("pageerror", (error) => pageErrors.push(`pageerror: ${error.stack ?? error.message}`));
+  page.on("console", (message) => {
+    if (message.type() === "error") pageErrors.push(`console.error: ${message.text()}`);
+  });
   await page.goto("/connexion");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Mot de passe", { exact: true }).fill(password);
@@ -71,6 +78,13 @@ async function login(browser: Browser, email: string, password: string): Promise
 test.describe("journey: Greffe → Demande → Heures de visite → Parloir → Permis permanent → notifications (local stack)", () => {
   test.skip(!enabled, "local stack environment not set (scripts/ci/local-env.mjs)");
   test.describe.configure({ mode: "serial", timeout: 120_000 });
+
+  test.afterEach(({}, testInfo) => {
+    if (testInfo.status !== testInfo.expectedStatus && pageErrors.length > 0) {
+      console.log(`[${testInfo.project.name}] ${testInfo.title}\n${pageErrors.join("\n")}`);
+    }
+    pageErrors.length = 0;
+  });
 
   const admin = createClient(url, secret, { auth: { persistSession: false } });
   const push = new FakePushService();

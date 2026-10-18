@@ -47,11 +47,16 @@ export function VisitRoom({ initial, messages, me, tz }: Props) {
   const sync = useCallback(async () => {
     if (syncing.current) return;
     syncing.current = true;
-    const result = await syncVisitAction(initial.id);
-    syncing.current = false;
-    if ("visit" in result) {
-      setVisit(result.visit);
-      setOffset(clockOffset(result.visit.now, Date.now()));
+    try {
+      const result = await syncVisitAction(initial.id);
+      if ("visit" in result) {
+        setVisit(result.visit);
+        setOffset(clockOffset(result.visit.now, Date.now()));
+      }
+    } catch {
+      // A lost request (network, server restart): the next poll tries again.
+    } finally {
+      syncing.current = false;
     }
   }, [initial.id]);
 
