@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 terminée côté code** (branche `phase-5`) : 5a (Web Push, CI, super admin), 5b (Heures de visite) et 5c (la visite au Parloir) validées et fusionnées dans `phase-5`. **En attente** : validation du correctif « Promenade en mode ouvert » (proposé, hors `phase-5`, non appliqué), puis fusion de `phase-5` dans `main` (liste ci-dessous). Phase 4 validée, fusionnée (PR #11) et en production.
+**Phase 5 validée** (2026-10-18, CI n° 17 et 18 vertes) ; `phase-5` = `1c76403` (5a, 5b, 5c, correctif Promenade en mode ouvert). **Prod** : les migrations de `phase-5` sont appliquées avant la fusion, sauf le DROP `phase5a_drop_push_route_config` (SQL Editor, porteur). **En attente** : ce DROP, vérification de la prod par le conseiller, puis pull request `phase-5` → `main` (pas encore ouverte). Phase 4 validée, fusionnée (PR #11) et en production.
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -19,7 +19,11 @@
 - **Vérifié** contre une base de référence locale construite avec ces 25 migrations et les communes (empreinte MD5) : fonctions (79, texte et droits), colonnes, contraintes, index, politiques RLS (public et storage), déclencheurs, types, droits des tables, tâches pg_cron (2), buckets (2), extensions, données (questions, options, signes, mots-clés, communes) : **identiques**. Écarts attendus seulement : dates de création (`app_settings.updated_at`, `questions.created_at`) et droits par défaut de schémas propres à la plateforme (`supabase_functions` en local).
 - **Sécurité** : 24 tables, **0 sans RLS**, aucun droit de table ni de fonction pour `anon`. Audit Supabase : rien de plus qu'en preview (10 tables sans politique et 26 fonctions membres, toutes aussi en preview ; « Leaked password protection » désactivée, comme en preview).
 - **À savoir** : la migration `core_schema` crée elle-même dans le coffre de la prod le poivre `ban_email_pepper` (généré dans la base, jamais affiché) : 1 secret dans le coffre, rien d'autre n'y a été touché. `auth.users` contient 1 compte (créé hors de cette mise en place), aucun profil.
-- **Reste** (avant de brancher la production sur cette base) : migrations des phases 5a, 5a-ter, 5b et quartiers une fois fusionnées dans `main` ; super admin ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
+- **Migrations de `phase-5` (2026-10-18, avant la fusion dans `main`, par Claude via le connecteur)** : 10 des 11 migrations absentes de `main`, dans l'ordre, contenu exact (MD5 du SQL enregistré = MD5 des fichiers, les 10) : `phase5a_web_push`, `phase5a_push_vault_reads`, `phase5a_push_secret_names`, `launch_zones_toulon_nice`, `phase5a_ter_super_admin`, `phase5b_visiting_hours`, `phase5b_complements`, `phase5c_parloir`, `phase5c_absence_close`, `phase5_promenade_open_mode`. Historique remis aux versions et noms exacts (35 lignes).
+  - **En attente** : `20261006190000_phase5a_drop_push_route_config` (un `DROP`) à lancer par le porteur dans le SQL Editor, puis sa ligne d'historique (version, nom, texte du fichier) par Claude. D'ici là, `push_route_config()` reste en prod : réservée à la clé secrète, elle ne renvoie rien (aucun secret correspondant).
+  - **Vérifié** contre la base locale construite avec les 36 migrations de `phase-5` (empreinte MD5 par catégorie, `push_route_config` exclue) : fonctions (122), colonnes (290), politiques (25), déclencheurs (34), types énumérés (23), droits des tables (230) et des fonctions (181), RLS (31 tables), tâches pg_cron (5), publication Realtime : **identiques**. **0 table sans RLS.** Audit Supabase identique à la preview (16 tables sans politique, 46 fonctions membres, « Leaked password protection » désactivée).
+  - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
+- **Reste** : le DROP ci-dessus ; super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
 
@@ -70,20 +74,19 @@ Découpage annoncé : a base (super_admins, gardes, aal2, script, pgTAP) · b do
 - **Test** : `tests/e2e/password-recovery.spec.ts` (parcours critiques, Pixel 7 et iPhone 14) : un membre (lien → nouveau mot de passe → connexion avec le nouveau, l'ancien refusé) ; le super admin (lien → code demandé, mauvais code refusé, bon code → nouveau mot de passe → connexion ; une nouvelle session passe toujours par `/acces-admin`). Vérifié : sans la correction, le test du super admin échoue.
 - **À savoir** : un super admin qui aurait perdu son application d'authentification ne peut pas récupérer seul son compte (voulu) ; il faut retirer son facteur en base, en propriétaire. Le mot de passe temporaire posé par le conseiller peut maintenant être remplacé par le parcours normal.
 
-### Promenade en mode ouvert (2026-10-18, correctif proposé, en attente de validation)
+### Promenade en mode ouvert (2026-10-18, correctif validé, dans `phase-5`)
 - **Vérifié** (la preview est passée en `launch_mode = 'open'`) : la Promenade était construite par quartier seulement (`build_daily_promenade(zone)` prend les Visiteurs `zone_id = zone`, la tâche horaire ne parcourt que `launch_zones`). **Un Visiteur hors de tout quartier (`zone_id` vide) n'avait jamais de Promenade**, même en mode ouvert ; la Découverte, elle, fonctionnait. Les Bads hors quartier étaient bien proposés (mode ouvert) ; les Visiteurs d'un quartier en liste d'attente aussi. Preview : 1 seul membre réel (un Bad hors quartier), aucun Visiteur, donc défaut non observable en vrai, démontré par le test.
-- **Correctif** `20261018150000_phase5_promenade_open_mode` (commit `8669bf3`, **ni appliqué sur la preview ni fusionné**) : en mode ouvert, une Promenade de plus pour les membres hors quartier (`zone_id` vide), à 21 h heure de France, mêmes Bads, même plafond de 10 apparitions par Bad et par jour (plafond commun à toutes les Promenades), mêmes règles ; en mode quartiers rien ne change. Mêmes signatures, pas de DROP.
+- **Correctif** `20261018150000_phase5_promenade_open_mode` (commit `8669bf3`, approuvé par le porteur le 2026-10-18 ; appliqué sur la preview, texte identique au fichier, version de l'historique remise à `20261018150000` ; `phase-5` avancée à `1c76403`) : en mode ouvert, une Promenade de plus pour les membres hors quartier (`zone_id` vide), à 21 h heure de France, mêmes Bads, même plafond de 10 apparitions par Bad et par jour (plafond commun à toutes les Promenades), mêmes règles ; en mode quartiers rien ne change. Mêmes signatures, pas de DROP.
 - **pgTAP** `phase5_promenade_open.test.sql` : sans le correctif, 5 vérifications sur 8 échouent (rien pour le Visiteur hors quartier) ; avec, tout passe ; mode quartiers inchangé ; fonctions réservées à la tâche. Non testé : le déclenchement par l'heure dans `run_promenades_due` (dépend de l'horloge), relu.
-- **À valider** : appliquer sur la preview et l'intégrer à `phase-5` ?
 
 ### Reste pour fusionner `phase-5` dans `main`
-1. Ta validation du correctif Promenade (ci-dessus) : dedans ou après.
-2. Pull request `phase-5` → `main`, CI verte, fusion par le porteur.
-3. **Production** (`bad-boys-prod`), après la fusion et avec ton accord, contenu exact des fichiers : 10 migrations (11 avec le correctif Promenade), dont `phase5a_drop_push_route_config` avec un DROP (à lancer par toi dans le SQL Editor, le connecteur l'annule) ; `launch_zones_toulon_nice` ajoute Toulon et Nice en liste d'attente (communes déjà chargées). Puis historique des versions, 0 table sans RLS, audit de sécurité comme pour les 25 premières.
-4. **Coffre de la prod** : `push_cron_secret` (même valeur que `PUSH_CRON_SECRET` de Vercel Production) et `push_endpoint_url` = `https://<domaine de production>/api/cron/push` ; pas de `vercel_protection_bypass` si la production n'est pas protégée.
-5. **Vercel Production** : `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `PUSH_CRON_SECRET` (posées le 2026-10-06, à revérifier pour la base prod) ; `SUPABASE_SECRET_KEY` déjà posée.
+1. ~~Correctif Promenade~~ : validé, dans `phase-5`.
+2. ~~Production avant la fusion~~ (la fusion redéploie la prod aussitôt) : 10 migrations appliquées et vérifiées (voir « Bases Supabase »). **Reste** `phase5a_drop_push_route_config`, par le porteur dans le SQL Editor, puis sa ligne d'historique.
+3. Vérification de la prod par le conseiller.
+4. Pull request `phase-5` → `main`, CI verte, fusion par le porteur.
+5. Rien dans le coffre de prod ni dans les variables Vercel : les notifications de prod auront leurs propres clés au lancement (checklist).
 6. Super admin de la prod (`grant_super_admin.sql`, TOTP), puis retrait de tout connecteur d'IA en écriture sur la prod.
-7. La prod reste en `launch_mode = 'zones'` et `SIGNUPS_OPEN=false` tant que la checklist avant lancement n'est pas faite (vrais téléphones, Turnstile, SMTP, limite Realtime).
+7. La prod reste en `launch_mode = 'zones'` et `SIGNUPS_OPEN=false` tant que la checklist avant lancement n'est pas faite (vrais téléphones, Turnstile, SMTP, limite Realtime, clés de notification).
 
 ### 5c — La visite au Parloir (2026-10-18, validée le 2026-10-18 avec compléments, fusionnée dans `phase-5`)
 Découpage annoncé : 5b-bis compléments + fusion · 5c-1 base · 5c-2 écrans · 5c-3 parcours prolongé, CI, preview, docs, arrêt.
@@ -280,7 +283,7 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 - [ ] Interdire aussi les inscriptions directes par l'API Auth tant que la production n'est pas prête : `SIGNUPS_OPEN` ne protège que le site (Supabase Auth → « Allow new users to sign up » sur la future base de production).
 - [x] Relecture des contenus `docs/content/` et de la liste de départ des mots-clés (chargée).
 - [ ] Remplir la catégorie `harassment` depuis l'admin (Phase 7).
-- [ ] **Rebrancher l'URL appelée par pg_net sur la production** : secret `push_endpoint_url` du coffre → `https://<domaine de production>/api/cron/push` (aujourd'hui la preview), et supprimer `vercel_protection_bypass` du coffre si la production n'est pas protégée.
+- [ ] **Notifications de la prod : leurs propres clés, jamais celles de la preview** (décision du porteur, 2026-10-18). Au lancement seulement : nouvelle paire VAPID et nouveau secret de route pour la Production Vercel (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `PUSH_CRON_SECRET`), et dans le coffre de `bad-boys-prod` : `push_cron_secret` (même valeur que `PUSH_CRON_SECRET` de Production) et `push_endpoint_url` = `https://<domaine de production>/api/cron/push`, sans `vercel_protection_bypass`. Rien n'est posé d'ici là (coffre de prod et variables Vercel non touchés).
 - [ ] **Test sur vrais téléphones** (Android et iPhone, Web Push réel de bout en bout : abonnement, notification écran verrouillé, texte neutre, ouverture du bon écran, désactivation) — sorti de la Phase 5a par décision du porteur (2026-10-07).
 - [ ] Créer le compte super admin et lancer `supabase/scripts/grant_super_admin.sql` sur la base de production.
 - [ ] **Base de production : aucun connecteur d'IA avec droits d'écriture** (ils tournent en `postgres` et contourneraient la protection du super admin), ou connecteur retiré après la mise en place (décision du porteur, 2026-10-07).
