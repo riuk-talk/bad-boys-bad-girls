@@ -1561,6 +1561,7 @@ export type Database = {
         Returns: Json
       }
       claim_referral: { Args: { p_code: string }; Returns: boolean }
+      close_after_absence: { Args: { p_request: string }; Returns: undefined }
       close_conversation: {
         Args: { p_conversation: string }
         Returns: undefined
@@ -1955,6 +1956,7 @@ export type Database = {
         | "account_deleted"
         | "banned"
         | "second_cancellation"
+        | "closed_after_absence"
       consent_type: "terms" | "privacy" | "age_18" | "art9_seeking"
       conversation_status: "visiting" | "open" | "closed"
       email_kind:
@@ -2195,6 +2197,7 @@ export const Constants = {
         "account_deleted",
         "banned",
         "second_cancellation",
+        "closed_after_absence",
       ],
       consent_type: ["terms", "privacy", "age_18", "art9_seeking"],
       conversation_status: ["visiting", "open", "closed"],

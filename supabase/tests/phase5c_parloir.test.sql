@@ -204,7 +204,7 @@ begin
     and schemaname = 'public' and tablename = 'messages'), 'messages are published to Realtime');
   foreach f in array array['get_visit(uuid)', 'join_visit(uuid)', 'choose_visit_end(uuid, boolean)',
     'send_message(uuid, text)', 'get_messages(uuid, bigint)', 'get_conversation(uuid)', 'get_my_parloirs()',
-    'close_conversation(uuid)'] loop
+    'close_conversation(uuid)', 'close_after_absence(uuid)'] loop
     return next ok(has_function_privilege('authenticated', 'public.' || f, 'execute')
       and not has_function_privilege('anon', 'public.' || f, 'execute'), 'members (not anon) call ' || f);
   end loop;
@@ -324,6 +324,8 @@ begin
   return next is(rep.honored || '/' || rep.due, '1/1', 'the Visitor came: honored');
   perform pg_temp.as_user(b);
   return next is(public.get_visit(visit) ->> 'can_propose', 'true', 'the Bad may propose new slots');
+  return next matches(pg_temp.err(format('select public.close_after_absence(%L)', req)), 'not_expected',
+    'the Bad was the absent one: no « classer » for the absence');
   perform public.propose_slots(req, array[pg_temp.h(9), pg_temp.h(10)]);
   perform pg_temp.as_owner();
   visit := pg_temp.choose(v, pg_temp.slot_at(req, 9));
@@ -336,6 +338,71 @@ begin
   return next is(pg_temp.notified(v, 'request_dismissed'), 1, 'neutral message to the Visitor');
   select * into rep from public.visitor_reputation(v);
   return next is(rep.honored || '/' || rep.due, '1/2', 'the Visitor''s absence: due, not honored');
+end $$;
+
+----------------------------------------------------------------------------------------------
+-- The Visitor absent: the Bad may propose new slots, or class the case; neither is required
+----------------------------------------------------------------------------------------------
+create function pg_temp.test_parloir_visitor_absent() returns setof text language plpgsql as $$
+declare
+  ville bigint := pg_temp.new_place();
+  b uuid; v uuid; b2 uuid; v2 uuid; visit uuid; req uuid; j jsonb; rep record;
+begin
+  perform pg_temp.open();
+  -- Case 1: the Bad proposes new slots.
+  b := pg_temp.bad('b@test.local', ville);
+  v := pg_temp.visitor('v@test.local', ville);
+  visit := pg_temp.live_visit(b, v);
+  req := (select request_id from public.visits where id = visit);
+  perform pg_temp.join(b, visit);
+  update public.visits set starts_at = now() - interval '11 minutes', ends_at = now() + interval '19 minutes' where id = visit;
+  perform public.run_parloir_ticks();
+  return next is((select status::text || '/' || absent::text from public.visits where id = visit), 'no_show/visitor',
+    '+10 min without the Visitor: absent');
+  select * into rep from public.visitor_reputation(v);
+  return next is(rep.honored || '/' || rep.due, '0/1', 'the absence counts in the Visitor''s « Visites honorées »');
+  perform pg_temp.as_user(b);
+  j := public.get_request_schedule(req);
+  return next ok((j ->> 'can_propose')::boolean and (j ->> 'can_close_after_absence')::boolean,
+    'the Bad may propose new slots or class the case');
+  perform pg_temp.as_user(v);
+  return next matches(pg_temp.err(format('select public.close_after_absence(%L)', req)), 'not_found',
+    'only the Bad classes');
+  return next is(public.get_request_schedule(req) ->> 'can_close_after_absence', 'false', 'nothing to class for the Visitor');
+  perform pg_temp.as_user(b);
+  perform public.propose_slots(req, array[pg_temp.h(9), pg_temp.h(10)]);
+  return next is(public.get_request_schedule(req) ->> 'can_close_after_absence', 'false', 'new slots sent: no more « classer »');
+  return next matches(pg_temp.err(format('select public.close_after_absence(%L)', req)), 'not_expected',
+    'nor through the function');
+  perform pg_temp.as_owner();
+  return next ok((select status = 'accepted' and slots_round = 2 and choose_deadline > now()
+    from public.visit_requests where id = req), 'reproposed: the Visitor has 48 h to choose');
+  return next is(pg_temp.notified(v, 'slots_reproposed'), 1, 'the Visitor is told');
+
+  -- Case 2: the Bad classes the case.
+  b2 := pg_temp.bad('b2@test.local', ville);
+  v2 := pg_temp.visitor('v2@test.local', ville);
+  visit := pg_temp.live_visit(b2, v2);
+  req := (select request_id from public.visits where id = visit);
+  perform pg_temp.join(b2, visit);
+  update public.visits set starts_at = now() - interval '11 minutes', ends_at = now() + interval '19 minutes' where id = visit;
+  perform public.run_parloir_ticks();
+  perform pg_temp.as_user(b2);
+  perform public.close_after_absence(req);
+  perform pg_temp.as_owner();
+  return next is((select status::text || '/' || close_reason::text from public.visit_requests where id = req),
+    'closed/closed_after_absence', '« Affaire classée » after the absence');
+  return next is(pg_temp.notified(v2, 'request_dismissed'), 1, 'neutral message to the Visitor');
+  return next is((select count(*)::integer from public.visit_slots where request_id = req and status = 'offered'), 0,
+    'no slot left to choose');
+  return next ok(public.pair_cooldown_until(v2, b2) > now() + interval '29 days', '30 days before a new request');
+  select * into rep from public.visitor_reputation(v2);
+  return next is(rep.honored || '/' || rep.due, '0/1', 'the absence stays counted');
+  perform pg_temp.as_user(b2);
+  return next matches(pg_temp.err(format('select public.propose_slots(%L, array[%L::timestamptz, %L::timestamptz])',
+    req, pg_temp.h(9), pg_temp.h(10))), 'not_accepted', 'no new slots after that');
+  return next matches(pg_temp.err(format('select public.close_after_absence(%L)', req)), 'not_expected', 'classed once');
+  perform pg_temp.as_owner();
 end $$;
 
 ----------------------------------------------------------------------------------------------
