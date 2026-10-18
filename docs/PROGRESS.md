@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; 5a-ter (super admin, double authentification) et parcours de bout en bout validés et fusionnés ; **5b (Heures de visite) terminée côté code, en attente de validation**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
+**Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; 5a-ter (super admin, double authentification) et parcours de bout en bout validés et fusionnés ; 5b (Heures de visite) validée et fusionnée ; **5c (la visite au Parloir) en cours**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -63,7 +63,7 @@ Découpage annoncé : a base (super_admins, gardes, aal2, script, pgTAP) · b do
 - **CI** : passage n° 6 rouge (2 défauts de test, corrigés à la racine : axe mesurait les contrastes pendant le fondu d'ouverture d'une fenêtre ; le helper admin n'attendait pas la dernière redirection du super admin sous WebKit) ; **passage n° 7 vert en 5 min 54 s** (`00a01b3`, run 37607074349) : **30 réussis, 4 sautés à dessein (route push sur WebKit), aucun second essai**, parcours de bout en bout vert sur Pixel 7 **et** iPhone 14.
 - **À vérifier par toi** : TOTP activé sur le projet hébergé (Authentication → Multi-Factor ; activé par défaut chez Supabase, non vérifiable depuis le connecteur). Le super admin s'accorde avec le script, puis la première connexion à `/admin` enrôle l'application d'authentification.
 
-### 5b — Heures de visite (2026-10-07, en attente de validation)
+### 5b — Heures de visite (2026-10-07, validée le 2026-10-18 avec compléments, fusionnée dans `phase-5`)
 Découpage annoncé : 5b-1 base · 5b-2 logique pure · 5b-3 écrans du Bad · 5b-4 écrans du Visiteur · 5b-5 parcours prolongé, specs adaptées, CI, docs, arrêt.
 - **Base** (`20261007184105_phase5b_visiting_hours`, **appliquée sur dev**, types régénérés) : `visit_slots`, `visits` (contraintes d'exclusion btree_gist Bad et Visiteur, une visite programmée par demande), aucun droit direct des membres. Fonctions : `accept_visit_request` (accepter = 2 ou 3 créneaux), `decide_visit_request` (ne fait plus que classer, signature gardée), `propose_slots`, `choose_slot`, `decline_slots` (une fois), `cancel_visit` (< 2 h = `cancelled_late`), `get_request_schedule`, `get_my_visits`, `run_visit_schedule` (pg_cron `visit-schedule` chaque minute : classements à 48 h, rappel 1 h, début). Déclencheur : une demande qui quitte « acceptée » annule sa visite et expire ses créneaux. `push_path` : `slot_chosen`, `visit_reminder_1h`, `visit_starting` → `/visites`. Advisors sécurité : rien de nouveau hors les avertissements attendus (fonctions membres `security definer`, tables sans politique lues par fonctions).
 - **pgTAP** `phase5b_hours.test.sql` : 11 groupes (structure, règles d'acceptation, choix, chevauchements Bad et Visiteur, « Aucun ne me va » puis nouveaux créneaux, délais, rappels, annulation, blocage, règle 14 et push). `phase4_relations` adapté. **9 fichiers, 90 tests verts.**
@@ -75,11 +75,12 @@ Découpage annoncé : 5b-1 base · 5b-2 logique pure · 5b-3 écrans du Bad · 5
 - **Vérifié en local** : typecheck, lint, Prettier, Vitest 170/170, build, pgTAP 9 fichiers (90), Pixel 7 **18/18**.
 - **CI** : passage n° 9 **vert en 5 min 03 s** (`e476774`, run 37668792130), parcours de bout en bout vert sur Pixel 7 et iPhone 14.
 - **Écarts** : `visits` sans conversation, présence, absence ni choix de fin (5c) ; pas de lecture directe de `visits` (temps réel à décider en 5c) ; e-mails de rappel non branchés (SMTP, plus tard) ; pas d'écran « bas de page » de compteurs (`get_counters`).
-- **Questions pour toi** :
-  1. Après une **annulation**, j'ai appliqué la règle de « Aucun ne me va » : le Bad a 48 h pour reproposer, sinon classement automatique. La SPEC ne le dit pas. D'accord ?
-  2. L'acceptation n'existe plus sans créneaux : un Bad qui ouvre l'écran puis s'en va laisse la demande « en attente » (le délai de 7 jours continue). D'accord ?
-  3. Onglet « Visites » ajouté dès maintenant pour les deux rôles (le Parloir viendra dans le même onglet en 5c, ou un onglet à part ?).
-  4. La migration est sur la base partagée dev/prod : tant que la production n'est pas redéployée avec la 5b, « Accepter la visite » y répond une erreur (l'ancien écran appelle `decide_visit_request(true)`). Aucun membre réel n'est concerné aujourd'hui (Toulon fermé), mais à garder en tête pour l'ordre migration → déploiement à l'avenir.
+- **Décisions du porteur (2026-10-18)** et compléments (`20261018102017_phase5b_complements`, appliquée sur la preview uniquement) :
+  1. Après une annulation, le Bad a 48 h pour reproposer, **une seule fois** : une deuxième annulation dans la même affaire la classe (`close_reason = second_cancellation`, message neutre au Visiteur). pgTAP : `test_hours_cancel` prolongé.
+  2. Une annulation à moins de 2 h par le Visiteur compte comme **visite due et non honorée** (`visitor_reputation` : honorées = visites tenues ; dues = visites tenues + annulations tardives du Visiteur ; la 5c y ajoute les absences). pgTAP : `test_hours_late_cancel_reputation`.
+  3. Le Parloir vit dans l'onglet **« Visites »** (pas d'onglet à part).
+  4. Acceptation sans créneaux impossible : conservé (5b validée).
+  5. **Règle preview / prod** (remplace l'ancienne note sur l'ordre migration → déploiement) : les migrations d'une phase en cours vont **uniquement sur la preview** (`bad-boys-preview`) ; la production (`bad-boys-prod`) ne reçoit que les migrations de `main`, avec le contenu exact des fichiers, une fois la phase fusionnée et sur accord du porteur.
 
 ### 5a-bis — Intégration continue (2026-10-06, validée le 2026-10-07)
 Découpage annoncé : 1 socle CI · 2 base locale reproductible · 3 Playwright Pixel 7 / iPhone 14 · 4 test de la route push · 5 mesure, PROGRESS, arrêt.

@@ -227,7 +227,9 @@ Tout est **P0** (indispensable au lancement), sauf les éléments marqués **[P1
 
 **Mise en œuvre (Phase 5b, 2026-10-07)** :
 - « Accepter la visite » ouvre l'écran des Heures de visite ; l'acceptation est enregistrée **avec** les créneaux (`accept_visit_request`), jamais sans. Une demande acceptée en Phase 4 sans créneau garde son statut ; le Bad y propose ses premières Heures de visite depuis le Courrier.
-- Après une **annulation**, le Bad a **48 h** pour reproposer des créneaux (même règle qu'après « Aucun ne me va »), sinon la demande est classée automatiquement (`no_new_slots`). **[choix par défaut, à valider]**
+- Après une **annulation**, le Bad a **48 h** pour reproposer des créneaux (même règle qu'après « Aucun ne me va »), **une seule fois** : sans nouveaux créneaux, la demande est classée automatiquement (`no_new_slots`) ; une **deuxième annulation** dans la même affaire la classe (`second_cancellation`). **(validé, 2026-10-18)**
+- Une annulation à moins de 2 h par le Visiteur compte dans « Visites honorées » comme une visite due et non honorée. **(validé, 2026-10-18)**
+- Le Parloir est dans l'onglet « Visites ». **(validé, 2026-10-18)**
 - Une demande qui quitte l'état « acceptée » (classée, blocage, changement de rôle) annule sa visite programmée et expire ses créneaux.
 - Tâche chaque minute (`run_visit_schedule`, pg_cron) : classements automatiques à 48 h, rappel 1 h avant, notification au début (une seule fois chacun, aux deux).
 - Web Push : créneau choisi, rappel 1 h, visite qui commence → `/visites` (Tableau des visites, nouvel onglet « Visites » des deux rôles). « Aucun ne me va », nouveaux créneaux et annulation : in-app seulement.
