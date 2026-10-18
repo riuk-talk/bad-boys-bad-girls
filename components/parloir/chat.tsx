@@ -77,21 +77,26 @@ export function Chat({
     void refresh();
     const supabase = createClient();
     let live = false;
-    const channel = supabase
-      .channel(`parloir:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        () => void refresh(),
-      )
-      .subscribe((status) => {
-        live = status === "SUBSCRIBED";
-      });
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    try {
+      channel = supabase
+        .channel(`parloir:${conversationId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`,
+          },
+          () => void refresh(),
+        )
+        .subscribe((status) => {
+          live = status === "SUBSCRIBED";
+        });
+    } catch {
+      // WebSocket refused (Safari throws on a blocked socket): the 3 s poll carries the conversation.
+    }
     let elapsed = 0;
     const timer = window.setInterval(() => {
       elapsed += FALLBACK_POLL_MS;
@@ -107,7 +112,7 @@ export function Chat({
     return () => {
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
-      void supabase.removeChannel(channel);
+      if (channel) void supabase.removeChannel(channel);
     };
   }, [conversationId, refresh]);
 
