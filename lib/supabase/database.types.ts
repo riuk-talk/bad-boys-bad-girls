@@ -1751,6 +1751,7 @@ export type Database = {
         | "blocked"
         | "account_deleted"
         | "banned"
+        | "second_cancellation"
       consent_type: "terms" | "privacy" | "age_18" | "art9_seeking"
       email_kind:
         | "request_digest"
@@ -1986,6 +1987,7 @@ export const Constants = {
         "blocked",
         "account_deleted",
         "banned",
+        "second_cancellation",
       ],
       consent_type: ["terms", "privacy", "age_18", "art9_seeking"],
       email_kind: [
