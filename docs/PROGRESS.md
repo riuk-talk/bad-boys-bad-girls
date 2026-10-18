@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5a — Web Push, close côté code** (branche `phase-5`) ; 5a-bis (CI) validée ; 5a-ter (super admin, double authentification) et parcours de bout en bout validés et fusionnés ; 5b (Heures de visite) validée et fusionnée ; **5c (la visite au Parloir) terminée côté code, en attente de validation**. Phase 4 validée, fusionnée (PR #11) et en production. Découpage 5a / 5b / 5c validé, avec arrêt et validation après chacune ; les tests sont faits par Claude en CI (parcours de bout en bout).
+**Phase 5 terminée côté code** (branche `phase-5`) : 5a (Web Push, CI, super admin), 5b (Heures de visite) et 5c (la visite au Parloir) validées et fusionnées dans `phase-5`. **En attente** : validation du correctif « Promenade en mode ouvert » (proposé, hors `phase-5`, non appliqué), puis fusion de `phase-5` dans `main` (liste ci-dessous). Phase 4 validée, fusionnée (PR #11) et en production.
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -69,6 +69,21 @@ Découpage annoncé : a base (super_admins, gardes, aal2, script, pgTAP) · b do
 - **Correction** : `/nouveau-mot-de-passe` détecte une session aal1 avec un facteur TOTP vérifié et demande d'abord le code (passage en aal2), puis le nouveau mot de passe ; le message `insufficient_aal` est traduit. Rien n'est assoupli : il faut le lien **et** le second facteur ; la garde de `/admin` (aal2 à chaque session) est inchangée.
 - **Test** : `tests/e2e/password-recovery.spec.ts` (parcours critiques, Pixel 7 et iPhone 14) : un membre (lien → nouveau mot de passe → connexion avec le nouveau, l'ancien refusé) ; le super admin (lien → code demandé, mauvais code refusé, bon code → nouveau mot de passe → connexion ; une nouvelle session passe toujours par `/acces-admin`). Vérifié : sans la correction, le test du super admin échoue.
 - **À savoir** : un super admin qui aurait perdu son application d'authentification ne peut pas récupérer seul son compte (voulu) ; il faut retirer son facteur en base, en propriétaire. Le mot de passe temporaire posé par le conseiller peut maintenant être remplacé par le parcours normal.
+
+### Promenade en mode ouvert (2026-10-18, correctif proposé, en attente de validation)
+- **Vérifié** (la preview est passée en `launch_mode = 'open'`) : la Promenade était construite par quartier seulement (`build_daily_promenade(zone)` prend les Visiteurs `zone_id = zone`, la tâche horaire ne parcourt que `launch_zones`). **Un Visiteur hors de tout quartier (`zone_id` vide) n'avait jamais de Promenade**, même en mode ouvert ; la Découverte, elle, fonctionnait. Les Bads hors quartier étaient bien proposés (mode ouvert) ; les Visiteurs d'un quartier en liste d'attente aussi. Preview : 1 seul membre réel (un Bad hors quartier), aucun Visiteur, donc défaut non observable en vrai, démontré par le test.
+- **Correctif** `20261018150000_phase5_promenade_open_mode` (commit `8669bf3`, **ni appliqué sur la preview ni fusionné**) : en mode ouvert, une Promenade de plus pour les membres hors quartier (`zone_id` vide), à 21 h heure de France, mêmes Bads, même plafond de 10 apparitions par Bad et par jour (plafond commun à toutes les Promenades), mêmes règles ; en mode quartiers rien ne change. Mêmes signatures, pas de DROP.
+- **pgTAP** `phase5_promenade_open.test.sql` : sans le correctif, 5 vérifications sur 8 échouent (rien pour le Visiteur hors quartier) ; avec, tout passe ; mode quartiers inchangé ; fonctions réservées à la tâche. Non testé : le déclenchement par l'heure dans `run_promenades_due` (dépend de l'horloge), relu.
+- **À valider** : appliquer sur la preview et l'intégrer à `phase-5` ?
+
+### Reste pour fusionner `phase-5` dans `main`
+1. Ta validation du correctif Promenade (ci-dessus) : dedans ou après.
+2. Pull request `phase-5` → `main`, CI verte, fusion par le porteur.
+3. **Production** (`bad-boys-prod`), après la fusion et avec ton accord, contenu exact des fichiers : 10 migrations (11 avec le correctif Promenade), dont `phase5a_drop_push_route_config` avec un DROP (à lancer par toi dans le SQL Editor, le connecteur l'annule) ; `launch_zones_toulon_nice` ajoute Toulon et Nice en liste d'attente (communes déjà chargées). Puis historique des versions, 0 table sans RLS, audit de sécurité comme pour les 25 premières.
+4. **Coffre de la prod** : `push_cron_secret` (même valeur que `PUSH_CRON_SECRET` de Vercel Production) et `push_endpoint_url` = `https://<domaine de production>/api/cron/push` ; pas de `vercel_protection_bypass` si la production n'est pas protégée.
+5. **Vercel Production** : `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `PUSH_CRON_SECRET` (posées le 2026-10-06, à revérifier pour la base prod) ; `SUPABASE_SECRET_KEY` déjà posée.
+6. Super admin de la prod (`grant_super_admin.sql`, TOTP), puis retrait de tout connecteur d'IA en écriture sur la prod.
+7. La prod reste en `launch_mode = 'zones'` et `SIGNUPS_OPEN=false` tant que la checklist avant lancement n'est pas faite (vrais téléphones, Turnstile, SMTP, limite Realtime).
 
 ### 5c — La visite au Parloir (2026-10-18, validée le 2026-10-18 avec compléments, fusionnée dans `phase-5`)
 Découpage annoncé : 5b-bis compléments + fusion · 5c-1 base · 5c-2 écrans · 5c-3 parcours prolongé, CI, preview, docs, arrêt.
