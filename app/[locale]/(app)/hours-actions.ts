@@ -77,3 +77,16 @@ export async function cancelVisitAction(_state: ActionState, form: FormData): Pr
   if (error) return { status: "error", message: requestErrorKey(error.message) };
   return { status: "done" };
 }
+
+/** « Affaire classée » by the Bad after the Visitor's absence (instead of new slots). */
+export async function closeAfterAbsenceAction(
+  _state: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const parsed = uuid.safeParse(form.get("request"));
+  if (!parsed.success) return { status: "error", message: "generic" };
+  const member = await requireMember();
+  const { error } = await member.supabase.rpc("close_after_absence", { p_request: parsed.data });
+  if (error) return { status: "error", message: requestErrorKey(error.message) };
+  return { status: "done" };
+}

@@ -2,6 +2,7 @@ import { CalendarClock } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Stamp } from "@/components/brand/stamp";
 import { CancelVisit } from "@/components/relations/cancel-visit";
+import { CloseAfterAbsence } from "@/components/relations/close-after-absence";
 import { ButtonLink } from "@/components/ui/button-link";
 import { requireMember } from "@/lib/auth/user";
 import { formatSlot } from "@/lib/hours";
@@ -64,15 +65,20 @@ export async function ScheduleStatus({
     const why =
       schedule.round === 0
         ? t("legacy")
-        : schedule.slots_declined
-          ? t("declined", { pseudo, deadline: deadline(schedule.repropose_deadline) })
-          : t("cancelled", { deadline: deadline(schedule.repropose_deadline) });
+        : schedule.can_close_after_absence
+          ? t("absent", { pseudo, deadline: deadline(schedule.repropose_deadline) })
+          : schedule.slots_declined
+            ? t("declined", { pseudo, deadline: deadline(schedule.repropose_deadline) })
+            : t("cancelled", { deadline: deadline(schedule.repropose_deadline) });
     return (
       <section className="flex flex-col gap-3 text-center">
         <p className="text-cream/90">{why}</p>
         <ButtonLink href={`/courrier/${requestId}/heures`}>
           {schedule.round === 0 ? t("proposeFirst") : t("propose")}
         </ButtonLink>
+        {schedule.can_close_after_absence ? (
+          <CloseAfterAbsence requestId={requestId} pseudo={pseudo} />
+        ) : null}
       </section>
     );
   }

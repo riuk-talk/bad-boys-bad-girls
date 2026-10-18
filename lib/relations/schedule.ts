@@ -23,6 +23,7 @@ const scheduleSchema = z.object({
   choose_deadline: z.nullable(z.string()),
   repropose_deadline: z.nullable(z.string()),
   can_propose: z.boolean(),
+  can_close_after_absence: z.boolean(),
   visit: z.nullable(
     z.object({ id: z.string(), starts_at: z.string(), ends_at: z.string(), status: z.string() }),
   ),

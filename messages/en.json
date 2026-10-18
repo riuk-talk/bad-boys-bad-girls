@@ -1398,7 +1398,12 @@
       "cancel": "Cancel the visit",
       "cancelHint": "{pseudo} gets a neutral message. Less than 2 hours before the start, a cancellation counts as an absence.",
       "cancelConfirm": "Confirm the cancellation",
-      "cancelledDone": "Visit cancelled. {pseudo} has been told."
+      "cancelledDone": "Visit cancelled. {pseudo} has been told.",
+      "absent": "{pseudo} did not come to the visit. You may propose new visiting hours before {deadline}, or close the case: nothing obliges you to. Without new hours, the case is closed on that date.",
+      "closeAfterAbsence": "Close the case",
+      "closeAfterAbsenceHint": "{pseudo} gets a neutral message. No new request between you for 30 days.",
+      "closeAfterAbsenceConfirm": "Confirm: case closed",
+      "closedAfterAbsence": "Case closed. {pseudo} has been told."
     },
     "visits": {
       "metaTitle": "Visits board",

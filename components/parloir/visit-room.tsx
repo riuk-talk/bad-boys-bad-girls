@@ -6,6 +6,7 @@ import { chooseEndAction, syncVisitAction } from "@/app/[locale]/(app)/parloir-a
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
 import { Stamp } from "@/components/brand/stamp";
 import { Chat } from "@/components/parloir/chat";
+import { CloseAfterAbsence } from "@/components/relations/close-after-absence";
 import { Hygiaphone } from "@/components/parloir/plate";
 import { SafetyActions } from "@/components/relations/safety-actions";
 import { buttonClasses } from "@/components/ui/button";
@@ -183,6 +184,9 @@ export function VisitRoom({ initial, messages, me, tz }: Props) {
             >
               {t("propose")}
             </Link>
+          ) : null}
+          {visit.can_propose && visit.i_am_bad && visit.absent !== "me" ? (
+            <CloseAfterAbsence requestId={visit.request_id} pseudo={other.pseudo} />
           ) : null}
         </section>
       ) : null}

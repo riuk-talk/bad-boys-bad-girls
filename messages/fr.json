@@ -1398,7 +1398,12 @@
       "cancel": "Annuler la visite",
       "cancelHint": "{pseudo} reçoit un message neutre. Moins de 2 h avant le début, une annulation compte comme une absence.",
       "cancelConfirm": "Confirmer l'annulation",
-      "cancelledDone": "Visite annulée. {pseudo} est prévenu·e."
+      "cancelledDone": "Visite annulée. {pseudo} est prévenu·e.",
+      "absent": "{pseudo} a manqué la visite. Tu peux proposer de nouvelles Heures de visite avant le {deadline}, ou classer l'affaire : rien ne t'y oblige. Sans nouvelles Heures, l'affaire est classée à cette date.",
+      "closeAfterAbsence": "Classer l'affaire",
+      "closeAfterAbsenceHint": "{pseudo} reçoit un message neutre. Pas de nouvelle demande entre vous avant 30 jours.",
+      "closeAfterAbsenceConfirm": "Confirmer : affaire classée",
+      "closedAfterAbsence": "Affaire classée. {pseudo} est prévenu·e."
     },
     "visits": {
       "metaTitle": "Tableau des visites",
