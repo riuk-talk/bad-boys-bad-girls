@@ -374,6 +374,8 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await expect(badPage.getByText(`LE PARI DE ${visitor.pseudo.toUpperCase()}`)).toBeVisible();
     await expect(badPage.getByRole("img", { name: /bien vu/i })).toBeVisible();
     await expect(badPage.getByText(`« ${CHARGES[0]} »`)).toBeVisible();
+    // The page a member is looking at (WebKit slows the timers of a page in the background).
+    await visitorPage.bringToFront();
     await expect(visitorPage.getByText(`LE PARI DE ${visitor.pseudo.toUpperCase()}`)).toBeVisible({
       timeout: 15_000,
     });
@@ -384,11 +386,13 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
       .getByPlaceholder("Ton message")
       .fill("Ta meilleure balade de nuit ? Mon 06 12 34 56 78");
     await visitorPage.getByRole("button", { name: "Envoyer" }).click();
+    await badPage.bringToFront();
     await expect(badPage.getByText("Ta meilleure balade de nuit ? Mon [•••]")).toBeVisible({
       timeout: 15_000,
     });
     await badPage.getByPlaceholder("Ton message").fill("Le long de la mer, jusqu'au phare.");
     await badPage.getByRole("button", { name: "Envoyer" }).click();
+    await visitorPage.bringToFront();
     await expect(visitorPage.getByText("Le long de la mer, jusqu'au phare.")).toBeVisible({
       timeout: 15_000,
     });
@@ -441,6 +445,7 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     expect((await badPage.locator("main").textContent()) ?? "").not.toMatch(/enregistré|prolongé/i);
     await badPage.getByRole("button", { name: "Prolonger" }).click();
     await expect(badPage.getByRole("img", { name: /permis permanent/i })).toBeVisible();
+    await visitorPage.bringToFront();
     await expect(visitorPage.getByRole("img", { name: /permis permanent/i })).toBeVisible({
       timeout: 15_000,
     });
