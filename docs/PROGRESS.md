@@ -70,7 +70,7 @@ Découpage annoncé : a base (super_admins, gardes, aal2, script, pgTAP) · b do
 - **Test** : `tests/e2e/password-recovery.spec.ts` (parcours critiques, Pixel 7 et iPhone 14) : un membre (lien → nouveau mot de passe → connexion avec le nouveau, l'ancien refusé) ; le super admin (lien → code demandé, mauvais code refusé, bon code → nouveau mot de passe → connexion ; une nouvelle session passe toujours par `/acces-admin`). Vérifié : sans la correction, le test du super admin échoue.
 - **À savoir** : un super admin qui aurait perdu son application d'authentification ne peut pas récupérer seul son compte (voulu) ; il faut retirer son facteur en base, en propriétaire. Le mot de passe temporaire posé par le conseiller peut maintenant être remplacé par le parcours normal.
 
-### 5c — La visite au Parloir (2026-10-18, en attente de validation)
+### 5c — La visite au Parloir (2026-10-18, validée le 2026-10-18 avec compléments, fusionnée dans `phase-5`)
 Découpage annoncé : 5b-bis compléments + fusion · 5c-1 base · 5c-2 écrans · 5c-3 parcours prolongé, CI, preview, docs, arrêt.
 - **Base** (`20261018104313_phase5c_parloir`, **appliquée sur la preview uniquement**, SQL enregistré identique au fichier, types régénérés) : `conversations`, `messages` (lecture RLS par les deux membres pour Realtime, publication `supabase_realtime`), colonnes de présence / absence / choix de fin / issue sur `visits`. Fonctions membres : `join_visit`, `get_visit`, `choose_visit_end`, `send_message`, `get_messages`, `get_conversation`, `get_my_parloirs`, `close_conversation`. Tâche `parloir-ticks` chaque minute : début (conversation, « la visite commence »), absence à +10 min (report de 48 h, deuxième absence → classée), fin à +30 min (24 h pour choisir), choix échus. Règle 14 : le pari et le mot ne sont révélés que lorsque les deux sont présents. Bloquer annule la visite en cours et ferme le Parloir ; changement de rôle : Parloirs sans horaire classés ; « Visites honorées » compte maintenant les absences du Visiteur. Audit sécurité : rien d'inattendu.
 - **pgTAP** `phase5c_parloir.test.sql` : 7 groupes (structure et droits, début et révélation, messages : présence, 1 000 caractères, masquage, 30/min, fin des 30 min ; absence et deuxième absence ; Permis permanent, choix secrets, messages sans horaire, notification 15 min, « Affaire classée » ; classement par refus ou sans réponse ; blocage). **10 fichiers verts.**
@@ -79,11 +79,11 @@ Découpage annoncé : 5b-bis compléments + fusion · 5c-1 base · 5c-2 écrans 
 - **Vérifié en local** : typecheck, lint, Prettier, Vitest 178/178, build, pgTAP 10 fichiers, Pixel 7 **23/23** (avec la récupération de mot de passe).
 - **CI** : passages n° 12 à 14 rouges sur iPhone 14 seulement. Cause réelle (journaux d'erreurs de page ajoutés au parcours) : la CSP n'autorisait le WebSocket Realtime qu'en `wss://` (dérivé d'une URL `https://`) ; avec la base locale en `http://`, WebKit refuse `ws://` et lève une exception à l'ouverture de la conversation → page d'erreur côté Visiteur (Chromium tolérait). Production non concernée (`wss://…supabase.co` déjà présent). Corrections : `ws://` pour une URL `http://` (`lib/security/csp.ts`, test unitaire), la conversation repasse en relève toutes les 3 s si le WebSocket est refusé, la relève de la visite survit à une requête perdue. La remise au premier plan (n° 12) n'était pas la cause. **Passage n° 15 vert** (`3fd080a`, run 39123374627) sur Pixel 7 et iPhone 14.
 - **Écarts / non faits** : la Cavale (Phase 6, bouton remplacé par une mention) ; indicateur « lu », compteur de non-lus et « … est en train d'écrire » ; relance à 48 h (P1) ; Bonne conduite (calcul quotidien) ; levée du masquage ; e-mails.
-- **Questions pour toi** :
-  1. Après une **absence**, j'ouvre automatiquement 48 h au Bad pour reproposer (pas de bouton « demander un report »), et une deuxième absence classe l'affaire. D'accord ?
-  2. Le choix de fin est **définitif** (pas de changement d'avis dans les 24 h). D'accord ?
-  3. Coordonnées **masquées aussi dans le Parloir sans horaire** jusqu'à la Cavale (Phase 6). D'accord ?
-  4. Plafond de connexions Realtime de l'offre gratuite **à vérifier** (de l'ordre de 200) ; repli par lecture toutes les 3 s en place.
+- **Réponses du porteur (2026-10-18)** :
+  1. Absence : oui. L'absence compte dans « Visites honorées » de l'absent (Visiteur : `visitor_reputation`, déjà en place ; Bad : dans Bonne conduite, dont le calcul quotidien reste à faire). **Visiteur absent : le Bad peut reproposer ou classer l'affaire, sans obligation** → `close_after_absence` (`20261018114947_phase5c_absence_close`, appliquée sur la preview uniquement, SQL identique au fichier) ; sans nouvelles Heures, l'affaire est classée à 48 h comme avant. « Classer l'affaire » dans le Courrier et dans la cabine ; refusé si c'est le Bad qui était absent. pgTAP `test_parloir_visitor_absent` (reproposition, classement) : 10 fichiers verts.
+  2. Choix de fin définitif : oui (inchangé).
+  3. Coordonnées masquées jusqu'à ce qu'une Cavale soit acceptée (Phase 6) : oui (inchangé).
+  4. Limite de connexions Realtime : ajoutée à la checklist avant lancement.
 
 ### 5b — Heures de visite (2026-10-07, validée le 2026-10-18 avec compléments, fusionnée dans `phase-5`)
 Découpage annoncé : 5b-1 base · 5b-2 logique pure · 5b-3 écrans du Bad · 5b-4 écrans du Visiteur · 5b-5 parcours prolongé, specs adaptées, CI, docs, arrêt.
@@ -269,6 +269,7 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 - [ ] **Test sur vrais téléphones** (Android et iPhone, Web Push réel de bout en bout : abonnement, notification écran verrouillé, texte neutre, ouverture du bon écran, désactivation) — sorti de la Phase 5a par décision du porteur (2026-10-07).
 - [ ] Créer le compte super admin et lancer `supabase/scripts/grant_super_admin.sql` sur la base de production.
 - [ ] **Base de production : aucun connecteur d'IA avec droits d'écriture** (ils tournent en `postgres` et contourneraient la protection du super admin), ou connecteur retiré après la mise en place (décision du porteur, 2026-10-07).
+- [ ] **Vérifier la limite de connexions temps réel de l'offre gratuite Supabase** (Realtime) ; repli par lecture toutes les 3 s en place (décision du porteur, 2026-10-18).
 - [ ] **Poser les clés Turnstile sur Vercel** (`NEXT_PUBLIC_TURNSTILE_SITE_KEY`, absente aujourd'hui ; la clé secrète va dans Supabase Auth → Captcha).
 
 ### Pour plus tard (hors Phase 3)

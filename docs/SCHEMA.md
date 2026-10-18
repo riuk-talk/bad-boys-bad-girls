@@ -28,7 +28,7 @@
 | `importance` | `low` (1), `important` (10), `essential` (50) | **en base (Phase 3a)** ; poids via `importance_weight()` |
 | `question_phase` | `core` (10 à l'inscription), `extra` | Phase 3 |
 | `visit_request_status` | `pending`, `accepted`, `released`, `dismissed`, `auto_dismissed`, `cancelled`, `closed` | **[v2-nouveau]**, remplace `plea_status` |
-| `case_close_reason` | `dismissed_by_bad`, `no_answer_7d`, `no_slot_chosen`, `no_new_slots`, `second_no_show`, `not_prolonged`, `no_end_choice`, `closed_after_release`, `cancelled_by_visitor`, `role_change`, `blocked`, `account_deleted`, `banned` | **[v2-nouveau]** (sert aussi aux métriques) |
+| `case_close_reason` | `dismissed_by_bad`, `no_answer_7d`, `no_slot_chosen`, `no_new_slots`, `second_no_show`, `second_cancellation` (5b), `closed_after_absence` (5c), `not_prolonged`, `no_end_choice`, `closed_after_release`, `cancelled_by_visitor`, `role_change`, `blocked`, `account_deleted`, `banned` | **[v2-nouveau]** (sert aussi aux métriques) |
 | `slot_status` | `offered`, `chosen`, `expired`, `withdrawn` | **[v2-nouveau]** |
 | `visit_status` | `scheduled`, `in_progress`, `ended`, `no_show`, `cancelled` | **[v2-nouveau]** |
 | `visit_absence` | `bad`, `visitor`, `both` | **[v2-nouveau]** |
