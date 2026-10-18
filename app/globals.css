@@ -275,3 +275,22 @@
     rgb(242 232 213 / 0.1) 21px 22px
   );
 }
+/* Le Parloir (PARCOURS-DESIGN §5): riveted metal plate, glass with faint diagonal reflections. */
+.parloir-plate {
+  background-color: #2a2a2f;
+  background-image:
+    radial-gradient(circle at 10px 10px, #4a4a50 2px, transparent 2.5px),
+    radial-gradient(circle at calc(100% - 10px) 10px, #4a4a50 2px, transparent 2.5px),
+    radial-gradient(circle at 10px calc(100% - 10px), #4a4a50 2px, transparent 2.5px),
+    radial-gradient(circle at calc(100% - 10px) calc(100% - 10px), #4a4a50 2px, transparent 2.5px),
+    linear-gradient(180deg, #34343a, #222226);
+  border: 1px solid #45454c;
+}
+.parloir-glass {
+  background-color: #121216;
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 60px,
+    rgb(242 232 213 / 0.025) 60px 90px
+  );
+}

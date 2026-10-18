@@ -84,6 +84,13 @@ export function requestErrorKey(message: string | undefined): string {
     "not_expected",
     "not_cancellable",
     "not_accepted",
+    // Le Parloir (Phase 5c).
+    "message_empty",
+    "message_too_long",
+    "rate_limited",
+    "conversation_closed",
+    "already_chosen",
+    "choice_required",
   ];
   return known.find((key) => message?.includes(key)) ?? "generic";
 }

@@ -11,7 +11,7 @@ type NotificationType = Database["public"]["Enums"]["notification_type"];
 
 /**
  * Bottom navigation (maquettes Promenade, Courrier). Phase 5b adds « Visites » (Tableau des
- * visites) for both roles; the « Parloir » tab stays hidden until the Parloir exists (Phase 5c).
+ * visites) for both roles; the Parloir lives in that tab too (owner, 2026-10-18).
  */
 type Tab = { href: string; key: string; Icon: typeof Sun; news?: readonly NotificationType[] };
 
@@ -20,6 +20,10 @@ const VISIT_NEWS: readonly NotificationType[] = [
   "visit_cancelled",
   "visit_reminder_1h",
   "visit_starting",
+  "visit_no_show",
+  "visit_released",
+  "visit_closed",
+  "message_received",
 ];
 
 const TABS: Record<Role, readonly Tab[]> = {
