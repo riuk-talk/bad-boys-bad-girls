@@ -177,7 +177,8 @@
       "linkInvalid": "This link is no longer valid. Request a new one.",
       "generic": "Something went wrong. Try again.",
       "configuration": "The service isn't configured yet. Come back a bit later.",
-      "signupsClosed": "Sign-ups opening soon."
+      "signupsClosed": "Sign-ups opening soon.",
+      "secondFactorRequired": "To change the password of this account, first type the code from your authenticator app."
     },
     "checkEmailTitle": "Check your inbox",
     "checkEmailBody": "If the address is valid, you'll receive a link. Remember to check your spam folder.",
@@ -191,7 +192,12 @@
     "signupTitle_bad": "Open my Case File",
     "signupLead_bad": "An email, a password, and you're in. Less than five minutes to fill in your Case File afterwards.",
     "signupTitle_visitor": "Get my Visiting Permit",
-    "signupLead_visitor": "An email, a password, and you're in. Three minutes for your Permit afterwards."
+    "signupLead_visitor": "An email, a password, and you're in. Three minutes for your Permit afterwards.",
+    "recoveryFactorTitle": "Your second factor",
+    "recoveryFactorLead": "This account is protected by two-factor authentication. Type the 6-digit code from your authenticator app before choosing a new password.",
+    "recoveryFactorCode": "6-digit code",
+    "recoveryFactorSubmit": "Verify",
+    "recoveryFactorInvalid": "Wrong or expired code. Try again with the next one."
   },
   "Errors": {
     "notFoundStamp": "Case dismissed",

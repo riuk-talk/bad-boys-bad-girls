@@ -177,7 +177,8 @@
       "linkInvalid": "Ce lien n'est plus valide. Demande-en un nouveau.",
       "generic": "Une erreur est survenue. Réessaie.",
       "configuration": "Le service n'est pas encore configuré. Reviens un peu plus tard.",
-      "signupsClosed": "Inscriptions bientôt ouvertes."
+      "signupsClosed": "Inscriptions bientôt ouvertes.",
+      "secondFactorRequired": "Pour changer le mot de passe de ce compte, saisis d'abord le code de ton application d'authentification."
     },
     "checkEmailTitle": "Vérifie ta boîte mail",
     "checkEmailBody": "Si l'adresse est valide, tu vas recevoir un lien. Pense à regarder dans les indésirables.",
@@ -191,7 +192,12 @@
     "signupTitle_bad": "Ouvrir mon Dossier",
     "signupLead_bad": "Un e-mail, un mot de passe, et c'est parti. Moins de cinq minutes pour remplir ton Dossier ensuite.",
     "signupTitle_visitor": "Prendre mon Permis de visite",
-    "signupLead_visitor": "Un e-mail, un mot de passe, et c'est parti. Trois minutes pour ton Permis ensuite."
+    "signupLead_visitor": "Un e-mail, un mot de passe, et c'est parti. Trois minutes pour ton Permis ensuite.",
+    "recoveryFactorTitle": "Ton second facteur",
+    "recoveryFactorLead": "Ce compte est protégé par une double authentification. Saisis le code à 6 chiffres de ton application d'authentification avant de choisir un nouveau mot de passe.",
+    "recoveryFactorCode": "Code à 6 chiffres",
+    "recoveryFactorSubmit": "Vérifier",
+    "recoveryFactorInvalid": "Code incorrect ou expiré. Réessaie avec le code suivant."
   },
   "Errors": {
     "notFoundStamp": "Affaire classée",

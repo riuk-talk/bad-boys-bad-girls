@@ -9,7 +9,8 @@ export type AuthMessageKey =
   | "linkInvalid"
   | "generic"
   | "configuration"
-  | "signupsClosed";
+  | "signupsClosed"
+  | "secondFactorRequired";
 
 export function authErrorKey(error: {
   code?: string;
@@ -31,6 +32,9 @@ export function authErrorKey(error: {
       return "captchaFailed";
     case "weak_password":
       return "weakPassword";
+    // An account with a second factor changes its password only at aal2 (Supabase Auth).
+    case "insufficient_aal":
+      return "secondFactorRequired";
     case "otp_expired":
     case "flow_state_expired":
     case "flow_state_not_found":
