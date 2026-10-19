@@ -27,7 +27,7 @@
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
 - **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
 
-## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, terminée côté code, en attente de validation du conseiller)
+## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, terminée ; décisions 6-1 à 6-14 validées par le conseiller ; CI à reconfirmer deux fois sur `phase-6`)
 Relu : PROMPT Phase 6, SPEC §7 ter, §10 (masquage), §13, §16, SCHEMA `date_proposals`, `can_unmask`, maquette `Permanent.dc.html`.
 Découpage proposé (arrêt et validation à la fin de la phase, comme d'habitude ; sous-étapes livrées dans l'ordre) :
 - **6a — Lu / non-lus** : dernier message lu par membre et par conversation (`mark_conversation_read`), indicateur « Lu », compteur de non-lus (onglet « Visites » et liste des Parloirs triée par activité), compteurs relus toutes les 60 s et au retour sur l'onglet. pgTAP.
@@ -52,6 +52,12 @@ Questions tranchées le 2026-10-19 : voir « Décisions à valider ». Branche d
 - Bonne conduite (calcul quotidien, absences du Bad) : toujours Phase 7.
 
 **Questions :** les choix pris en cours de phase sont listés dans « Décisions à valider » (6-7 à 6-14).
+
+**CI n° 25 rouge sur `phase-6` (iPhone 14, étape 8, compteur « non lu » resté affiché), 2026-10-19 — cause et correction :**
+- Défaut du test : il attendait `visitor_read_id > 0`, déjà vrai depuis la visite ; il repartait donc au Tableau avant que le nouveau message soit marqué lu.
+- **Vrai défaut du code** : la lecture n'était marquée que par le navigateur, après l'affichage (action serveur) ; quitter la page tout de suite (plus lent sous WebKit) annulait l'envoi et le compteur restait. Correction : ouvrir une conversation la **marque lue côté serveur** jusqu'au dernier message rendu (`markRendered`, cabine et Parloir sans horaire) ; le navigateur ne marque plus que les messages arrivés ensuite.
+- Retour par « précédent » : le routeur réaffiche sa copie en cache ; le Tableau des visites se relit désormais après un retour ou une avance (`FreshOnReturn`), la barre d'onglets se relisait déjà à chaque changement d'adresse. Le parcours revient maintenant par « précédent » et vérifie la lecture sur le message lui-même.
+- Vérifié en local : Pixel 7 25/25 puis le parcours deux fois de plus ; CI : voir ci-dessous.
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06 → 2026-10-18) : ✅ validée, fusionnée (PR #12) et en production
 
@@ -575,7 +581,7 @@ Toutes les dépendances sont figées à la version exacte dans `package.json` (p
 
 ## Décisions à valider (revue du porteur en fin de phase)
 
-Phase 6 — réponses du conseiller du 2026-10-19 (déjà tranchées, à confirmer par le porteur) :
+Phase 6 — réponses du conseiller du 2026-10-19 (**6-1 à 6-14 validées par le conseiller le 2026-10-19**) :
 
 | # | Question | Choix retenu | Alternative écartée |
 |---|---|---|---|
