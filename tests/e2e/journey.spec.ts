@@ -520,7 +520,86 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await badPage.context().close();
   });
 
-  test("9. the notifications leave: mail, slot, visit, Permis permanent, a message", async ({
+  test("9. la Cavale: proposed, another proposal, accepted; contacts in clear after it", async ({
+    browser,
+  }) => {
+    // Both accounts older than 7 days (SPEC §10): only then does an accepted Cavale lift the masking.
+    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 3600_000).toISOString();
+    await admin.from("profiles").update({ created_at: tenDaysAgo }).in("id", [bad.id, visitor.id]);
+    const tomorrow = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Paris",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(Date.now() + 24 * 3600_000));
+
+    const open = async (page: Page, pseudo: string) => {
+      await page.goto("/visites");
+      await page.getByRole("link", { name: `Permis permanent avec ${pseudo}` }).click();
+      await page.waitForURL(/\/visites\/parloir\//);
+    };
+
+    // The Bad proposes « chez moi »: a warning, not a refusal.
+    const badPage = await login(browser, bad.email, bad.password);
+    await open(badPage, visitor.pseudo);
+    await badPage.getByRole("button", { name: /^Proposer une Cavale/ }).click();
+    const form = badPage.getByRole("dialog", { name: "Proposer une Cavale" });
+    await form.getByLabel("Nom du lieu").fill("Chez moi, 12 rue des Lilas");
+    await expect(form.getByText(/Ça ressemble à un lieu privé/)).toBeVisible();
+    await form.getByLabel("Jour").fill(tomorrow);
+    await form.getByLabel("Heure").fill("20:30");
+    expect(await axeViolations(badPage)).toEqual([]);
+    await form.getByRole("button", { name: "Proposer" }).click();
+    await expect(
+      badPage.getByRole("region", { name: "TA CAVALE · EN ATTENTE DE RÉPONSE" }),
+    ).toBeVisible();
+    await expect(badPage.getByRole("button", { name: /^Proposer une Cavale/ })).toHaveCount(0);
+
+    // The Visitor answers with something else: a concert.
+    const visitorPage = await login(browser, visitor.email, visitor.password);
+    await open(visitorPage, bad.pseudo);
+    const proposed = visitorPage.getByRole("region", {
+      name: `CAVALE PROPOSÉE PAR ${bad.pseudo.toUpperCase()}`,
+    });
+    await expect(proposed).toContainText("Chez moi, 12 rue des Lilas");
+    await expect(proposed.getByText(/Ça ressemble à un lieu privé/)).toBeVisible();
+    await proposed.getByRole("button", { name: "Autre chose" }).click();
+    const counter = visitorPage.getByRole("dialog", { name: "Proposer autre chose" });
+    await counter.getByText("Concert", { exact: true }).click();
+    await counter.getByLabel("Nom du lieu").fill("Le Repaire, Nice");
+    await expect(counter.getByText(/Ça ressemble à un lieu privé/)).toHaveCount(0);
+    await counter.getByLabel("Jour").fill(tomorrow);
+    await counter.getByLabel("Heure").fill("21:00");
+    await counter.getByRole("button", { name: "Proposer" }).click();
+    await expect(
+      visitorPage.getByRole("region", { name: "TA CAVALE · EN ATTENTE DE RÉPONSE" }),
+    ).toContainText("Le Repaire, Nice");
+
+    // The Bad accepts: the card is pinned, with the safety reminder; contacts pass from now on.
+    await badPage.reload();
+    const other = badPage.getByRole("region", {
+      name: `AUTRE PROPOSITION DE ${visitor.pseudo.toUpperCase()}`,
+    });
+    await other.getByRole("button", { name: "Accepter" }).click();
+    const card = badPage.getByRole("region", { name: "CAVALE ACCEPTÉE" });
+    await expect(card).toContainText("Concert · Le Repaire, Nice");
+    await expect(card.getByRole("link", { name: "Conseils sécurité" })).toBeVisible();
+    await expect(badPage.getByText("Ne partage jamais d'argent ni de codes.")).toBeVisible();
+    await badPage.getByPlaceholder("Ton message").fill("Mon numéro : 06 12 34 56 78");
+    await badPage.getByRole("button", { name: "Envoyer" }).click();
+    await expect(badPage.getByText("Mon numéro : 06 12 34 56 78")).toBeVisible();
+    expect(await axeViolations(badPage)).toEqual([]);
+    await badPage.context().close();
+
+    await visitorPage.reload();
+    await expect(visitorPage.getByRole("region", { name: "CAVALE ACCEPTÉE" })).toBeVisible();
+    await expect(visitorPage.getByText("Mon numéro : 06 12 34 56 78")).toBeVisible();
+    // The number sent during the visit stays masked (only messages after the lifting are in clear).
+    await expect(visitorPage.getByText("Ta meilleure balade de nuit ? Mon [•••]")).toBeVisible();
+    await visitorPage.context().close();
+  });
+
+  test("10. the notifications leave: mail, slot, visit, Permis permanent, a message, the Cavale", async ({
     request,
   }) => {
     const response = await request.post("/api/cron/push", {
@@ -541,11 +620,42 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     expect(mine(endpoints.visitor)).toContainEqual({ t: "message_received", u: "/visites" });
     expect(mine(endpoints.visitor)).toContainEqual({ t: "request_accepted", u: "/demandes" });
     expect(mine(endpoints.visitor)).toContainEqual({ t: "permit_granted", u: "/ma-fiche" });
+    expect(mine(endpoints.visitor)).toContainEqual({ t: "date_proposed", u: "/visites" });
+    expect(mine(endpoints.bad)).toContainEqual({ t: "date_countered", u: "/visites" });
+    expect(mine(endpoints.visitor)).toContainEqual({ t: "date_accepted", u: "/visites" });
     for (const received of push.received) {
       // A type and an internal path, nothing else.
       expect(Object.keys(JSON.parse(received.plaintext)).sort()).toEqual(["t", "u"]);
       expect(received.plaintext).not.toContain(bad.pseudo);
       expect(received.plaintext).not.toContain(visitor.pseudo);
     }
+  });
+
+  test("11. Bloquer in the Parloir: nothing passes any more", async ({ browser }) => {
+    const visitorPage = await login(browser, visitor.email, visitor.password);
+    await visitorPage.goto("/visites");
+    await visitorPage.getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` }).click();
+    await visitorPage.waitForURL(/\/visites\/parloir\/(?<id>[0-9a-f-]+)$/);
+    const conversationUrl = visitorPage.url();
+    await visitorPage.getByRole("button", { name: "Bloquer" }).click();
+    await visitorPage
+      .getByRole("dialog", { name: /Bloquer/ })
+      .getByRole("button", { name: "Bloquer" })
+      .click();
+    await visitorPage.waitForURL(/\/visites$/);
+    await visitorPage.context().close();
+
+    const { data } = await admin
+      .from("date_proposals")
+      .select("status")
+      .eq("proposer_id", visitor.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    expect(data?.status).toBe("cancelled");
+    const badPage = await login(browser, bad.email, bad.password);
+    const response = await badPage.goto(conversationUrl);
+    expect(response?.status()).toBe(404);
+    await badPage.context().close();
   });
 });
