@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : terminée côté code**, rapport de fin de phase ci-dessous ; en attente de validation du conseiller (rien sur `main` ni sur la prod).
+**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : terminée**, décisions 6-1 à 6-14 validées, CI verte deux fois de suite sur `phase-6` (passage n° 27, `f4ecf25`, essais 1 et 2) ; en attente de la fusion par le conseiller (rien sur `main` ni sur la prod). **Phase 7 en cours** : sous-phase 7a (modération).
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -37,7 +37,7 @@ Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la 
 - **7e — E-mails** : envoi par l'API HTTP de Brevo (offre gratuite, sans dépendance), file `email_outbox` avec priorités, quota du jour et report au lendemain, regroupement quotidien, rappels de visite sur option, désinscription par type ; en CI, un faux service Brevo.
 - **7f — Parcours de bout en bout** prolongé (signalement → décision motivée → exposé des motifs ; export ; suppression du compte ; réinscription refusée), CI, docs, arrêt.
 
-## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, terminée ; décisions 6-1 à 6-14 validées par le conseiller ; CI à reconfirmer deux fois sur `phase-6`)
+## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, terminée ; décisions 6-1 à 6-14 validées par le conseiller ; CI verte deux fois de suite sur `phase-6`)
 Relu : PROMPT Phase 6, SPEC §7 ter, §10 (masquage), §13, §16, SCHEMA `date_proposals`, `can_unmask`, maquette `Permanent.dc.html`.
 Découpage proposé (arrêt et validation à la fin de la phase, comme d'habitude ; sous-étapes livrées dans l'ordre) :
 - **6a — Lu / non-lus** : dernier message lu par membre et par conversation (`mark_conversation_read`), indicateur « Lu », compteur de non-lus (onglet « Visites » et liste des Parloirs triée par activité), compteurs relus toutes les 60 s et au retour sur l'onglet. pgTAP.
@@ -67,7 +67,7 @@ Questions tranchées le 2026-10-19 : voir « Décisions à valider ». Branche d
 - Défaut du test : il attendait `visitor_read_id > 0`, déjà vrai depuis la visite ; il repartait donc au Tableau avant que le nouveau message soit marqué lu.
 - **Vrai défaut du code** : la lecture n'était marquée que par le navigateur, après l'affichage (action serveur) ; quitter la page tout de suite (plus lent sous WebKit) annulait l'envoi et le compteur restait. Correction : ouvrir une conversation la **marque lue côté serveur** jusqu'au dernier message rendu (`markRendered`, cabine et Parloir sans horaire) ; le navigateur ne marque plus que les messages arrivés ensuite.
 - Retour par « précédent » : le routeur réaffiche sa copie en cache ; le Tableau des visites se relit désormais après un retour ou une avance (`FreshOnReturn`), la barre d'onglets se relisait déjà à chaque changement d'adresse. Le parcours revient maintenant par « précédent » et vérifie la lecture sur le message lui-même.
-- Vérifié en local : Pixel 7 25/25 puis le parcours deux fois de plus ; CI : voir ci-dessous.
+- Vérifié en local : Pixel 7 25/25 puis le parcours deux fois de plus ; CI sur `phase-6` : passage n° 27 (`f4ecf25`) vert, relancé une fois, vert à nouveau (Pixel 7 et iPhone 14).
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06 → 2026-10-18) : ✅ validée, fusionnée (PR #12) et en production
 
