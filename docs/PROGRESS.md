@@ -27,6 +27,16 @@
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
 - **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
 
+## Phase 7 — Modération, pilotage, tâches planifiées, RGPD, e-mails (2026-10-19, découpage annoncé, sous-phases enchaînées)
+Relu : PROMPT Phase 7, SPEC §10 (RGPD, DSA, sécurité), §14, §15, §16, SCHEMA §3.4-§3.5, tables déjà en base (`reports`, `moderation_actions` en ajout seul, `flagged_texts`, `consents`, `banned_email_hashes` + crochet « Before User Created », `email_outbox`, `notification_preferences`).
+Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la fin de la phase) :
+- **7a — Modération** : `/admin/signalements` (file, décision motivée : retenu ou rejeté, sanction avertissement / suspension / bannissement / masquage / retrait de Bonne conduite, motif obligatoire), `/admin/textes` (textes signalés), recherche d'un membre et historique des décisions ; exposé des motifs au signaleur et à la personne sanctionnée ; bannissement = empreinte de l'e-mail + compte Auth banni. pgTAP (aal2, ajout seul, super admin intouchable).
+- **7b — Pilotage** : quartiers et seuils, tribus, mots-clés, questions ; tableau de santé par quartier (indicateurs SPEC §15, `is_seed` exclus).
+- **7c — Tâches planifiées** : Bonne conduite quotidienne, Fiches en veille (21 j) et masquées (90 j), ouverture automatique des quartiers (`ready_at`, prévenir l'admin une fois), nettoyage (comptes sans onboarding après 30 j, files envoyées) ; purges de fichiers et de comptes Auth par une route protégée.
+- **7d — RGPD** : export JSON de mes données (SPEC §10, rien de l'autre personne), suppression réelle du compte (confirmation par mot de passe ; base, fichiers, abonnements push ; « Message supprimé » et « Ce compte a été supprimé » pour l'autre ; visites annulées) ; un banni ne peut pas se réinscrire avec le même e-mail.
+- **7e — E-mails** : envoi par l'API HTTP de Brevo (offre gratuite, sans dépendance), file `email_outbox` avec priorités, quota du jour et report au lendemain, regroupement quotidien, rappels de visite sur option, désinscription par type ; en CI, un faux service Brevo.
+- **7f — Parcours de bout en bout** prolongé (signalement → décision motivée → exposé des motifs ; export ; suppression du compte ; réinscription refusée), CI, docs, arrêt.
+
 ## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, terminée ; décisions 6-1 à 6-14 validées par le conseiller ; CI à reconfirmer deux fois sur `phase-6`)
 Relu : PROMPT Phase 6, SPEC §7 ter, §10 (masquage), §13, §16, SCHEMA `date_proposals`, `can_unmask`, maquette `Permanent.dc.html`.
 Découpage proposé (arrêt et validation à la fin de la phase, comme d'habitude ; sous-étapes livrées dans l'ordre) :
