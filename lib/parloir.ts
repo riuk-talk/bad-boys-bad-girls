@@ -67,6 +67,8 @@ export const conversationSchema = z.object({
   status: z.enum(["visiting", "open", "closed"]),
   released_at: z.nullable(z.string()),
   i_am_bad: z.boolean(),
+  /** Contacts pass in clear (a Cavale accepted, SPEC §10, Phase 6c). */
+  unmasked: z.boolean(),
   other: z.object({
     id: z.string(),
     pseudo: z.string(),

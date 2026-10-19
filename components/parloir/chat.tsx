@@ -2,7 +2,7 @@
 
 import { SendHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useActionState, useCallback, useEffect, useRef, useState } from "react";
+import { useActionState, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   loadMessagesAction,
   markReadAction,
@@ -33,6 +33,8 @@ type Props = {
   /** The Visitor's pseudo, for « LE PARI DE … » and the note. */
   visitorPseudo: string;
   iAmVisitor: boolean;
+  /** Shown between the conversation and the field (Parloir sans horaire: Affaire classée, Cavale). */
+  actions?: ReactNode;
 };
 
 /**
@@ -50,6 +52,7 @@ export function Chat({
   other,
   visitorPseudo,
   iAmVisitor,
+  actions,
 }: Props) {
   const t = useTranslations("Relations.parloir");
   const errorT = useTranslations("Relations.errors");
@@ -172,6 +175,7 @@ export function Chat({
           </li>
         ))}
       </ol>
+      {actions}
       {canWrite ? (
         <form action={send} className="mt-3 flex items-end gap-2">
           <input type="hidden" name="conversation" value={conversationId} />

@@ -1,10 +1,12 @@
 "use client";
 
-import { ShieldCheck } from "lucide-react";
+import { HandCoins, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useCallback, useEffect, useState } from "react";
+import { loadDatesAction } from "@/app/[locale]/(app)/cavale-actions";
 import { closeConversationAction } from "@/app/[locale]/(app)/parloir-actions";
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
+import { CavaleCard, CavaleForm } from "@/components/parloir/cavale";
 import { Chat } from "@/components/parloir/chat";
 import { Hygiaphone } from "@/components/parloir/plate";
 import { SafetyActions } from "@/components/relations/safety-actions";
@@ -12,27 +14,36 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Link, useRouter } from "@/i18n/navigation";
 import { accentForGender, type Accent } from "@/lib/accent";
+import type { Dates, Proposal } from "@/lib/cavale";
 import type { Conversation, Message } from "@/lib/parloir";
 
 const IDLE: ActionState = { status: "idle" };
 
+/** The Cavale card is read again every 15 s while the screen is shown, and after each answer. */
+const DATES_POLL_MS = 15_000;
+
 /**
  * Le Parloir sans horaire (maquette Permanent.dc.html, SPEC §13): the same conversation as the
- * visit, open without a schedule. The field stays visible; « Affaire classée » sits above it.
- * La Cavale (a real date) comes with Phase 6.
+ * visit, open without a schedule. The field stays visible; « Affaire classée » and « Proposer une
+ * Cavale » sit above it, the Cavale card is pinned at the top (Phase 6).
  */
 export function OpenParloir({
   conversation,
   messages,
   otherReadId,
+  dates: initialDates,
+  tz,
   me,
 }: {
   conversation: Conversation;
   messages: Message[];
   otherReadId: number;
+  dates: Dates | null;
+  tz: string;
   me: { pseudo: string; accent: Accent };
 }) {
   const t = useTranslations("Relations.parloir");
+  const tc = useTranslations("Relations.cavale");
   const errorT = useTranslations("Relations.errors");
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
@@ -42,10 +53,39 @@ export function OpenParloir({
     accent: accentForGender(conversation.other.gender),
   };
   const open = conversation.status === "open" && state.status !== "done";
+  const [dates, setDates] = useState(initialDates);
+  const [form, setForm] = useState<{ counter: Proposal | null } | null>(null);
 
   useEffect(() => {
     if (state.status === "done") router.refresh();
   }, [state.status, router]);
+
+  const refreshDates = useCallback(() => {
+    loadDatesAction(conversation.id)
+      .then((next) => {
+        if (next) setDates(next);
+      })
+      .catch(() => undefined);
+  }, [conversation.id]);
+
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") refreshDates();
+    }, DATES_POLL_MS);
+    document.addEventListener("visibilitychange", refreshDates);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", refreshDates);
+    };
+  }, [open, refreshDates]);
+
+  const onCavaleDone = () => {
+    setForm(null);
+    refreshDates();
+    // The accepted Cavale may lift the masking: the notice comes with the page.
+    router.refresh();
+  };
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-8rem)] max-w-2xl flex-col gap-3 px-4 py-4 sm:px-6">
@@ -69,6 +109,24 @@ export function OpenParloir({
         />
       </header>
 
+      {dates && open ? (
+        <CavaleCard
+          dates={dates}
+          me={me}
+          other={other}
+          tz={tz}
+          onChange={onCavaleDone}
+          onCounter={(counter) => setForm({ counter })}
+        />
+      ) : null}
+
+      {conversation.unmasked && open ? (
+        <p role="note" className="text-cream flex items-center justify-center gap-2 text-[13px]">
+          <HandCoins aria-hidden="true" className="text-accent size-4" />
+          {t("moneyNotice")}
+        </p>
+      ) : null}
+
       <p className="text-grey flex items-center justify-center gap-2 text-[13px]">
         <ShieldCheck aria-hidden="true" className="size-4" />
         {t("safetyNote")}
@@ -86,24 +144,48 @@ export function OpenParloir({
         other={other}
         visitorPseudo={conversation.i_am_bad ? other.pseudo : me.pseudo}
         iAmVisitor={!conversation.i_am_bad}
+        actions={
+          open ? (
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirming(true)}
+                className="text-cream hover:border-cream flex min-h-13 flex-1 flex-col items-center justify-center rounded-[6px] border-2 border-[#4a4a50] px-2"
+              >
+                <span className="font-display uppercase">{t("closeCase")}</span>
+                <span className="text-grey text-[11px]">{t("closeCaseHint")}</span>
+              </button>
+              {dates?.can_propose ? (
+                <button
+                  type="button"
+                  onClick={() => setForm({ counter: null })}
+                  className="bg-accent text-ink flex min-h-13 flex-1 flex-col items-center justify-center rounded-[6px] px-2"
+                >
+                  <span className="font-display uppercase">{tc("propose")}</span>
+                  <span className="text-[11px]">{tc("proposeHint")}</span>
+                </button>
+              ) : null}
+            </div>
+          ) : null
+        }
       />
 
-      {open ? (
-        <div className="flex flex-col items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            className="font-display text-cream hover:border-cream min-h-11 rounded-[4px] border-2 border-[#4a4a50] px-4 uppercase"
-          >
-            {t("closeCase")}
-          </button>
-          <span className="text-grey text-xs">{t("cavaleSoon")}</span>
-        </div>
-      ) : (
+      {open ? null : (
         <p className="text-grey text-center text-sm" role="status">
           {t("closedConversation")}
         </p>
       )}
+
+      {form ? (
+        <CavaleForm
+          open
+          conversationId={conversation.id}
+          counter={form.counter}
+          tz={tz}
+          onClose={() => setForm(null)}
+          onDone={onCavaleDone}
+        />
+      ) : null}
 
       <Modal
         open={confirming && open}

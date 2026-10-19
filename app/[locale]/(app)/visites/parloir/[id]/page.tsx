@@ -4,7 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { OpenParloir } from "@/components/parloir/open-parloir";
 import { redirect } from "@/i18n/navigation";
 import { accentForGender } from "@/lib/accent";
+import { datesSchema } from "@/lib/cavale";
 import { loadConversation, loadMessages, loadOtherReadId, myPseudo } from "@/lib/relations/parloir";
+import { memberTimezone } from "@/lib/relations/schedule";
 import { requireRole } from "@/lib/relations/server";
 
 type Props = { params: Promise<{ locale: string; id: string }> };
@@ -26,17 +28,30 @@ export default async function OpenParloirPage({ params }: Props) {
   if (!conversation) notFound();
   // A conversation still in its visit is read from the visit screen.
   if (conversation.status === "visiting") return redirect({ href: "/visites", locale });
-  const [messages, otherReadId, pseudo] = await Promise.all([
+  const [messages, otherReadId, pseudo, tz, { data: dates }] = await Promise.all([
     loadMessages(supabase, id),
     loadOtherReadId(supabase, id),
     myPseudo(supabase, userId),
-    supabase.rpc("mark_notifications_read", { p_types: ["message_received"] }),
+    memberTimezone(supabase, userId),
+    supabase.rpc("get_dates", { p_conversation: id }),
+    supabase.rpc("mark_notifications_read", {
+      p_types: [
+        "message_received",
+        "date_proposed",
+        "date_accepted",
+        "date_countered",
+        "date_cancelled",
+      ],
+    }),
   ]);
+  const parsedDates = datesSchema.safeParse(dates);
   return (
     <OpenParloir
       conversation={conversation}
       messages={messages}
       otherReadId={otherReadId}
+      dates={parsedDates.success ? parsedDates.data : null}
+      tz={tz}
       me={{ pseudo, accent: accentForGender(profile.gender) }}
     />
   );
