@@ -251,6 +251,7 @@ export type Database = {
         Row: {
           bad_id: string
           bad_read_id: number
+          cavale_accepted_at: string | null
           closed_at: string | null
           created_at: string
           id: string
@@ -264,6 +265,7 @@ export type Database = {
         Insert: {
           bad_id: string
           bad_read_id?: number
+          cavale_accepted_at?: string | null
           closed_at?: string | null
           created_at?: string
           id?: string
@@ -277,6 +279,7 @@ export type Database = {
         Update: {
           bad_id?: string
           bad_read_id?: number
+          cavale_accepted_at?: string | null
           closed_at?: string | null
           created_at?: string
           id?: string
@@ -305,6 +308,83 @@ export type Database = {
           {
             foreignKeyName: "conversations_visitor_id_fkey"
             columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      date_proposals: {
+        Row: {
+          cancelled_at: string | null
+          cancelled_by: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          private_place_warning: boolean
+          proposer_id: string | null
+          responded_at: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["date_proposal_status"]
+          venue_name: string
+          venue_type: Database["public"]["Enums"]["venue_type"]
+        }
+        Insert: {
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          private_place_warning?: boolean
+          proposer_id?: string | null
+          responded_at?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["date_proposal_status"]
+          venue_name: string
+          venue_type: Database["public"]["Enums"]["venue_type"]
+        }
+        Update: {
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          private_place_warning?: boolean
+          proposer_id?: string | null
+          responded_at?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["date_proposal_status"]
+          venue_name?: string
+          venue_type?: Database["public"]["Enums"]["venue_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "date_proposals_cancelled_by_fkey"
+            columns: ["cancelled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "date_proposals_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "date_proposals_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "date_proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "date_proposals_proposer_id_fkey"
+            columns: ["proposer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1551,6 +1631,7 @@ export type Database = {
         Args: { p_bad: string; p_viewer: string }
         Returns: boolean
       }
+      cancel_date: { Args: { p_proposal: string }; Returns: undefined }
       cancel_visit: { Args: { p_visit: string }; Returns: undefined }
       change_role: {
         Args: { p_role: Database["public"]["Enums"]["member_role"] }
@@ -1607,6 +1688,15 @@ export type Database = {
           score: number
         }[]
       }
+      counter_date: {
+        Args: {
+          p_proposal: string
+          p_starts_at: string
+          p_venue_name: string
+          p_venue_type: Database["public"]["Enums"]["venue_type"]
+        }
+        Returns: string
+      }
       counts_for_zone: {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: boolean
@@ -1618,6 +1708,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      date_is_upcoming: { Args: { p_starts_at: string }; Returns: boolean }
       decide_visit_request: {
         Args: { p_accept: boolean; p_request: string }
         Returns: undefined
@@ -1667,6 +1758,7 @@ export type Database = {
         Returns: undefined
       }
       get_conversation: { Args: { p_conversation: string }; Returns: Json }
+      get_dates: { Args: { p_conversation: string }; Returns: Json }
       get_fiche: { Args: { p_bad: string }; Returns: Json }
       get_mailbox: {
         Args: never
@@ -1794,6 +1886,17 @@ export type Database = {
         Args: { value: Database["public"]["Enums"]["importance"] }
         Returns: number
       }
+      insert_date_proposal: {
+        Args: {
+          p_conversation: string
+          p_parent: string
+          p_proposer: string
+          p_starts_at: string
+          p_venue_name: string
+          p_venue_type: Database["public"]["Enums"]["venue_type"]
+        }
+        Returns: string
+      }
       insert_slots: {
         Args: { p_request: string; p_round: number; p_slots: string[] }
         Returns: undefined
@@ -1813,6 +1916,7 @@ export type Database = {
       }
       is_trusted_reporter: { Args: { p_reporter: string }; Returns: boolean }
       join_visit: { Args: { p_visit: string }; Returns: Json }
+      looks_private_place: { Args: { p_text: string }; Returns: boolean }
       mark_conversation_read: {
         Args: { p_conversation: string; p_up_to: number }
         Returns: undefined
@@ -1840,12 +1944,44 @@ export type Database = {
         }
         Returns: undefined
       }
+      open_conversation_for: {
+        Args: { p_conversation: string; p_member: string }
+        Returns: {
+          bad_id: string
+          bad_read_id: number
+          cavale_accepted_at: string | null
+          closed_at: string | null
+          created_at: string
+          id: string
+          last_message_at: string | null
+          released_at: string | null
+          request_id: string
+          status: Database["public"]["Enums"]["conversation_status"]
+          visitor_id: string
+          visitor_read_id: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "conversations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       pair_cooldown_until: {
         Args: { p_bad: string; p_visitor: string }
         Returns: string
       }
       photo_rejection_reasons: { Args: never; Returns: string[] }
       place_name: { Args: { p_place: number }; Returns: string }
+      propose_date: {
+        Args: {
+          p_conversation: string
+          p_starts_at: string
+          p_venue_name: string
+          p_venue_type: Database["public"]["Enums"]["venue_type"]
+        }
+        Returns: string
+      }
       propose_slots: {
         Args: { p_request: string; p_slots: string[] }
         Returns: undefined
@@ -1884,6 +2020,10 @@ export type Database = {
         Returns: number
       }
       resolve_visit: { Args: { p_visit: string }; Returns: undefined }
+      respond_date: {
+        Args: { p_accept: boolean; p_proposal: string }
+        Returns: undefined
+      }
       reveal_bet: { Args: { p_visit: string }; Returns: undefined }
       revoke_push_row: { Args: { p_id: string }; Returns: undefined }
       revoke_push_subscription: {
@@ -1977,6 +2117,12 @@ export type Database = {
         | "closed_after_absence"
       consent_type: "terms" | "privacy" | "age_18" | "art9_seeking"
       conversation_status: "visiting" | "open" | "closed"
+      date_proposal_status:
+        | "pending"
+        | "accepted"
+        | "countered"
+        | "not_yet"
+        | "cancelled"
       email_kind:
         | "request_digest"
         | "date_accepted"
@@ -2038,6 +2184,7 @@ export type Database = {
         | "moderation_decision"
         | "zone_opened"
         | "profile_dormant"
+        | "date_cancelled"
       question_phase: "core" | "extra"
       report_category:
         | "fake_profile"
@@ -2056,6 +2203,7 @@ export type Database = {
         | "message"
         | "visit_request"
       slot_status: "offered" | "chosen" | "declined" | "expired"
+      venue_type: "bar" | "cafe" | "concert" | "walk" | "activity"
       visit_absence: "bad" | "visitor" | "both"
       visit_end_choice: "prolong" | "close"
       visit_request_status:
@@ -2219,6 +2367,13 @@ export const Constants = {
       ],
       consent_type: ["terms", "privacy", "age_18", "art9_seeking"],
       conversation_status: ["visiting", "open", "closed"],
+      date_proposal_status: [
+        "pending",
+        "accepted",
+        "countered",
+        "not_yet",
+        "cancelled",
+      ],
       email_kind: [
         "request_digest",
         "date_accepted",
@@ -2283,6 +2438,7 @@ export const Constants = {
         "moderation_decision",
         "zone_opened",
         "profile_dormant",
+        "date_cancelled",
       ],
       question_phase: ["core", "extra"],
       report_category: [
@@ -2304,6 +2460,7 @@ export const Constants = {
         "visit_request",
       ],
       slot_status: ["offered", "chosen", "declined", "expired"],
+      venue_type: ["bar", "cafe", "concert", "walk", "activity"],
       visit_absence: ["bad", "visitor", "both"],
       visit_end_choice: ["prolong", "close"],
       visit_request_status: [
