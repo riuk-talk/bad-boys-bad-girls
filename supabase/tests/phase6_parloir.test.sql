@@ -273,4 +273,241 @@ begin
 end $$;
 
 ----------------------------------------------------------------------------------------------
+-- 6b: la Cavale
+----------------------------------------------------------------------------------------------
+create function pg_temp.propose_sql(p_conversation uuid, p_name text, p_hours integer) returns text language sql stable as $$
+  select format('select public.propose_date(%L, %L, %L, %L)', p_conversation, 'bar', p_name, pg_temp.h(p_hours))
+$$;
+
+create function pg_temp.propose(p_user uuid, p_conversation uuid, p_name text, p_hours integer) returns uuid language plpgsql as $$
+declare d uuid;
+begin
+  perform pg_temp.as_user(p_user);
+  d := public.propose_date(p_conversation, 'bar', p_name, pg_temp.h(p_hours));
+  perform pg_temp.as_owner();
+  return d;
+end $$;
+
+create function pg_temp.dates(p_user uuid, p_conversation uuid) returns jsonb language plpgsql as $$
+declare j jsonb;
+begin
+  perform pg_temp.as_user(p_user);
+  j := public.get_dates(p_conversation);
+  perform pg_temp.as_owner();
+  return j;
+end $$;
+
+create function pg_temp.as_err(p_user uuid, p_sql text) returns text language plpgsql as $$
+declare e text;
+begin
+  perform pg_temp.as_user(p_user);
+  e := pg_temp.err(p_sql);
+  perform pg_temp.as_owner();
+  return e;
+end $$;
+
+create function pg_temp.test_cavale_rules() returns setof text language plpgsql as $$
+declare
+  ville bigint := pg_temp.new_place();
+  b uuid; v uuid; stranger uuid; conv uuid; visit uuid; d uuid; d2 uuid; j jsonb;
+begin
+  perform pg_temp.open();
+  b := pg_temp.bad('b@test.local', ville);
+  v := pg_temp.visitor('v@test.local', ville);
+  stranger := pg_temp.visitor('s@test.local', ville);
+  -- During the visit: no Cavale yet.
+  visit := pg_temp.live_visit(b, v);
+  perform pg_temp.join(v, visit);
+  perform pg_temp.join(b, visit);
+  conv := pg_temp.conv(visit);
+  return next matches(pg_temp.as_err(v, pg_temp.propose_sql(conv, 'Le Zinc', 30)), 'not_open',
+    'no Cavale before the Permis permanent');
+  perform pg_temp.finish(visit);
+  perform pg_temp.choose_end(v, visit, true);
+  perform pg_temp.choose_end(b, visit, true);
+  -- Checks on the proposal.
+  return next matches(pg_temp.as_err(v, pg_temp.propose_sql(conv, 'Le Zinc', 0)), 'date_too_soon', 'at least 1 h ahead');
+  return next matches(pg_temp.as_err(v, pg_temp.propose_sql(conv, 'Le Zinc', 24 * 61)), 'date_too_far', 'within 60 days');
+  return next matches(pg_temp.as_err(v, pg_temp.propose_sql(conv, 'Z', 30)), 'venue_invalid', 'a real place name');
+  return next matches(pg_temp.as_err(stranger, pg_temp.propose_sql(conv, 'Le Zinc', 30)), 'not_found', 'a third party cannot');
+  d := pg_temp.propose(v, conv, 'Le Zinc, 06 12 34 56 78', 30);
+  return next is((select venue_name from public.date_proposals where id = d), 'Le Zinc, [•••]', 'contacts masked in the place');
+  return next is(pg_temp.notified(b, 'date_proposed'), 1, 'the other is told');
+  return next matches(pg_temp.as_err(b, pg_temp.propose_sql(conv, 'Le Phare', 31)), 'date_pending', 'one waiting proposal at a time');
+  return next matches(pg_temp.as_err(v, format('select public.respond_date(%L, true)', d)), 'not_found', 'not one''s own');
+  return next matches(pg_temp.as_err(stranger, format('select public.get_dates(%L)', conv)), 'not_found', 'nothing for a third party');
+  j := pg_temp.dates(b, conv);
+  return next ok(j -> 'pending' ->> 'mine' = 'false' and j ->> 'can_propose' = 'false', 'the Bad sees it, to answer');
+  -- « Proposer autre chose », then « Accepter ».
+  perform pg_temp.as_user(b);
+  d2 := public.counter_date(d, 'walk', 'Le sentier du littoral', pg_temp.h(32));
+  perform pg_temp.as_owner();
+  return next is((select status::text from public.date_proposals where id = d), 'countered', 'the first one is answered');
+  return next is(pg_temp.notified(v, 'date_countered'), 1, 'the Visitor is told');
+  return next ok((pg_temp.dates(v, conv) -> 'pending' ->> 'countered')::boolean, 'the new one is a counter-proposal');
+  perform pg_temp.as_user(v);
+  perform public.respond_date(d2, true);
+  perform pg_temp.as_owner();
+  return next ok((select cavale_accepted_at is not null from public.conversations where id = conv), 'accepted: noted on the conversation');
+  return next is(pg_temp.notified(b, 'date_accepted'), 1, 'the proposer is told');
+  j := pg_temp.dates(b, conv);
+  return next ok(j -> 'accepted' ->> 'id' = d2::text and j ->> 'can_propose' = 'false', 'the pinned card, no other proposal');
+  return next matches(pg_temp.as_err(v, pg_temp.propose_sql(conv, 'Le Zinc', 40)), 'date_accepted_exists',
+    'moving it = cancel, then propose again');
+  -- Cancelled by either one, in one gesture.
+  perform pg_temp.as_user(v);
+  perform public.cancel_date(d2);
+  perform pg_temp.as_owner();
+  return next is((select status::text from public.date_proposals where id = d2), 'cancelled', 'cancelled');
+  return next is(pg_temp.notified(b, 'date_cancelled'), 1, 'the other is told');
+  return next is(public.push_path('date_cancelled'), '/visites', 'pushed, to the Visites tab');
+  return next ok((pg_temp.dates(b, conv) ->> 'can_propose')::boolean, 'a new Cavale is possible');
+  -- The card goes the day after the date.
+  d := pg_temp.propose(b, conv, 'Le Phare', 30);
+  perform pg_temp.as_user(v);
+  perform public.respond_date(d, true);
+  perform pg_temp.as_owner();
+  update public.date_proposals set starts_at = (date_trunc('day', now() at time zone 'Europe/Paris') - interval '20 hours') at time zone 'Europe/Paris'
+  where id = d;
+  j := pg_temp.dates(v, conv);
+  return next ok(j -> 'accepted' = 'null'::jsonb and (j ->> 'can_propose')::boolean, 'yesterday''s Cavale: no more card');
+  return next matches(pg_temp.as_err(v, format('select public.cancel_date(%L)', d)), 'not_cancellable', 'nor cancellation');
+end $$;
+
+create function pg_temp.test_cavale_not_yet_and_warning() returns setof text language plpgsql as $$
+declare
+  ville bigint := pg_temp.new_place();
+  b uuid; v uuid; conv uuid; d uuid; j jsonb;
+begin
+  perform pg_temp.open();
+  b := pg_temp.bad('b@test.local', ville);
+  v := pg_temp.visitor('v@test.local', ville);
+  conv := pg_temp.released(b, v);
+  d := pg_temp.propose(v, conv, 'chez moi, 12 rue des Lilas', 30);
+  return next ok((select private_place_warning from public.date_proposals where id = d), 'a private place: warned');
+  return next ok((pg_temp.dates(b, conv) -> 'pending' ->> 'private_place_warning')::boolean, 'shown to the other too');
+  perform pg_temp.as_user(b);
+  perform public.respond_date(d, false);
+  perform pg_temp.as_owner();
+  return next is((select status::text from public.date_proposals where id = d), 'not_yet', '« Pas encore »');
+  return next is(pg_temp.notified(v, 'date_accepted') + pg_temp.notified(v, 'date_countered'), 0, 'no notification for « Pas encore »');
+  return next matches(pg_temp.as_err(v, pg_temp.propose_sql(conv, 'Le Zinc', 30)), 'not_yet_wait', 'the proposer waits 24 h');
+  j := pg_temp.dates(v, conv);
+  return next ok(j ->> 'wait_until' is not null and not (j ->> 'can_propose')::boolean, 'and sees until when');
+  d := pg_temp.propose(b, conv, 'Café de la Plage', 30);
+  return next ok(d is not null, 'the other may propose at once');
+  return next ok(not (select private_place_warning from public.date_proposals where id = d), 'a café: no warning');
+  update public.date_proposals set responded_at = now() - interval '25 hours' where conversation_id = conv and status = 'not_yet';
+  perform pg_temp.as_user(b);
+  perform public.cancel_date(d);
+  perform pg_temp.as_owner();
+  return next ok(pg_temp.propose(v, conv, 'Le Zinc', 30) is not null, 'after 24 h, the proposer may again');
+  return next ok(public.looks_private_place('à la maison') and public.looks_private_place('My place')
+    and public.looks_private_place('3bis avenue Foch') and not public.looks_private_place('Bar le 12')
+    and not public.looks_private_place('Chez Léon, bistrot'), 'private places, and not');
+end $$;
+
+create function pg_temp.test_cavale_closed_or_blocked() returns setof text language plpgsql as $$
+declare
+  ville bigint := pg_temp.new_place();
+  b uuid; v uuid; conv uuid; d uuid;
+begin
+  perform pg_temp.open();
+  b := pg_temp.bad('b@test.local', ville);
+  v := pg_temp.visitor('v@test.local', ville);
+  conv := pg_temp.released(b, v);
+  d := pg_temp.propose(v, conv, 'Le Zinc', 30);
+  perform pg_temp.as_user(b);
+  perform public.block_user(v);
+  perform pg_temp.as_owner();
+  return next is((select status::text from public.date_proposals where id = d), 'cancelled', 'a block ends the Cavale');
+  return next matches(pg_temp.as_err(v, format('select public.respond_date(%L, true)', d)), 'not_found', 'nothing passes after a block');
+  return next matches(pg_temp.as_err(v, pg_temp.propose_sql(conv, 'Le Phare', 30)), 'not_found', 'no new proposal either');
+  return next ok(not has_table_privilege('authenticated', 'public.date_proposals', 'select,insert,update,delete')
+    and not has_function_privilege('authenticated', 'public.insert_date_proposal(uuid, uuid, public.venue_type, text, timestamptz, uuid)', 'execute')
+    and not has_function_privilege('anon', 'public.get_dates(uuid)', 'execute'),
+    'the table through functions only');
+end $$;
+
+----------------------------------------------------------------------------------------------
+-- 6c: the masking is lifted after an accepted Cavale (SPEC §10, v7.6)
+----------------------------------------------------------------------------------------------
+create function pg_temp.body_of_last(p_conversation uuid) returns text language sql stable security definer as $$
+  select body from public.messages where conversation_id = p_conversation and kind = 'text' order by id desc limit 1
+$$;
+
+create function pg_temp.accepted_cavale(p_bad uuid, p_visitor uuid, p_conversation uuid) returns uuid language plpgsql as $$
+declare d uuid;
+begin
+  d := pg_temp.propose(p_visitor, p_conversation, 'Le Zinc', 30);
+  perform pg_temp.as_user(p_bad);
+  perform public.respond_date(d, true);
+  perform pg_temp.as_owner();
+  return d;
+end $$;
+
+create function pg_temp.test_unmask() returns setof text language plpgsql as $$
+declare
+  ville bigint := pg_temp.new_place();
+  b uuid; v uuid; conv uuid; d uuid; first_masked bigint;
+begin
+  perform pg_temp.open();
+  b := pg_temp.bad('b@test.local', ville);
+  v := pg_temp.visitor('v@test.local', ville);
+  conv := pg_temp.released(b, v);
+  perform pg_temp.say(v, conv, 'Mon 06 12 34 56 78');
+  first_masked := pg_temp.last_message(conv);
+  return next is(pg_temp.body_of_last(conv), 'Mon [•••]', 'Permis permanent, no Cavale: masked');
+  perform pg_temp.as_user(v);
+  return next is(public.get_conversation(conv) ->> 'unmasked', 'false', 'the notice is not shown yet');
+  perform pg_temp.as_owner();
+  d := pg_temp.accepted_cavale(b, v, conv);
+  perform pg_temp.say(v, conv, 'Mon 06 12 34 56 78');
+  return next is(pg_temp.body_of_last(conv), 'Mon 06 12 34 56 78', 'Cavale accepted: in clear');
+  return next is((select body from public.messages where id = first_masked), 'Mon [•••]', 'the earlier messages stay masked');
+  perform pg_temp.as_user(b);
+  return next is(public.get_conversation(conv) ->> 'unmasked', 'true', '« Ne partage jamais d''argent ni de codes »');
+  perform public.cancel_date(d);
+  perform pg_temp.as_owner();
+  perform pg_temp.say(b, conv, 'Écris à lune@example.com');
+  return next is(pg_temp.body_of_last(conv), 'Écris à lune@example.com', 'a cancelled Cavale keeps it lifted');
+  -- A blocking report masks again while it is open.
+  insert into public.reports (reporter_id, target_user_id, target_type, target_id, category)
+  values (v, b, 'visit_request', gen_random_uuid()::text, 'other');
+  perform pg_temp.say(b, conv, 'Écris à lune@example.com');
+  return next is(pg_temp.body_of_last(conv), 'Écris à [•••]', 'a report open between the two: masked');
+  update public.reports set status = 'rejected' where target_user_id = b;
+  insert into public.reports (reporter_id, target_user_id, target_type, target_id, category)
+  values (null, v, 'permit', gen_random_uuid()::text, 'scam');
+  perform pg_temp.say(b, conv, 'Écris à lune@example.com');
+  return next is(pg_temp.body_of_last(conv), 'Écris à [•••]', 'an open scam report against one of them: masked');
+  update public.reports set status = 'rejected' where target_user_id = v;
+  perform pg_temp.say(b, conv, 'Écris à lune@example.com');
+  return next is(pg_temp.body_of_last(conv), 'Écris à lune@example.com', 'reports closed: in clear again');
+  -- An account of less than 7 days.
+  update public.profiles set created_at = now() - interval '3 days' where id = v;
+  perform pg_temp.say(b, conv, 'Écris à lune@example.com');
+  return next is(pg_temp.body_of_last(conv), 'Écris à [•••]', 'an account of less than 7 days: masked');
+end $$;
+
+create function pg_temp.test_unmask_never_during_a_visit() returns setof text language plpgsql as $$
+declare
+  ville bigint := pg_temp.new_place();
+  b uuid; v uuid; visit uuid; conv uuid;
+begin
+  perform pg_temp.open();
+  b := pg_temp.bad('b@test.local', ville);
+  v := pg_temp.visitor('v@test.local', ville);
+  visit := pg_temp.live_visit(b, v);
+  perform pg_temp.join(v, visit);
+  perform pg_temp.join(b, visit);
+  conv := pg_temp.conv(visit);
+  -- Even if the column were set, a conversation in its visit is never unmasked.
+  update public.conversations set cavale_accepted_at = now() where id = conv;
+  perform pg_temp.say(v, conv, 'Mon 06 12 34 56 78');
+  return next is(pg_temp.body_of_last(conv), 'Mon [•••]', 'during the 30 minutes: always masked');
+  return next ok(not has_function_privilege('authenticated', 'private.can_unmask(uuid)', 'execute'), 'internal');
+end $$;
+
+----------------------------------------------------------------------------------------------
 select * from runtests(pg_my_temp_schema()::regnamespace::name, '^test_');
