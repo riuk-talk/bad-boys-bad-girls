@@ -15,6 +15,8 @@ const CLIENT_NAMESPACES = [
   "Greffe",
   "Relations",
   "Prompter",
+  "Push",
+  "AdminAccess",
 ] as const;
 
 /**

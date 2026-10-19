@@ -61,6 +61,32 @@ test("security headers and per-request CSP nonce", async ({ request }) => {
   expect(html).toContain(`nonce="${nonce}"`);
 });
 
+test("Web Push: no service worker on the landing, the push route needs its secret", async ({
+  page,
+  request,
+}) => {
+  const workers: string[] = [];
+  page.on("request", (r) => {
+    if (r.url().endsWith("/sw.js")) workers.push(r.url());
+  });
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  expect(
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
+  ).toBe(0);
+  expect(workers).toEqual([]);
+
+  expect((await request.post("/api/cron/push")).status()).toBe(401);
+  const wrong = await request.post("/api/cron/push", {
+    headers: { authorization: `Bearer ${"x".repeat(48)}` },
+  });
+  expect(wrong.status()).toBe(401);
+
+  const sw = await request.get("/sw.js");
+  expect(sw.headers()["cache-control"]).toContain("no-cache");
+  expect(sw.headers()["content-security-policy"]).toContain("default-src 'self'");
+});
+
 test("indexing: landing, legal pages and Charter only", async ({ request }) => {
   for (const path of ["/", "/en", "/charte", "/cgu", "/en/confidentialite", "/mentions-legales"]) {
     const response = await request.get(path);

@@ -106,7 +106,7 @@ create function pg_temp.test_private_tables_closed_to_members() returns setof te
 declare t text;
 begin
   foreach t in array array['admin_users', 'app_settings', 'moderation_keywords', 'banned_email_hashes',
-    'flagged_texts', 'email_outbox'] loop
+    'flagged_texts', 'email_outbox', 'super_admins'] loop
     return next ok(not has_table_privilege('authenticated', 'public.' || t, 'select')
       and not has_table_privilege('authenticated', 'public.' || t, 'insert'),
       'members have no access to ' || t);
@@ -290,7 +290,13 @@ begin
   perform pg_temp.as_owner();
   insert into public.admin_users (user_id) values (a);
   perform pg_temp.as_user(a);
-  return next is(pg_temp.val('select public.is_admin()'), 'true', 'is_admin() is true once listed');
+  return next is(pg_temp.val('select public.is_admin()'), 'false',
+    'is_admin() stays false without a second factor (aal1)');
+  perform pg_temp.as_owner();
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', a, 'role', 'authenticated', 'aal', 'aal2')::text, true);
+  execute 'set local role authenticated';
+  return next is(pg_temp.val('select public.is_admin()'), 'true', 'is_admin() is true once listed, with aal2');
   perform pg_temp.as_owner();
 end $$;
 

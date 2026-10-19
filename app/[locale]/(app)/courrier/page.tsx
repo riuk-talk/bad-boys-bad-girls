@@ -4,6 +4,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Stamp } from "@/components/brand/stamp";
 import { LocalizedLink } from "@/components/i18n/localized-link";
+import { PushPrompt } from "@/components/push/push-prompt";
 import { MailboxSettings } from "@/components/relations/mailbox-settings";
 import { EmptyState } from "@/components/ui/empty-state";
 import { accentForGender } from "@/lib/accent";
@@ -23,11 +24,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * charge nor the result of the bet (rule 14). The Tableau des visites arrives with Phase 5.
  */
 export default async function MailboxPage() {
-  const { supabase, profile } = await requireRole("bad");
+  const { supabase, userId, profile } = await requireRole("bad");
   const t = await getTranslations("Relations.mailbox");
-  const [{ data }] = await Promise.all([
+  const [{ data }, , { data: prefs }] = await Promise.all([
     supabase.rpc("get_mailbox"),
-    supabase.rpc("mark_notifications_read", { p_types: ["request_received"] }),
+    supabase.rpc("mark_notifications_read", { p_types: ["request_received", "slots_declined"] }),
+    supabase
+      .from("notification_preferences")
+      .select("push_prompt_declined_at")
+      .eq("user_id", userId)
+      .maybeSingle(),
   ]);
   const rows = data ?? [];
   const pending = rows.filter((row) => row.status === "pending");
@@ -57,6 +63,11 @@ export default async function MailboxPage() {
           </span>
         </p>
       </header>
+
+      {/* Notifications are offered after the first request accepted, never on arrival. */}
+      {accepted.length > 0 ? (
+        <PushPrompt declinedAt={prefs?.push_prompt_declined_at ?? null} />
+      ) : null}
 
       {pending.length > 0 ? (
         <ul className="flex flex-col gap-2.5">

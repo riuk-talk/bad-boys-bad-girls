@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
 import { randomBytes } from "node:crypto";
 import sharp from "sharp";
+import { settled } from "./helpers/settle";
+import { openGreffe } from "./helpers/admin";
 
 // Full onboardings in 8 steps (Bad and Visitor, SPEC v7.4 §4) and the Greffe against the DEV Supabase project, with throwaway
 // confirmed accounts created through the admin API (no e-mail sent) and deleted afterwards.
@@ -13,6 +15,8 @@ const enabled = process.env.E2E_ALLOW_WRITE === "true" && url !== "" && secret !
 const WCAG = ["wcag2a", "wcag2aa", "wcag21aa"];
 
 async function axeViolations(page: Page) {
+  // Measured on the final rendering, never in the middle of a fade (dialogs fade in).
+  await settled(page);
   const result = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   return result.violations.map(
     (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
@@ -266,13 +270,8 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
     const greffier = await (
       await browser.newContext({ viewport: { width: 1280, height: 900 } })
     ).newPage();
-    await greffier.goto("/connexion");
-    await greffier.getByLabel("E-mail").fill(adminAccount.email);
-    await greffier.getByLabel("Mot de passe", { exact: true }).fill(adminAccount.password);
-    await greffier.getByRole("button", { name: "Se connecter" }).click();
-    await greffier.waitForURL(/onboarding/, { waitUntil: "commit" });
-    await greffier.goto("/admin/greffe");
-    await expect(greffier.getByRole("heading", { name: "Le Greffe" })).toBeVisible();
+    // Sign-in, then the second factor (TOTP enrolment), then the Greffe (Phase 5a-ter).
+    await openGreffe(greffier, adminAccount);
     expect(await axeViolations(greffier)).toEqual([]);
     const card = (pose: string) =>
       greffier
@@ -373,7 +372,15 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
 
     // Visitors do not get the Visitors count.
     await page.goto("/quartier");
-    await expect(page.getByText("Quartier : Toulon")).toBeVisible();
+    // The end-to-end journey opens Toulon for a while (local stack): either state is fine here.
+    const { data: toulon } = await admin
+      .from("launch_zones")
+      .select("status")
+      .eq("slug", "toulon")
+      .single();
+    await expect(
+      page.getByText(toulon?.status === "open" ? "Ton quartier est ouvert !" : "Quartier : Toulon"),
+    ).toBeVisible();
     await expect(page.getByText(/attendent l'ouverture|attend l'ouverture/)).toHaveCount(0);
 
     await page.goto("/ma-fiche");

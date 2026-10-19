@@ -30,7 +30,7 @@ type Props = {
   reportType: "profile" | "permit" | "visit_request";
   reportTarget: string;
   /** Where the member goes once they blocked someone (that person disappears everywhere). */
-  afterBlock: "/promenade" | "/courrier";
+  afterBlock: "/promenade" | "/courrier" | "/visites";
 };
 
 /** Signaler and Bloquer, in simple words (SPEC §10), from a Fiche, a Permis or a request. */

@@ -3,8 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
+import { settled } from "./helpers/settle";
 
-// Phase 4 end to end against the DEV Supabase project: a Visitor finds a Bad, files a Demande de
+// Phase 4 end to end against a Supabase project (the local stack in CI, or the DEV project): a Visitor finds a Bad, files a Demande de
 // parloir with the Souffleur, the Bad reads it in the Courrier and accepts; reports, blocks,
 // pause. Throwaway accounts (admin API), a throwaway open zone around a fictitious place in the
 // Atlantic (nobody real can be in it), everything deleted afterwards. Opt-in: E2E_ALLOW_WRITE=true.
@@ -21,6 +22,8 @@ const CHARGES = [
 ];
 
 async function axeViolations(page: Page) {
+  // Measured on the final rendering, never in the middle of a fade (dialogs fade in).
+  await settled(page);
   const result = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   return result.violations.map(
     (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
@@ -59,21 +62,21 @@ async function shot(page: Page, name: string) {
   await page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true });
 }
 
-async function login(
-  browser: Browser,
-  email: string,
-  password: string,
-  viewport = { width: 390, height: 900 },
-) {
-  const context = await browser.newContext({ viewport, ignoreHTTPSErrors: true });
+async function login(browser: Browser, email: string, password: string) {
+  // Device projects (Pixel 7, iPhone 14) keep their own screen; the others are checked at 390 px.
+  const viewport = test.info().project.use.isMobile ? undefined : { width: 390, height: 900 };
+  const context = await browser.newContext({
+    ...(viewport ? { viewport } : {}),
+    ignoreHTTPSErrors: true,
+  });
   const page = await context.newPage();
   await page.goto("/connexion");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Mot de passe", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Se connecter" }).click();
-  await page.waitForURL((target) => !target.pathname.startsWith("/connexion"), {
-    waitUntil: "commit",
-  });
+  // The login goes to /onboarding, which redirects a finished member once more: wait for the
+  // final page, or the next navigation is interrupted (WebKit).
+  await page.waitForURL((target) => !/^\/(connexion|onboarding)$/.test(target.pathname));
   return page;
 }
 
@@ -251,13 +254,14 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
   }) => {
     const page = await login(browser, visitor.email, visitor.password);
 
-    // The tab bar of a Visitor: Promenade, Découverte, Demandes, Mon Permis (no Visites tab yet).
+    // The tab bar of a Visitor: Promenade, Découverte, Demandes, Visites, Mon Permis.
     await page.goto("/promenade");
     const tabs = page.getByRole("navigation", { name: "Navigation principale" });
     await expect(tabs.getByRole("link")).toHaveText([
       "Promenade",
       "Découverte",
       "Demandes",
+      "Visites",
       "Mon Permis",
     ]);
     await expect(page.getByText(/Prochaine Promenade dans/)).toBeVisible();
@@ -332,7 +336,39 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await page.goto("/demandes");
     await expect(page.getByText("EN ATTENTE")).toBeVisible();
     for (const charge of CHARGES) await expect(page.getByText(charge)).toHaveCount(0);
+    // Notifications are offered now (first request sent), not before; nothing is registered
+    // until the member says yes, and « Plus tard » is remembered (30 days).
+    const prompt = page.getByTestId("push-prompt");
+    if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+      await expect(prompt).toBeVisible();
+      // An iPhone outside the home screen cannot subscribe: the prompt leads to the guide instead.
+      if (/iPhone/.test(await page.evaluate(() => navigator.userAgent))) {
+        await expect(prompt.getByRole("link", { name: "Voir comment faire" })).toHaveAttribute(
+          "href",
+          "/installer",
+        );
+      } else {
+        await expect(
+          prompt.getByRole("button", { name: "Activer les notifications" }),
+        ).toBeVisible();
+      }
+    }
     expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "visitor-demandes-push");
+    expect(
+      await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
+    ).toBe(0);
+    if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+      await prompt.getByRole("button", { name: "Plus tard" }).click();
+      await expect(prompt).toHaveCount(0);
+      await expect
+        .poll(async () => {
+          await page.reload();
+          await expect(page.getByText("EN ATTENTE")).toBeVisible();
+          return page.getByTestId("push-prompt").count();
+        })
+        .toBe(0);
+    }
     await page.context().close();
   });
 
@@ -340,7 +376,7 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     const page = await login(browser, bad.email, bad.password);
     await page.goto("/courrier");
     const tabs = page.getByRole("navigation", { name: "Navigation principale" });
-    await expect(tabs.getByRole("link")).toHaveText(["Courrier", "Ma Fiche"]);
+    await expect(tabs.getByRole("link")).toHaveText(["Courrier", "Visites", "Ma Fiche"]);
     await expect(page.getByRole("heading", { name: "1 demande de visite" })).toBeVisible();
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "bad-courrier");
@@ -355,8 +391,18 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "bad-lire-demande");
 
-    await page.getByRole("button", { name: "Accepter la visite" }).click();
+    // Accepting means sending the Heures de visite (Phase 5b): « Demain soir » and a slot of one's own.
+    await page.getByRole("link", { name: "Accepter la visite" }).click();
+    await expect(page.getByRole("heading", { name: "Tes Heures de visite" })).toBeVisible();
     await expect(page.getByRole("img", { name: /visite acceptée/i })).toBeVisible();
+    await page.getByRole("button", { name: /^Demain soir/ }).click();
+    await page.getByRole("button", { name: "+ Choisir un autre jour et une autre heure" }).click();
+    await page.getByRole("button", { name: "Ajouter ce créneau" }).click();
+    await expect(page.getByText("Tes créneaux (2 sur 3)")).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "bad-heures-de-visite");
+    await page.getByRole("button", { name: "Envoyer mes Heures de visite" }).click();
+    await expect(page.getByText(/Heures de visite envoyées/)).toBeVisible();
     await shot(page, "bad-visite-acceptee");
     const { data: request } = await admin
       .from("visit_requests")

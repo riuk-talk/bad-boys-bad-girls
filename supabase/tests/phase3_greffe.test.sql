@@ -39,6 +39,14 @@ begin
   execute 'set local role authenticated';
 end $$;
 
+create function pg_temp.as_admin(p_uid uuid) returns void language plpgsql as $$
+begin
+  -- Admins act with a second factor (aal2, Phase 5a-ter).
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', p_uid, 'role', 'authenticated', 'aal', 'aal2')::text, true);
+  execute 'set local role authenticated';
+end $$;
+
 create function pg_temp.as_anon() returns void language plpgsql as $$
 begin
   perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
@@ -98,6 +106,16 @@ begin
     '^42501 admin_only', 'a member cannot approve a photo, not even their own');
   return next matches(coalesce(pg_temp.try(format('update public.photos set status = ''approved'' where id = %L', p)), 'ok'),
     '^42501', 'nor approve it by writing the table');
+  -- An admin without the second factor (aal1) is refused too (Phase 5a-ter).
+  perform pg_temp.as_owner();
+  insert into public.admin_users (user_id) values (b);
+  perform pg_temp.as_user(b);
+  return next matches(coalesce(pg_temp.try('select * from public.admin_photo_queue()'), 'ok'),
+    '^42501 admin_only', 'an admin at aal1 cannot read the Greffe queue');
+  return next matches(coalesce(pg_temp.try(format(
+    'select public.admin_decide_photo(%L, true, null, %L, %L)', p,
+    gen_random_uuid() || '.webp', gen_random_uuid() || '-s.webp')), 'ok'),
+    '^42501 admin_only', 'nor decide, without a second factor');
   perform pg_temp.as_anon();
   return next matches(coalesce(pg_temp.try('select * from public.admin_photo_queue()'), 'ok'),
     '^42501', 'anon cannot call the Greffe functions');
@@ -120,7 +138,7 @@ begin
   extra := pg_temp.pending_photo(bad, 3::smallint);
   pose := pg_temp.pending_photo(bad, 1::smallint);
   face := pg_temp.pending_photo(vis, 0::smallint);
-  perform pg_temp.as_user(adm);
+  perform pg_temp.as_admin(adm);
   return next is((select array_agg(photo_id order by ord) from (
       select photo_id, row_number() over () ord from public.admin_photo_queue()) q),
     array[face, pose, extra], 'Visitor face (open zone) first, then a Bad pose, then an extra photo');
@@ -141,7 +159,7 @@ declare
   large text := gen_random_uuid() || '.webp';
   small text := replace(large, '.webp', '-s.webp');
 begin
-  perform pg_temp.as_user(adm);
+  perform pg_temp.as_admin(adm);
   return next matches(coalesce(pg_temp.try(format(
     'select public.admin_decide_photo(%L, true, null, %L, %L)', p, b || '/x.webp', small)), 'ok'),
     'invalid_public_path', 'a public path must be a bare random UUID (never the owner id)');
@@ -153,7 +171,7 @@ begin
   return next is((select reviewed_by from public.photos where id = p), adm, 'the reviewer is recorded');
   return next is((select type::text || ' ' || (payload ->> 'photo_position') || ' ' || (payload ->> 'approved')
     from public.notifications where user_id = b), 'moderation_decision 1 true', 'the owner is notified for this pose');
-  perform pg_temp.as_user(adm);
+  perform pg_temp.as_admin(adm);
   return next matches(coalesce(pg_temp.try(format(
     'select public.admin_decide_photo(%L, false, ''other'')', p)), 'ok'),
     'photo_not_pending', 'a decided photo cannot be decided again');
@@ -166,7 +184,7 @@ declare
   b uuid := pg_temp.new_member('b@test.local');
   p uuid := pg_temp.pending_photo(b, 0::smallint);
 begin
-  perform pg_temp.as_user(adm);
+  perform pg_temp.as_admin(adm);
   return next matches(coalesce(pg_temp.try(format('select public.admin_decide_photo(%L, false)', p)), 'ok'),
     'invalid_reason', 'a refusal needs a reason');
   return next matches(coalesce(pg_temp.try(format('select public.admin_decide_photo(%L, false, ''tu es moche'')', p)), 'ok'),
@@ -189,7 +207,7 @@ declare
   pb uuid := pg_temp.pending_photo(b, 0::smallint);
   large text;
 begin
-  perform pg_temp.as_user(adm);
+  perform pg_temp.as_admin(adm);
   large := gen_random_uuid() || '.webp';
   perform public.admin_decide_photo(pv, true, null, large, replace(large, '.webp', '-s.webp'));
   large := gen_random_uuid() || '.webp';

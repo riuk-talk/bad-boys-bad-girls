@@ -423,9 +423,11 @@ begin
   return next matches(coalesce(pg_temp.try(format('select public.send_visit_request(%L, 1::smallint)', b)), 'ok'),
     '^23514 parloir_full', 'the 6th Visitor cannot send a request');
   perform pg_temp.as_user(b);
-  perform public.decide_visit_request(first_req, true);
+  -- Phase 5b: accepting means proposing 2 or 3 Heures de visite.
+  perform public.accept_visit_request(first_req,
+    array[date_trunc('hour', now()) + interval '3 hours', date_trunc('hour', now()) + interval '5 hours']);
   return next is((select status::text from public.get_mailbox() where request_id = first_req), 'accepted',
-    'an accepted request stays « accepted » in the Courrier (Phase 5 brings the slots)');
+    'an accepted request stays « accepted » in the Courrier');
   perform pg_temp.as_user(v);
   return next is(pg_temp.try(format('select public.send_visit_request(%L, 1::smallint)', b)), null,
     'an answered request frees a place');

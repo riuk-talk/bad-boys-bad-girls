@@ -121,7 +121,10 @@ export async function reportAction(_state: ActionState, form: FormData): Promise
 }
 
 const targetSchema = z.object({ target: uuid });
-const blockSchema = z.object({ target: uuid, next: z.enum(["/promenade", "/courrier"]) });
+const blockSchema = z.object({
+  target: uuid,
+  next: z.enum(["/promenade", "/courrier", "/visites"]),
+});
 
 /**
  * Bloquer: the other member disappears everywhere; requests in progress are closed. The member

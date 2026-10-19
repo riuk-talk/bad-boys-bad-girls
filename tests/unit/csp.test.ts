@@ -19,6 +19,11 @@ describe("csp", () => {
     expect(prod).toContain("frame-src https://challenges.cloudflare.com");
   });
 
+  it("allows the Realtime socket of a local stack (ws:// next to http://)", () => {
+    const local = buildCsp("abc", { isDev: false, supabaseUrl: "http://127.0.0.1:54321" });
+    expect(local).toContain("connect-src 'self' http://127.0.0.1:54321 ws://127.0.0.1:54321");
+  });
+
   it("upgrades insecure requests only over https", () => {
     expect(prod).toContain("upgrade-insecure-requests");
     expect(buildCsp("abc", { isDev: false, https: false })).not.toContain(
