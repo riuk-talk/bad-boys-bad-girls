@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : en cours**, sous-phases 6a → 6e enchaînées (nouvelle règle n° 1 de CLAUDE.md).
+**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : terminée côté code**, rapport de fin de phase ci-dessous ; en attente de validation du conseiller (rien sur `main` ni sur la prod).
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -27,7 +27,7 @@
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
 - **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
 
-## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, en cours : découpage validé, sous-phases enchaînées)
+## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, terminée côté code, en attente de validation du conseiller)
 Relu : PROMPT Phase 6, SPEC §7 ter, §10 (masquage), §13, §16, SCHEMA `date_proposals`, `can_unmask`, maquette `Permanent.dc.html`.
 Découpage proposé (arrêt et validation à la fin de la phase, comme d'habitude ; sous-étapes livrées dans l'ordre) :
 - **6a — Lu / non-lus** : dernier message lu par membre et par conversation (`mark_conversation_read`), indicateur « Lu », compteur de non-lus (onglet « Visites » et liste des Parloirs triée par activité), compteurs relus toutes les 60 s et au retour sur l'onglet. pgTAP.
@@ -36,6 +36,22 @@ Découpage proposé (arrêt et validation à la fin de la phase, comme d'habitud
 - **6d — Écrans** : formulaire de Cavale, carte épinglée avec rappel des conseils sécurité, réponse, boutons Affaire classée / Proposer une Cavale au-dessus du champ toujours visible ; FR/EN.
 - **6e — Parcours de bout en bout** prolongé (Cavale proposée → autre proposition → acceptée → coordonnées visibles ensuite → blocage : plus rien ne passe), CI, migrations sur la preview uniquement, docs, arrêt.
 Questions tranchées le 2026-10-19 : voir « Décisions à valider ». Branche de phase `phase-6` (depuis `main`), avancée à chaque sous-phase dont la CI est verte.
+
+### Rapport de fin de phase 6
+**Fait (toutes les migrations sur la preview uniquement, texte enregistré identique aux fichiers, versions de l'historique = noms des fichiers ; rien sur `main`, rien sur la prod) :**
+- **6a — Lu / non-lus** (`20261019100000_phase6a_conversation_reads`) : `conversations.bad_read_id` / `visitor_read_id` ; `mark_conversation_read` (jamais en arrière, jamais au-delà du dernier message), `get_read_state`, `get_unread_counts` (messages texte de l'autre, Parloirs sans horaire). Écrans : « Lu » sous mon dernier message lu par l'autre (cabine et Parloir sans horaire), conversation marquée lue quand elle est affichée, compteur de non-lus sur l'onglet « Visites » et sur chaque Parloir du Tableau ; la barre d'onglets est relue toutes les 60 s, au retour sur l'onglet et à chaque navigation (elle ne l'était qu'au premier affichage).
+- **6b — La Cavale** (`20261019105900_phase6b_date_cancelled_type`, `20261019110000_phase6b_cavale`) : `date_proposals` (RLS, aucun droit direct), `propose_date`, `counter_date` (« Autre chose »), `respond_date` (Accepter / Pas encore), `cancel_date`, `get_dates` ; une seule proposition en attente, Permis permanent exigé, 1 h à 60 jours à l'avance, 24 h d'attente pour le proposant après « Pas encore », carte jusqu'au lendemain de la date (heure de France), avertissement « lieu privé » (`looks_private_place`, miroir `lib/cavale.ts`), lieu masqué et passé aux mots-clés ; blocage / affaire classée / changement de rôle annulent les Cavales ; notifications `date_proposed`, `date_countered`, `date_accepted`, `date_cancelled` (nouveau type) et Web Push neutre vers `/visites`.
+- **6c — Levée du masquage** (`20261019120000_phase6c_unmask`) : `private.can_unmask` (Cavale acceptée au moins une fois, comptes de plus de 7 jours, aucun signalement ouvert entre les deux ni signalement ouvert arnaque / mineur / harcèlement / violence visant l'un d'eux) appliqué par `send_message` aux messages envoyés ensuite ; `get_conversation` renvoie `unmasked` (encart « Ne partage jamais d'argent ni de codes. »).
+- **6d — Écrans** : carte de Cavale épinglée (couleur du genre de celui qui propose, rappel « Premier rendez-vous : lieu public, préviens un proche » + Conseils sécurité, annulation en un geste), réponses Accepter / Autre chose / Pas encore, formulaire (type de lieu, nom, jour, heure ; avertissement lieu privé en direct), boutons Affaire classée / Proposer une Cavale au-dessus du champ toujours visible ; FR/EN ; textes neutres du service worker.
+- **6e — Tests** : pgTAP `phase6_parloir.test.sql` (7 groupes : lu / non-lus, règles de la Cavale, « Pas encore » et lieu privé, blocage, levée du masquage, jamais pendant une visite ; 12 fichiers, 108 tests verts) ; Vitest 186 ; parcours de bout en bout prolongé (étape 8 : non-lus et « Lu » ; étape 9 : Cavale « chez moi » avertie, autre proposition, acceptée, numéro en clair ensuite, ancien numéro toujours masqué ; étape 10 : push de la Cavale ; étape 11 : Bloquer au Parloir, plus rien ne passe) ; Pixel 7 **25/25** en local, axe sans violation sur le formulaire et la carte.
+- **CI** : 6a verte (passage n° 23, `9ddd7d0`), `phase-6` avancée à `9ddd7d0` ; 6b à 6e : voir le passage suivant (ci-dessous).
+
+**Écarts :**
+- 6b, 6c, 6d et 6e sont passées en CI ensemble : les écrans de la 6b avaient besoin des types de la 6c (même fichier de types généré) ; la 6a, elle, a eu sa CI verte avant la suite.
+- Relance à 48 h « Toujours là ? » : [P1], non faite. « Compte supprimé » : Phase 7 (décision 6-6). E-mail « Cavale acceptée » : Phase 7 (e-mails).
+- Bonne conduite (calcul quotidien, absences du Bad) : toujours Phase 7.
+
+**Questions :** les choix pris en cours de phase sont listés dans « Décisions à valider » (6-7 à 6-14).
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06 → 2026-10-18) : ✅ validée, fusionnée (PR #12) et en production
 
@@ -570,7 +586,18 @@ Phase 6 — réponses du conseiller du 2026-10-19 (déjà tranchées, à confirm
 | 6-5 | Indicateur « Lu » | Seulement sous mon dernier message lu par l'autre, sans option au lancement | « Lu » sous chaque message ; option pour le désactiver |
 | 6-6 | « Compte supprimé » dans la conversation | Phase 7 (avec la suppression réelle des comptes) | Phase 6 |
 
-Phase 6 — choix pris en cours de phase (option la plus prudente de la SPEC) : voir ci-dessous, complété au fil de la phase.
+Phase 6 — choix pris en cours de phase (option la plus prudente de la SPEC) :
+
+| # | Question | Choix retenu | Alternative écartée |
+|---|---|---|---|
+| 6-7 | Délai d'une Cavale | De 1 h à 60 jours à l'avance, heure au quart d'heure dans le formulaire | Sans limite ; au moins 24 h |
+| 6-8 | « Le lendemain de la date » : quel fuseau ? | Heure de France (`Europe/Paris`), pour les deux | Fuseau de chacun |
+| 6-9 | Nom du lieu | Toujours masqué (coordonnées) et passé aux mots-clés, même après la levée | En clair après la levée |
+| 6-10 | « Pas encore » prévient-il ? | Aucune notification, le proposant le voit dans la conversation | Une notification neutre |
+| 6-11 | Nouvelle proposition pendant une Cavale acceptée à venir | Refusée : déplacer = annuler puis reproposer | Deux Cavales à la fois |
+| 6-12 | Signalement bloquant ouvert après la levée | Le masquage revient tant qu'il est ouvert | Levée définitive quoi qu'il arrive |
+| 6-13 | Non-lus pendant la visite de 30 min | Comptés seulement dans les Parloirs sans horaire (« Lu » marche aussi pendant la visite) | Compter aussi pendant la visite |
+| 6-14 | Retirer sa propre proposition en attente | Possible (le proposant seulement) | Impossible |
 
 ## Questions ouvertes
 

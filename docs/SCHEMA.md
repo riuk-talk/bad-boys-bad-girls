@@ -37,7 +37,7 @@
 | `message_kind` | `text`, `system` | **[v2-nouveau]** |
 | `close_reason` | `dismissed`, `blocked`, `account_deleted`, `banned` | Phase 6 |
 | `venue_type` | `bar`, `cafe`, `concert`, `walk`, `activity` | Phase 6 |
-| `date_proposal_status` | `pending`, `accepted`, `countered`, `not_yet`, `cancelled` | Phase 6 |
+| `date_proposal_status` | `pending`, `accepted`, `countered`, `not_yet`, `cancelled` | en base (Phase 6b) |
 | `report_target` | `profile`, `permit`, `photo`, `casier`, `message`, `visit_request` | **[v2-modif]** (`plea` → `visit_request`, + `permit`) |
 | `report_category` | `fake_profile`, `minor`, `harassment`, `sexual_content`, `violence_threat`, `scam`, `other` | en base |
 | `report_status` | `open`, `upheld`, `rejected` | en base |
@@ -253,8 +253,11 @@ Realtime : Postgres Changes sur `messages` (filtre `conversation_id`), ouvert un
 
 Phase 5c, écarts : `conversations` (`request_id` unique, `bad_id`, `visitor_id`, `status`, `released_at`, `closed_at`, `last_message_at`) créée au **début** de la visite, aucune lecture directe (fonctions `get_conversation`, `get_my_parloirs`) ; `messages.body varchar(1100)` (le jeton de masquage peut allonger un message de 1 000 caractères), payloads système `bet` / `note` / `released` / `closed`, lecture directe **autorisée aux deux membres** (politique `private.can_read_conversation`, nécessaire à Realtime) et publication `supabase_realtime`. `visits` : présence, `absent`, choix de fin, `end_choice_deadline`, `outcome` ajoutés ; toujours aucune lecture directe (choix cachés : `get_visit` interrogée toutes les 5 s, décision 2026-10-06). Fonctions : `join_visit`, `get_visit`, `choose_visit_end`, `send_message`, `get_messages`, `get_conversation`, `get_my_parloirs`, `close_conversation` ; internes `start_visit`, `reveal_bet`, `resolve_visit`, `run_parloir_ticks` (pg_cron `parloir-ticks` chaque minute, à côté de `visit-schedule` de la 5b ; pas de `run_visit_ticks` unique). Pas de `request_reschedule` : le report s'ouvre automatiquement après une absence.
 
-#### `date_proposals` — la Cavale — inchangé (Phase 6)
-`propose_date` exige une conversation `open` (Permis permanent).
+#### `date_proposals` — la Cavale — **en base (Phase 6b `20261019110000_phase6b_cavale`)**
+`id uuid PK`, `conversation_id → conversations on delete cascade`, `proposer_id → profiles on delete set null`, `venue_type venue_type` (`bar`, `cafe`, `concert`, `walk`, `activity`), `venue_name varchar(200)` (120 saisis, masqués), `starts_at`, `status date_proposal_status` (`pending`, `accepted`, `countered`, `not_yet`, `cancelled`), `parent_id → date_proposals` (autre proposition), `private_place_warning`, `responded_at`, `cancelled_by`, `cancelled_at`, `created_at`.
+Index : unique partiel (`conversation_id`) `where status = 'pending'` ; (`conversation_id`, `created_at desc`) ; clés étrangères indexées.
+RLS : activée, **aucun droit direct** (lecture par `get_dates`, écriture par `propose_date`, `counter_date`, `respond_date`, `cancel_date`). Internes : `insert_date_proposal`, `open_conversation_for`, `date_is_upcoming` (jour en heure de France), `looks_private_place`.
+`conversations` (Phase 6) : `bad_read_id`, `visitor_read_id` (6a, `mark_conversation_read`, `get_read_state`, `get_unread_counts`), `cavale_accepted_at` (6b, première Cavale acceptée ; lue par `private.can_unmask`, 6c).
 
 #### `promenade_picks` — la Promenade — **en base (Phase 4a)** (remplace `daily_hearings`, jamais créée)
 `id bigint identity PK`, `visitor_id → profiles on delete cascade`, `bad_id → profiles on delete cascade`, `zone_id`, `promenade_date date` (date locale), `rank smallint` (1–5), `score smallint`, `visible_from`, `visible_until`, `seen_at`.
