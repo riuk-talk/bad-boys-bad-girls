@@ -24,10 +24,12 @@ const IDLE: ActionState = { status: "idle" };
 export function OpenParloir({
   conversation,
   messages,
+  otherReadId,
   me,
 }: {
   conversation: Conversation;
   messages: Message[];
+  otherReadId: number;
   me: { pseudo: string; accent: Accent };
 }) {
   const t = useTranslations("Relations.parloir");
@@ -78,6 +80,7 @@ export function OpenParloir({
       <Chat
         conversationId={conversation.id}
         initial={messages}
+        initialOtherReadId={otherReadId}
         canWrite={open}
         me={me}
         other={other}

@@ -1036,7 +1036,8 @@
       "mailbox": "Mailbox",
       "myFiche": "My File",
       "news": "(new)",
-      "visits": "Visits"
+      "visits": "Visits",
+      "unread": "{count, plural, one {# unread message} other {# unread messages}}"
     },
     "card": {
       "distance": "{km} km",
@@ -1415,7 +1416,8 @@
       "enter": "Enter the Parloir",
       "waitingChoice": "End of visit: your choice",
       "inProgress": "In progress",
-      "permanent": "Permanent permit with {pseudo}"
+      "permanent": "Permanent permit with {pseudo}",
+      "unread": "{count} unread"
     },
     "parloir": {
       "metaTitle": "Parloir",
@@ -1467,7 +1469,8 @@
       "cavaleSoon": "The Cavale (a real date) is coming soon.",
       "closedConversation": "This Parloir is closed.",
       "liveRegion": "New messages",
-      "you": "You"
+      "you": "You",
+      "read": "Read"
     }
   },
   "Push": {

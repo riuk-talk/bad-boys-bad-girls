@@ -5,6 +5,8 @@ import {
   countdown,
   mergeMessages,
   messageSchema,
+  readMarkFor,
+  totalUnread,
   visitPhase,
   visitSchema,
   type Message,
@@ -125,5 +127,35 @@ describe("messages", () => {
 
   it("parses a visit as get_visit returns it", () => {
     expect(visitSchema.safeParse(visit({ status: "in_progress" })).success).toBe(true);
+  });
+});
+
+describe("read and unread (Phase 6a)", () => {
+  const text = (id: number, mine: boolean): Message => ({
+    id,
+    kind: "text",
+    mine,
+    body: "x",
+    payload: null,
+    created_at: "2026-10-20T19:01:00Z",
+  });
+
+  it("« Lu » goes under my last message only, once the other has read it", () => {
+    const messages = [text(1, true), text(2, false), text(3, true), text(4, false)];
+    expect(readMarkFor(messages, 2)).toBeNull();
+    expect(readMarkFor(messages, 3)).toBe(3);
+    expect(readMarkFor(messages, 9)).toBe(3);
+    expect(readMarkFor([text(1, false)], 9)).toBeNull();
+    expect(readMarkFor([], 0)).toBeNull();
+  });
+
+  it("the system messages never carry « Lu »", () => {
+    const system: Message = { ...text(5, true), kind: "system", payload: { type: "released" } };
+    expect(readMarkFor([text(1, true), system], 9)).toBe(1);
+  });
+
+  it("adds the unread messages of every Parloir", () => {
+    expect(totalUnread([{ unread: 2 }, { unread: 0 }, { unread: 3 }])).toBe(5);
+    expect(totalUnread([])).toBe(0);
   });
 });

@@ -28,6 +28,7 @@ const VISIT_POLL_MS = 5000;
 type Props = {
   initial: Visit;
   messages: Message[];
+  otherReadId: number;
   me: { pseudo: string; accent: Accent };
   tz: string;
 };
@@ -37,7 +38,7 @@ type Props = {
  * 30 minutes with their countdown, then the secret end choice and its outcome. Opening the screen
  * marks the member present (join_visit); the database clock decides every step.
  */
-export function VisitRoom({ initial, messages, me, tz }: Props) {
+export function VisitRoom({ initial, messages, otherReadId, me, tz }: Props) {
   const t = useTranslations("Relations.parloir");
   const locale = useLocale();
   const [visit, setVisit] = useState(initial);
@@ -152,6 +153,7 @@ export function VisitRoom({ initial, messages, me, tz }: Props) {
           <Chat
             conversationId={visit.conversation_id}
             initial={messages}
+            initialOtherReadId={otherReadId}
             canWrite={now < endsAt}
             me={me}
             other={other}

@@ -38,8 +38,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             {children}
           </main>
         </ToastProvider>
+        {profile?.onboarding_completed_at && role ? <TabBar role={role} /> : null}
       </ClientIntl>
-      {profile?.onboarding_completed_at && role ? <TabBar role={role} /> : null}
     </div>
   );
 }

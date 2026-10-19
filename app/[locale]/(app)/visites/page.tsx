@@ -27,11 +27,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  */
 export default async function VisitsPage() {
   const { supabase, userId, locale } = await requireRole();
-  const [t, tz, { data: visits }, { data: parloirs }] = await Promise.all([
+  const [t, tz, { data: visits }, { data: parloirs }, { data: counts }] = await Promise.all([
     getTranslations("Relations.visits"),
     memberTimezone(supabase, userId),
     supabase.rpc("get_my_visits"),
     supabase.rpc("get_my_parloirs"),
+    supabase.rpc("get_unread_counts"),
     supabase.rpc("mark_notifications_read", {
       p_types: [
         "slot_chosen",
@@ -46,6 +47,7 @@ export default async function VisitsPage() {
   ]);
   const rows = visits ?? [];
   const open = parloirs ?? [];
+  const unread = new Map((counts ?? []).map((row) => [row.conversation_id, row.unread]));
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5 px-4 py-6 sm:px-6">
@@ -129,7 +131,13 @@ export default async function VisitsPage() {
                   <span className="font-bold">
                     {t("permanent", { pseudo: parloir.other_pseudo })}
                   </span>
-                  <Stamp kind="permanentPermit" surface="dark" size="sm" tilt={-4} />
+                  {(unread.get(parloir.conversation_id) ?? 0) > 0 ? (
+                    <span className="bg-accent text-ink rounded-full px-2 text-xs leading-5 font-bold">
+                      {t("unread", { count: unread.get(parloir.conversation_id) ?? 0 })}
+                    </span>
+                  ) : (
+                    <Stamp kind="permanentPermit" surface="dark" size="sm" tilt={-4} />
+                  )}
                 </LocalizedLink>
               </li>
             ))}

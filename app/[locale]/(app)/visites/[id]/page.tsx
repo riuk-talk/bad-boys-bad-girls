@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { VisitRoom } from "@/components/parloir/visit-room";
 import { accentForGender } from "@/lib/accent";
-import { joinVisit, loadMessages, myPseudo } from "@/lib/relations/parloir";
+import { joinVisit, loadMessages, loadOtherReadId, myPseudo } from "@/lib/relations/parloir";
 import { memberTimezone } from "@/lib/relations/schedule";
 import { requireRole } from "@/lib/relations/server";
 
@@ -24,8 +24,9 @@ export default async function VisitPage({ params }: Props) {
   const { supabase, userId, profile } = await requireRole();
   const visit = await joinVisit(supabase, id);
   if (!visit) notFound();
-  const [messages, tz, pseudo] = await Promise.all([
+  const [messages, otherReadId, tz, pseudo] = await Promise.all([
     visit.conversation_id ? loadMessages(supabase, visit.conversation_id) : Promise.resolve([]),
+    visit.conversation_id ? loadOtherReadId(supabase, visit.conversation_id) : Promise.resolve(0),
     memberTimezone(supabase, userId),
     myPseudo(supabase, userId),
     supabase.rpc("mark_notifications_read", {
@@ -42,6 +43,7 @@ export default async function VisitPage({ params }: Props) {
     <VisitRoom
       initial={visit}
       messages={messages}
+      otherReadId={otherReadId}
       me={{ pseudo, accent: accentForGender(profile.gender) }}
       tz={tz}
     />

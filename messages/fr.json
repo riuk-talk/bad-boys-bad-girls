@@ -1036,7 +1036,8 @@
       "mailbox": "Courrier",
       "myFiche": "Ma Fiche",
       "news": "(nouveau)",
-      "visits": "Visites"
+      "visits": "Visites",
+      "unread": "{count, plural, one {# message non lu} other {# messages non lus}}"
     },
     "card": {
       "distance": "{km} km",
@@ -1415,7 +1416,8 @@
       "enter": "Entrer au Parloir",
       "waitingChoice": "Fin de visite : à toi de choisir",
       "inProgress": "En cours",
-      "permanent": "Permis permanent avec {pseudo}"
+      "permanent": "Permis permanent avec {pseudo}",
+      "unread": "{count, plural, one {# non lu} other {# non lus}}"
     },
     "parloir": {
       "metaTitle": "Parloir",
@@ -1467,7 +1469,8 @@
       "cavaleSoon": "La Cavale (un vrai rendez-vous) arrive bientôt.",
       "closedConversation": "Ce Parloir est fermé.",
       "liveRegion": "Nouveaux messages",
-      "you": "Toi"
+      "you": "Toi",
+      "read": "Lu"
     }
   },
   "Push": {

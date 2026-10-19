@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 import {
   conversationSchema,
   messageSchema,
+  readStateSchema,
   visitSchema,
   type Conversation,
   type Message,
@@ -38,6 +39,13 @@ export async function loadMessages(supabase: Client, conversationId: string): Pr
   if (error || !data) return [];
   const parsed = z.array(messageSchema).safeParse(data);
   return parsed.success ? parsed.data : [];
+}
+
+/** How far the other has read the conversation (« Lu », Phase 6a); 0 when unknown. */
+export async function loadOtherReadId(supabase: Client, conversationId: string): Promise<number> {
+  const { data } = await supabase.rpc("get_read_state", { p_conversation: conversationId });
+  const parsed = readStateSchema.safeParse(data);
+  return parsed.success ? parsed.data.other_read_id : 0;
 }
 
 /** The member's own pseudo (their profile row, RLS: owner only). */

@@ -3,12 +3,16 @@
 import { SendHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useCallback, useEffect, useRef, useState } from "react";
-import { loadMessagesAction, sendMessageAction } from "@/app/[locale]/(app)/parloir-actions";
+import {
+  loadMessagesAction,
+  markReadAction,
+  sendMessageAction,
+} from "@/app/[locale]/(app)/parloir-actions";
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
 import { Stamp } from "@/components/brand/stamp";
 import type { Accent } from "@/lib/accent";
 import { cn } from "@/lib/cn";
-import { MESSAGE_MAX, mergeMessages, type Message } from "@/lib/parloir";
+import { MESSAGE_MAX, mergeMessages, readMarkFor, type Message } from "@/lib/parloir";
 import { createClient } from "@/lib/supabase/browser";
 
 const IDLE: ActionState = { status: "idle" };
@@ -20,6 +24,8 @@ const SAFETY_POLL_MS = 15000;
 type Props = {
   conversationId: string;
   initial: Message[];
+  /** How far the other has read (« Lu » under my last message, Phase 6a). */
+  initialOtherReadId: number;
   /** Writing is possible (visit in progress with both present, or Permis permanent). */
   canWrite: boolean;
   me: { pseudo: string; accent: Accent };
@@ -38,6 +44,7 @@ type Props = {
 export function Chat({
   conversationId,
   initial,
+  initialOtherReadId,
   canWrite,
   me,
   other,
@@ -48,12 +55,17 @@ export function Chat({
   const errorT = useTranslations("Relations.errors");
   const [messages, setMessages] = useState<Message[]>(initial);
   const [draft, setDraft] = useState("");
+  const [otherReadId, setOtherReadId] = useState(initialOtherReadId);
   const lastId = useRef(initial.at(-1)?.id ?? 0);
+  const markedId = useRef(0);
   const listRef = useRef<HTMLOListElement>(null);
 
   const refresh = useCallback(async () => {
-    const incoming = await loadMessagesAction(conversationId, lastId.current);
-    if (!incoming || incoming.length === 0) return;
+    const result = await loadMessagesAction(conversationId, lastId.current).catch(() => null);
+    if (!result) return;
+    setOtherReadId(result.otherReadId);
+    const incoming = result.messages;
+    if (incoming.length === 0) return;
     setMessages((current) => {
       const merged = mergeMessages(current, incoming);
       lastId.current = merged.at(-1)?.id ?? lastId.current;
@@ -120,6 +132,23 @@ export function Chat({
     listRef.current?.lastElementChild?.scrollIntoView({ block: "end" });
   }, [messages.length]);
 
+  // What is on screen is read: the conversation is marked up to its last message (Phase 6a).
+  const newest = messages.at(-1)?.id ?? 0;
+  useEffect(() => {
+    const mark = () => {
+      if (document.visibilityState !== "visible" || newest <= markedId.current) return;
+      markedId.current = newest;
+      void markReadAction(conversationId, newest).catch(() => {
+        markedId.current = 0;
+      });
+    };
+    mark();
+    document.addEventListener("visibilitychange", mark);
+    return () => document.removeEventListener("visibilitychange", mark);
+  }, [conversationId, newest]);
+
+  const readMark = readMarkFor(messages, otherReadId);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <ol
@@ -137,6 +166,9 @@ export function Chat({
               visitorPseudo={visitorPseudo}
               iAmVisitor={iAmVisitor}
             />
+            {message.id === readMark ? (
+              <p className="text-grey mt-0.5 text-right text-[11px]">{t("read")}</p>
+            ) : null}
           </li>
         ))}
       </ol>

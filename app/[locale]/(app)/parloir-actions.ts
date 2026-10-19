@@ -2,7 +2,14 @@
 
 import * as z from "zod/mini";
 import { requireMember } from "@/lib/auth/user";
-import { MESSAGE_MAX, messageSchema, visitSchema, type Message, type Visit } from "@/lib/parloir";
+import {
+  MESSAGE_MAX,
+  messageSchema,
+  readStateSchema,
+  visitSchema,
+  type Message,
+  type Visit,
+} from "@/lib/parloir";
 import { requestErrorKey } from "@/lib/relations/server";
 import type { ActionState } from "./relations-actions";
 
@@ -29,22 +36,36 @@ export async function syncVisitAction(visitId: string): Promise<VisitResult> {
   return parsed.success ? { visit: parsed.data } : { error: "generic" };
 }
 
-/** The messages after the last one shown (a poll, or a realtime signal). */
+/** The messages after the last one shown (a poll, or a realtime signal), and how far the other read. */
 export async function loadMessagesAction(
   conversationId: string,
   after: number,
-): Promise<Message[] | null> {
+): Promise<{ messages: Message[]; otherReadId: number } | null> {
   const id = uuid.safeParse(conversationId);
   const from = z.number().check(z.int(), z.gte(0)).safeParse(after);
   if (!id.success || !from.success) return null;
   const member = await requireMember();
-  const { data, error } = await member.supabase.rpc("get_messages", {
+  const [messages, read] = await Promise.all([
+    member.supabase.rpc("get_messages", { p_conversation: id.data, p_after: from.data }),
+    member.supabase.rpc("get_read_state", { p_conversation: id.data }),
+  ]);
+  if (messages.error || !messages.data) return null;
+  const parsed = z.array(messageSchema).safeParse(messages.data);
+  const state = readStateSchema.safeParse(read.data);
+  if (!parsed.success) return null;
+  return { messages: parsed.data, otherReadId: state.success ? state.data.other_read_id : 0 };
+}
+
+/** The member has seen the conversation up to this message (Lu / non-lus, Phase 6a). */
+export async function markReadAction(conversationId: string, upTo: number): Promise<void> {
+  const id = uuid.safeParse(conversationId);
+  const to = z.number().check(z.int(), z.gte(0)).safeParse(upTo);
+  if (!id.success || !to.success) return;
+  const member = await requireMember();
+  await member.supabase.rpc("mark_conversation_read", {
     p_conversation: id.data,
-    p_after: from.data,
+    p_up_to: to.data,
   });
-  if (error || !data) return null;
-  const parsed = z.array(messageSchema).safeParse(data);
-  return parsed.success ? parsed.data : null;
 }
 
 const messageInput = z.object({

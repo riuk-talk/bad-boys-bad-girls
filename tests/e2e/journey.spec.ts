@@ -487,13 +487,37 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await expect(badPage.getByRole("button", { name: "Affaire classée" })).toBeVisible();
     await expect(badPage.getByRole("link", { name: "Conseils sécurité" })).toBeVisible();
     expect(await axeViolations(badPage)).toEqual([]);
-    await badPage.context().close();
+    // Not read yet: no « Lu » under the Bad's message.
+    await expect(badPage.getByText("Lu", { exact: true })).toHaveCount(0);
 
+    // The Visitor: one unread message, on the « Visites » tab and on the Parloir (Phase 6a).
     const visitorPage = await login(browser, visitor.email, visitor.password);
     await visitorPage.goto("/visites");
-    await visitorPage.getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` }).click();
+    const tabs = visitorPage.getByRole("navigation", { name: "Navigation principale" });
+    await expect(tabs.getByRole("link", { name: /Visites.*1 message non lu/ })).toBeVisible();
+    const parloir = visitorPage.getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` });
+    await expect(parloir).toContainText("1 non lu");
+    await parloir.click();
     await expect(visitorPage.getByText("On se refait ça quand tu veux.")).toBeVisible();
+    // Read: the counter goes, and « Lu » appears under the Bad's message.
+    await expect
+      .poll(async () => {
+        const { data } = await admin
+          .from("conversations")
+          .select("visitor_read_id")
+          .eq("visitor_id", visitor.id)
+          .single();
+        return data?.visitor_read_id ?? 0;
+      })
+      .toBeGreaterThan(0);
+    await visitorPage.goto("/visites");
+    await expect(parloir).not.toContainText("non lu");
+    await expect(tabs.getByRole("link", { name: /non lu/ })).toHaveCount(0);
     await visitorPage.context().close();
+
+    await badPage.reload();
+    await expect(badPage.getByText("Lu", { exact: true })).toBeVisible();
+    await badPage.context().close();
   });
 
   test("9. the notifications leave: mail, slot, visit, Permis permanent, a message", async ({

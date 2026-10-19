@@ -76,6 +76,24 @@ export const conversationSchema = z.object({
 });
 export type Conversation = z.infer<typeof conversationSchema>;
 
+export const readStateSchema = z.object({ my_read_id: z.number(), other_read_id: z.number() });
+
+/** « Lu » goes under my last message, once the other has read up to it (SPEC §13, owner 2026-10-19). */
+export function readMarkFor(messages: readonly Message[], otherReadId: number): number | null {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i];
+    if (message && message.kind === "text" && message.mine) {
+      return otherReadId >= message.id ? message.id : null;
+    }
+  }
+  return null;
+}
+
+/** The unread messages of all my Parloirs sans horaire, for the « Visites » tab. */
+export function totalUnread(rows: readonly { unread: number }[]): number {
+  return rows.reduce((sum, row) => sum + Math.max(0, row.unread), 0);
+}
+
 /** The screen of a visit. */
 export type VisitPhase =
   | "before" // scheduled, not started yet
