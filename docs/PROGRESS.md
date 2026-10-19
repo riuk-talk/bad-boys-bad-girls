@@ -4,9 +4,11 @@
 
 ## Phase en cours
 
-**Phase 5 validée** (2026-10-18, CI n° 17 et 18 vertes) ; `phase-5` = `1c76403` (5a, 5b, 5c, correctif Promenade en mode ouvert). **Prod** : les migrations de `phase-5` sont appliquées avant la fusion, toutes les 11, le DROP par le porteur dans le SQL Editor. **En attente** : vérification de la prod par le conseiller, puis pull request `phase-5` → `main` (pas encore ouverte). Phase 4 validée, fusionnée (PR #11) et en production.
+**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : découpage annoncé, en attente de validation avant de coder.**
 
 ## Bases Supabase : preview et production (2026-10-17)
+
+- **Historique de la preview complété (2026-10-19)** : la ligne `20261003223804 concept_v2_recreate` manquait ; ajoutée avec le SQL du fichier dans `statements` (MD5 identique), **rien réappliqué**. Historique de la preview = les 36 fichiers de `main` (empreinte identique, comme la prod).
 
 - **Preview** : `bad-boys-preview` (`chvnmzmvcjvhxlnfmlvv`, eu-west-1) — l'ancienne base « dev », branches et previews Vercel ; c'est là que vont les migrations des phases en cours.
 - **Production** : `bad-boys-prod` (`hmmobtyherwuhrhymfbk`, eu-west-3, Postgres 17). Réglée par le porteur : inscriptions coupées, URL du site, TOTP ; `SUPABASE_SECRET_KEY` posée en Production sur Vercel.
@@ -25,7 +27,17 @@
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
 - **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
 
-## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
+## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, découpage annoncé, en attente de validation)
+Relu : PROMPT Phase 6, SPEC §7 ter, §10 (masquage), §13, §16, SCHEMA `date_proposals`, `can_unmask`, maquette `Permanent.dc.html`.
+Découpage proposé (arrêt et validation à la fin de la phase, comme d'habitude ; sous-étapes livrées dans l'ordre) :
+- **6a — Lu / non-lus** : dernier message lu par membre et par conversation (`mark_conversation_read`), indicateur « Lu », compteur de non-lus (onglet « Visites » et liste des Parloirs triée par activité), compteurs relus toutes les 60 s et au retour sur l'onglet. pgTAP.
+- **6b — La Cavale en base** : `date_proposals` (types de lieu bar, café, concert, balade, activité ; nom du lieu ; date et heure futures), `propose_date`, `respond_date` (Accepter / Proposer autre chose / Pas encore), une seule en attente par conversation, conversation `open` exigée, avertissement « lieu privé » (conseil, pas blocage), notifications `date_proposed` / `date_accepted` / `date_countered` et Web Push neutre. pgTAP (tiers, blocage, affaire classée, dates passées).
+- **6c — Levée du masquage** : `can_unmask` (règle à confirmer, question 1) appliquée par `send_message` ; jamais pendant une visite ; encart « Ne partage jamais d'argent ni de codes ». pgTAP.
+- **6d — Écrans** : formulaire de Cavale, carte épinglée avec rappel des conseils sécurité, réponse, boutons Affaire classée / Proposer une Cavale au-dessus du champ toujours visible ; FR/EN.
+- **6e — Parcours de bout en bout** prolongé (Cavale proposée → autre proposition → acceptée → coordonnées visibles ensuite → blocage : plus rien ne passe), CI, migrations sur la preview uniquement, docs, arrêt.
+Questions avant de coder : voir le rapport du 2026-10-19 (levée du masquage, portée de la levée, vie d'une Cavale acceptée, « Pas encore », indicateur « Lu »).
+
+## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06 → 2026-10-18) : ✅ validée, fusionnée (PR #12) et en production
 
 ### Découpage (validé)
 5a Web Push → 5b Heures de visite → 5c Visite. Arrêt, rapport et test sur téléphone après chacune.
