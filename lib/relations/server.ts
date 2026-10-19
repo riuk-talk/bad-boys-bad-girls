@@ -55,6 +55,15 @@ export async function loadPermit(supabase: Client, visitorId: string): Promise<P
 /** Postgres error codes raised by the member functions, mapped to i18n keys. */
 export function requestErrorKey(message: string | undefined): string {
   const known = [
+    // La Cavale (Phase 6), before the shorter keys they contain.
+    "date_too_soon",
+    "date_too_far",
+    "date_pending",
+    "date_accepted_exists",
+    "date_past",
+    "not_yet_wait",
+    "venue_invalid",
+    "venue_required",
     "visitors_only",
     "permit_pending",
     "zone_closed",
