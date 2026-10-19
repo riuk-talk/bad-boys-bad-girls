@@ -883,7 +883,8 @@
     },
     "seeAsVisitors": "See my File as Visitors do",
     "accountTitle": "My account",
-    "notificationsTitle": "Notifications"
+    "notificationsTitle": "Notifications",
+    "decisionsLink": "{count, plural, =0 {Decisions of the Greffe} one {Decisions of the Greffe (# new)} other {Decisions of the Greffe (# new)}}"
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
@@ -1470,7 +1471,8 @@
       "liveRegion": "New messages",
       "you": "You",
       "read": "Read",
-      "moneyNotice": "Never share money or codes."
+      "moneyNotice": "Never share money or codes.",
+      "messageRemoved": "Message removed by the Greffe."
     },
     "cavale": {
       "propose": "Propose a Cavale",
@@ -1581,5 +1583,211 @@
     "submit": "Verify",
     "invalid": "Wrong or expired code. Try again with the next one.",
     "error": "Two-step verification could not start. Reload the page."
+  },
+  "Admin": {
+    "nav": {
+      "label": "Administration",
+      "greffe": "Photos",
+      "signalements": "Reports",
+      "textes": "Flagged texts",
+      "membres": "Members",
+      "historique": "History"
+    },
+    "done": "Decision saved.",
+    "decide": "Save the decision",
+    "days": "Length of the suspension (days)",
+    "noPseudo": "(no pseudo)",
+    "errors": {
+      "reason_required": "A motive is required: 10 to 1,000 characters.",
+      "invalid_action": "This sanction is not possible here.",
+      "invalid_days": "A suspension lasts 1 to 90 days.",
+      "already_decided": "Already dealt with.",
+      "already_banned": "This member is already banned.",
+      "not_banned": "This member is not banned.",
+      "already_hidden": "This Fiche is already hidden.",
+      "not_hidden": "This Fiche is not hidden.",
+      "no_good_conduct": "This member does not have the Bonne conduite badge.",
+      "not_removable": "The Greffe cannot remove this text: uphold it, then sanction from the member's record.",
+      "self_sanction": "You cannot decide for yourself.",
+      "admin_protected": "Only the super admin can sanction an admin.",
+      "super_admin_only": "Only the super admin can lift a ban.",
+      "not_found": "Not found.",
+      "generic": "The decision could not be saved. Try again."
+    },
+    "roles": {
+      "bad": "Bad",
+      "visitor": "Visitor"
+    },
+    "states": {
+      "banned": "Banned",
+      "suspended": "Suspended",
+      "hidden": "Fiche hidden",
+      "onboarding": "Signing up",
+      "active": "Active"
+    },
+    "categories": {
+      "fake_profile": "Fake profile",
+      "minor": "Minor",
+      "harassment": "Harassment",
+      "sexual_content": "Sexual content",
+      "violence_threat": "Violence or threat",
+      "scam": "Scam",
+      "other": "Other"
+    },
+    "targets": {
+      "profile": "Fiche",
+      "permit": "Visiting permit",
+      "photo": "Photo",
+      "casier": "Casier",
+      "message": "Message",
+      "visit_request": "Visit request"
+    },
+    "statuses": {
+      "open": "Pending",
+      "upheld": "Upheld",
+      "rejected": "Rejected"
+    },
+    "sources": {
+      "pseudo": "Pseudo",
+      "bio": "Behaviour note",
+      "visit_motive": "Reason for visiting",
+      "casier": "Casier",
+      "tribe_detail": "Detail of a distinctive sign",
+      "visit_request": "Note of a visit request",
+      "message": "Message in the Parloir",
+      "date_venue": "Place of a Cavale"
+    },
+    "actions": {
+      "warn": "Warning",
+      "suspend": "Suspension",
+      "ban": "Ban",
+      "unban": "Ban lifted",
+      "hide_profile": "Fiche hidden",
+      "unhide_profile": "Fiche visible again",
+      "photo_approve": "Photo validated",
+      "photo_reject": "Photo refused",
+      "text_clear": "Text: nothing wrong",
+      "text_remove": "Text removed",
+      "revoke_good_conduct": "Bonne conduite withdrawn"
+    },
+    "reports": {
+      "title": "Reports",
+      "lead": "One reasoned decision per report. « Minor » first. The reporter gets your motive; if you uphold the report, the member concerned gets theirs, never knowing who reported.",
+      "waiting": "{count, plural, one {# report pending} other {# reports pending}}",
+      "empty": "No report pending.",
+      "target": "About:",
+      "counts": "{open} pending, {upheld} upheld",
+      "reporter": "Reported by {pseudo}",
+      "content": "Reported content",
+      "photoAlt": "Reported photo",
+      "outcome": "Decision",
+      "rejected": "Reject",
+      "upheld": "Uphold",
+      "reasonReporter": "Motive for the reporter",
+      "action": "Sanction (if upheld)",
+      "reasonTarget": "Motive for the member concerned (if upheld)",
+      "reasonTargetHint": "Sent to the member concerned. Never name the reporter."
+    },
+    "flags": {
+      "title": "Flagged texts",
+      "lead": "Texts found by the keywords. « Nothing wrong » tells nobody; « Remove the text » erases it and sends your motive to the member; « Uphold » is for texts that cannot be erased here (pseudo, reason for visiting, Casier, place of a Cavale): then sanction from the member's record.",
+      "waiting": "{count, plural, one {# text pending} other {# texts pending}}",
+      "empty": "No text pending.",
+      "terms": "Words found: {terms}",
+      "reason": "Motive (required to uphold or remove)",
+      "hintRemovable": "The Greffe can remove this text.",
+      "hintNotRemovable": "This text cannot be removed here.",
+      "clear": "Nothing wrong",
+      "uphold": "Uphold",
+      "remove": "Remove the text"
+    },
+    "members": {
+      "title": "Members",
+      "lead": "Search by the start of the pseudo or by the exact e-mail (the e-mail is never shown).",
+      "search": "Pseudo or e-mail",
+      "submit": "Search",
+      "none": "No member found.",
+      "since": "signed up on {date}"
+    },
+    "member": {
+      "title": "Member record",
+      "until": "until {date}",
+      "goodConduct": "Bonne conduite",
+      "admin": "Admin",
+      "facts": "Signed up: {created} · Quartier: {zone} · Reports made: {made}",
+      "sanction": "Sanction",
+      "action": "Decision",
+      "reason": "Motive for the member",
+      "reasonHint": "Sent to the member as written. 10 to 1,000 characters.",
+      "apply": "Apply",
+      "history": "Decisions",
+      "noActions": "No decision.",
+      "received": "Reports received",
+      "noReports": "No report.",
+      "flags": "Flagged texts",
+      "noFlags": "No flagged text."
+    },
+    "log": {
+      "title": "History of decisions",
+      "empty": "No decision yet."
+    }
+  },
+  "Decisions": {
+    "title": "Decisions of the Greffe",
+    "lead": "Nothing happens here without an explanation: every decision about you comes with a motive, and every report you make gets an answer.",
+    "aboutMe": "About me",
+    "noDecisions": "No decision about you.",
+    "until": "Until {date}.",
+    "motive": "Motive:",
+    "myReports": "My reports",
+    "noReports": "You have made no report.",
+    "contact": "A question about a decision? Write to the contact point given in the legal notice.",
+    "actions": {
+      "warn": "Warning from the Greffe",
+      "suspend": "Account suspended",
+      "ban": "Account banned",
+      "unban": "Ban lifted",
+      "hide_profile": "Fiche hidden by the Greffe",
+      "unhide_profile": "Fiche visible again",
+      "photo_approve": "Photo validated",
+      "photo_reject": "Photo refused",
+      "text_clear": "Text: nothing wrong",
+      "text_remove": "Text removed by the Greffe",
+      "revoke_good_conduct": "Bonne conduite withdrawn"
+    },
+    "categories": {
+      "fake_profile": "Fake profile",
+      "minor": "Minor",
+      "harassment": "Harassment",
+      "sexual_content": "Sexual content",
+      "violence_threat": "Violence or threat",
+      "scam": "Scam",
+      "other": "Other"
+    },
+    "statuses": {
+      "open": "Being examined by the Greffe.",
+      "upheld": "Upheld by the Greffe.",
+      "rejected": "Not upheld by the Greffe."
+    },
+    "notice": {
+      "motive": "Motive of the Greffe",
+      "contact": "A question? Write to the contact point given in the legal notice.",
+      "banned": {
+        "title": "Account banned",
+        "body": "The Greffe banned this account. It can no longer be used, and this e-mail address cannot be used to sign up again."
+      },
+      "suspended": {
+        "title": "Account suspended",
+        "body": "The Greffe suspended your account until {date}. Your Fiche is invisible and your open cases were closed."
+      },
+      "hidden": {
+        "title": "Fiche hidden",
+        "body": "The Greffe hid your Fiche: nobody sees it, and your open cases were closed."
+      },
+      "review": {
+        "title": "Fiche under review",
+        "body": "Your Fiche is hidden while the Greffe checks it, after a report. You will be told the decision."
+      }
+    }
   }
 }

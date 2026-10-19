@@ -137,6 +137,12 @@ export default async function MyFichePage() {
     return row.detail ? `${label} — ${row.detail}` : label;
   });
   const photo = mainUrl && main ? { src: mainUrl, width: 960, height: 1200 } : null;
+  // Décisions du Greffe (Phase 7a): the outcome of my reports and the decisions about me.
+  const { count: unreadDecisions } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .in("type", ["sanction", "report_decided"])
+    .is("read_at", null);
   const age = profile.birthdate ? ageFromBirthdate(profile.birthdate) : 0;
 
   return (
@@ -172,6 +178,9 @@ export default async function MyFichePage() {
             {t("seeAsVisitors")}
           </ButtonLink>
         )}
+        <ButtonLink href="/ma-fiche/decisions" variant="secondary">
+          {t("decisionsLink", { count: unreadDecisions ?? 0 })}
+        </ButtonLink>
       </nav>
 
       {isVisitor ? null : (

@@ -21,9 +21,13 @@ vi.mock("@/lib/auth/user", () => ({
   }),
 }));
 
+vi.mock("@/components/admin/admin-nav", () => ({ AdminNav: () => null }));
+
+// The page itself, inside the admin navigation.
 async function render() {
   const { default: AdminLayout } = await import("@/app/[locale]/(app)/admin/layout");
-  return AdminLayout({ children: "the Greffe" });
+  const element = await AdminLayout({ children: "the Greffe" });
+  return (element.props as { children: unknown[] }).children.at(-1);
 }
 
 describe("/admin layout", () => {

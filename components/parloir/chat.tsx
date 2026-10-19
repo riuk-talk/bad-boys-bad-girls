@@ -270,7 +270,7 @@ function Entry({
       mine={message.mine}
       accent={author.accent}
       name={author.pseudo}
-      text={message.body ?? ""}
+      text={message.body ?? t("messageRemoved")}
     />
   );
 }

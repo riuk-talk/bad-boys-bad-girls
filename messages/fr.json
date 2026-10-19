@@ -883,7 +883,8 @@
     },
     "seeAsVisitors": "Voir ma Fiche comme les Visiteurs",
     "accountTitle": "Mon compte",
-    "notificationsTitle": "Notifications"
+    "notificationsTitle": "Notifications",
+    "decisionsLink": "{count, plural, =0 {Décisions du Greffe} one {Décisions du Greffe (# nouvelle)} other {Décisions du Greffe (# nouvelles)}}"
   },
   "Quarter": {
     "referralTitle": "Fais entrer tes complices",
@@ -1470,7 +1471,8 @@
       "liveRegion": "Nouveaux messages",
       "you": "Toi",
       "read": "Lu",
-      "moneyNotice": "Ne partage jamais d'argent ni de codes."
+      "moneyNotice": "Ne partage jamais d'argent ni de codes.",
+      "messageRemoved": "Message retiré par le Greffe."
     },
     "cavale": {
       "propose": "Proposer une Cavale",
@@ -1581,5 +1583,211 @@
     "submit": "Vérifier",
     "invalid": "Code incorrect ou expiré. Réessaie avec le code suivant.",
     "error": "La double authentification n'a pas pu démarrer. Recharge la page."
+  },
+  "Admin": {
+    "nav": {
+      "label": "Administration",
+      "greffe": "Photos",
+      "signalements": "Signalements",
+      "textes": "Textes signalés",
+      "membres": "Membres",
+      "historique": "Historique"
+    },
+    "done": "Décision enregistrée.",
+    "decide": "Enregistrer la décision",
+    "days": "Durée de la suspension (jours)",
+    "noPseudo": "(sans pseudo)",
+    "errors": {
+      "reason_required": "Le motif est obligatoire : 10 à 1 000 caractères.",
+      "invalid_action": "Cette sanction n'est pas possible ici.",
+      "invalid_days": "Une suspension dure de 1 à 90 jours.",
+      "already_decided": "Déjà traité.",
+      "already_banned": "Ce membre est déjà banni.",
+      "not_banned": "Ce membre n'est pas banni.",
+      "already_hidden": "Cette Fiche est déjà masquée.",
+      "not_hidden": "Cette Fiche n'est pas masquée.",
+      "no_good_conduct": "Ce membre n'a pas le badge Bonne conduite.",
+      "not_removable": "Ce texte ne peut pas être retiré par le Greffe : retiens-le, puis sanctionne depuis la fiche du membre.",
+      "self_sanction": "Tu ne peux pas décider pour toi-même.",
+      "admin_protected": "Seul le super admin peut sanctionner un admin.",
+      "super_admin_only": "Seul le super admin peut lever un bannissement.",
+      "not_found": "Introuvable.",
+      "generic": "La décision n'a pas pu être enregistrée. Réessaie."
+    },
+    "roles": {
+      "bad": "Bad",
+      "visitor": "Visiteur"
+    },
+    "states": {
+      "banned": "Banni·e",
+      "suspended": "Suspendu·e",
+      "hidden": "Fiche masquée",
+      "onboarding": "Inscription en cours",
+      "active": "Actif·ve"
+    },
+    "categories": {
+      "fake_profile": "Faux profil",
+      "minor": "Mineur",
+      "harassment": "Harcèlement",
+      "sexual_content": "Contenu sexuel",
+      "violence_threat": "Violence ou menace",
+      "scam": "Arnaque",
+      "other": "Autre"
+    },
+    "targets": {
+      "profile": "Fiche",
+      "permit": "Permis de visite",
+      "photo": "Photo",
+      "casier": "Casier",
+      "message": "Message",
+      "visit_request": "Demande de parloir"
+    },
+    "statuses": {
+      "open": "En attente",
+      "upheld": "Retenu",
+      "rejected": "Rejeté"
+    },
+    "sources": {
+      "pseudo": "Pseudo",
+      "bio": "Note comportementale",
+      "visit_motive": "Motif de visite",
+      "casier": "Casier",
+      "tribe_detail": "Précision d'un signe distinctif",
+      "visit_request": "Mot d'une demande de parloir",
+      "message": "Message au Parloir",
+      "date_venue": "Lieu d'une Cavale"
+    },
+    "actions": {
+      "warn": "Avertissement",
+      "suspend": "Suspension",
+      "ban": "Bannissement",
+      "unban": "Levée du bannissement",
+      "hide_profile": "Fiche masquée",
+      "unhide_profile": "Fiche de nouveau visible",
+      "photo_approve": "Photo validée",
+      "photo_reject": "Photo refusée",
+      "text_clear": "Texte : rien à signaler",
+      "text_remove": "Texte retiré",
+      "revoke_good_conduct": "Bonne conduite retirée"
+    },
+    "reports": {
+      "title": "Signalements",
+      "lead": "Une décision motivée par signalement. « Mineur » en premier. Le signaleur reçoit ton motif ; si tu retiens le signalement, la personne concernée reçoit le sien, sans jamais savoir qui a signalé.",
+      "waiting": "{count, plural, one {# signalement en attente} other {# signalements en attente}}",
+      "empty": "Aucun signalement en attente.",
+      "target": "Concerne :",
+      "counts": "{open} en attente, {upheld} retenu(s)",
+      "reporter": "Signalé par {pseudo}",
+      "content": "Contenu signalé",
+      "photoAlt": "Photo signalée",
+      "outcome": "Décision",
+      "rejected": "Rejeter",
+      "upheld": "Retenir",
+      "reasonReporter": "Motif pour le signaleur",
+      "action": "Sanction (si retenu)",
+      "reasonTarget": "Motif pour la personne concernée (si retenu)",
+      "reasonTargetHint": "Envoyé à la personne concernée. Ne cite jamais le signaleur."
+    },
+    "flags": {
+      "title": "Textes signalés",
+      "lead": "Textes repérés par les mots-clés. « Rien à signaler » ne prévient personne ; « Retirer le texte » efface le texte et envoie ton motif au membre ; « Retenir » sert quand le texte ne peut pas être effacé ici (pseudo, Motif de visite, Casier, lieu d'une Cavale) : sanctionne ensuite depuis la fiche du membre.",
+      "waiting": "{count, plural, one {# texte en attente} other {# textes en attente}}",
+      "empty": "Aucun texte en attente.",
+      "terms": "Mots repérés : {terms}",
+      "reason": "Motif (obligatoire pour retenir ou retirer)",
+      "hintRemovable": "Le texte peut être retiré par le Greffe.",
+      "hintNotRemovable": "Ce texte ne peut pas être retiré ici.",
+      "clear": "Rien à signaler",
+      "uphold": "Retenir",
+      "remove": "Retirer le texte"
+    },
+    "members": {
+      "title": "Membres",
+      "lead": "Recherche par début de pseudo ou par e-mail exact (l'e-mail n'est jamais affiché).",
+      "search": "Pseudo ou e-mail",
+      "submit": "Chercher",
+      "none": "Aucun membre trouvé.",
+      "since": "inscrit·e le {date}"
+    },
+    "member": {
+      "title": "Fiche du membre",
+      "until": "jusqu'au {date}",
+      "goodConduct": "Bonne conduite",
+      "admin": "Admin",
+      "facts": "Inscription : {created} · Quartier : {zone} · Signalements faits : {made}",
+      "sanction": "Sanction",
+      "action": "Décision",
+      "reason": "Motif pour le membre",
+      "reasonHint": "Envoyé au membre tel quel. 10 à 1 000 caractères.",
+      "apply": "Appliquer",
+      "history": "Décisions",
+      "noActions": "Aucune décision.",
+      "received": "Signalements reçus",
+      "noReports": "Aucun signalement.",
+      "flags": "Textes signalés",
+      "noFlags": "Aucun texte signalé."
+    },
+    "log": {
+      "title": "Historique des décisions",
+      "empty": "Aucune décision pour l'instant."
+    }
+  },
+  "Decisions": {
+    "title": "Décisions du Greffe",
+    "lead": "Ici, rien ne se fait sans explication : chaque décision qui te concerne est motivée, et chaque signalement que tu fais reçoit une réponse.",
+    "aboutMe": "Me concernant",
+    "noDecisions": "Aucune décision te concernant.",
+    "until": "Jusqu'au {date}.",
+    "motive": "Motif :",
+    "myReports": "Mes signalements",
+    "noReports": "Tu n'as fait aucun signalement.",
+    "contact": "Une question sur une décision ? Écris au point de contact indiqué dans les mentions légales.",
+    "actions": {
+      "warn": "Avertissement du Greffe",
+      "suspend": "Compte suspendu",
+      "ban": "Compte banni",
+      "unban": "Bannissement levé",
+      "hide_profile": "Fiche masquée par le Greffe",
+      "unhide_profile": "Fiche de nouveau visible",
+      "photo_approve": "Photo validée",
+      "photo_reject": "Photo refusée",
+      "text_clear": "Texte : rien à signaler",
+      "text_remove": "Texte retiré par le Greffe",
+      "revoke_good_conduct": "Bonne conduite retirée"
+    },
+    "categories": {
+      "fake_profile": "Faux profil",
+      "minor": "Mineur",
+      "harassment": "Harcèlement",
+      "sexual_content": "Contenu sexuel",
+      "violence_threat": "Violence ou menace",
+      "scam": "Arnaque",
+      "other": "Autre"
+    },
+    "statuses": {
+      "open": "En cours d'examen par le Greffe.",
+      "upheld": "Retenu par le Greffe.",
+      "rejected": "Non retenu par le Greffe."
+    },
+    "notice": {
+      "motive": "Motif du Greffe",
+      "contact": "Une question ? Écris au point de contact indiqué dans les mentions légales.",
+      "banned": {
+        "title": "Compte banni",
+        "body": "Le Greffe a banni ce compte. Il ne peut plus être utilisé, et cette adresse e-mail ne peut pas servir à une nouvelle inscription."
+      },
+      "suspended": {
+        "title": "Compte suspendu",
+        "body": "Le Greffe a suspendu ton compte jusqu'au {date}. Ta Fiche est invisible et tes affaires en cours ont été classées."
+      },
+      "hidden": {
+        "title": "Fiche masquée",
+        "body": "Le Greffe a masqué ta Fiche : personne ne la voit, et tes affaires en cours ont été classées."
+      },
+      "review": {
+        "title": "Fiche en vérification",
+        "body": "Ta Fiche est masquée le temps d'une vérification par le Greffe, après un signalement. Tu seras prévenu·e de la décision."
+      }
+    }
   }
 }
