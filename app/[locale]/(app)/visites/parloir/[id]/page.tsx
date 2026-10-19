@@ -4,12 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { OpenParloir } from "@/components/parloir/open-parloir";
 import { redirect } from "@/i18n/navigation";
 import { accentForGender } from "@/lib/accent";
-import {
-  loadConversation,
-  loadMessages,
-  loadOtherReadId,
-  myPseudo,
-} from "@/lib/relations/parloir";
+import { loadConversation, loadMessages, loadOtherReadId, myPseudo } from "@/lib/relations/parloir";
 import { requireRole } from "@/lib/relations/server";
 
 type Props = { params: Promise<{ locale: string; id: string }> };
