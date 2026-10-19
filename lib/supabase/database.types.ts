@@ -250,6 +250,7 @@ export type Database = {
       conversations: {
         Row: {
           bad_id: string
+          bad_read_id: number
           closed_at: string | null
           created_at: string
           id: string
@@ -258,9 +259,11 @@ export type Database = {
           request_id: string
           status: Database["public"]["Enums"]["conversation_status"]
           visitor_id: string
+          visitor_read_id: number
         }
         Insert: {
           bad_id: string
+          bad_read_id?: number
           closed_at?: string | null
           created_at?: string
           id?: string
@@ -269,9 +272,11 @@ export type Database = {
           request_id: string
           status?: Database["public"]["Enums"]["conversation_status"]
           visitor_id: string
+          visitor_read_id?: number
         }
         Update: {
           bad_id?: string
+          bad_read_id?: number
           closed_at?: string | null
           created_at?: string
           id?: string
@@ -280,6 +285,7 @@ export type Database = {
           request_id?: string
           status?: Database["public"]["Enums"]["conversation_status"]
           visitor_id?: string
+          visitor_read_id?: number
         }
         Relationships: [
           {
@@ -1762,7 +1768,15 @@ export type Database = {
         }[]
       }
       get_permit: { Args: { p_visitor: string }; Returns: Json }
+      get_read_state: { Args: { p_conversation: string }; Returns: Json }
       get_request_schedule: { Args: { p_request: string }; Returns: Json }
+      get_unread_counts: {
+        Args: never
+        Returns: {
+          conversation_id: string
+          unread: number
+        }[]
+      }
       get_visit: { Args: { p_visit: string }; Returns: Json }
       has_contacts: { Args: { value: string }; Returns: boolean }
       has_open_relation: {
@@ -1799,6 +1813,10 @@ export type Database = {
       }
       is_trusted_reporter: { Args: { p_reporter: string }; Returns: boolean }
       join_visit: { Args: { p_visit: string }; Returns: Json }
+      mark_conversation_read: {
+        Args: { p_conversation: string; p_up_to: number }
+        Returns: undefined
+      }
       mark_notifications_read:
         | { Args: never; Returns: undefined }
         | {
