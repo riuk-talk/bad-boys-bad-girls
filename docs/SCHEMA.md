@@ -316,7 +316,7 @@ Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pendi
 | `can_view_bad(viewer, bad)` | `viewer` Visiteur actif dans un quartier ouvert, `is_bad_visible(bad)`, `criteria_match`, pas de blocage | **[v2]** (remplace `can_view_profile`) |
 | `has_open_relation(a, b)` | demande en cours, visite programmée ou conversation `visiting`/`open` entre les deux (B2) | **[v2-modif]** |
 | `visitor_reputation(v)` → `(casier_vierge bool, honored int, due int)` | SPEC §5 bis | **[v2-nouveau]** |
-| `can_unmask(conversation)` | conversation `open` (Permis permanent) **et** (Cavale acceptée ou 10/10 messages) **et** comptes > 7 j **et** aucun signalement ouvert bloquant (B3) | **[v2-modif]** |
+| `can_unmask(conversation)` | conversation `open` (Permis permanent) **et** une Cavale acceptée (même annulée ensuite) **et** comptes > 7 j **et** aucun signalement ouvert bloquant (B3) ; s'applique aux messages envoyés après la levée | **[v2-modif]** (v7.6 : voie « 10/10 messages » retirée, 2026-10-19) |
 | `pair_cooldown_until(visitor, bad)` | fin du délai de 30 jours après un classement (sens Visiteur → Bad) | **[v2-modif]** |
 | `slot_shortcuts(zone)` | heures locales de « Ce soir », « Demain soir », « Ce week-end » (SPEC §7 bis) | **[v2-nouveau]** (miroir TS pour l'UI, tests de parité) |
 | `touch_activity()` | inchangé | Phase 4 |

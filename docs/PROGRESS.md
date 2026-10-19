@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : découpage annoncé, en attente de validation avant de coder.**
+**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : en cours**, sous-phases 6a → 6e enchaînées (nouvelle règle n° 1 de CLAUDE.md).
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -27,7 +27,7 @@
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
 - **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
 
-## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, découpage annoncé, en attente de validation)
+## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, en cours : découpage validé, sous-phases enchaînées)
 Relu : PROMPT Phase 6, SPEC §7 ter, §10 (masquage), §13, §16, SCHEMA `date_proposals`, `can_unmask`, maquette `Permanent.dc.html`.
 Découpage proposé (arrêt et validation à la fin de la phase, comme d'habitude ; sous-étapes livrées dans l'ordre) :
 - **6a — Lu / non-lus** : dernier message lu par membre et par conversation (`mark_conversation_read`), indicateur « Lu », compteur de non-lus (onglet « Visites » et liste des Parloirs triée par activité), compteurs relus toutes les 60 s et au retour sur l'onglet. pgTAP.
@@ -35,7 +35,7 @@ Découpage proposé (arrêt et validation à la fin de la phase, comme d'habitud
 - **6c — Levée du masquage** : `can_unmask` (règle à confirmer, question 1) appliquée par `send_message` ; jamais pendant une visite ; encart « Ne partage jamais d'argent ni de codes ». pgTAP.
 - **6d — Écrans** : formulaire de Cavale, carte épinglée avec rappel des conseils sécurité, réponse, boutons Affaire classée / Proposer une Cavale au-dessus du champ toujours visible ; FR/EN.
 - **6e — Parcours de bout en bout** prolongé (Cavale proposée → autre proposition → acceptée → coordonnées visibles ensuite → blocage : plus rien ne passe), CI, migrations sur la preview uniquement, docs, arrêt.
-Questions avant de coder : voir le rapport du 2026-10-19 (levée du masquage, portée de la levée, vie d'une Cavale acceptée, « Pas encore », indicateur « Lu »).
+Questions tranchées le 2026-10-19 : voir « Décisions à valider ». Branche de phase `phase-6` (depuis `main`), avancée à chaque sous-phase dont la CI est verte.
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06 → 2026-10-18) : ✅ validée, fusionnée (PR #12) et en production
 
@@ -556,6 +556,21 @@ Toutes les dépendances sont figées à la version exacte dans `package.json` (p
 
 - Docker est installé mais le démon ne tourne pas dans l'environnement cloud de Claude Code → pas de Supabase local ici. Les tests pgTAP tourneront contre le projet Supabase de dev (ou en local chez le porteur avec Docker).
 - Chromium préinstallé (`/opt/pw-browsers/chromium`), utilisé par Playwright et Lighthouse via `executablePath`.
+
+## Décisions à valider (revue du porteur en fin de phase)
+
+Phase 6 — réponses du conseiller du 2026-10-19 (déjà tranchées, à confirmer par le porteur) :
+
+| # | Question | Choix retenu | Alternative écartée |
+|---|---|---|---|
+| 6-1 | Quand lever le masquage des coordonnées ? | Seulement quand une Cavale est acceptée, comptes de plus de 7 jours, aucun signalement bloquant ouvert (SPEC §10 et SCHEMA mis à jour) | La voie « 10 messages chacun » (retirée : un arnaqueur l'atteint sans effort) |
+| 6-2 | Quels messages sont en clair ? | Seulement ceux envoyés après la levée | Démasquer aussi les anciens |
+| 6-3 | Vie d'une Cavale acceptée | Annulation par l'un ou l'autre, en un geste, sans justification ; déplacer = annuler puis reproposer ; la carte disparaît le lendemain de la date ; nouvelle Cavale possible ensuite ; le masquage reste levé même si la Cavale est annulée | Modifier une Cavale acceptée ; carte permanente |
+| 6-4 | « Pas encore » | 24 h d'attente pour celui qui a proposé, aucune pour l'autre | Aucune attente ; attente pour les deux |
+| 6-5 | Indicateur « Lu » | Seulement sous mon dernier message lu par l'autre, sans option au lancement | « Lu » sous chaque message ; option pour le désactiver |
+| 6-6 | « Compte supprimé » dans la conversation | Phase 7 (avec la suppression réelle des comptes) | Phase 6 |
+
+Phase 6 — choix pris en cours de phase (option la plus prudente de la SPEC) : voir ci-dessous, complété au fil de la phase.
 
 ## Questions ouvertes
 

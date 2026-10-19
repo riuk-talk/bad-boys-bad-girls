@@ -74,7 +74,7 @@ Découpage imposé : **5a Web Push** · **5b Heures de visite** · **5c La visit
 - Conversation au Parloir sans horaire (Permis permanent) : messages, temps réel avec repli, lu/non lu, compteurs, anti-spam, champ toujours visible.
 - La Cavale : proposition, acceptation / contre-proposition / « pas encore », carte épinglée, avertissement lieu privé.
 - « Classer l'affaire », Signaler/Bloquer, encart sécurité.
-- Masquage des coordonnées, levé après une Cavale acceptée ou 10 messages chacun (SPEC §10), jamais pendant une visite.
+- Masquage des coordonnées, levé après une Cavale acceptée (SPEC §10 ; voie « 10 messages chacun » retirée le 2026-10-19), jamais pendant une visite.
 - **Critères** : un tiers ne peut ni lire ni s'abonner à une conversation qui n'est pas la sienne ; après un blocage, plus aucun message ne passe ; aucune connexion temps réel hors d'une conversation affichée.
 
 ## Phase 7 — Modération, pilotage, tâches planifiées, RGPD, notifications e-mail
