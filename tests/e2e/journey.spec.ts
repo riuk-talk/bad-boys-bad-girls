@@ -500,17 +500,25 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await parloir.click();
     await expect(visitorPage.getByText("On se refait ça quand tu veux.")).toBeVisible();
     // Read: the counter goes, and « Lu » appears under the Bad's message.
-    await expect
-      .poll(async () => {
-        const { data } = await admin
-          .from("conversations")
-          .select("visitor_read_id")
-          .eq("visitor_id", visitor.id)
-          .single();
-        return data?.visitor_read_id ?? 0;
-      })
-      .toBeGreaterThan(0);
-    await visitorPage.goto("/visites");
+    // Opening the Parloir reads it, on the server, up to the Bad's new message (it was read up to
+    // the visit before: the check is on that message, not on « something read »).
+    const { data: conv } = await admin
+      .from("conversations")
+      .select("id, visitor_read_id")
+      .eq("visitor_id", visitor.id)
+      .single();
+    const { data: newest } = await admin
+      .from("messages")
+      .select("id")
+      .eq("conversation_id", conv!.id)
+      .eq("sender_id", bad.id)
+      .order("id", { ascending: false })
+      .limit(1)
+      .single();
+    expect(conv!.visitor_read_id).toBeGreaterThanOrEqual(newest!.id);
+    // Back to the Tableau with the browser's « back »: the router's cached copy is read again.
+    await visitorPage.goBack();
+    await visitorPage.waitForURL(/\/visites$/);
     await expect(parloir).not.toContainText("non lu");
     await expect(tabs.getByRole("link", { name: /non lu/ })).toHaveCount(0);
     await visitorPage.context().close();
