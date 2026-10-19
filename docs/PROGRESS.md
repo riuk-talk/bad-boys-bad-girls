@@ -31,6 +31,10 @@
 Relu : PROMPT Phase 7, SPEC §10 (RGPD, DSA, sécurité), §14, §15, §16, SCHEMA §3.4-§3.5, tables déjà en base (`reports`, `moderation_actions` en ajout seul, `flagged_texts`, `consents`, `banned_email_hashes` + crochet « Before User Created », `email_outbox`, `notification_preferences`).
 Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la fin de la phase) :
 - **7a — Modération** : `/admin/signalements` (file, décision motivée : retenu ou rejeté, sanction avertissement / suspension / bannissement / masquage / retrait de Bonne conduite, motif obligatoire), `/admin/textes` (textes signalés), recherche d'un membre et historique des décisions ; exposé des motifs au signaleur et à la personne sanctionnée ; bannissement = empreinte de l'e-mail + compte Auth banni. pgTAP (aal2, ajout seul, super admin intouchable).
+**7a — fait (local)** : migrations `20261019130000_phase7a_moderation_types` et `20261019130100_phase7a_moderation` ; pgTAP `phase7a_moderation.test.sql` (8 groupes : admins seulement et aal2, signalement retenu avec suspension, règles des motifs, bannissement et levée, protections, « mineur », textes signalés, recherche) ; 13 fichiers, 116 tests verts. Écrans `/admin/signalements`, `/admin/textes`, `/admin/membres` (+ fiche du membre et formulaire de sanction), `/admin/historique`, navigation admin ; côté membre : écran de sanction à la place du site, page « Décisions du Greffe » (`/ma-fiche/decisions`), message retiré affiché au Parloir. Choix : 7-1 à 7-12.
+  - La recherche par N° d'écrou, prévue d'abord, a été retirée : elle enfreignait la règle « aucune fonction ne prend le N° d'écrou en entrée » (test de la Phase 4).
+  - **Bloquant** : le connecteur Supabase annule l'application de `20261019130100_phase7a_moderation` sur la preview (elle contient des `delete` dans des corps de fonction, comme les migrations de prod du 2026-10-17). `20261019130000_phase7a_moderation_types` est appliquée (version = nom du fichier, MD5 identique). Il faut lancer le contenu exact de `supabase/migrations/20261019130100_phase7a_moderation.sql` dans le SQL Editor de **bad-boys-preview**, puis je vérifie, j'enregistre la ligne d'historique et je génère les types.
+  - À traiter plus tard : signaler un message précis (la SPEC le prévoit ; `report()` ne gère pas encore la cible `message`, aucun bouton) — prévu en 7f ; `moderation_actions` en ajout seul empêche la suppression en cascade d'un compte — à régler en 7d.
 - **7b — Pilotage** : quartiers et seuils, tribus, mots-clés, questions ; tableau de santé par quartier (indicateurs SPEC §15, `is_seed` exclus).
 - **7c — Tâches planifiées** : Bonne conduite quotidienne, Fiches en veille (21 j) et masquées (90 j), ouverture automatique des quartiers (`ready_at`, prévenir l'admin une fois), nettoyage (comptes sans onboarding après 30 j, files envoyées) ; purges de fichiers et de comptes Auth par une route protégée.
 - **7d — RGPD** : export JSON de mes données (SPEC §10, rien de l'autre personne), suppression réelle du compte (confirmation par mot de passe ; base, fichiers, abonnements push ; « Message supprimé » et « Ce compte a été supprimé » pour l'autre ; visites annulées) ; un banni ne peut pas se réinscrire avec le même e-mail.
@@ -614,6 +618,23 @@ Phase 6 — choix pris en cours de phase (option la plus prudente de la SPEC) :
 | 6-12 | Signalement bloquant ouvert après la levée | Le masquage revient tant qu'il est ouvert | Levée définitive quoi qu'il arrive |
 | 6-13 | Non-lus pendant la visite de 30 min | Comptés seulement dans les Parloirs sans horaire (« Lu » marche aussi pendant la visite) | Compter aussi pendant la visite |
 | 6-14 | Retirer sa propre proposition en attente | Possible (le proposant seulement) | Impossible |
+
+Phase 7 — choix pris en cours de phase (option la plus prudente de la SPEC) :
+
+| # | Question | Choix retenu | Alternative écartée |
+|---|---|---|---|
+| 7-1 | Effet d'une suspension, d'un bannissement ou d'une Fiche masquée sur les affaires en cours | Toutes les affaires ouvertes du membre sont classées (demandes, visites, Parloirs, Cavales) ; l'autre reçoit le message neutre « Affaire classée » (Visiteur) ou « visite annulée » (Bad) | Laisser les affaires ouvertes pendant une suspension |
+| 7-2 | Qui lève un bannissement ? | Le super admin seulement, motif obligatoire | Tout admin |
+| 7-3 | Qui peut être sanctionné ? | Jamais soi-même ; un admin seulement par le super admin ; le super admin par personne (il n'a pas de profil) | Un admin sanctionne un autre admin |
+| 7-4 | Exposé des motifs | Deux motifs distincts : un pour le signaleur (il voit l'issue, jamais la sanction de l'autre), un pour la personne concernée (jamais l'identité du signaleur) ; 10 à 1 000 caractères | Un seul motif partagé |
+| 7-5 | Signalement retenu | Une sanction est obligatoire (au moins un avertissement) et Bonne conduite est retirée ; une suspension, un bannissement ou une Fiche masquée la retirent aussi | Retenir sans sanction |
+| 7-6 | Masquage automatique « mineur » | Levé quand tous les signalements « mineur » du membre sont rejetés ; il reste tant qu'un seul est ouvert ou retenu | Levée manuelle seulement |
+| 7-7 | Textes signalés | « Rien à signaler » (personne n'est prévenu), « Retenir » (puis sanction depuis la fiche du membre), « Retirer le texte » pour la note comportementale, la précision d'un signe, le mot d'une demande (et sa copie au Parloir) et un message ; le pseudo, le Motif de visite, le Casier et le lieu d'une Cavale ne sont jamais réécrits par le Greffe | Réécrire ces textes à la place du membre |
+| 7-8 | Ce que voit un membre sanctionné | À la place du site : la sanction, sa fin et le motif ; une Fiche en vérification (« mineur ») le dit, sans motif | Un bandeau avec le site utilisable |
+| 7-9 | Recherche d'un membre | Début du pseudo ou e-mail exact ; l'e-mail n'est jamais affiché ; jamais par le N° d'écrou (règle de la Phase 4) | Recherche par N° d'écrou |
+| 7-10 | Motifs d'un banni | Il ne peut plus se connecter : l'exposé des motifs part aussi par e-mail (file `email_outbox`, envoi en 7e) | Notification dans le site seulement |
+| 7-11 | Durée d'une suspension | 1 à 90 jours ; une nouvelle suspension ne raccourcit jamais celle en cours | Durée libre |
+| 7-12 | Web Push pour les décisions | Aucun (notification dans le site, e-mail pour un bannissement) | Push neutre vers Ma Fiche |
 
 ## Questions ouvertes
 
