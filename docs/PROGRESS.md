@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 validée** (2026-10-18, CI n° 17 et 18 vertes) ; `phase-5` = `1c76403` (5a, 5b, 5c, correctif Promenade en mode ouvert). **Prod** : les migrations de `phase-5` sont appliquées avant la fusion, sauf le DROP `phase5a_drop_push_route_config` (SQL Editor, porteur). **En attente** : ce DROP, vérification de la prod par le conseiller, puis pull request `phase-5` → `main` (pas encore ouverte). Phase 4 validée, fusionnée (PR #11) et en production.
+**Phase 5 validée** (2026-10-18, CI n° 17 et 18 vertes) ; `phase-5` = `1c76403` (5a, 5b, 5c, correctif Promenade en mode ouvert). **Prod** : les migrations de `phase-5` sont appliquées avant la fusion, toutes les 11, le DROP par le porteur dans le SQL Editor. **En attente** : vérification de la prod par le conseiller, puis pull request `phase-5` → `main` (pas encore ouverte). Phase 4 validée, fusionnée (PR #11) et en production.
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -19,11 +19,11 @@
 - **Vérifié** contre une base de référence locale construite avec ces 25 migrations et les communes (empreinte MD5) : fonctions (79, texte et droits), colonnes, contraintes, index, politiques RLS (public et storage), déclencheurs, types, droits des tables, tâches pg_cron (2), buckets (2), extensions, données (questions, options, signes, mots-clés, communes) : **identiques**. Écarts attendus seulement : dates de création (`app_settings.updated_at`, `questions.created_at`) et droits par défaut de schémas propres à la plateforme (`supabase_functions` en local).
 - **Sécurité** : 24 tables, **0 sans RLS**, aucun droit de table ni de fonction pour `anon`. Audit Supabase : rien de plus qu'en preview (10 tables sans politique et 26 fonctions membres, toutes aussi en preview ; « Leaked password protection » désactivée, comme en preview).
 - **À savoir** : la migration `core_schema` crée elle-même dans le coffre de la prod le poivre `ban_email_pepper` (généré dans la base, jamais affiché) : 1 secret dans le coffre, rien d'autre n'y a été touché. `auth.users` contient 1 compte (créé hors de cette mise en place), aucun profil.
-- **Migrations de `phase-5` (2026-10-18, avant la fusion dans `main`, par Claude via le connecteur)** : 10 des 11 migrations absentes de `main`, dans l'ordre, contenu exact (MD5 du SQL enregistré = MD5 des fichiers, les 10) : `phase5a_web_push`, `phase5a_push_vault_reads`, `phase5a_push_secret_names`, `launch_zones_toulon_nice`, `phase5a_ter_super_admin`, `phase5b_visiting_hours`, `phase5b_complements`, `phase5c_parloir`, `phase5c_absence_close`, `phase5_promenade_open_mode`. Historique remis aux versions et noms exacts (35 lignes).
-  - **En attente** : `20261006190000_phase5a_drop_push_route_config` (un `DROP`) à lancer par le porteur dans le SQL Editor, puis sa ligne d'historique (version, nom, texte du fichier) par Claude. D'ici là, `push_route_config()` reste en prod : réservée à la clé secrète, elle ne renvoie rien (aucun secret correspondant).
+- **Migrations de `phase-5` (2026-10-18, avant la fusion dans `main`, par Claude via le connecteur)** : 10 des 11 migrations absentes de `main`, dans l'ordre, contenu exact (MD5 du SQL enregistré = MD5 des fichiers, les 10) : `phase5a_web_push`, `phase5a_push_vault_reads`, `phase5a_push_secret_names`, `launch_zones_toulon_nice`, `phase5a_ter_super_admin`, `phase5b_visiting_hours`, `phase5b_complements`, `phase5c_parloir`, `phase5c_absence_close`, `phase5_promenade_open_mode`. Historique remis aux versions et noms exacts.
+  - `20261006190000_phase5a_drop_push_route_config` (un `DROP`) : lancée par le porteur dans le SQL Editor le 2026-10-19 ; `push_route_config()` absente (vérifié) ; ligne d'historique ajoutée par Claude avec le texte exact du fichier (MD5 identique). **Historique de la prod = les 36 fichiers de `phase-5`** (versions et noms, empreinte identique).
   - **Vérifié** contre la base locale construite avec les 36 migrations de `phase-5` (empreinte MD5 par catégorie, `push_route_config` exclue) : fonctions (122), colonnes (290), politiques (25), déclencheurs (34), types énumérés (23), droits des tables (230) et des fonctions (181), RLS (31 tables), tâches pg_cron (5), publication Realtime : **identiques**. **0 table sans RLS.** Audit Supabase identique à la preview (16 tables sans politique, 46 fonctions membres, « Leaked password protection » désactivée).
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
-- **Reste** : le DROP ci-dessus ; super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
+- **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
 
 ## Phase 5 — Notifications, Heures de visite, Visite (2026-10-06)
 
@@ -81,7 +81,7 @@ Découpage annoncé : a base (super_admins, gardes, aal2, script, pgTAP) · b do
 
 ### Reste pour fusionner `phase-5` dans `main`
 1. ~~Correctif Promenade~~ : validé, dans `phase-5`.
-2. ~~Production avant la fusion~~ (la fusion redéploie la prod aussitôt) : 10 migrations appliquées et vérifiées (voir « Bases Supabase »). **Reste** `phase5a_drop_push_route_config`, par le porteur dans le SQL Editor, puis sa ligne d'historique.
+2. ~~Production avant la fusion~~ (la fusion redéploie la prod aussitôt) : 10 migrations appliquées et vérifiées (voir « Bases Supabase »). Les 11 migrations sont en prod (le DROP lancé par le porteur le 2026-10-19).
 3. Vérification de la prod par le conseiller.
 4. Pull request `phase-5` → `main`, CI verte, fusion par le porteur.
 5. Rien dans le coffre de prod ni dans les variables Vercel : les notifications de prod auront leurs propres clés au lancement (checklist).
