@@ -5,7 +5,13 @@ import { OpenParloir } from "@/components/parloir/open-parloir";
 import { redirect } from "@/i18n/navigation";
 import { accentForGender } from "@/lib/accent";
 import { datesSchema } from "@/lib/cavale";
-import { loadConversation, loadMessages, loadOtherReadId, myPseudo } from "@/lib/relations/parloir";
+import {
+  loadConversation,
+  loadMessages,
+  loadOtherReadId,
+  markRendered,
+  myPseudo,
+} from "@/lib/relations/parloir";
 import { memberTimezone } from "@/lib/relations/schedule";
 import { requireRole } from "@/lib/relations/server";
 
@@ -44,6 +50,7 @@ export default async function OpenParloirPage({ params }: Props) {
       ],
     }),
   ]);
+  await markRendered(supabase, id, messages);
   const parsedDates = datesSchema.safeParse(dates);
   return (
     <OpenParloir

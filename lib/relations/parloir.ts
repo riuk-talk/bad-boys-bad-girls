@@ -41,6 +41,21 @@ export async function loadMessages(supabase: Client, conversationId: string): Pr
   return parsed.success ? parsed.data : [];
 }
 
+/**
+ * Opening the conversation reads it: marked up to the last message rendered, on the server, so a
+ * member who leaves at once (or whose browser is slow to run the client mark) is not left with an
+ * unread counter for what they saw (Phase 6a).
+ */
+export async function markRendered(
+  supabase: Client,
+  conversationId: string,
+  messages: readonly Message[],
+): Promise<void> {
+  const last = messages.at(-1)?.id;
+  if (last === undefined) return;
+  await supabase.rpc("mark_conversation_read", { p_conversation: conversationId, p_up_to: last });
+}
+
 /** How far the other has read the conversation (« Lu », Phase 6a); 0 when unknown. */
 export async function loadOtherReadId(supabase: Client, conversationId: string): Promise<number> {
   const { data } = await supabase.rpc("get_read_state", { p_conversation: conversationId });

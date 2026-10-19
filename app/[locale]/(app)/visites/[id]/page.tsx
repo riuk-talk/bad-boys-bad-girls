@@ -3,7 +3,13 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { VisitRoom } from "@/components/parloir/visit-room";
 import { accentForGender } from "@/lib/accent";
-import { joinVisit, loadMessages, loadOtherReadId, myPseudo } from "@/lib/relations/parloir";
+import {
+  joinVisit,
+  loadMessages,
+  loadOtherReadId,
+  markRendered,
+  myPseudo,
+} from "@/lib/relations/parloir";
 import { memberTimezone } from "@/lib/relations/schedule";
 import { requireRole } from "@/lib/relations/server";
 
@@ -39,6 +45,7 @@ export default async function VisitPage({ params }: Props) {
       ],
     }),
   ]);
+  if (visit.conversation_id) await markRendered(supabase, visit.conversation_id, messages);
   return (
     <VisitRoom
       initial={visit}

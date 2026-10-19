@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Stamp } from "@/components/brand/stamp";
+import { FreshOnReturn } from "@/components/app/fresh-on-return";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { CancelVisit } from "@/components/relations/cancel-visit";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -51,6 +52,7 @@ export default async function VisitsPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5 px-4 py-6 sm:px-6">
+      <FreshOnReturn />
       <h1 className="font-display text-center text-3xl uppercase">{t("title")}</h1>
       {rows.length === 0 && open.length === 0 ? (
         <EmptyState
