@@ -226,7 +226,9 @@ begin
   ),
   bads as (
     select b.* from public.profiles b
+    -- Phase 7c (SPEC §5): a Bad not seen for 21 days leaves the Promenade.
     where public.is_bad_visible(b) and b.requests_open and not b.is_seed
+      and b.last_seen_at >= now() - interval '21 days'
   ),
   pairs as (
     select v.id visitor_id, b.id bad_id, b.pending_requests_count, b.requests_cap, b.last_seen_at
