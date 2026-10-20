@@ -304,7 +304,8 @@ RLS : — (route `/api/cron/push` avec la clé secrète).
 #### `email_outbox` — **[v2-modif]** (en base)
 Index unique « un par jour » : `kind in ('request_digest', 'admin_photos_pending')`. `visit_reminder` : abandonné (`skipped`) si le quota du jour est atteint ou si la visite a commencé.
 
-#### `email_quota_usage`, `web_vitals_daily`, `activity_days` — inchangés.
+#### `email_quota_days`, `activity_days` — **en base (Phase 7e, 7b)**
+`email_quota_days (day PK, sent)` : e-mails pris en charge par jour (heure de France) ; `activity_days (user_id, day)` : rétention. RLS sans aucun droit. `email_outbox.claimed_until` : bail de l'envoi. Phase 7e : `notifications_to_email` (déclencheur), `enqueue_onboarding_reminders()` (07:50 UTC), `email_claim(limit)` / `email_report(email, sent)` (clé secrète), `email_dispatch()` (toutes les 10 min), `unsubscribe_email(token, kind)` (clé secrète, appelée par le serveur : anon n'exécute aucune fonction). `web_vitals_daily` : Phase 8.
 
 ## 3. Fonctions SQL
 
