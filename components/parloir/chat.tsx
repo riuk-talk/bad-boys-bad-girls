@@ -67,6 +67,7 @@ export function Chat({
   const lastId = useRef(initial.at(-1)?.id ?? 0);
   const markedId = useRef(0);
   const listRef = useRef<HTMLOListElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const refresh = useCallback(async () => {
     const result = await loadMessagesAction(conversationId, lastId.current).catch(() => null);
@@ -136,8 +137,18 @@ export function Chat({
     };
   }, [conversationId, refresh]);
 
-  // Only the list scrolls to its newest message: scrollIntoView would also scroll the window and
-  // push the composer and the actions under the tab bar.
+  // The list scrolls inside a bounded height, so the composer and the actions stay on screen; on
+  // arrival, the bottom of the conversation is shown above the tab bar (scroll-padding of
+  // globals.css), as in any messaging app.
+  useEffect(() => {
+    const root = rootRef.current;
+    const bar = document.querySelector("[data-tab-bar]");
+    const limit = bar ? bar.getBoundingClientRect().top : window.innerHeight;
+    if (root && root.getBoundingClientRect().bottom > limit) root.scrollIntoView({ block: "end" });
+  }, []);
+
+  // Then only the list scrolls to its newest message: scrollIntoView would also scroll the window
+  // and push the composer and the actions under the tab bar.
   useEffect(() => {
     const list = listRef.current;
     if (list) list.scrollTop = list.scrollHeight;
@@ -161,12 +172,12 @@ export function Chat({
   const readMark = readMarkFor(messages, otherReadId);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div ref={rootRef} className="flex min-h-0 flex-1 flex-col">
       <ol
         ref={listRef}
         aria-label={t("liveRegion")}
         aria-live="polite"
-        className="parloir-glass flex flex-1 flex-col gap-3 overflow-y-auto rounded-md border border-[#2a2a2e] p-3"
+        className="parloir-glass flex max-h-[calc(100dvh-30rem)] min-h-48 flex-1 flex-col gap-3 overflow-y-auto rounded-md border border-[#2a2a2e] p-3"
       >
         {messages.map((message) => (
           <li key={message.id}>
