@@ -115,6 +115,7 @@ export type Database = {
           promenade_max_appearances_per_day: number
           storage_alert_mb: number
           updated_at: string
+          web_vitals_daily_cap: number
           zone_bad_active_days: number
         }
         Insert: {
@@ -127,6 +128,7 @@ export type Database = {
           promenade_max_appearances_per_day?: number
           storage_alert_mb?: number
           updated_at?: string
+          web_vitals_daily_cap?: number
           zone_bad_active_days?: number
         }
         Update: {
@@ -139,6 +141,7 @@ export type Database = {
           promenade_max_appearances_per_day?: number
           storage_alert_mb?: number
           updated_at?: string
+          web_vitals_daily_cap?: number
           zone_bad_active_days?: number
         }
         Relationships: []
@@ -1655,6 +1658,30 @@ export type Database = {
           },
         ]
       }
+      web_vitals_daily: {
+        Row: {
+          bucket: number
+          day: string
+          metric: string
+          page: string
+          samples: number
+        }
+        Insert: {
+          bucket: number
+          day: string
+          metric: string
+          page: string
+          samples?: number
+        }
+        Update: {
+          bucket?: number
+          day?: string
+          metric?: string
+          page?: string
+          samples?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1866,6 +1893,15 @@ export type Database = {
           slug: string
           sort: number
           tribe_id: number
+        }[]
+      }
+      admin_web_vitals: {
+        Args: { p_days?: number }
+        Returns: {
+          metric: string
+          p75: number
+          page: string
+          samples: number
         }[]
       }
       admin_zone_health: {
@@ -2342,6 +2378,10 @@ export type Database = {
       }
       push_report: { Args: { p_report: Json }; Returns: undefined }
       recompute_profile_zones: { Args: never; Returns: number }
+      record_web_vital: {
+        Args: { p_metric: string; p_page: string; p_value: number }
+        Returns: boolean
+      }
       referral_count: { Args: never; Returns: number }
       report: {
         Args: {
