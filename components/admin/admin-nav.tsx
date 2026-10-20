@@ -1,7 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-const SECTIONS = ["greffe", "signalements", "textes", "membres", "historique"] as const;
+const SECTIONS = [
+  "greffe",
+  "signalements",
+  "textes",
+  "membres",
+  "historique",
+  "quartiers",
+  "signes",
+  "mots-cles",
+  "questions",
+] as const;
 
 /** /admin sections (SPEC §15): the Greffe first (photos), then moderation. */
 export async function AdminNav() {
@@ -15,7 +25,7 @@ export async function AdminNav() {
               href={`/admin/${section}`}
               className="text-cream hover:text-accent inline-flex min-h-11 items-center px-3 text-sm font-semibold whitespace-nowrap"
             >
-              {t(section)}
+              {t(section === "mots-cles" ? "keywords" : section)}
             </Link>
           </li>
         ))}

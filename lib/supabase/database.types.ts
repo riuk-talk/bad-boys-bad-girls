@@ -14,6 +14,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_days: {
+        Row: {
+          day: string
+          user_id: string
+        }
+        Insert: {
+          day: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_days_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           created_at: string
@@ -1670,6 +1693,20 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_keywords: {
+        Args: never
+        Returns: {
+          category: Database["public"]["Enums"]["report_category"]
+          is_active: boolean
+          keyword_id: number
+          lang: string
+          term: string
+        }[]
+      }
+      admin_launch_mode: {
+        Args: never
+        Returns: Database["public"]["Enums"]["launch_mode"]
+      }
       admin_member: { Args: { p_user: string }; Returns: Json }
       admin_moderation_log: {
         Args: { p_limit?: number }
@@ -1697,6 +1734,19 @@ export type Database = {
           priority: number
           pseudo: string
           role: Database["public"]["Enums"]["member_role"]
+        }[]
+      }
+      admin_questions: {
+        Args: never
+        Returns: {
+          answers: number
+          is_active: boolean
+          label_en: string
+          label_fr: string
+          options: Json
+          phase: Database["public"]["Enums"]["question_phase"]
+          question_id: number
+          sort_position: number
         }[]
       }
       admin_report_queue: {
@@ -1727,6 +1777,99 @@ export type Database = {
           p_user: string
         }
         Returns: number
+      }
+      admin_save_keyword: {
+        Args: {
+          p_active: boolean
+          p_category: Database["public"]["Enums"]["report_category"]
+          p_keyword?: number
+          p_lang: string
+          p_term: string
+        }
+        Returns: number
+      }
+      admin_save_question: {
+        Args: {
+          p_active: boolean
+          p_label_en: string
+          p_label_fr: string
+          p_options: Json
+          p_question: number
+        }
+        Returns: undefined
+      }
+      admin_save_tribe: {
+        Args: {
+          p_active: boolean
+          p_label_en: string
+          p_label_fr: string
+          p_slug: string
+          p_sort: number
+          p_tribe?: number
+        }
+        Returns: number
+      }
+      admin_save_zone: {
+        Args: {
+          p_auto_open: boolean
+          p_center_place: number
+          p_men_pct: number
+          p_name: string
+          p_radius_km: number
+          p_slug: string
+          p_threshold_bads: number
+          p_timezone: string
+          p_women_pct: number
+          p_zone?: number
+        }
+        Returns: number
+      }
+      admin_set_launch_mode: {
+        Args: { p_mode: Database["public"]["Enums"]["launch_mode"] }
+        Returns: undefined
+      }
+      admin_set_zone_status: {
+        Args: {
+          p_status: Database["public"]["Enums"]["zone_status"]
+          p_zone: number
+        }
+        Returns: undefined
+      }
+      admin_tribes: {
+        Args: never
+        Returns: {
+          is_active: boolean
+          label_en: string
+          label_fr: string
+          members: number
+          slug: string
+          sort: number
+          tribe_id: number
+        }[]
+      }
+      admin_zone_health: {
+        Args: { p_from: string; p_to: string; p_zone: number }
+        Returns: Json
+      }
+      admin_zones: {
+        Args: never
+        Returns: {
+          auto_open: boolean
+          center_name: string
+          center_place_id: number
+          gauge: Json
+          name: string
+          opened_at: string
+          radius_km: number
+          ready_at: string
+          slug: string
+          status: Database["public"]["Enums"]["zone_status"]
+          threshold_bads: number
+          threshold_men_pct: number
+          threshold_women_pct: number
+          timezone: string
+          zone_id: number
+        }[]
       }
       age_years: { Args: { at?: string; birthdate: string }; Returns: number }
       ban_email_hash: { Args: { p_email: string }; Returns: string }
