@@ -83,6 +83,11 @@
     color-scheme: dark;
     -webkit-text-size-adjust: 100%;
   }
+  /* WCAG 2.4.11: an element that takes the focus is scrolled above the sticky tab bar, never
+     under it (the bar is 3.5rem high, plus its border and the safe area). */
+  html:has([data-tab-bar]) {
+    scroll-padding-bottom: calc(3.5rem + 1px + env(safe-area-inset-bottom));
+  }
   body {
     background-color: var(--color-ink);
     color: var(--color-cream);

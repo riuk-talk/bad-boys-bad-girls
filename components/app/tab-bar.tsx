@@ -54,6 +54,7 @@ export async function TabBar({ role }: { role: Role }) {
   const [t, initial] = await Promise.all([getTranslations("Relations.tabs"), tabStateAction()]);
   return (
     <nav
+      data-tab-bar
       aria-label={t("label")}
       className="border-line/70 bg-ink sticky bottom-0 z-30 border-t pb-[env(safe-area-inset-bottom)]"
     >

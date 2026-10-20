@@ -64,6 +64,21 @@ export function TabBarLinks({ tabs, initial }: { tabs: readonly TabLink[]; initi
     };
   }, [pathname]);
 
+  // WCAG 2.4.11: what takes the focus under the sticky bar is brought above it (scrollIntoView
+  // honours the scroll-padding of globals.css; the browser's own focus scroll does not).
+  useEffect(() => {
+    const onFocus = (event: FocusEvent) => {
+      const target = event.target;
+      const bar = document.querySelector("[data-tab-bar]");
+      if (!(target instanceof HTMLElement) || !bar || bar.contains(target)) return;
+      if (target.getBoundingClientRect().bottom > bar.getBoundingClientRect().top) {
+        target.scrollIntoView({ block: "nearest" });
+      }
+    };
+    document.addEventListener("focusin", onFocus);
+    return () => document.removeEventListener("focusin", onFocus);
+  }, []);
+
   const types = new Set<string>(state.types);
   return (
     <ul className="mx-auto flex max-w-3xl">
