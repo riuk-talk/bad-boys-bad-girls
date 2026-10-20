@@ -884,7 +884,8 @@
     "seeAsVisitors": "Voir ma Fiche comme les Visiteurs",
     "accountTitle": "Mon compte",
     "notificationsTitle": "Notifications",
-    "decisionsLink": "{count, plural, =0 {Décisions du Greffe} one {Décisions du Greffe (# nouvelle)} other {Décisions du Greffe (# nouvelles)}}"
+    "decisionsLink": "{count, plural, =0 {Décisions du Greffe} one {Décisions du Greffe (# nouvelle)} other {Décisions du Greffe (# nouvelles)}}",
+    "myDataLink": "Mes données"
   },
   "Quarter": {
     "referralTitle": "Fais entrer tes complices",
@@ -1418,7 +1419,8 @@
       "waitingChoice": "Fin de visite : à toi de choisir",
       "inProgress": "En cours",
       "permanent": "Permis permanent avec {pseudo}",
-      "unread": "{count, plural, one {# non lu} other {# non lus}}"
+      "unread": "{count, plural, one {# non lu} other {# non lus}}",
+      "permanentDeleted": "Permis permanent · Ce compte a été supprimé"
     },
     "parloir": {
       "metaTitle": "Parloir",
@@ -1472,7 +1474,10 @@
       "you": "Toi",
       "read": "Lu",
       "moneyNotice": "Ne partage jamais d'argent ni de codes.",
-      "messageRemoved": "Message retiré par le Greffe."
+      "messageRemoved": "Message retiré par le Greffe.",
+      "deletedAccount": "Compte supprimé",
+      "deletedConversation": "Ce compte a été supprimé.",
+      "messageDeleted": "Message supprimé"
     },
     "cavale": {
       "propose": "Proposer une Cavale",
@@ -1944,7 +1949,26 @@
       "review": {
         "title": "Fiche en vérification",
         "body": "Ta Fiche est masquée le temps d'une vérification par le Greffe, après un signalement. Tu seras prévenu·e de la décision."
-      }
+      },
+      "rights": "Tes droits restent entiers : tu peux exporter tes données ou supprimer ton compte.",
+      "export": "Télécharger mes données",
+      "delete": "Supprimer mon compte"
+    }
+  },
+  "MyData": {
+    "title": "Mes données",
+    "exportTitle": "Exporter mes données",
+    "exportLead": "Un fichier JSON avec tout ce que nous gardons de toi : ta Fiche ou ton Permis, tes réponses, tes consentements, tes demandes et tes visites (l'autre personne n'y figure que par son pseudo), tes messages (jamais ceux de l'autre), tes signalements (sans la personne visée), les décisions du Greffe te concernant, tes notifications et tes appareils (sans leurs clés).",
+    "export": "Télécharger mes données",
+    "deleteTitle": "Supprimer mon compte",
+    "deleteLead": "Suppression réelle et définitive : ta Fiche ou ton Permis, tes photos, tes réponses, tes demandes, tes visites programmées (annulées) et tes abonnements aux notifications. Tes messages sont effacés : l'autre personne voit « Message supprimé » et « Ce compte a été supprimé ».",
+    "password": "Ton mot de passe",
+    "confirm": "Je comprends que la suppression est définitive.",
+    "delete": "Supprimer définitivement mon compte",
+    "errors": {
+      "wrongPassword": "Mot de passe incorrect.",
+      "deleteConfirmRequired": "Indique ton mot de passe et coche la confirmation.",
+      "generic": "La suppression n'a pas pu se faire. Réessaie ; si ça continue, écris au point de contact des mentions légales."
     }
   }
 }

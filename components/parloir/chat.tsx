@@ -270,7 +270,9 @@ function Entry({
       mine={message.mine}
       accent={author.accent}
       name={author.pseudo}
-      text={message.body ?? t("messageRemoved")}
+      text={
+        message.body ?? (payload?.type === "removed" ? t("messageDeleted") : t("messageRemoved"))
+      }
     />
   );
 }

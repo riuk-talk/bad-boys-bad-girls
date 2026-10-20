@@ -884,7 +884,8 @@
     "seeAsVisitors": "See my File as Visitors do",
     "accountTitle": "My account",
     "notificationsTitle": "Notifications",
-    "decisionsLink": "{count, plural, =0 {Decisions of the Greffe} one {Decisions of the Greffe (# new)} other {Decisions of the Greffe (# new)}}"
+    "decisionsLink": "{count, plural, =0 {Decisions of the Greffe} one {Decisions of the Greffe (# new)} other {Decisions of the Greffe (# new)}}",
+    "myDataLink": "My data"
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
@@ -1418,7 +1419,8 @@
       "waitingChoice": "End of visit: your choice",
       "inProgress": "In progress",
       "permanent": "Permanent permit with {pseudo}",
-      "unread": "{count} unread"
+      "unread": "{count} unread",
+      "permanentDeleted": "Permis permanent · This account was deleted"
     },
     "parloir": {
       "metaTitle": "Parloir",
@@ -1472,7 +1474,10 @@
       "you": "You",
       "read": "Read",
       "moneyNotice": "Never share money or codes.",
-      "messageRemoved": "Message removed by the Greffe."
+      "messageRemoved": "Message removed by the Greffe.",
+      "deletedAccount": "Deleted account",
+      "deletedConversation": "This account was deleted.",
+      "messageDeleted": "Message deleted"
     },
     "cavale": {
       "propose": "Propose a Cavale",
@@ -1944,7 +1949,26 @@
       "review": {
         "title": "Fiche under review",
         "body": "Your Fiche is hidden while the Greffe checks it, after a report. You will be told the decision."
-      }
+      },
+      "rights": "Your rights remain: you can export your data or delete your account.",
+      "export": "Download my data",
+      "delete": "Delete my account"
+    }
+  },
+  "MyData": {
+    "title": "My data",
+    "exportTitle": "Export my data",
+    "exportLead": "A JSON file with everything we keep about you: your Fiche or Permit, your answers, your consents, your requests and visits (the other person appears only by their pseudo), your messages (never the other person's), your reports (without the person reported), the decisions of the Greffe about you, your notifications and your devices (without their keys).",
+    "export": "Download my data",
+    "deleteTitle": "Delete my account",
+    "deleteLead": "Real and final deletion: your Fiche or Permit, your photos, your answers, your requests, your scheduled visits (cancelled) and your notification subscriptions. Your messages are erased: the other person sees « Message deleted » and « This account was deleted ».",
+    "password": "Your password",
+    "confirm": "I understand the deletion is final.",
+    "delete": "Delete my account for good",
+    "errors": {
+      "wrongPassword": "Wrong password.",
+      "deleteConfirmRequired": "Give your password and tick the confirmation.",
+      "generic": "The deletion could not be done. Try again; if it keeps failing, write to the contact point in the legal notice."
     }
   }
 }

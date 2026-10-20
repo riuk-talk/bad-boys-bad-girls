@@ -178,6 +178,9 @@ export default async function MyFichePage() {
             {t("seeAsVisitors")}
           </ButtonLink>
         )}
+        <ButtonLink href="/ma-fiche/donnees" variant="secondary">
+          {t("myDataLink")}
+        </ButtonLink>
         <ButtonLink href="/ma-fiche/decisions" variant="secondary">
           {t("decisionsLink", { count: unreadDecisions ?? 0 })}
         </ButtonLink>

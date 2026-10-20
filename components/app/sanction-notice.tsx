@@ -1,4 +1,6 @@
 import { getFormatter, getTranslations } from "next-intl/server";
+import { DeleteAccount } from "@/components/app/delete-account";
+import { buttonClasses } from "@/components/ui/button";
 import type { Sanction } from "@/lib/moderation";
 
 /**
@@ -30,6 +32,17 @@ export async function SanctionNotice({ sanction }: { sanction: NonNullable<Sanct
         </p>
       ) : null}
       <p className="text-grey text-sm">{t("contact")}</p>
+      {/* RGPD rights stay available whatever the sanction (SPEC §10). */}
+      <div className="border-line space-y-3 border-t pt-6 text-left">
+        <p className="text-cream/85">{t("rights")}</p>
+        <a href="/api/me/export" download className={buttonClasses("secondary", "md")}>
+          {t("export")}
+        </a>
+        <details>
+          <summary className="min-h-11 cursor-pointer py-2 font-semibold">{t("delete")}</summary>
+          <DeleteAccount />
+        </details>
+      </div>
     </section>
   );
 }

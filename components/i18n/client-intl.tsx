@@ -17,6 +17,7 @@ const CLIENT_NAMESPACES = [
   "Prompter",
   "Push",
   "AdminAccess",
+  "MyData",
 ] as const;
 
 /**

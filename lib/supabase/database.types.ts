@@ -177,13 +177,13 @@ isOneToOne: false
                   ]
                 },"conversations": {
                   Row: {
-                    "bad_id": string,"bad_read_id": number,"cavale_accepted_at": string | null,"closed_at": string | null,"created_at": string,"id": string,"last_message_at": string | null,"released_at": string | null,"request_id": string,"status": Database["public"]['Enums']["conversation_status"],"visitor_id": string,"visitor_read_id": number
+                    "bad_id": string | null,"bad_read_id": number,"cavale_accepted_at": string | null,"closed_at": string | null,"created_at": string,"id": string,"last_message_at": string | null,"released_at": string | null,"request_id": string | null,"status": Database["public"]['Enums']["conversation_status"],"visitor_id": string | null,"visitor_read_id": number
                   }
                   Insert: {
-                    "bad_id": string,"bad_read_id"?: number,"cavale_accepted_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"id"?: string,"last_message_at"?: string | null,"released_at"?: string | null,"request_id": string,"status"?: Database["public"]['Enums']["conversation_status"],"visitor_id": string,"visitor_read_id"?: number
+                    "bad_id"?: string | null,"bad_read_id"?: number,"cavale_accepted_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"id"?: string,"last_message_at"?: string | null,"released_at"?: string | null,"request_id"?: string | null,"status"?: Database["public"]['Enums']["conversation_status"],"visitor_id"?: string | null,"visitor_read_id"?: number
                   }
                   Update: {
-                    "bad_id"?: string,"bad_read_id"?: number,"cavale_accepted_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"id"?: string,"last_message_at"?: string | null,"released_at"?: string | null,"request_id"?: string,"status"?: Database["public"]['Enums']["conversation_status"],"visitor_id"?: string,"visitor_read_id"?: number
+                    "bad_id"?: string | null,"bad_read_id"?: number,"cavale_accepted_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"id"?: string,"last_message_at"?: string | null,"released_at"?: string | null,"request_id"?: string | null,"status"?: Database["public"]['Enums']["conversation_status"],"visitor_id"?: string | null,"visitor_read_id"?: number
                   }
                   Relationships: [
                     {
@@ -962,6 +962,9 @@ isOneToOne: false
 "expire_visit_requests":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"export_my_data":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "flag_keywords":
 { Args: { "p_source": Database["public"]['Enums']["flag_source"],"p_source_id": string,"p_text": string,"p_user": string }; Returns: undefined
                            },
@@ -1114,7 +1117,7 @@ isOneToOne: false
                            },
 "open_conversation_for":
 { Args: { "p_conversation": string,"p_member": string }; Returns: {
-              "bad_id": string,
+              "bad_id": string | null,
 "bad_read_id": number,
 "cavale_accepted_at": string | null,
 "closed_at": string | null,
@@ -1122,9 +1125,9 @@ isOneToOne: false
 "id": string,
 "last_message_at": string | null,
 "released_at": string | null,
-"request_id": string,
+"request_id": string | null,
 "status": Database["public"]['Enums']["conversation_status"],
-"visitor_id": string,
+"visitor_id": string | null,
 "visitor_read_id": number
             }
                           SetofOptions: {
@@ -1141,6 +1144,11 @@ isOneToOne: false
                            },
 "place_name":
 { Args: { "p_place": number }; Returns: string
+                           },
+"prepare_my_account_deletion":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "pending_paths": (string)[],"public_paths": (string)[]
+            }[]
                            },
 "process_inactive_profiles":
 { Args: Record<PropertyKey, never>; Returns: number

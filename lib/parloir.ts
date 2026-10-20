@@ -48,7 +48,9 @@ const betPayload = z.object({
 });
 const notePayload = z.object({ type: z.literal("note"), text: z.string() });
 const markPayload = z.object({ type: z.enum(["released", "closed"]) });
-export const payloadSchema = z.union([betPayload, notePayload, markPayload]);
+/** A message whose author deleted their account (Phase 7d): « Message supprimé ». */
+const removedPayload = z.object({ type: z.literal("removed") });
+export const payloadSchema = z.union([betPayload, notePayload, markPayload, removedPayload]);
 export type Payload = z.infer<typeof payloadSchema>;
 
 export const messageSchema = z.object({
@@ -63,15 +65,17 @@ export type Message = z.infer<typeof messageSchema>;
 
 export const conversationSchema = z.object({
   id: z.string(),
-  request_id: z.string(),
+  request_id: z.nullable(z.string()),
   status: z.enum(["visiting", "open", "closed"]),
   released_at: z.nullable(z.string()),
   i_am_bad: z.boolean(),
   /** Contacts pass in clear (a Cavale accepted, SPEC §10, Phase 6c). */
   unmasked: z.boolean(),
+  /** The other member deleted their account (Phase 7d): « Ce compte a été supprimé ». */
+  other_deleted: z.optional(z.boolean()),
   other: z.object({
-    id: z.string(),
-    pseudo: z.string(),
+    id: z.nullable(z.string()),
+    pseudo: z.nullable(z.string()),
     gender: z.nullable(gender),
     photo_small: z.nullable(z.string()),
   }),

@@ -48,8 +48,9 @@ export function OpenParloir({
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [state, close, closing] = useActionState(closeConversationAction, IDLE);
+  const deleted = conversation.other_deleted === true || conversation.other.id === null;
   const other = {
-    pseudo: conversation.other.pseudo,
+    pseudo: conversation.other.pseudo ?? t("deletedAccount"),
     accent: accentForGender(conversation.other.gender),
   };
   const open = conversation.status === "open" && state.status !== "done";
@@ -100,13 +101,15 @@ export function OpenParloir({
         <p className="font-stamp text-grey text-center text-[11px] tracking-[0.15em]">
           {t("withPermanent", { pseudo: other.pseudo.toUpperCase() })}
         </p>
-        <SafetyActions
-          memberId={conversation.other.id}
-          pseudo={other.pseudo}
-          reportType="visit_request"
-          reportTarget={conversation.request_id}
-          afterBlock="/visites"
-        />
+        {conversation.other.id && conversation.request_id ? (
+          <SafetyActions
+            memberId={conversation.other.id}
+            pseudo={other.pseudo}
+            reportType="visit_request"
+            reportTarget={conversation.request_id}
+            afterBlock="/visites"
+          />
+        ) : null}
       </header>
 
       {dates && open ? (
@@ -172,7 +175,7 @@ export function OpenParloir({
 
       {open ? null : (
         <p className="text-grey text-center text-sm" role="status">
-          {t("closedConversation")}
+          {deleted ? t("deletedConversation") : t("closedConversation")}
         </p>
       )}
 

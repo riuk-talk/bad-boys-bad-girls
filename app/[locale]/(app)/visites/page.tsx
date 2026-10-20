@@ -131,7 +131,9 @@ export default async function VisitsPage() {
                   className="border-line hover:border-accent flex min-h-14 items-center justify-between gap-3 rounded-md border px-3.5 py-2.5"
                 >
                   <span className="font-bold">
-                    {t("permanent", { pseudo: parloir.other_pseudo })}
+                    {parloir.other_pseudo
+                      ? t("permanent", { pseudo: parloir.other_pseudo })
+                      : t("permanentDeleted")}
                   </span>
                   {(unread.get(parloir.conversation_id) ?? 0) > 0 ? (
                     <span className="bg-accent text-ink rounded-full px-2 text-xs leading-5 font-bold">
