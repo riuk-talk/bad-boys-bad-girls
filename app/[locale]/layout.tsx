@@ -4,6 +4,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { ErrorStrings } from "@/components/errors/error-strings";
+import { WebVitals } from "@/components/web-vitals";
 import { routing } from "@/i18n/routing";
 import { SITE_URL } from "@/lib/env";
 import { fontVariables } from "@/lib/fonts";
@@ -57,6 +58,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         </a>
         {children}
         <ErrorStrings />
+        <WebVitals />
       </body>
     </html>
   );
