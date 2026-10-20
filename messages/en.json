@@ -20,6 +20,7 @@
     "loading": "Loading…",
     "close": "Close",
     "menu": "Menu",
+    "offline": "You are offline: nothing is sent or received. Everything resumes when the connection is back.",
     "retry": "Try again",
     "draftNotice": "Template document: this text is not final.",
     "lastUpdated": "Last updated: {date}",

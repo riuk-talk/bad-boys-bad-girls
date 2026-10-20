@@ -20,6 +20,7 @@
     "loading": "Chargement…",
     "close": "Fermer",
     "menu": "Menu",
+    "offline": "Tu es hors ligne : rien ne part ni n’arrive. Tout reprend quand la connexion revient.",
     "retry": "Réessayer",
     "draftNotice": "Modèle de document : ce texte n'est pas définitif.",
     "lastUpdated": "Dernière mise à jour : {date}",

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AppHeader } from "@/components/app/app-header";
+import { OfflineNotice } from "@/components/app/offline-notice";
 import { SanctionNotice } from "@/components/app/sanction-notice";
 import { TabBar } from "@/components/app/tab-bar";
 import { ClientIntl } from "@/components/i18n/client-intl";
@@ -39,6 +40,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         isAdmin={adminRole === "admin" || adminRole === "super_admin"}
       />
       <ClientIntl>
+        <OfflineNotice />
         <ToastProvider>
           <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
             {sanction ? <SanctionNotice sanction={sanction} /> : children}
