@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : validée par le conseiller** (2026-10-20 : cause réelle corrigée, CI n° 27 verte deux fois), décisions 6-1 à 6-14 validées ; en attente de la fusion (rien sur `main` ni sur la prod). **Phase 7 en cours** : sous-phase 7a (modération).
+**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : validée par le conseiller** (2026-10-20 : cause réelle corrigée, CI n° 27 verte deux fois), décisions 6-1 à 6-14 validées ; en attente de la fusion (rien sur `main` ni sur la prod). **Phase 7 (modération, pilotage, tâches planifiées, RGPD, e-mails) : terminée côté code**, rapport de fin de phase ci-dessous ; en attente de validation du conseiller et de quatre scripts au SQL Editor de la preview (rien sur `main` ni sur la prod).
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -48,6 +48,22 @@ Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la 
 **7e — fait (local)** : migration `20261020130000_phase7e_email` (aucune opération destructive) : quota du jour (`email_quota_days`, réserve pour les e-mails d'Auth), file alimentée par les notifications (`notifications_to_email` : demandes regroupées, Cavale acceptée, Permis délivré, rappel de visite sur option), rappel unique d'inscription à J+7, `email_claim` (bail de 5 min, priorités, rappels de visite échus abandonnés, préférences et bannis vérifiés à l'envoi), `email_report` (3 essais), `email_dispatch` (pg_net toutes les 10 min, seulement s'il y a quelque chose à envoyer et de la place dans le quota), `unsubscribe_email` (jeton, sans session). Route `/api/cron/email` (API HTTP de Brevo, sans dépendance ; 503 tant que `BREVO_API_KEY` / `EMAIL_FROM` ne sont pas posés), textes neutres FR/EN, désinscription en un clic (RFC 8058) et page `/desinscription` (un lien ouvert ne change rien), préférences d'e-mail dans Ma Fiche. CI : faux service Brevo (127.0.0.1:3199) et parcours `email-route.spec.ts`. pgTAP `phase7e_email.test.sql` (3 groupes). Choix : 7-33 à 7-40.
   - **À poser par le porteur (Vercel, preview puis prod au lancement)** : `BREVO_API_KEY` (sensitive) et `EMAIL_FROM` (adresse vérifiée chez Brevo). Je n'y touche pas.
 - **7f — Parcours de bout en bout** prolongé (signalement → décision motivée → exposé des motifs ; export ; suppression du compte ; réinscription refusée), CI, docs, arrêt.
+**7f — fait (local)** : signaler un message précis (migration `20261020140000_phase7f_report_message`, `report()` accepte la cible `message` : message de l'autre, dans une conversation du signaleur ; bouton « Signaler » sous chaque message de l'autre ; fenêtre de signalement commune `ReportDialog`) ; pgTAP `phase7f_report_message.test.sql` ; crochet « Before User Created » activé dans `supabase/config.toml` (pile locale et CI, comme sur les projets distants) ; parcours `moderation-rgpd.spec.ts` (signalement → décision motivée par un admin en double authentification → exposé des motifs de chaque côté ; export ; suppression réelle du compte ; bannissement puis réinscription refusée par le vrai service Auth) ; `email-route.spec.ts` et `moderation-rgpd.spec.ts` ajoutés aux parcours critiques (Pixel 7 et iPhone 14 en CI). Local : pgTAP 18 fichiers, 134 tests ; Vitest 197 ; Pixel 7 32/32. Choix : 7-41 à 7-43.
+
+### Rapport de fin de phase 7
+**Fait** (7a à 7f, voir chaque sous-phase ci-dessus) : modération complète (`/admin/signalements`, `/admin/textes`, `/admin/membres`, `/admin/historique`, sanctions motivées, exposé des motifs au signaleur et à la personne concernée, bannissement par empreinte + compte Auth), pilotage (`/admin/quartiers` + tableau de santé, signes, mots-clés, questions), tâches de nuit (Bonne conduite, Fiches inactives 21 / 90 jours, ouverture automatique, nettoyage + `/api/cron/cleanup`), RGPD (export JSON, suppression réelle, « Message supprimé » / « Ce compte a été supprimé »), e-mails Brevo (file, quota, regroupement, rappels sur option, désinscription par type), signalement d'un message. CI verte à chaque sous-phase : 7a n° 30, 7b n° 31, 7c n° 33, 7d n° 35, 7e n° 37, 7f : voir ci-dessous ; `phase-7` avancée à chaque fois.
+
+**Écarts :**
+- Preview : 7a, 7b appliquées ; **7c, 7d à lancer par le porteur dans le SQL Editor** (opérations destructives, règle n° 11), 7e et 7f (sans opération destructive) seront appliquées par le connecteur ensuite, dans l'ordre. D'ici là, `database.types.ts` vient de `supabase gen types` sur la base locale (mêmes migrations) ; il sera régénéré depuis la preview.
+- Ligne d'historique 7a encore absente de la preview (le connecteur annule l'insertion : le texte contient des `delete`) : script fourni.
+- Route `/api/cron/cleanup` : couverte par pgTAP (ce qui est dû) et Vitest (refus sans secret), pas par un parcours de bout en bout (il faudrait vieillir des comptes Auth de 30 jours).
+- Envoi réel des e-mails : `BREVO_API_KEY` et `EMAIL_FROM` à poser par le porteur sur Vercel (je n'y touche pas) ; d'ici là la route répond 503 et la file attend.
+- La recherche admin par N° d'écrou a été retirée (règle de la Phase 4).
+- Rien sur `main`, rien sur la prod.
+
+**Scripts pour le SQL Editor de bad-boys-preview, dans l'ordre** (chacun applique la migration au texte exact du fichier puis enregistre sa ligne d'historique ; le premier n'enregistre que l'historique de la 7a, déjà appliquée) : `1-history-7a.sql`, `2-phase7c-jobs.sql`, `3-phase7c-inactive-fiches.sql`, `4-phase7d-rgpd.sql` (fournis au porteur). Ensuite : vérification des corps de fonction (MD5) et de l'historique, application de 7e et 7f par le connecteur, types régénérés depuis la preview, CI.
+
+**Questions :** les choix pris en cours de phase sont dans « Décisions à valider » (7-1 à 7-43).
 
 ## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, terminée ; décisions 6-1 à 6-14 validées par le conseiller ; CI verte deux fois de suite sur `phase-6`)
 Relu : PROMPT Phase 6, SPEC §7 ter, §10 (masquage), §13, §16, SCHEMA `date_proposals`, `can_unmask`, maquette `Permanent.dc.html`.
@@ -671,6 +687,9 @@ Phase 7 — choix pris en cours de phase (option la plus prudente de la SPEC) :
 | 7-38 | Contenu | Neutre : jamais de pseudo ni de message ; exceptions : le motif du bannissement (au membre lui-même) et le nom du quartier prêt (aux admins) | Pseudo de l'autre dans l'e-mail |
 | 7-39 | Secret de la route e-mail | Le même que les autres routes de tâches (`PUSH_CRON_SECRET`) | Un secret dédié |
 | 7-40 | Préférences | Dans Ma Fiche, une case par type ; le rappel de visite est désactivé par défaut (SPEC §16) | — |
+| 7-41 | Signaler un message | Bouton « Signaler » sous chaque message de l'autre (pas les siens, pas un message supprimé, pas après la suppression du compte de l'autre) ; le Greffe ne voit que ce message | Signaler la conversation entière |
+| 7-42 | Crochet « Before User Created » en local et en CI | Activé dans `supabase/config.toml`, comme sur les projets distants | Laisser le refus des bannis non testé de bout en bout |
+| 7-43 | Formulaire de suppression après une erreur | Il se vide : mot de passe et confirmation sont redemandés | Garder la case cochée |
 
 ## Questions ouvertes
 
