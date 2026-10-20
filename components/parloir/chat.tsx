@@ -177,7 +177,9 @@ export function Chat({
         ref={listRef}
         aria-label={t("liveRegion")}
         aria-live="polite"
-        className="parloir-glass flex max-h-[calc(100dvh-30rem)] min-h-48 flex-1 flex-col gap-3 overflow-y-auto rounded-md border border-[#2a2a2e] p-3"
+        // A scrolling region is reached with the keyboard (Safari does not do it by itself).
+        tabIndex={0}
+        className="parloir-glass focus-visible:outline-accent flex max-h-[calc(100dvh-30rem)] min-h-48 flex-1 flex-col gap-3 overflow-y-auto rounded-md border border-[#2a2a2e] p-3 focus-visible:outline-2"
       >
         {messages.map((message) => (
           <li key={message.id}>
