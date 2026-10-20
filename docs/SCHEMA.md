@@ -259,6 +259,8 @@ Index : unique partiel (`conversation_id`) `where status = 'pending'` ; (`conver
 RLS : activée, **aucun droit direct** (lecture par `get_dates`, écriture par `propose_date`, `counter_date`, `respond_date`, `cancel_date`). Internes : `insert_date_proposal`, `open_conversation_for`, `date_is_upcoming` (jour en heure de France), `looks_private_place`.
 `conversations` (Phase 6) : `bad_read_id`, `visitor_read_id` (6a, `mark_conversation_read`, `get_read_state`, `get_unread_counts`), `cavale_accepted_at` (6b, première Cavale acceptée ; lue par `private.can_unmask`, 6c).
 
+**Phase 7d (`20261020120000_phase7d_rgpd`)** : `conversations.bad_id`, `visitor_id`, `request_id` deviennent facultatifs (`on delete set null`) : la conversation reste pour l'autre membre quand un compte est supprimé. `export_my_data()`, `prepare_my_account_deletion()` (affaires classées, messages effacés et marqués `{"type": "removed"}`, copies du mot et du Casier effacées, chemins des fichiers renvoyés au serveur). `moderation_actions` : ajout seul, sauf pour les lignes d'un membre supprimé (cascade).
+
 #### `promenade_picks` — la Promenade — **en base (Phase 4a)** (remplace `daily_hearings`, jamais créée)
 `id bigint identity PK`, `visitor_id → profiles on delete cascade`, `bad_id → profiles on delete cascade`, `zone_id`, `promenade_date date` (date locale), `rank smallint` (1–5), `score smallint`, `visible_from`, `visible_until`, `seen_at`.
 Contraintes : unique (`visitor_id`, `promenade_date`, `bad_id`), unique (`visitor_id`, `promenade_date`, `rank`).
