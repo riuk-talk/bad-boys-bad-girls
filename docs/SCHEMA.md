@@ -392,6 +392,8 @@ v1 + **[v2]** : `admin_upsert_zone(...)` avec `threshold_bads`, `threshold_women
 
 Les purges qui touchent des fichiers ou `auth.users` passent par `/api/cron/cleanup` (clé secrète), appelée par `pg_net`.
 
+**En base (Phase 7c `20261020110000_phase7c_jobs`, `20261020110100_phase7c_inactive_fiches`)** : `compute_good_conduct()` (02:10 UTC), `process_inactive_profiles()` (02:20, `dormant_since` à 90 jours, réveillée par `touch_activity`), `auto_open_zones()` (02:30, `ready_at` une fois, e-mail `admin_zone_ready` aux admins, ouverture si `auto_open`, helper `private.open_zone` partagé avec `admin_set_zone_status`), `cleanup_rows()` puis `cleanup_dispatch()` (02:40). Pour la route (clé secrète seulement) : `cleanup_accounts_due(limit)`, `cleanup_photos_due(limit)`, `cleanup_photo_rotated(photo, old_large, new_large, new_small)` ; colonne `photos.path_rotated_at`. `build_daily_promenade` : Bads vus dans les 21 derniers jours ; `discover_bads` : les autres en fin de liste.
+
 ## 4. Triggers
 
 | Table | Trigger |
