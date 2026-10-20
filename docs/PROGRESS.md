@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : validée par le conseiller** (2026-10-20 : cause réelle corrigée, CI n° 27 verte deux fois), décisions 6-1 à 6-14 validées ; en attente de la fusion (rien sur `main` ni sur la prod). **Phase 7 (modération, pilotage, tâches planifiées, RGPD, e-mails) : terminée côté code**, rapport de fin de phase ci-dessous ; en attente de validation du conseiller et de quatre scripts au SQL Editor de la preview (rien sur `main` ni sur la prod).
+**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : validée par le conseiller** (2026-10-20 : cause réelle corrigée, CI n° 27 verte deux fois), décisions 6-1 à 6-14 validées ; en attente de la fusion (rien sur `main` ni sur la prod). **Phase 7 (modération, pilotage, tâches planifiées, RGPD, e-mails) : validée par le conseiller** (2026-10-20, décisions 7-1 à 7-43, trois réserves notées) ; preview à jour sauf le script 5 (indentation, à lancer avec psql). Rien sur `main` ni sur la prod.
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -64,6 +64,16 @@ Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la 
 **Scripts pour le SQL Editor de bad-boys-preview, dans l'ordre** (chacun applique la migration au texte exact du fichier puis enregistre sa ligne d'historique ; le premier n'enregistre que l'historique de la 7a, déjà appliquée) : `1-history-7a.sql`, `2-phase7c-jobs.sql`, `3-phase7c-inactive-fiches.sql`, `4-phase7d-rgpd.sql` (fournis au porteur). Ensuite : vérification des corps de fonction (MD5) et de l'historique, application de 7e et 7f par le connecteur, types régénérés depuis la preview, CI.
 
 **Questions :** les choix pris en cours de phase sont dans « Décisions à valider » (7-1 à 7-43).
+
+**Validation du conseiller (2026-10-20)** : décisions 7-1 à 7-43 validées, sous trois réserves : scripts du SQL Editor versionnés dans `supabase/scripts/preview-apply/` (fait) ; e-mails en file sur la preview jusqu'au nom de domaine (checklist) ; avis d'un juriste sur la conservation d'un an face à 7-31 (checklist).
+
+**Preview après les scripts 1 à 4 du porteur (2026-10-20)** :
+- Structure conforme : tâches pg_cron (`good-conduct`, `inactive-profiles`, `auto-open-zones`, `cleanup`), colonne `photos.path_rotated_at`, clés `conversations` en `set null` et facultatives, déclencheur `moderation_actions_append_only`.
+- **Écart trouvé** : le collage dans le SQL Editor a ré-indenté le texte (des centaines d'espaces ajoutées en tête de chaque ligne). Les 19 fonctions de 7c et 7d et les 4 textes d'historique différaient des fichiers. Seule l'indentation change : une fois les espaces de tête retirés des deux côtés, les MD5 sont identiques aux fichiers.
+- Corrigé par le connecteur : les 15 fonctions sans mot destructif, redéfinies au texte exact du fichier (MD5 de `prosrc` identiques, droits inchangés).
+- **À lancer par le porteur, avec psql et non par copier-coller** : `supabase/scripts/preview-apply/5-fix-indentation.sql` (les 4 fonctions qui contiennent un mot destructif, `cleanup_rows`, `build_daily_promenade`, `moderation_actions_append_only`, `prepare_my_account_deletion`, et les 4 textes d'historique). Testé sur la base locale : empreintes attendues.
+- 7e et 7f appliquées par le connecteur (aucune opération destructive), versions = noms des fichiers, MD5 identiques.
+- Types régénérés depuis la preview (`database.types.ts` au format du connecteur).
 
 ## Phase 6 — Le Parloir sans horaire et la Cavale (2026-10-19, terminée ; décisions 6-1 à 6-14 validées par le conseiller ; CI verte deux fois de suite sur `phase-6`)
 Relu : PROMPT Phase 6, SPEC §7 ter, §10 (masquage), §13, §16, SCHEMA `date_proposals`, `can_unmask`, maquette `Permanent.dc.html`.
@@ -361,6 +371,8 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
 - [ ] **Base de production : aucun connecteur d'IA avec droits d'écriture** (ils tournent en `postgres` et contourneraient la protection du super admin), ou connecteur retiré après la mise en place (décision du porteur, 2026-10-07).
 - [ ] **Vérifier la limite de connexions temps réel de l'offre gratuite Supabase** (Realtime) ; repli par lecture toutes les 3 s en place (décision du porteur, 2026-10-18).
 - [ ] **Poser les clés Turnstile sur Vercel** (`NEXT_PUBLIC_TURNSTILE_SITE_KEY`, absente aujourd'hui ; la clé secrète va dans Supabase Auth → Captcha).
+- [ ] **E-mails (Brevo)** (réserve du conseiller, 2026-10-20) : nom de domaine, puis domaine authentifié chez Brevo (SPF, DKIM, DMARC), puis `BREVO_API_KEY` et `EMAIL_FROM` en Production. Un expéditeur @proton.me envoyé par Brevo échouerait aux contrôles DMARC (spam ou refus) : d'ici là les e-mails restent en file sur la preview.
+- [ ] **Faire vérifier par un juriste** l'obligation de conservation d'un an des données d'identification (LCEN et décret de 2021) face à la décision 7-31 (décisions du Greffe effacées avec le compte) (réserve du conseiller, 2026-10-20).
 
 ### Pour plus tard (hors Phase 3)
 - Anglais : remplacer « step up to the height chart » par « step into the lineup » avant l'ouverture internationale.
