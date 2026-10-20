@@ -88,4 +88,17 @@ test.describe("sign-up: landing door, e-mail confirmation, first steps (local st
     // The door chosen on the landing preselects the role (SPEC v7 §2 bis).
     await expect(page.getByRole("radio", { name: /Je viens visiter/ })).toBeChecked();
   });
+
+  // Phase 8a: Supabase Auth itself refuses what the form refuses (a direct call with the
+  // publishable key cannot go below 12 characters).
+  test("Auth refuses a password shorter than 12 characters", async () => {
+    const anon = createClient(url, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "", {
+      auth: { persistSession: false },
+    });
+    const { error } = await anon.auth.signUp({
+      email: `e2e-weak-${randomBytes(4).toString("hex")}@example.com`,
+      password: "Pw-12345678",
+    });
+    expect(error?.code).toBe("weak_password");
+  });
 });
