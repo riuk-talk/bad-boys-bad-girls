@@ -81,6 +81,11 @@ test("Web Push: no service worker on the landing, the push route needs its secre
     headers: { authorization: `Bearer ${"x".repeat(48)}` },
   });
   expect(wrong.status()).toBe(401);
+  // Phase 8a: every other cron route and the data export refuse an anonymous caller.
+  for (const path of ["/api/cron/email", "/api/cron/cleanup"]) {
+    expect((await request.post(path)).status(), path).toBe(401);
+  }
+  expect((await request.get("/api/me/export")).status()).toBe(401);
 
   const sw = await request.get("/sw.js");
   expect(sw.headers()["cache-control"]).toContain("no-cache");
