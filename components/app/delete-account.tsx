@@ -25,7 +25,12 @@ export function DeleteAccount() {
         label={t("password")}
       />
       <label className="flex min-h-11 items-start gap-3">
-        <input type="checkbox" name="confirm" required className="mt-1 size-5" />
+        <input
+          type="checkbox"
+          name="confirm"
+          required
+          className="accent-accent mt-0.5 size-6 shrink-0"
+        />
         <span>{t("confirm")}</span>
       </label>
       <Button type="submit" variant="danger" disabled={pending}>
