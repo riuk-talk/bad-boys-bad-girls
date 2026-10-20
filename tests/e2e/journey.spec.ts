@@ -2,16 +2,17 @@ import AxeBuilder from "@axe-core/playwright";
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { execFileSync } from "node:child_process";
-import { randomBytes, randomUUID } from "node:crypto";
-import sharp from "sharp";
+import { randomBytes } from "node:crypto";
 import { openGreffe } from "./helpers/admin";
 import { FakePushService } from "./helpers/fake-push-service";
 import { auditSignedIn, LIGHTHOUSE_CATEGORIES } from "./helpers/lighthouse";
+import { onboardBad, onboardVisitor, signUp } from "./helpers/onboarding";
 import { settled } from "./helpers/settle";
 
 // THE end-to-end journey, LOCAL STACK ONLY (scripts/ci/local-env.mjs). Owner's rule (2026-10-07):
 // every later phase extends it (visit, Parloir, Permis permanent, Cavale) before it is done.
-//   1. A Bad and a Visitor in Toulon, photos waiting at the Greffe (as after a real upload).
+//   1. A Bad and a Visitor sign up for real (landing door, form, confirmation e-mail read in
+//      Mailpit) and go through the whole onboarding on screen, in Toulon (Phase 8d).
 //   2. A test admin opens /admin/greffe with the second factor and validates the 4 photos
 //      (copy to the public storage included).
 //   3. Toulon is opened (local database only); the Bad is visible to the Visitor (can_view_bad),
@@ -23,17 +24,20 @@ import { settled } from "./helpers/settle";
 //      bet is revealed once both are there, then the messages (contacts masked).
 //   7. The 30 minutes end: both choose « Prolonger » in secret → Permis permanent.
 //   8. Le Parloir sans horaire: the conversation goes on without a visit.
-//   9. The notifications leave through /api/cron/push to a fake push service.
+//   9. La Cavale; 9 bis Lighthouse (on demand); 9 ter axe and keyboard on every page.
+//  10. The notifications leave through /api/cron/push to a fake push service.
+//  11. Bloquer in the Parloir. 12. The Visitor deletes their account, for real (Phase 8d).
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const publishable = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const secret = process.env.SUPABASE_SECRET_KEY ?? "";
 const dbUrl = process.env.SUPABASE_DB_URL ?? "";
+const mailpit = process.env.MAILPIT_URL ?? "";
 const cronSecret = process.env.PUSH_CRON_SECRET ?? "";
 const enabled =
   process.env.E2E_LOCAL_STACK === "true" &&
   /^http:\/\/(127\.0\.0\.1|localhost):/.test(url) &&
   /@(127\.0\.0\.1|localhost):/.test(dbUrl) &&
-  [publishable, secret, cronSecret].every((value) => value !== "") &&
+  [publishable, secret, cronSecret, mailpit].every((value) => value !== "") &&
   Boolean(process.env.PUSH_TEST_TLS_CERT);
 
 const CHARGES = [
@@ -100,7 +104,7 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     id: "",
   };
   const endpoints = { bad: "", visitor: "" };
-  const files: { pending: string[]; published: string[] } = { pending: [], published: [] };
+  const files: { published: string[] } = { published: [] };
 
   async function account() {
     const email = `e2e-journey-${randomBytes(4).toString("hex")}@example.com`;
@@ -112,79 +116,6 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     });
     if (error) throw error;
     return { email, password, id: data.user.id };
-  }
-
-  /** A photo as the onboarding leaves it: two WebP files in photos-pending, a pending row. */
-  async function pendingPhoto(owner: string, position: number, color: string) {
-    const base = `${owner}/${randomUUID()}`;
-    const large = await sharp({
-      create: { width: 960, height: 1200, channels: 3, background: color },
-    })
-      .webp()
-      .toBuffer();
-    const small = await sharp(large).resize(320, 400).webp().toBuffer();
-    for (const [path, body] of [
-      [`${base}.webp`, large],
-      [`${base}-s.webp`, small],
-    ] as const) {
-      const { error } = await admin.storage
-        .from("photos-pending")
-        .upload(path, body, { contentType: "image/webp" });
-      if (error) throw error;
-      files.pending.push(path);
-    }
-    const { error } = await admin.from("photos").insert({
-      owner_id: owner,
-      position,
-      pending_path: `${base}.webp`,
-      width: 960,
-      height: 1200,
-    });
-    if (error) throw error;
-  }
-
-  async function member(target: Member, role: "bad" | "visitor", gender: "woman" | "man") {
-    Object.assign(target, await account());
-    const toulon = asOwner("select id from public.places where official_code = '83137'");
-    const { error } = await admin.from("profiles").insert({
-      id: target.id,
-      pseudo: target.pseudo,
-      birthdate: role === "bad" ? "1995-05-12" : "1991-09-30",
-      gender,
-      seeking_genders: [gender === "woman" ? "man" : "woman"],
-      seek_age_min: 25,
-      seek_age_max: 45,
-      place_id: Number(toulon),
-      role,
-      visit_motive:
-        role === "visitor" ? "Motard du dimanche, je préfère les phares aux bars bondés." : null,
-      bio: role === "bad" ? "Tatouée, franche du collier, allergique aux plans trop sages." : null,
-    });
-    if (error) throw error;
-    await admin
-      .from("profiles")
-      .update({
-        onboarding_completed_at: new Date().toISOString(),
-        onboarding_step: 8,
-        last_seen_at: new Date().toISOString(),
-        created_at: new Date(Date.now() - 10 * 86400000).toISOString(),
-      })
-      .eq("id", target.id);
-    const { data: questions } = await admin
-      .from("questions")
-      .select("id")
-      .eq("phase", "core")
-      .eq("is_active", true);
-    await admin.from("answers").insert(
-      (questions ?? []).map((q) => ({
-        user_id: target.id,
-        question_id: q.id,
-        option_id: q.id * 10 + 1,
-      })),
-    );
-    for (const position of role === "bad" ? [0, 1, 2] : [0]) {
-      await pendingPhoto(target.id, position, gender === "woman" ? "#7a2a3a" : "#2a4a7a");
-    }
   }
 
   /** The member's browser subscribes to the fake push service (same function as the app). */
@@ -208,31 +139,68 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
 
   test.beforeAll(async () => {
     await push.start();
-    await member(bad, "bad", "woman");
-    await member(visitor, "visitor", "man");
-    const { error } = await admin.from("casier_charges").insert({
-      profile_id: bad.id,
-      charge_1: CHARGES[0],
-      charge_2: CHARGES[1],
-      charge_3: CHARGES[2],
-      true_index: 1,
-    });
-    if (error) throw error;
+    for (const target of [bad, visitor]) {
+      target.email = `e2e-journey-${randomBytes(4).toString("hex")}@example.com`;
+      target.password = `Pw-${randomBytes(12).toString("base64url")}`;
+    }
     Object.assign(greffier, await account());
     asOwner(
       `insert into public.admin_users (user_id, note) values ('${greffier.id}', 'e2e journey')`,
     );
-    endpoints.bad = await subscribe(bad);
-    endpoints.visitor = await subscribe(visitor);
   });
 
   test.afterAll(async () => {
     asOwner("update public.launch_zones set status = 'waitlist' where slug = 'toulon'");
     if (files.published.length) await admin.storage.from("photos").remove(files.published);
-    if (files.pending.length) await admin.storage.from("photos-pending").remove(files.pending);
+    // Files still waiting at the Greffe (a run stopped before step 2).
+    for (const id of [bad.id, visitor.id].filter(Boolean)) {
+      const { data: pending } = await admin.storage.from("photos-pending").list(id);
+      if (pending?.length)
+        await admin.storage.from("photos-pending").remove(pending.map((f) => `${id}/${f.name}`));
+    }
     for (const id of [bad.id, visitor.id, greffier.id])
       if (id) await admin.auth.admin.deleteUser(id);
     await push.stop();
+  });
+
+  test("1. a Bad and a Visitor sign up and go through their onboarding", async ({ browser }) => {
+    test.setTimeout(180_000);
+    const badPage = await (await browser.newContext()).newPage();
+    await signUp(badPage, "Je suis Bad", bad, mailpit);
+    await onboardBad(badPage, bad.pseudo, CHARGES);
+    await badPage.context().close();
+    const visitorPage = await (await browser.newContext()).newPage();
+    await signUp(visitorPage, "Je viens visiter", visitor, mailpit);
+    await onboardVisitor(
+      visitorPage,
+      visitor.pseudo,
+      "Motard du dimanche, je préfère les phares aux bars bondés.",
+    );
+    await visitorPage.context().close();
+
+    for (const target of [bad, visitor]) {
+      target.id = asOwner(`select id from auth.users where email = '${target.email}'`);
+      expect(target.id).toMatch(/^[0-9a-f-]{36}$/);
+    }
+    expect(
+      asOwner(
+        `select string_agg(role || ':' || (onboarding_completed_at is not null), ',' order by role)
+         from public.profiles where id in ('${bad.id}', '${visitor.id}')`,
+      ),
+    ).toBe("bad:true,visitor:true");
+    // The true charge is the first one written (the bet of step 3 relies on it).
+    expect(
+      asOwner(
+        `select (array[charge_1, charge_2, charge_3])[true_index] from public.casier_charges
+         where profile_id = '${bad.id}'`,
+      ),
+    ).toBe(CHARGES[0]);
+    expect(
+      asOwner(`select count(*) from public.photos where owner_id in ('${bad.id}', '${visitor.id}')
+               and status = 'pending'`),
+    ).toBe("4");
+    endpoints.bad = await subscribe(bad);
+    endpoints.visitor = await subscribe(visitor);
   });
 
   test("2. the Greffe validates the 4 photos (second factor, copy to the public storage)", async ({
@@ -832,6 +800,28 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     const badPage = await login(browser, bad.email, bad.password);
     const response = await badPage.goto(conversationUrl);
     expect(response?.status()).toBe(404);
+    await badPage.context().close();
+  });
+
+  test("12. the Visitor deletes their account, for real", async ({ browser }) => {
+    const page = await login(browser, visitor.email, visitor.password);
+    await page.goto("/ma-fiche/donnees");
+    await page.getByLabel("Ton mot de passe").fill(visitor.password);
+    await page.getByLabel("Je comprends que la suppression est définitive.").check();
+    await page.getByRole("button", { name: "Supprimer définitivement mon compte" }).click();
+    await page.waitForURL(/compte=supprime/);
+    await page.context().close();
+    const { data } = await admin.auth.admin.getUserById(visitor.id);
+    expect(data.user).toBeNull();
+    expect(asOwner(`select count(*) from public.profiles where id = '${visitor.id}'`)).toBe("0");
+    expect(asOwner(`select count(*) from public.photos where owner_id = '${visitor.id}'`)).toBe(
+      "0",
+    );
+    // The Bad's side keeps working without the Visitor.
+    const badPage = await login(browser, bad.email, bad.password);
+    for (const path of ["/visites", "/courrier"]) {
+      expect((await badPage.goto(path))?.status(), path).toBe(200);
+    }
     await badPage.context().close();
   });
 });
