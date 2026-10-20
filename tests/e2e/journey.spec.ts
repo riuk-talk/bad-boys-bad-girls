@@ -6,6 +6,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { openGreffe } from "./helpers/admin";
 import { FakePushService } from "./helpers/fake-push-service";
+import { auditSignedIn, LIGHTHOUSE_CATEGORIES } from "./helpers/lighthouse";
 import { settled } from "./helpers/settle";
 
 // THE end-to-end journey, LOCAL STACK ONLY (scripts/ci/local-env.mjs). Owner's rule (2026-10-07):
@@ -605,6 +606,53 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     // The number sent during the visit stays masked (only messages after the lifting are in clear).
     await expect(visitorPage.getByText("Ta meilleure balade de nuit ? Mon [•••]")).toBeVisible();
     await visitorPage.context().close();
+  });
+
+  // Phase 8b, on demand (E2E_LIGHTHOUSE=true, one device): Lighthouse mobile on the member pages,
+  // with the real data of the journey (SPEC §18: ≥ 90 in Performance, Accessibility, Best practices).
+  test("9 bis. Lighthouse on the Promenade, Découverte, Fiche, Courrier and Parloir", async ({
+    browser,
+  }, testInfo) => {
+    test.skip(process.env.E2E_LIGHTHOUSE !== "true", "Lighthouse on demand (E2E_LIGHTHOUSE=true)");
+    test.setTimeout(300_000);
+    const base = testInfo.project.use.baseURL ?? "";
+    const visitorPage = await login(browser, visitor.email, visitor.password);
+    await visitorPage.goto("/decouverte");
+    const fiche = await visitorPage
+      .getByRole("link", { name: new RegExp(bad.pseudo) })
+      .first()
+      .getAttribute("href");
+    await visitorPage.goto("/visites");
+    const parloir = await visitorPage
+      .getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` })
+      .getAttribute("href");
+    const visitorScores = await auditSignedIn(await visitorPage.context().cookies(), [
+      { name: "promenade", url: `${base}/promenade` },
+      { name: "decouverte", url: `${base}/decouverte` },
+      { name: "fiche", url: `${base}${fiche}` },
+      { name: "parloir", url: `${base}${parloir}` },
+    ]);
+    await visitorPage.context().close();
+    const badPage = await login(browser, bad.email, bad.password);
+    const badScores = await auditSignedIn(await badPage.context().cookies(), [
+      { name: "courrier", url: `${base}/courrier` },
+    ]);
+    await badPage.context().close();
+
+    const all = { ...visitorScores, ...badScores };
+    console.log(
+      Object.entries(all)
+        .map(
+          ([name, s]) =>
+            `${name}: ${LIGHTHOUSE_CATEGORIES.map((c) => `${c}=${s[c]}`).join(" ")} LCP=${s.lcp} CLS=${s.cls} TBT=${s.tbt}`,
+        )
+        .join("\n"),
+    );
+    for (const [name, s] of Object.entries(all)) {
+      for (const category of LIGHTHOUSE_CATEGORIES) {
+        expect.soft(s[category], `${name} ${category}`).toBeGreaterThanOrEqual(90);
+      }
+    }
   });
 
   test("10. the notifications leave: mail, slot, visit, Permis permanent, a message, the Cavale", async ({
