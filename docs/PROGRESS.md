@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : validée par le conseiller** (2026-10-20 : cause réelle corrigée, CI n° 27 verte deux fois), décisions 6-1 à 6-14 validées ; en attente de la fusion (rien sur `main` ni sur la prod). **Phase 7 (modération, pilotage, tâches planifiées, RGPD, e-mails) : validée par le conseiller** (2026-10-20, décisions 7-1 à 7-43, trois réserves notées) ; preview à jour sauf le script 5 (indentation, à lancer avec psql). Rien sur `main` ni sur la prod.
+**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : validée par le conseiller** (2026-10-20 : cause réelle corrigée, CI n° 27 verte deux fois), décisions 6-1 à 6-14 validées ; en attente de la fusion (rien sur `main` ni sur la prod). **Phase 7 (modération, pilotage, tâches planifiées, RGPD, e-mails) : validée par le conseiller** (2026-10-20, décisions 7-1 à 7-43, trois réserves notées) ; preview à jour sauf le script 5 (indentation, à lancer avec psql). Rien sur `main` ni sur la prod. **Phase 8 (audit final) en cours** : sous-phase 8a (sécurité).
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -26,6 +26,16 @@
   - **Vérifié** contre la base locale construite avec les 36 migrations de `phase-5` (empreinte MD5 par catégorie, `push_route_config` exclue) : fonctions (122), colonnes (290), politiques (25), déclencheurs (34), types énumérés (23), droits des tables (230) et des fonctions (181), RLS (31 tables), tâches pg_cron (5), publication Realtime : **identiques**. **0 table sans RLS.** Audit Supabase identique à la preview (16 tables sans politique, 46 fonctions membres, « Leaked password protection » désactivée).
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
 - **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
+
+## Phase 8 — Audit final (2026-10-20, découpage annoncé, sous-phases enchaînées)
+Relu : PROMPT Phase 8, SPEC §10 (sécurité technique), §17 (accessibilité), §18 (performance), §19 bis (tests), §21 (offres gratuites).
+Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la fin de la phase) :
+- **8a — Sécurité** : `supabase db lint` et conseils de sécurité de la preview ; relecture de toutes les politiques RLS et des droits (tables et fonctions exécutables par `anon` / `authenticated`, test pgTAP qui fige la liste) ; recherche de fuites de la clé secrète et de la clé privée VAPID (code, bundles du navigateur, journaux) ; tests d'autorisation négatifs sur chaque fonction appelable ; en-têtes HTTP.
+- **8b — Performance** : mesure réelle des Core Web Vitals (`web-vitals` + route interne, agrégats par jour sans identifiant ni IP, conservés 90 jours) ; Lighthouse mobile sur la landing, la Promenade, la Découverte, une Fiche, le Courrier et le Parloir ; `EXPLAIN ANALYZE` de `discover_bads` sur 1 000 Bads ; charge Realtime d'un soir à 21 h (100 visites simultanées) sur la pile locale.
+- **8c — Accessibilité** : clavier, lecteur d'écran (noms, rôles, régions vivantes), contrastes, `prefers-reduced-motion`, compte à rebours accessible ; axe sur toutes les pages principales.
+- **8d — Parcours complet** : inscription Bad et Visiteur → onboarding → demande → acceptation → créneau → visite → Permis permanent → message → Cavale acceptée → blocage → suppression de compte, en un seul parcours de bout en bout.
+- **8e — README** (installation, variables d'environnement, déploiement, premier admin, ouverture d'un quartier, limites des offres gratuites, checklist avant ouverture) et **liste des risques restants**, classés par gravité, avec une recommandation pour chacun.
+- **8f** — CI, docs, arrêt.
 
 ## Phase 7 — Modération, pilotage, tâches planifiées, RGPD, e-mails (2026-10-19, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 7, SPEC §10 (RGPD, DSA, sécurité), §14, §15, §16, SCHEMA §3.4-§3.5, tables déjà en base (`reports`, `moderation_actions` en ajout seul, `flagged_texts`, `consents`, `banned_email_hashes` + crochet « Before User Created », `email_outbox`, `notification_preferences`).
