@@ -20,6 +20,7 @@ Le plan de travail par phases est dans `docs/PROMPT.md`. L'état d'avancement es
 8. **Si une phase est trop grosse**, découpe-la en sous-étapes et annonce le découpage avant de commencer.
 9. **Ne jamais affaiblir une règle de sécurité ou de vie privée** pour faire passer un test ou une fonctionnalité : arrête-toi et demande.
 10. Commits petits et atomiques, messages en anglais au format Conventional Commits.
+11. **Ne jamais contourner une confirmation du connecteur** (encodage, découpage du texte, etc.). Si un SQL contient une opération destructive, demander au porteur de le lancer dans le SQL Editor.
 
 ## Stack (imposée)
 
