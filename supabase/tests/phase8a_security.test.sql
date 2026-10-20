@@ -27,6 +27,7 @@ create function pg_temp.expected_member_functions() returns text[] language sql 
     'admin_set_launch_mode(p_mode launch_mode)',
     'admin_set_zone_status(p_zone smallint, p_status zone_status)',
     'admin_tribes()',
+    'admin_web_vitals(p_days integer)',
     'admin_zone_health(p_zone smallint, p_from date, p_to date)',
     'admin_zones()',
     'age_years(birthdate date, at date)',
