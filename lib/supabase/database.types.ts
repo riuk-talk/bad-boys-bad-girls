@@ -245,13 +245,13 @@ isOneToOne: false
                   ]
                 },"email_outbox": {
                   Row: {
-                    "attempts": number,"created_at": string,"id": number,"kind": Database["public"]['Enums']["email_kind"],"not_before": string,"payload": NonNullable<Json>,"priority": number,"sent_at": string | null,"status": string,"user_id": string | null
+                    "attempts": number,"claimed_until": string | null,"created_at": string,"id": number,"kind": Database["public"]['Enums']["email_kind"],"not_before": string,"payload": NonNullable<Json>,"priority": number,"sent_at": string | null,"status": string,"user_id": string | null
                   }
                   Insert: {
-                    "attempts"?: number,"created_at"?: string,"id"?: never,"kind": Database["public"]['Enums']["email_kind"],"not_before"?: string,"payload"?: NonNullable<Json>,"priority"?: number,"sent_at"?: string | null,"status"?: string,"user_id"?: string | null
+                    "attempts"?: number,"claimed_until"?: string | null,"created_at"?: string,"id"?: never,"kind": Database["public"]['Enums']["email_kind"],"not_before"?: string,"payload"?: NonNullable<Json>,"priority"?: number,"sent_at"?: string | null,"status"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "attempts"?: number,"created_at"?: string,"id"?: never,"kind"?: Database["public"]['Enums']["email_kind"],"not_before"?: string,"payload"?: NonNullable<Json>,"priority"?: number,"sent_at"?: string | null,"status"?: string,"user_id"?: string | null
+                    "attempts"?: number,"claimed_until"?: string | null,"created_at"?: string,"id"?: never,"kind"?: Database["public"]['Enums']["email_kind"],"not_before"?: string,"payload"?: NonNullable<Json>,"priority"?: number,"sent_at"?: string | null,"status"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -261,6 +261,19 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
+                  ]
+                },"email_quota_days": {
+                  Row: {
+                    "day": string,"sent": number
+                  }
+                  Insert: {
+                    "day": string,"sent"?: number
+                  }
+                  Update: {
+                    "day"?: string,"sent"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"flagged_texts": {
                   Row: {
@@ -959,6 +972,20 @@ isOneToOne: false
 "distance_km":
 { Args: { "p_a": Database["public"]['Tables']["profiles"]['Row'],"p_b": Database["public"]['Tables']["profiles"]['Row'] }; Returns: number
                            },
+"email_claim":
+{ Args: { "p_limit"?: number }; Returns: {
+              "email_id": number,"kind": Database["public"]['Enums']["email_kind"],"locale": string,"payload": Json,"recipient": string,"unsubscribe_token": string
+            }[]
+                           },
+"email_dispatch":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"email_report":
+{ Args: { "p_email": number,"p_sent": boolean }; Returns: undefined
+                           },
+"enqueue_onboarding_reminders":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "expire_visit_requests":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -1243,6 +1270,9 @@ isOneToOne: false
                            },
 "unblock_user":
 { Args: { "p_target": string }; Returns: undefined
+                           },
+"unsubscribe_email":
+{ Args: { "p_kind": string,"p_token": string }; Returns: boolean
                            },
 "visitor_reputation":
 { Args: { "p_visitor": string }; Returns: {

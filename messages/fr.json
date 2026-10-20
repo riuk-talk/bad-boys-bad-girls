@@ -885,7 +885,18 @@
     "accountTitle": "Mon compte",
     "notificationsTitle": "Notifications",
     "decisionsLink": "{count, plural, =0 {Décisions du Greffe} one {Décisions du Greffe (# nouvelle)} other {Décisions du Greffe (# nouvelles)}}",
-    "myDataLink": "Mes données"
+    "myDataLink": "Mes données",
+    "emails": {
+      "title": "E-mails",
+      "request_digest": "Demandes reçues et réponses (un e-mail par jour au plus)",
+      "date_accepted": "Cavale acceptée",
+      "zone_opened": "Ouverture de mon quartier",
+      "profile_dormant": "Fiche en veille",
+      "visit_reminder": "Rappel une heure avant une visite",
+      "permit_granted": "Permis délivré",
+      "hint": "Les e-mails ne contiennent jamais de pseudo ni de message. Chaque e-mail a aussi un lien de désinscription.",
+      "save": "Enregistrer mes e-mails"
+    }
   },
   "Quarter": {
     "referralTitle": "Fais entrer tes complices",
@@ -1969,6 +1980,68 @@
       "wrongPassword": "Mot de passe incorrect.",
       "deleteConfirmRequired": "Indique ton mot de passe et coche la confirmation.",
       "generic": "La suppression n'a pas pu se faire. Réessaie ; si ça continue, écris au point de contact des mentions légales."
+    }
+  },
+  "Email": {
+    "open": "Ouvrir le site :",
+    "signature": "— Bad Boys & Bad Girls · Coupables de charme…",
+    "unsubscribe": "Ne plus recevoir ce type d'e-mail :",
+    "request_digest": {
+      "subject": "Du nouveau au Parloir",
+      "body": "Tu as reçu une demande de visite, ou une réponse à la tienne. Connecte-toi pour la voir."
+    },
+    "date_accepted": {
+      "subject": "Cavale acceptée",
+      "body": "Une Cavale a été acceptée : les détails sont dans ton Parloir. Premier rendez-vous : lieu public, et préviens un proche."
+    },
+    "zone_opened": {
+      "subject": "Ton quartier ouvre aux visites",
+      "body": "Les visites commencent dans ton quartier."
+    },
+    "profile_dormant": {
+      "subject": "Ta Fiche est en veille",
+      "body": "Sans connexion depuis 90 jours, ta Fiche n'est plus visible. Reconnecte-toi pour la réveiller."
+    },
+    "visit_reminder": {
+      "subject": "Rappel : visite dans une heure",
+      "body": "Ta visite au Parloir commence dans une heure."
+    },
+    "permit_granted": {
+      "subject": "Permis délivré",
+      "body": "Le Greffe a validé ta photo : ton Permis de visite est délivré."
+    },
+    "onboarding_reminder": {
+      "subject": "Ton inscription t'attend",
+      "body": "Il te reste quelques étapes pour terminer ton inscription."
+    },
+    "moderation_decision": {
+      "subject": "Décision du Greffe",
+      "body": "Le Greffe a banni ton compte. Il ne peut plus être utilisé, et cette adresse ne peut pas servir à une nouvelle inscription.\n\nMotif : {detail}\n\nUne question ? Écris au point de contact indiqué dans les mentions légales."
+    },
+    "admin_zone_ready": {
+      "subject": "Quartier prêt : {detail}",
+      "body": "Le quartier {detail} a atteint ses seuils d'ouverture."
+    },
+    "admin_photos_pending": {
+      "subject": "Photos en attente au Greffe",
+      "body": "Des photos attendent une décision du Greffe."
+    }
+  },
+  "Unsubscribe": {
+    "title": "Désinscription",
+    "question": "Ne plus recevoir d'e-mail pour {kind} ?",
+    "confirm": "Me désinscrire",
+    "done": "C'est fait : tu ne recevras plus ce type d'e-mail.",
+    "error": "La désinscription n'a pas pu se faire. Le lien est peut-être trop ancien.",
+    "invalid": "Ce lien de désinscription n'est pas valide.",
+    "settings": "Tes préférences d'e-mail se règlent aussi dans Ma Fiche.",
+    "kinds": {
+      "request_digest": "les demandes et réponses de visite",
+      "date_accepted": "les Cavales acceptées",
+      "zone_opened": "l'ouverture de ton quartier",
+      "profile_dormant": "la mise en veille de ta Fiche",
+      "visit_reminder": "les rappels de visite",
+      "permit_granted": "le Permis délivré"
     }
   }
 }

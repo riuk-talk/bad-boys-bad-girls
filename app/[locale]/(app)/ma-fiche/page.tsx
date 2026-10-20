@@ -6,6 +6,7 @@ import { FicheEditor } from "@/components/fiche/fiche-editor";
 import { PhotoManager } from "@/components/fiche/photo-manager";
 import { Notices, type Notice } from "@/components/fiche/notices";
 import { PosesEditor } from "@/components/onboarding/poses";
+import { EmailSettings } from "@/components/app/email-settings";
 import { PushSettings } from "@/components/push/push-settings";
 import { AccountSettings } from "@/components/relations/account-settings";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -87,7 +88,9 @@ export default async function MyFichePage() {
     supabase.rpc("get_my_blocks"),
     supabase
       .from("notification_preferences")
-      .select("push_requests, push_promenade, push_visits")
+      .select(
+        "push_requests, push_promenade, push_visits, email_request_digest, email_date_accepted, email_zone_opened, email_dormant, email_visit_reminder, email_permit_granted",
+      )
       .eq("user_id", userId)
       .maybeSingle(),
     supabase.rpc("push_device_count"),
@@ -297,6 +300,16 @@ export default async function MyFichePage() {
             requests: prefs?.push_requests ?? true,
             promenade: prefs?.push_promenade ?? true,
             visits: prefs?.push_visits ?? true,
+          }}
+        />
+        <EmailSettings
+          values={{
+            request_digest: prefs?.email_request_digest ?? true,
+            date_accepted: prefs?.email_date_accepted ?? true,
+            zone_opened: prefs?.email_zone_opened ?? true,
+            profile_dormant: prefs?.email_dormant ?? true,
+            visit_reminder: prefs?.email_visit_reminder ?? false,
+            permit_granted: prefs?.email_permit_granted ?? true,
           }}
         />
       </section>

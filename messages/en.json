@@ -885,7 +885,18 @@
     "accountTitle": "My account",
     "notificationsTitle": "Notifications",
     "decisionsLink": "{count, plural, =0 {Decisions of the Greffe} one {Decisions of the Greffe (# new)} other {Decisions of the Greffe (# new)}}",
-    "myDataLink": "My data"
+    "myDataLink": "My data",
+    "emails": {
+      "title": "E-mails",
+      "request_digest": "Requests received and answers (one e-mail a day at most)",
+      "date_accepted": "Cavale accepted",
+      "zone_opened": "My quartier opening",
+      "profile_dormant": "Fiche asleep",
+      "visit_reminder": "Reminder one hour before a visit",
+      "permit_granted": "Permit granted",
+      "hint": "E-mails never contain a pseudo or a message. Each e-mail also has an unsubscribe link.",
+      "save": "Save my e-mails"
+    }
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
@@ -1969,6 +1980,68 @@
       "wrongPassword": "Wrong password.",
       "deleteConfirmRequired": "Give your password and tick the confirmation.",
       "generic": "The deletion could not be done. Try again; if it keeps failing, write to the contact point in the legal notice."
+    }
+  },
+  "Email": {
+    "open": "Open the site:",
+    "signature": "— Bad Boys & Bad Girls · Coupables de charme…",
+    "unsubscribe": "Stop this kind of e-mail:",
+    "request_digest": {
+      "subject": "News at the Parloir",
+      "body": "You received a visit request, or an answer to yours. Sign in to see it."
+    },
+    "date_accepted": {
+      "subject": "Cavale accepted",
+      "body": "A Cavale was accepted: the details are in your Parloir. First date: a public place, and tell someone close."
+    },
+    "zone_opened": {
+      "subject": "Your quartier opens to visits",
+      "body": "Visits start in your quartier."
+    },
+    "profile_dormant": {
+      "subject": "Your Fiche is asleep",
+      "body": "Without signing in for 90 days, your Fiche is no longer visible. Sign in again to wake it up."
+    },
+    "visit_reminder": {
+      "subject": "Reminder: visit in one hour",
+      "body": "Your visit at the Parloir starts in one hour."
+    },
+    "permit_granted": {
+      "subject": "Permit granted",
+      "body": "The Greffe validated your photo: your visiting permit is granted."
+    },
+    "onboarding_reminder": {
+      "subject": "Your sign-up is waiting",
+      "body": "A few steps are left to finish your sign-up."
+    },
+    "moderation_decision": {
+      "subject": "Decision of the Greffe",
+      "body": "The Greffe banned your account. It can no longer be used, and this address cannot be used to sign up again.\n\nMotive: {detail}\n\nA question? Write to the contact point given in the legal notice."
+    },
+    "admin_zone_ready": {
+      "subject": "Quartier ready: {detail}",
+      "body": "The quartier {detail} reached its opening thresholds."
+    },
+    "admin_photos_pending": {
+      "subject": "Photos waiting at the Greffe",
+      "body": "Photos are waiting for a decision of the Greffe."
+    }
+  },
+  "Unsubscribe": {
+    "title": "Unsubscribe",
+    "question": "Stop receiving e-mails about {kind}?",
+    "confirm": "Unsubscribe",
+    "done": "Done: you will no longer receive this kind of e-mail.",
+    "error": "The unsubscription failed. The link may be too old.",
+    "invalid": "This unsubscribe link is not valid.",
+    "settings": "Your e-mail preferences can also be set in Ma Fiche.",
+    "kinds": {
+      "request_digest": "visit requests and answers",
+      "date_accepted": "accepted Cavales",
+      "zone_opened": "the opening of your quartier",
+      "profile_dormant": "your Fiche going to sleep",
+      "visit_reminder": "visit reminders",
+      "permit_granted": "the permit granted"
     }
   }
 }
