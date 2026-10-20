@@ -13,6 +13,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { accentForGender, type Accent } from "@/lib/accent";
 import {
+  announcedMinutes,
   cabinLabel,
   clockOffset,
   countdown,
@@ -126,9 +127,10 @@ export function VisitRoom({ initial, messages, otherReadId, me, tz }: Props) {
       ) : null}
 
       {phase === "waiting" ? (
-        <section className="flex flex-col items-center gap-3 py-8 text-center" role="status">
+        <section className="flex flex-col items-center gap-3 py-8 text-center">
           <Timer label={t("timeLeft")} value={countdown(endsAt - now)} />
-          <p className="font-display text-xl uppercase" data-accent={other.accent}>
+          <TimeAnnouncer msLeft={endsAt - now} />
+          <p className="font-display text-xl uppercase" data-accent={other.accent} role="status">
             {t("waiting", { pseudo: other.pseudo })}
           </p>
           <p className="text-grey max-w-sm text-sm">{t("waitingHint", { pseudo: other.pseudo })}</p>
@@ -139,6 +141,7 @@ export function VisitRoom({ initial, messages, otherReadId, me, tz }: Props) {
         <>
           <div className="flex items-center justify-between gap-3">
             <Timer label={t("timeLeft")} value={countdown(endsAt - now)} />
+            <TimeAnnouncer msLeft={endsAt - now} />
             {visit.visitor_clean_record ? (
               <Stamp kind="cleanRecord" surface="dark" size="sm" tilt={-4} />
             ) : null}
@@ -149,7 +152,9 @@ export function VisitRoom({ initial, messages, otherReadId, me, tz }: Props) {
               pseudo: other.pseudo.toUpperCase(),
             })}
           </p>
-          {now >= endsAt ? <p className="text-grey text-center text-sm">{t("visitOver")}</p> : null}
+          <p className="text-grey text-center text-sm" role="status">
+            {now >= endsAt ? t("visitOver") : null}
+          </p>
           <Chat
             conversationId={visit.conversation_id}
             initial={messages}
@@ -249,6 +254,17 @@ export function VisitRoom({ initial, messages, otherReadId, me, tz }: Props) {
         </Link>
       ) : null}
     </div>
+  );
+}
+
+/** Spaced announcement of the time left (the timer itself is never live: SPEC §17). */
+function TimeAnnouncer({ msLeft }: { msLeft: number }) {
+  const t = useTranslations("Relations.parloir");
+  const minutes = msLeft > 0 ? announcedMinutes(msLeft) : null;
+  return (
+    <p className="sr-only" aria-live="polite" aria-atomic="true">
+      {minutes === null ? null : t("minutesLeft", { count: minutes })}
+    </p>
   );
 }
 

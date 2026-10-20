@@ -20,7 +20,6 @@
     "loading": "Chargement…",
     "close": "Fermer",
     "menu": "Menu",
-    "offline": "Tu es hors ligne. On réessaie dès que la connexion revient.",
     "retry": "Réessayer",
     "draftNotice": "Modèle de document : ce texte n'est pas définitif.",
     "lastUpdated": "Dernière mise à jour : {date}",
@@ -1491,7 +1490,8 @@
       "deletedConversation": "Ce compte a été supprimé.",
       "messageDeleted": "Message supprimé",
       "reportMessage": "Signaler ce message",
-      "reportShort": "Signaler"
+      "reportShort": "Signaler",
+      "minutesLeft": "Plus que {count, plural, one {# minute} other {# minutes}} de visite."
     },
     "cavale": {
       "propose": "Proposer une Cavale",

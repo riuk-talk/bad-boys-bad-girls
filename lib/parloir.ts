@@ -131,6 +131,19 @@ export function visitPhase(visit: Visit, now: number): VisitPhase {
 }
 
 /** « 24:12 »: minutes and seconds left, never negative; hours shown beyond 60 minutes. */
+/** Minutes announced to screen readers during a visit (SPEC §17: spaced, never every second). */
+export const ANNOUNCED_MINUTES = [20, 10, 5, 1] as const;
+
+/**
+ * The last milestone reached with ms left (20, 10, 5 or 1 minute), or null before the first one.
+ * Stays the same between two milestones, so a live region holding it speaks once per milestone.
+ */
+export function announcedMinutes(ms: number): number | null {
+  const left = Math.ceil(Math.max(0, ms) / 60_000);
+  const reached = ANNOUNCED_MINUTES.filter((m) => left <= m);
+  return reached.length > 0 ? Math.min(...reached) : null;
+}
+
 export function countdown(ms: number): string {
   const total = Math.max(0, Math.ceil(ms / 1000));
   const hours = Math.floor(total / 3600);

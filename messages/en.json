@@ -20,7 +20,6 @@
     "loading": "Loading…",
     "close": "Close",
     "menu": "Menu",
-    "offline": "You're offline. We'll retry as soon as you're back.",
     "retry": "Try again",
     "draftNotice": "Template document: this text is not final.",
     "lastUpdated": "Last updated: {date}",
@@ -1491,7 +1490,8 @@
       "deletedConversation": "This account was deleted.",
       "messageDeleted": "Message deleted",
       "reportMessage": "Report this message",
-      "reportShort": "Report"
+      "reportShort": "Report",
+      "minutesLeft": "{count, plural, one {# minute} other {# minutes}} of visit left."
     },
     "cavale": {
       "propose": "Propose a Cavale",

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  announcedMinutes,
   cabinLabel,
   clockOffset,
   countdown,
@@ -157,5 +158,25 @@ describe("read and unread (Phase 6a)", () => {
   it("adds the unread messages of every Parloir", () => {
     expect(totalUnread([{ unread: 2 }, { unread: 0 }, { unread: 3 }])).toBe(5);
     expect(totalUnread([])).toBe(0);
+  });
+});
+
+describe("announcedMinutes", () => {
+  it("speaks at 20, 10, 5 and 1 minute, and stays silent in between", () => {
+    const min = 60_000;
+    expect(announcedMinutes(30 * min)).toBeNull();
+    expect(announcedMinutes(20 * min + 1)).toBeNull();
+    expect(announcedMinutes(20 * min)).toBe(20);
+    expect(announcedMinutes(12 * min)).toBe(20);
+    expect(announcedMinutes(10 * min)).toBe(10);
+    expect(announcedMinutes(7 * min + 30_000)).toBe(10);
+    expect(announcedMinutes(5 * min)).toBe(5);
+    expect(announcedMinutes(61_000)).toBe(5);
+    expect(announcedMinutes(60_000)).toBe(1);
+    expect(announcedMinutes(1)).toBe(1);
+    // The text stays the same for every second of a stretch: one announcement per milestone.
+    const seen = new Set<number | null>();
+    for (let ms = 30 * min; ms > 0; ms -= 1000) seen.add(announcedMinutes(ms));
+    expect([...seen]).toEqual([null, 20, 10, 5, 1]);
   });
 });
