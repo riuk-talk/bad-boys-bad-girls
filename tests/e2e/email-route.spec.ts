@@ -50,7 +50,7 @@ test.describe("E-mails: /api/cron/email against a fake Brevo service (local stac
   const email = `mail-${randomBytes(4).toString("hex")}@test.local`;
   const pseudo = `Mail${randomBytes(3).toString("hex")}`;
   const received: Sent[] = [];
-  let server: Server;
+  let server: Server | undefined;
   let userId = "";
 
   test.beforeAll(async () => {
@@ -67,7 +67,7 @@ test.describe("E-mails: /api/cron/email against a fake Brevo service (local stac
       response.writeHead(404);
       response.end();
     });
-    await new Promise<void>((resolve) => server.listen(3199, "127.0.0.1", resolve));
+    await new Promise<void>((resolve) => server!.listen(3199, "127.0.0.1", resolve));
     const { data, error } = await admin.auth.admin.createUser({ email, email_confirm: true });
     if (error || !data.user) throw error ?? new Error("no user");
     userId = data.user.id;
@@ -81,7 +81,8 @@ test.describe("E-mails: /api/cron/email against a fake Brevo service (local stac
 
   test.afterAll(async () => {
     if (userId) await admin.auth.admin.deleteUser(userId);
-    await new Promise<void>((resolve) => server.close(() => resolve()));
+    // On WebKit every test is skipped: beforeAll did not run, there is no server to close.
+    if (server) await new Promise<void>((resolve) => server!.close(() => resolve()));
   });
 
   test("refuses a call without the secret", async ({ request }) => {
