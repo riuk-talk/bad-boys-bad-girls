@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Browser } from "@playwright/test";
 import { execFileSync } from "node:child_process";
@@ -284,5 +285,27 @@ test.describe("Phase 7: moderation and RGPD (local stack)", () => {
     });
     expect(other.error, "another e-mail signs up").toBeNull();
     if (other.data.user) accounts.push(other.data.user.id);
+  });
+
+  // Phase 8b: the real Core Web Vitals, read by the Greffe (75th percentile per page).
+  test("the Greffe reads the real performance of the pages", async ({ browser }) => {
+    for (const value of [1200, 1300, 1400, 1500]) {
+      const { error } = await admin.rpc("record_web_vital", {
+        p_page: "fiche",
+        p_metric: "LCP",
+        p_value: value,
+      });
+      expect(error).toBeNull();
+    }
+    const greffe = await (await browser.newContext()).newPage();
+    await openGreffe(greffe, greffier);
+    await greffe.goto("/admin/performance");
+    await expect(greffe.getByRole("heading", { name: "Performance réelle" })).toBeVisible();
+    const row = greffe.getByRole("row", { name: /^Fiche/ });
+    await expect(row).toContainText("(Bon)");
+    const result = await new AxeBuilder({ page: greffe })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+      .analyze();
+    expect(result.violations.map((v) => v.id)).toEqual([]);
   });
 });

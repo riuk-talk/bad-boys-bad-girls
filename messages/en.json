@@ -1614,7 +1614,8 @@
       "quartiers": "Quartiers",
       "signes": "Signs",
       "keywords": "Keywords",
-      "questions": "Questions"
+      "questions": "Questions",
+      "performance": "Performance"
     },
     "done": "Decision saved.",
     "decide": "Save the decision",
@@ -1906,6 +1907,25 @@
       "optionEn": "Answer {number} (EN)",
       "coreActive": "Always active (core question)",
       "save": "Save"
+    },
+    "vitals": {
+      "title": "Real performance",
+      "intro": "75th percentile of the measures of the site’s visitors over the last {days} days (Core Web Vitals). No identifier or IP address: only daily counts, kept 90 days.",
+      "empty": "No measure yet.",
+      "page": "Page",
+      "samples": "Measures: {count}",
+      "target": "Target < {value}",
+      "good": "Good",
+      "bad": "Needs work",
+      "pages": {
+        "landing": "Home",
+        "promenade": "Promenade",
+        "decouverte": "Discovery",
+        "fiche": "Fiche",
+        "courrier": "Mail",
+        "parloir": "Parloir",
+        "other": "Other pages"
+      }
     }
   },
   "Decisions": {

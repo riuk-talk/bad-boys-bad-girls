@@ -1614,7 +1614,8 @@
       "quartiers": "Quartiers",
       "signes": "Signes",
       "keywords": "Mots-clés",
-      "questions": "Questions"
+      "questions": "Questions",
+      "performance": "Performance"
     },
     "done": "Décision enregistrée.",
     "decide": "Enregistrer la décision",
@@ -1906,6 +1907,25 @@
       "optionEn": "Réponse {number} (EN)",
       "coreActive": "Toujours active (question de base)",
       "save": "Enregistrer"
+    },
+    "vitals": {
+      "title": "Performance réelle",
+      "intro": "75e centile des mesures des visiteurs du site sur les {days} derniers jours (Core Web Vitals). Aucun identifiant ni adresse IP : seulement des comptes par jour, conservés 90 jours.",
+      "empty": "Aucune mesure pour l’instant.",
+      "page": "Page",
+      "samples": "Mesures : {count}",
+      "target": "Objectif < {value}",
+      "good": "Bon",
+      "bad": "À améliorer",
+      "pages": {
+        "landing": "Accueil",
+        "promenade": "Promenade",
+        "decouverte": "Découverte",
+        "fiche": "Fiche",
+        "courrier": "Courrier",
+        "parloir": "Parloir",
+        "other": "Autres pages"
+      }
     }
   },
   "Decisions": {
