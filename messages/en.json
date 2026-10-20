@@ -1247,7 +1247,8 @@
       "blockTitle": "Block {pseudo}?",
       "blockBody": "{pseudo} disappears from your screen and you from theirs, everywhere. Requests in progress between you are closed. You can unblock from My File.",
       "blockSubmit": "Block",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "reportMessageTitle": "Report a message from {pseudo}"
     },
     "myRequests": {
       "title": "My visit requests",
@@ -1488,7 +1489,9 @@
       "messageRemoved": "Message removed by the Greffe.",
       "deletedAccount": "Deleted account",
       "deletedConversation": "This account was deleted.",
-      "messageDeleted": "Message deleted"
+      "messageDeleted": "Message deleted",
+      "reportMessage": "Report this message",
+      "reportShort": "Report"
     },
     "cavale": {
       "propose": "Propose a Cavale",

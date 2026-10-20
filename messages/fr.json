@@ -1247,7 +1247,8 @@
       "blockTitle": "Bloquer {pseudo} ?",
       "blockBody": "{pseudo} disparaît de ton écran et toi du sien, partout. Les demandes en cours entre vous sont closes. Tu pourras débloquer depuis Ma Fiche.",
       "blockSubmit": "Bloquer",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "reportMessageTitle": "Signaler un message de {pseudo}"
     },
     "myRequests": {
       "title": "Mes demandes de parloir",
@@ -1488,7 +1489,9 @@
       "messageRemoved": "Message retiré par le Greffe.",
       "deletedAccount": "Compte supprimé",
       "deletedConversation": "Ce compte a été supprimé.",
-      "messageDeleted": "Message supprimé"
+      "messageDeleted": "Message supprimé",
+      "reportMessage": "Signaler ce message",
+      "reportShort": "Signaler"
     },
     "cavale": {
       "propose": "Proposer une Cavale",

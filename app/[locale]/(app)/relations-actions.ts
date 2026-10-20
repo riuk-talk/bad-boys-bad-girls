@@ -80,7 +80,7 @@ export async function decideVisitRequestAction(
   return { status: "done" };
 }
 
-const REPORT_TARGETS = ["profile", "permit", "visit_request"] as const;
+const REPORT_TARGETS = ["profile", "permit", "visit_request", "message"] as const;
 const REPORT_CATEGORIES = [
   "fake_profile",
   "minor",
@@ -92,7 +92,8 @@ const REPORT_CATEGORIES = [
 ] as const;
 const reportSchema = z.object({
   type: z.enum(REPORT_TARGETS),
-  target: uuid,
+  // A uuid, or the number of a message of the Parloir.
+  target: z.union([uuid, z.string().check(z.regex(/^[0-9]{1,18}$/))]),
   category: z.enum(REPORT_CATEGORIES),
   comment: z.string().check(z.maxLength(500)),
 });

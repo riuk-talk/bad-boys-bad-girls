@@ -1,6 +1,6 @@
 "use client";
 
-import { SendHorizontal } from "lucide-react";
+import { Flag, SendHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/app/[locale]/(app)/parloir-actions";
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
 import { Stamp } from "@/components/brand/stamp";
+import { ReportDialog } from "@/components/relations/report-dialog";
 import type { Accent } from "@/lib/accent";
 import { cn } from "@/lib/cn";
 import { MESSAGE_MAX, mergeMessages, readMarkFor, type Message } from "@/lib/parloir";
@@ -35,6 +36,8 @@ type Props = {
   iAmVisitor: boolean;
   /** Shown between the conversation and the field (Parloir sans horaire: Affaire classée, Cavale). */
   actions?: ReactNode;
+  /** A message of the other can be reported (not once their account is deleted). */
+  canReport?: boolean;
 };
 
 /**
@@ -53,12 +56,14 @@ export function Chat({
   visitorPseudo,
   iAmVisitor,
   actions,
+  canReport = true,
 }: Props) {
   const t = useTranslations("Relations.parloir");
   const errorT = useTranslations("Relations.errors");
   const [messages, setMessages] = useState<Message[]>(initial);
   const [draft, setDraft] = useState("");
   const [otherReadId, setOtherReadId] = useState(initialOtherReadId);
+  const [reporting, setReporting] = useState<number | null>(null);
   const lastId = useRef(initial.at(-1)?.id ?? 0);
   const markedId = useRef(0);
   const listRef = useRef<HTMLOListElement>(null);
@@ -172,6 +177,17 @@ export function Chat({
             {message.id === readMark ? (
               <p className="text-grey mt-0.5 text-right text-[11px]">{t("read")}</p>
             ) : null}
+            {canReport && message.kind === "text" && !message.mine && message.body !== null ? (
+              <button
+                type="button"
+                onClick={() => setReporting(message.id)}
+                aria-label={t("reportMessage")}
+                className="text-grey hover:text-cream mt-0.5 inline-flex min-h-8 items-center gap-1 text-[11px]"
+              >
+                <Flag aria-hidden="true" className="size-3" />
+                {t("reportShort")}
+              </button>
+            ) : null}
           </li>
         ))}
       </ol>
@@ -204,6 +220,16 @@ export function Chat({
       <p role="alert" className="text-red-bright min-h-5 text-sm">
         {state.status === "error" ? errorT(state.message as "generic") : null}
       </p>
+      {reporting !== null ? (
+        <ReportDialog
+          key={reporting}
+          open
+          onClose={() => setReporting(null)}
+          pseudo={other.pseudo}
+          reportType="message"
+          reportTarget={String(reporting)}
+        />
+      ) : null}
     </div>
   );
 }

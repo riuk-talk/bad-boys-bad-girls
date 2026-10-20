@@ -147,6 +147,7 @@ export function OpenParloir({
         other={other}
         visitorPseudo={conversation.i_am_bad ? other.pseudo : me.pseudo}
         iAmVisitor={!conversation.i_am_bad}
+        canReport={!deleted}
         actions={
           open ? (
             <div className="mt-3 flex gap-2">
