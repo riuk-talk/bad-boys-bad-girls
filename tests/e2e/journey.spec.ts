@@ -42,13 +42,14 @@ const CHARGES = [
   "Collectionne les cartes postales de phares.",
 ];
 
-const WCAG = ["wcag2a", "wcag2aa", "wcag21aa"];
+const WCAG = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"];
 
 async function axeViolations(page: Page) {
   await settled(page);
   const result = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   return result.violations.map(
-    (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
+    (v) =>
+      `${v.id}: ${v.nodes.map((n) => `${n.target.join(" ")} (${n.failureSummary ?? ""})`).join(", ")}`,
   );
 }
 
@@ -93,7 +94,11 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
   type Member = { email: string; password: string; id: string; pseudo: string };
   const bad: Member = { email: "", password: "", id: "", pseudo: `Lune${tag}` };
   const visitor: Member = { email: "", password: "", id: "", pseudo: `Nox${tag}` };
-  const greffier = { email: "", password: "", id: "" };
+  const greffier: { email: string; password: string; id: string; totpSecret?: string } = {
+    email: "",
+    password: "",
+    id: "",
+  };
   const endpoints = { bad: "", visitor: "" };
   const files: { pending: string[]; published: string[] } = { pending: [], published: [] };
 
@@ -234,7 +239,7 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     browser,
   }) => {
     const page = await (await browser.newContext()).newPage();
-    await openGreffe(page, greffier);
+    greffier.totpSecret = await openGreffe(page, greffier);
     const card = (pseudo: string, pose: string) =>
       page
         .getByRole("listitem")
@@ -653,6 +658,121 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
         expect.soft(s[category], `${name} ${category}`).toBeGreaterThanOrEqual(90);
       }
     }
+  });
+
+  // Phase 8c: axe (WCAG 2.2 AA) on every main page, with the real data of the journey, for the
+  // three kinds of account, and the keyboard: every element that takes the focus is shown above
+  // the sticky tab bar (2.4.11). The public pages are swept in public-pages.spec.ts.
+  test("9 ter. axe and keyboard on every member and Greffe page", async ({ browser }) => {
+    test.setTimeout(300_000);
+    /** Elements reached with Tab that end up under the tab bar (at most 80 steps). */
+    const hiddenByTabBar = async (page: Page): Promise<string[]> => {
+      const hidden: string[] = [];
+      for (let step = 0; step < 80; step++) {
+        await page.keyboard.press("Tab");
+        const state = await page.evaluate(() => {
+          const el = document.activeElement;
+          const bar = document.querySelector("[data-tab-bar]");
+          if (!el || el === document.body) return { done: true, hidden: null };
+          if (!bar || bar.contains(el)) return { done: false, hidden: null };
+          const r = el.getBoundingClientRect();
+          const b = bar.getBoundingClientRect();
+          const covered = r.height > 0 && r.bottom > b.top + 1;
+          const name = `${el.tagName.toLowerCase()} « ${(el.textContent ?? "").trim().slice(0, 40)} »`;
+          return { done: false, hidden: covered ? name : null };
+        });
+        if (state.done) break;
+        if (state.hidden) hidden.push(state.hidden);
+      }
+      return hidden;
+    };
+    const sweep = async (page: Page, paths: string[]) => {
+      const found: string[] = [];
+      for (const path of paths) {
+        const response = await page.goto(path);
+        expect(response?.status(), path).toBe(200);
+        await expect(page.locator("h1"), path).toHaveCount(1);
+        found.push(
+          ...(await hiddenByTabBar(page)).map((name) => `${path} focus under the tab bar: ${name}`),
+        );
+        // Target sizes are measured with the bar in the flow: content scrolled under a sticky bar
+        // is not a small target (the focus case is checked above).
+        await page.goto(path);
+        await page.addStyleTag({ content: "[data-tab-bar] { position: static !important; }" });
+        found.push(...(await axeViolations(page)).map((v) => `${path} ${v}`));
+      }
+      return found;
+    };
+    const visitId = asOwner(`select id from public.visits where visitor_id = '${visitor.id}'`);
+
+    const visitorPage = await login(browser, visitor.email, visitor.password);
+    await visitorPage.goto("/decouverte");
+    const fiche =
+      (await visitorPage
+        .getByRole("link", { name: new RegExp(bad.pseudo) })
+        .first()
+        .getAttribute("href")) ?? "";
+    await visitorPage.goto("/visites");
+    const parloir =
+      (await visitorPage
+        .getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` })
+        .getAttribute("href")) ?? "";
+    const violations = await sweep(visitorPage, [
+      "/promenade",
+      "/decouverte",
+      fiche,
+      "/demandes",
+      "/visites",
+      `/visites/${visitId}`,
+      parloir,
+      "/interrogatoire",
+      "/ma-fiche",
+      "/ma-fiche/decisions",
+      "/ma-fiche/donnees",
+      "/installer",
+    ]);
+    // The offline state (SPEC §17): a banner while the network is gone, then nothing.
+    await visitorPage.goto("/visites");
+    const offline = visitorPage.getByText("Tu es hors ligne", { exact: false });
+    await visitorPage.context().setOffline(true);
+    await expect(offline).toBeVisible();
+    await visitorPage.context().setOffline(false);
+    await expect(offline).toBeHidden();
+    await visitorPage.context().close();
+
+    const badPage = await login(browser, bad.email, bad.password);
+    violations.push(
+      ...(await sweep(badPage, [
+        "/courrier",
+        "/mon-casier",
+        "/mon-casier/apercu",
+        "/visites",
+        "/ma-fiche",
+      ])),
+    );
+    await badPage.context().close();
+
+    const greffe = await (await browser.newContext()).newPage();
+    await openGreffe(greffe, greffier);
+    const zone = asOwner("select id from public.launch_zones where slug = 'toulon'");
+    violations.push(
+      ...(await sweep(greffe, [
+        "/admin/greffe",
+        "/admin/signalements",
+        "/admin/textes",
+        "/admin/membres",
+        `/admin/membres/${bad.id}`,
+        "/admin/historique",
+        "/admin/quartiers",
+        `/admin/quartiers/${zone}`,
+        "/admin/signes",
+        "/admin/mots-cles",
+        "/admin/questions",
+        "/admin/performance",
+      ])),
+    );
+    await greffe.context().close();
+    expect(violations).toEqual([]);
   });
 
   test("10. the notifications leave: mail, slot, visit, Permis permanent, a message, the Cavale", async ({
