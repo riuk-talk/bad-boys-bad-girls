@@ -136,8 +136,11 @@ export function Chat({
     };
   }, [conversationId, refresh]);
 
+  // Only the list scrolls to its newest message: scrollIntoView would also scroll the window and
+  // push the composer and the actions under the tab bar.
   useEffect(() => {
-    listRef.current?.lastElementChild?.scrollIntoView({ block: "end" });
+    const list = listRef.current;
+    if (list) list.scrollTop = list.scrollHeight;
   }, [messages.length]);
 
   // What is on screen is read: the conversation is marked up to its last message (Phase 6a).
