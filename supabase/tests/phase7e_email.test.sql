@@ -291,9 +291,12 @@ begin
     (a, 'onboarding_reminder', 90, '{}'),
     (b, 'permit_granted', 30, '{}'),
     (c, 'visit_reminder', 10, jsonb_build_object('starts_at', now() - interval '1 minute'));
-  select * into first from public.email_claim(10) limit 1;
+  -- The rows come back in no particular order (update … returning): compare the set.
+  create temp table claimed on commit drop as select * from public.email_claim(10);
+  select * into first from claimed where recipient = 'b@test.local';
   select count(*) into n from public.email_outbox where status = 'queued' and claimed_until is not null;
-  return next is(first.recipient, 'b@test.local', 'by priority, the late reminder dropped');
+  return next is((select array_agg(recipient order by recipient) from claimed), array['a@test.local', 'b@test.local'],
+    'the late reminder dropped, the others claimed');
   return next is(n, 2, 'two claimed: the room left after the reserve of the Auth e-mails');
   return next ok((select status = 'skipped' from public.email_outbox where user_id = c), 'a reminder after the visit start is dropped');
   return next is((select count(*)::integer from public.email_claim(10)), 0, 'nothing more today');
