@@ -46,6 +46,7 @@ create function pg_temp.expected_member_functions() returns text[] language sql 
     'decline_slots(p_request uuid)',
     'discover_bads(p_age_min integer, p_age_max integer, p_max_km integer, p_tribe_ids smallint[], p_good_conduct_only boolean, p_recently_active boolean, p_cursor_key bigint, p_cursor_id uuid, p_limit integer)',
     'export_my_data()',
+    'get_casier_cliches()',
     'get_conversation(p_conversation uuid)',
     'get_dates(p_conversation uuid)',
     'get_fiche(p_bad uuid)',
