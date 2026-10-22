@@ -36,6 +36,14 @@ Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la 
 - **9c — Badge « Complices recrutés »** (SPEC §5, §3) : nombre de membres parrainés par le Bad, affiché sur sa Fiche à partir de 1. Calcul dans `get_fiche`. pgTAP, e2e dans le parcours (le Visiteur s'inscrit par le lien de parrainage du Bad).
 - **9d** — CI, docs, rapport, arrêt.
 
+### 9a — Clichés déconseillés (fait, vérifié en local et sur la preview)
+- Table `casier_cliches` (RLS, aucun droit direct) avec la liste de départ de la SPEC, en français et en anglais (10 + 10 ; « vol de cœur(s) » et « briseur / briseuse de cœurs » couverts par le début de mot). Lecture par `get_casier_cliches()` (membres connectés seulement ; `anon` rien). Personne ne l'écrit hors migration.
+- Détection `isCliche` (`lib/casier.ts`) : minuscules, sans accents, « œ » écrit « oe », ponctuation ignorée ; formule cherchée au début d'un mot. « Tapage nocturne » (et « disturbing the peace ») n'est un cliché que si le reste de la ligne fait moins de 12 lettres.
+- Conseil non bloquant « Ça, tout le monde peut l'écrire. Donne un vrai fait. » + « Par exemple : « amorce » » (l'amorce affichée du thème choisi) sous la ligne en cours, à l'onboarding et dans Mon casier ; et sur la ligne concernée dans « Teste ton Casier » (onboarding et aperçu).
+- Tests : pgTAP `phase9a_casier_cliches` (liste, lecture, refus d'écriture, `anon`) ; liste figée de la 8a complétée ; Vitest (normalisation, pluriel, faux positifs, « sans détail ») ; e2e : l'onboarding réel du parcours tape un cliché, voit le conseil, puis le remplace.
+- Preview : migration `20261022090000_phase9a_casier_cliches` appliquée par le connecteur, version corrigée ; historique, corps de la fonction et données = fichier sans les blancs. Types régénérés depuis la preview.
+- **Décisions à valider** : **9-1** périmètre = les trois [P1] de la SPEC ; **9-2** liste modifiable seulement par migration (pas d'écran au Greffe) ; les deux langues s'appliquent à tout Casier ; la liste anglaise est une traduction de la liste de départ (« heart thief », « stealing hearts », « too much charm », « too handsome », « too pretty », « unauthorized seduction », « heartbreaker », « guilty of being myself », « disturbing the peace », « repeat offender of love »).
+
 ## Phase 8 — Audit final (2026-10-20, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 8, SPEC §10 (sécurité technique), §17 (accessibilité), §18 (performance), §19 bis (tests), §21 (offres gratuites).
 Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la fin de la phase) :
