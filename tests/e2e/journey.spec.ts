@@ -502,6 +502,35 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await badPage.context().close();
   });
 
+  // Phase 9b [P1]: 48 h after the Permis permanent, quiet for 24 h, no Cavale yet (moved back in
+  // time, local database only): « Toujours là ? », once per member.
+  test("8 bis. the relance « Toujours là ? », once", async ({ browser }) => {
+    asOwner(
+      `update public.conversations set released_at = now() - interval '49 hours',
+         last_message_at = now() - interval '25 hours'
+       where visitor_id = '${visitor.id}' and bad_id = '${bad.id}'`,
+    );
+    const nudge = "Toujours là ? Propose une Cavale ou classe l'affaire.";
+    const page = await login(browser, visitor.email, visitor.password);
+    await page.goto("/visites");
+    await page.getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` }).click();
+    await page.waitForURL(/\/visites\/parloir\//);
+    await expect(page.getByText(nudge)).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await expect
+      .poll(() =>
+        asOwner(
+          `select visitor_nudged_at is not null from public.conversations
+           where visitor_id = '${visitor.id}' and bad_id = '${bad.id}'`,
+        ),
+      )
+      .toBe("t");
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "PARLOIR · SANS HORAIRE" })).toBeVisible();
+    await expect(page.getByText(nudge)).toHaveCount(0);
+    await page.context().close();
+  });
+
   test("9. la Cavale: proposed, another proposal, accepted; contacts in clear after it", async ({
     browser,
   }) => {
