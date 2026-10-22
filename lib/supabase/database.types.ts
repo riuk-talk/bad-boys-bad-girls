@@ -300,6 +300,7 @@ export type Database = {
       conversations: {
         Row: {
           bad_id: string | null
+          bad_nudged_at: string | null
           bad_read_id: number
           cavale_accepted_at: string | null
           closed_at: string | null
@@ -310,10 +311,12 @@ export type Database = {
           request_id: string | null
           status: Database["public"]["Enums"]["conversation_status"]
           visitor_id: string | null
+          visitor_nudged_at: string | null
           visitor_read_id: number
         }
         Insert: {
           bad_id?: string | null
+          bad_nudged_at?: string | null
           bad_read_id?: number
           cavale_accepted_at?: string | null
           closed_at?: string | null
@@ -324,10 +327,12 @@ export type Database = {
           request_id?: string | null
           status?: Database["public"]["Enums"]["conversation_status"]
           visitor_id?: string | null
+          visitor_nudged_at?: string | null
           visitor_read_id?: number
         }
         Update: {
           bad_id?: string | null
+          bad_nudged_at?: string | null
           bad_read_id?: number
           cavale_accepted_at?: string | null
           closed_at?: string | null
@@ -338,6 +343,7 @@ export type Database = {
           request_id?: string | null
           status?: Database["public"]["Enums"]["conversation_status"]
           visitor_id?: string | null
+          visitor_nudged_at?: string | null
           visitor_read_id?: number
         }
         Relationships: [
@@ -1715,6 +1721,10 @@ export type Database = {
         Args: { p_request: string; p_slots: string[] }
         Returns: undefined
       }
+      ack_parloir_nudge: {
+        Args: { p_conversation: string }
+        Returns: undefined
+      }
       admin_decide_flag: {
         Args: { p_decision: string; p_flag: number; p_reason?: string }
         Returns: undefined
@@ -2340,6 +2350,7 @@ export type Database = {
         Args: { p_conversation: string; p_member: string }
         Returns: {
           bad_id: string | null
+          bad_nudged_at: string | null
           bad_read_id: number
           cavale_accepted_at: string | null
           closed_at: string | null
@@ -2350,6 +2361,7 @@ export type Database = {
           request_id: string | null
           status: Database["public"]["Enums"]["conversation_status"]
           visitor_id: string | null
+          visitor_nudged_at: string | null
           visitor_read_id: number
         }
         SetofOptions: {
