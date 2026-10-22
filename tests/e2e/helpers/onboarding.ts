@@ -108,7 +108,13 @@ export async function onboardBad(page: Page, pseudo: string, charges: readonly s
     });
   }
   await next(page, 6, "Déposer au Greffe");
+  // A cliché is advised against (SPEC §6 [P1]), with a prompt, without blocking.
+  const advice = page.getByText("Ça, tout le monde peut l'écrire. Donne un vrai fait.");
+  await page.getByLabel("Chef d'accusation n° 1 · Le vrai").fill("Coupable de vol de cœurs");
+  await expect(advice).toBeVisible();
+  await expect(page.getByText(/Par exemple : « .+ »/)).toBeVisible();
   await page.getByLabel("Chef d'accusation n° 1 · Le vrai").fill(charges[0]!);
+  await expect(advice).toBeHidden();
   await page.getByRole("button", { name: "Suivant : le premier faux" }).click();
   await page.getByLabel("Chef d'accusation n° 2 · Un faux").fill(charges[1]!);
   await page.getByRole("button", { name: "Suivant : le second faux" }).click();
