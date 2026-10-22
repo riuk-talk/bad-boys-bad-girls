@@ -73,6 +73,8 @@ export const conversationSchema = z.object({
   unmasked: z.boolean(),
   /** The other member deleted their account (Phase 7d): « Ce compte a été supprimé ». */
   other_deleted: z.optional(z.boolean()),
+  /** « Toujours là ? » is due for me (SPEC §13 [P1], Phase 9b). */
+  nudge: z.optional(z.boolean()),
   other: z.object({
     id: z.nullable(z.string()),
     pseudo: z.nullable(z.string()),

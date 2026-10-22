@@ -68,6 +68,14 @@ export async function markReadAction(conversationId: string, upTo: number): Prom
   });
 }
 
+/** The relance « Toujours là ? » was shown: it will not come back in this conversation. */
+export async function ackNudgeAction(conversationId: string): Promise<void> {
+  const id = uuid.safeParse(conversationId);
+  if (!id.success) return;
+  const member = await requireMember();
+  await member.supabase.rpc("ack_parloir_nudge", { p_conversation: id.data });
+}
+
 const messageInput = z.object({
   conversation: uuid,
   body: z.string().check(z.minLength(1), z.maxLength(MESSAGE_MAX)),

@@ -1495,7 +1495,8 @@
       "messageDeleted": "Message supprimé",
       "reportMessage": "Signaler ce message",
       "reportShort": "Signaler",
-      "minutesLeft": "Plus que {count, plural, one {# minute} other {# minutes}} de visite."
+      "minutesLeft": "Plus que {count, plural, one {# minute} other {# minutes}} de visite.",
+      "nudge": "Toujours là ? Propose une Cavale ou classe l'affaire."
     },
     "cavale": {
       "propose": "Proposer une Cavale",

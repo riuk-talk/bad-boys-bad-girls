@@ -1495,7 +1495,8 @@
       "messageDeleted": "Message deleted",
       "reportMessage": "Report this message",
       "reportShort": "Report",
-      "minutesLeft": "{count, plural, one {# minute} other {# minutes}} of visit left."
+      "minutesLeft": "{count, plural, one {# minute} other {# minutes}} of visit left.",
+      "nudge": "Still there? Suggest a Cavale or close the case."
     },
     "cavale": {
       "propose": "Propose a Cavale",

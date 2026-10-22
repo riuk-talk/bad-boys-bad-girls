@@ -4,7 +4,7 @@ import { HandCoins, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useCallback, useEffect, useState } from "react";
 import { loadDatesAction } from "@/app/[locale]/(app)/cavale-actions";
-import { closeConversationAction } from "@/app/[locale]/(app)/parloir-actions";
+import { ackNudgeAction, closeConversationAction } from "@/app/[locale]/(app)/parloir-actions";
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
 import { CavaleCard, CavaleForm } from "@/components/parloir/cavale";
 import { Chat } from "@/components/parloir/chat";
@@ -60,6 +60,12 @@ export function OpenParloir({
   useEffect(() => {
     if (state.status === "done") router.refresh();
   }, [state.status, router]);
+
+  // The relance is shown once (SPEC §13 [P1]): marked as seen as soon as it is on screen.
+  const nudge = conversation.nudge === true && open && !deleted;
+  useEffect(() => {
+    if (nudge) void ackNudgeAction(conversation.id).catch(() => undefined);
+  }, [nudge, conversation.id]);
 
   const refreshDates = useCallback(() => {
     loadDatesAction(conversation.id)
@@ -121,6 +127,15 @@ export function OpenParloir({
           onChange={onCavaleDone}
           onCounter={(counter) => setForm({ counter })}
         />
+      ) : null}
+
+      {nudge && !dates?.pending && !dates?.accepted ? (
+        <p
+          role="note"
+          className="border-line text-cream rounded-md border px-3 py-2 text-center text-sm"
+        >
+          {t("nudge")}
+        </p>
       ) : null}
 
       {conversation.unmasked && open ? (
