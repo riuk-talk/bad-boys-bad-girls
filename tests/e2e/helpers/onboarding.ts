@@ -28,18 +28,27 @@ async function confirmationLink(mailpit: string, to: string): Promise<string> {
   return link;
 }
 
-/** From the landing door to the first onboarding step, through the confirmation e-mail. */
+/**
+ * From the landing door (or a referral link) to the first onboarding step, through the
+ * confirmation e-mail.
+ */
 export async function signUp(
   page: Page,
   door: "Je suis Bad" | "Je viens visiter",
   account: { email: string; password: string },
   mailpit: string,
+  referral?: string,
 ) {
-  await page.goto("/");
-  await page
-    .getByRole("link", { name: new RegExp(door) })
-    .first()
-    .click();
+  if (referral) {
+    const role = door === "Je suis Bad" ? "bad" : "visitor";
+    await page.goto(`/inscription?role=${role}&parrain=${referral}`);
+  } else {
+    await page.goto("/");
+    await page
+      .getByRole("link", { name: new RegExp(door) })
+      .first()
+      .click();
+  }
   await page.getByLabel("E-mail").fill(account.email);
   await page.getByLabel("Mot de passe", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Créer mon compte" }).click();

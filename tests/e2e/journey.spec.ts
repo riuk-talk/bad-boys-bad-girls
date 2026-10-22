@@ -170,7 +170,12 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await onboardBad(badPage, bad.pseudo, CHARGES);
     await badPage.context().close();
     const visitorPage = await (await browser.newContext()).newPage();
-    await signUp(visitorPage, "Je viens visiter", visitor, mailpit);
+    // The Visitor comes through the Bad's referral link (« Complices recrutés », Phase 9c).
+    const referral = asOwner(
+      `select p.referral_code from public.profiles p join auth.users u on u.id = p.id
+       where u.email = '${bad.email}'`,
+    );
+    await signUp(visitorPage, "Je viens visiter", visitor, mailpit, referral);
     await onboardVisitor(
       visitorPage,
       visitor.pseudo,
@@ -258,6 +263,7 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
       .click();
     await page.waitForURL(/\/fiche\//);
     await expect(page.getByText("1 VRAI · 2 FAUX")).toBeVisible();
+    await expect(page.getByText("1 complice recruté")).toBeVisible();
     await page.getByRole("button", { name: "Demander une visite" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByText(CHARGES[0]!).click();
