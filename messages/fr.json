@@ -1157,7 +1157,9 @@
       "complicityUnknown": "COMPLICITÉ : À ÉTABLIR",
       "footer": "N° D'ÉCROU {ecrou} | PAGE 1/1 | CLASSÉ : PROFIL RENCONTRE",
       "stampTop": "BAD BOY",
-      "stampBottom": "BAD GIRL"
+      "stampBottom": "BAD GIRL",
+      "accomplices": "Complices",
+      "recruited": "{count, plural, one {# complice recruté} other {# complices recrutés}}"
     },
     "fichePage": {
       "selfPreview": "C'est ta Fiche, telle que les Visiteurs la voient.",

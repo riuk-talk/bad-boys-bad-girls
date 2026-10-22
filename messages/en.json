@@ -1157,7 +1157,9 @@
       "complicityUnknown": "COMPLICITY: TO BE ESTABLISHED",
       "footer": "INMATE NO. {ecrou} | PAGE 1/1 | FILED: DATING PROFILE",
       "stampTop": "BAD BOY",
-      "stampBottom": "BAD GIRL"
+      "stampBottom": "BAD GIRL",
+      "accomplices": "Accomplices",
+      "recruited": "{count, plural, one {# accomplice recruited} other {# accomplices recruited}}"
     },
     "fichePage": {
       "selfPreview": "This is your File, as Visitors see it.",

@@ -125,6 +125,13 @@ export async function Dossier({ fiche, photos }: { fiche: FicheView; photos: Pho
             : {fiche.requests_open ? t("open") : t("full")}
           </span>
         </Row>
+        {fiche.recruited > 0 ? (
+          <Row label={t("accomplices")}>
+            <span className="font-sans text-sm font-bold normal-case">
+              : {t("recruited", { count: fiche.recruited })}
+            </span>
+          </Row>
+        ) : null}
         <Row label={t("onFileSince")} last>
           <span className="font-sans text-sm font-bold normal-case">: {since}</span>
         </Row>

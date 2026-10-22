@@ -39,6 +39,8 @@ export const ficheSchema = z.object({
   casier_changed_since_request: z.boolean(),
   bio: z.nullable(z.string()),
   good_conduct: z.boolean(),
+  /** « Complices recrutés » (SPEC §5 [P1], Phase 9c): members brought in by this Bad. */
+  recruited: z.number().check(z.int(), z.gte(0)),
   requests_open: z.boolean(),
   complicity: z.nullable(z.number()),
   common_points: z.array(commonPoint),
