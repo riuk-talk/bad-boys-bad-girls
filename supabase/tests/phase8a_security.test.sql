@@ -7,6 +7,7 @@
 create function pg_temp.expected_member_functions() returns text[] language sql as $$
   select array[
     'accept_visit_request(p_request uuid, p_slots timestamp with time zone[])',
+    'ack_parloir_nudge(p_conversation uuid)',
     'admin_decide_flag(p_flag bigint, p_decision text, p_reason text)',
     'admin_decide_photo(p_photo uuid, p_approve boolean, p_reason text, p_public_large text, p_public_small text)',
     'admin_decide_report(p_report bigint, p_upheld boolean, p_reason_reporter text, p_action moderation_action_type, p_reason_target text, p_days integer)',
