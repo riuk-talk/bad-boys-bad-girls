@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { CasierCheck } from "@/components/onboarding/casier";
 import { redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
+import { loadCliches } from "@/lib/casier-server";
 import { caseNumberFromId } from "@/lib/case-number";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -22,7 +23,10 @@ export default async function MyCasierPreviewPage() {
     .eq("profile_id", member.userId)
     .maybeSingle();
   if (!casier) return redirect({ href: "/mon-casier", locale });
-  const t = await getTranslations("Onboarding");
+  const [t, cliches] = await Promise.all([
+    getTranslations("Onboarding"),
+    loadCliches(member.supabase),
+  ]);
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8 sm:px-6 sm:py-12">
       <p className="text-accent font-stamp text-center text-sm tracking-[0.25em] uppercase">
@@ -37,6 +41,7 @@ export default async function MyCasierPreviewPage() {
         caseNumber={caseNumberFromId(member.userId)}
         reworkHref="/mon-casier"
         context="file"
+        cliches={cliches}
       />
     </div>
   );

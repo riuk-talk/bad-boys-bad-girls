@@ -17,6 +17,7 @@ import { QuestionForm } from "@/components/interrogation/question-form";
 import { Link, redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
 import { caseNumberFromId } from "@/lib/case-number";
+import { loadCliches } from "@/lib/casier-server";
 import { loadQuestions } from "@/lib/interrogation-server";
 import { lastStep, parseRole, ROLE_STEP, stepKind, stepPath } from "@/lib/onboarding/config";
 import { photoInfos } from "@/lib/photos";
@@ -86,6 +87,7 @@ export default async function OnboardingStep({ params, searchParams }: Props) {
       .select("charge_1, charge_2, charge_3, true_index")
       .eq("profile_id", member.userId)
       .maybeSingle();
+    const cliches = await loadCliches(member.supabase);
     const charges = casier
       ? ([casier.charge_1, casier.charge_2, casier.charge_3] as [string, string, string])
       : null;
@@ -99,6 +101,7 @@ export default async function OnboardingStep({ params, searchParams }: Props) {
             caseNumber={caseNumberFromId(member.userId)}
             reworkHref={stepPath(step - 1)}
             context="onboarding"
+            cliches={cliches}
           />
         </StepShell>
       );
@@ -113,7 +116,7 @@ export default async function OnboardingStep({ params, searchParams }: Props) {
         : ["", "", ""];
     return (
       <StepShell step={step} role={role} kind={kind}>
-        <CasierStepForm initial={initial} context="onboarding" />
+        <CasierStepForm initial={initial} context="onboarding" cliches={cliches} />
       </StepShell>
     );
   }

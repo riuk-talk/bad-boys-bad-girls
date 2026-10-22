@@ -796,7 +796,9 @@
           "A appelé ___ par le mauvais prénom pendant ___.",
           "A un tatouage de ___ qu'il ou elle ne regrette pas du tout."
         ]
-      }
+      },
+      "cliche": "Ça, tout le monde peut l'écrire. Donne un vrai fait.",
+      "clicheIdea": "Par exemple : « {prompt} »"
     },
     "casierCheck": {
       "lead": "Ton Casier tel qu'un Visiteur le voit : les trois lignes dans le désordre, sans indication du vrai.",
@@ -812,7 +814,8 @@
         "Un vrai surprenant : c'est lui qu'on retient."
       ],
       "ready": "Mon Casier est prêt",
-      "rework": "Le retravailler"
+      "rework": "Le retravailler",
+      "cliche": "Ça, tout le monde peut l'écrire. Donne un vrai fait."
     }
   },
   "MyFiche": {

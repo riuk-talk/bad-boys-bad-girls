@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { CasierStepForm } from "@/components/onboarding/casier";
 import { redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
+import { loadCliches } from "@/lib/casier-server";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -36,7 +37,10 @@ export default async function MyCasierPage() {
           ...(charges.filter((_, index) => index !== casier.true_index - 1) as [string, string]),
         ]
       : ["", "", ""];
-  const t = await getTranslations("Onboarding");
+  const [t, cliches] = await Promise.all([
+    getTranslations("Onboarding"),
+    loadCliches(member.supabase),
+  ]);
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-8 sm:px-6 sm:py-12">
       <p className="text-accent font-stamp text-center text-sm tracking-[0.25em] uppercase">
@@ -45,7 +49,7 @@ export default async function MyCasierPage() {
       <h1 className="font-display mt-2 mb-6 text-center text-4xl tracking-wide uppercase">
         {t("steps.casier")}
       </h1>
-      <CasierStepForm initial={initial} context="file" />
+      <CasierStepForm initial={initial} context="file" cliches={cliches} />
     </div>
   );
 }

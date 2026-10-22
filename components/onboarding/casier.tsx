@@ -18,6 +18,8 @@ import {
   CHARGE_SHORT_ADVICE,
   chargeLength,
   duplicateIndexes,
+  isCliche,
+  type Cliche,
 } from "@/lib/casier";
 
 const IDLE: StepState = { status: "idle" };
@@ -32,10 +34,13 @@ const STAGES = [1, 2, 3] as const;
 export function CasierStepForm({
   initial,
   context,
+  cliches,
 }: {
   /** [true, false, false] when the Casier already exists. */
   initial: [string, string, string];
   context: "onboarding" | "file";
+  /** Clichés déconseillés (SPEC §6 [P1]): advice, never blocking. */
+  cliches: readonly Cliche[];
 }) {
   const t = useTranslations("Onboarding.casier");
   const errorT = useTranslations("Onboarding.errors");
@@ -179,6 +184,14 @@ export function CasierStepForm({
         {length > 0 && length < CHARGE_SHORT_ADVICE ? (
           <p className="text-xs font-semibold text-[#4a4038]">{t("tooShort")}</p>
         ) : null}
+        {isCliche(current, cliches) ? (
+          <div className="flex items-start gap-1.5 text-xs font-semibold text-[#4a4038]">
+            <AlertTriangle aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+            <p>
+              {t("cliche")} {t("clicheIdea", { prompt })}
+            </p>
+          </div>
+        ) : null}
         {error ? (
           <p id={`charge-${stage}-error`} role="alert" className="text-red-ink text-sm font-bold">
             {error}
@@ -228,12 +241,14 @@ export function CasierCheck({
   caseNumber,
   reworkHref,
   context,
+  cliches,
 }: {
   charges: [string, string, string];
   trueIndex: number;
   caseNumber: string;
   reworkHref: string;
   context: "onboarding" | "file";
+  cliches: readonly Cliche[];
 }) {
   const t = useTranslations("Onboarding.casierCheck");
   const errorT = useTranslations("Onboarding.errors");
@@ -282,6 +297,12 @@ export function CasierCheck({
                 ) : chargeLength(charge) < CHARGE_SHORT_ADVICE ? (
                   <p className="mt-1.5 font-sans text-xs font-semibold text-[#4a4038]">
                     {t("shortLine")}
+                  </p>
+                ) : null}
+                {isCliche(charge, cliches) ? (
+                  <p className="text-red-ink mt-1.5 flex items-start gap-1.5 font-sans text-xs font-bold">
+                    <AlertTriangle aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+                    {t("cliche")}
                   </p>
                 ) : null}
               </li>

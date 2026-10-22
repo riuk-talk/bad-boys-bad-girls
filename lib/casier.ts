@@ -60,3 +60,37 @@ export function shuffleCharges(
     trueIndex: (items.findIndex((item) => item.isTrue) + 1) as 1 | 2 | 3,
   };
 }
+
+/** A generic formula advised against (SPEC §6 [P1], table casier_cliches). */
+export type Cliche = { phrase: string; needs_detail: boolean };
+
+/** Below this many letters around a `needs_detail` formula, the line says nothing more. */
+export const CLICHE_DETAIL_LETTERS = 12;
+
+/** Lower case, no accents, œ/æ spelled out, every non-letter a single space. */
+export function clicheKey(value: string): string {
+  return ` ${value
+    .toLowerCase()
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()} `;
+}
+
+/**
+ * Whether a line rests on a cliché: the formula appears from the start of a word (« vol de cœur »
+ * also catches « vol de cœurs »); a `needs_detail` one only when the rest of the line is too thin.
+ */
+export function isCliche(line: string, cliches: readonly Cliche[]): boolean {
+  const key = clicheKey(line);
+  return cliches.some(({ phrase, needs_detail }) => {
+    const formula = clicheKey(phrase).trimEnd();
+    const at = key.indexOf(formula);
+    if (formula.trim().length === 0 || at < 0) return false;
+    if (!needs_detail) return true;
+    const rest = (key.slice(0, at) + key.slice(at + formula.length)).replace(/[^\p{L}]/gu, "");
+    return rest.length < CLICHE_DETAIL_LETTERS;
+  });
+}

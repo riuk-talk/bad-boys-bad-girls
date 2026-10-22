@@ -796,7 +796,9 @@
           "Called ___ by the wrong name for ___.",
           "Has a ___ tattoo they don't regret one bit."
         ]
-      }
+      },
+      "cliche": "Anyone could write that. Give a real fact.",
+      "clicheIdea": "For instance: “{prompt}”"
     },
     "casierCheck": {
       "lead": "Your Record as a Visitor sees it: the three lines shuffled, with no sign of the true one.",
@@ -812,7 +814,8 @@
         "A surprising true one: that's the one people remember."
       ],
       "ready": "My Record is ready",
-      "rework": "Rework it"
+      "rework": "Rework it",
+      "cliche": "Anyone could write that. Give a real fact."
     }
   },
   "MyFiche": {
