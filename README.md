@@ -57,7 +57,10 @@ Coffre Supabase (Vault) : `push_endpoint_url` (`https://<domaine>/api/cron/push`
 ## Déploiement
 
 - **Deux projets Supabase** : `bad-boys-preview` (phases en cours, previews Vercel) et `bad-boys-prod` (uniquement les migrations de `main`, texte exact des fichiers).
-- **Migrations** : appliquées dans l'ordre de `supabase/migrations`, sans modification. Une migration qui contient une opération destructive est lancée par le porteur (SQL Editor ou `psql`, jamais par un connecteur d'IA). Après chaque migration : comparer le MD5 du texte enregistré dans `supabase_migrations.schema_migrations` au fichier. Le SQL Editor ré-indente parfois le texte : préférer `psql -f`.
+- **Migrations** : appliquées dans l'ordre de `supabase/migrations`, sans modification. Une migration qui contient une opération destructive est lancée par le porteur (SQL Editor ou `psql`, jamais par un connecteur d'IA). Après chaque migration, comparer **sans tenir compte des blancs** (le SQL Editor ré-indente le texte) :
+  - le corps de chaque fonction : `md5(regexp_replace(prosrc, '\s', '', 'g'))` dans la base, contre le MD5 du corps du fichier (texte entre les `$$`) privé de ses blancs ;
+  - le texte de l'historique : `md5(regexp_replace(array_to_string(statements, ';'), '\s', '', 'g'))` dans `supabase_migrations.schema_migrations`, contre le MD5 du fichier privé de ses blancs ;
+  - pour tout un schéma d'un coup : `md5(string_agg(nom || ':' || md5_sans_blancs, ',' order by nom))`, des deux côtés, puis fonction par fonction si l'empreinte diffère.
 - **Types** : `supabase gen types` depuis la base de la preview (jamais écrits à la main).
 - **Vercel** : déploiement automatique des branches (Preview) et de `main` (Production). Aucun cron Vercel : les tâches planifiées tournent dans Supabase (`pg_cron`) et appellent les routes du site par `pg_net` avec le secret, seulement quand il y a quelque chose à faire.
 - **Tâches planifiées** (`pg_cron`, heure de Paris pour les quotidiennes) : distribution des notifications (chaque minute) et des e-mails (toutes les 10 min), Heures de visite et Parloir (chaque minute), Promenade de 21 h, expiration des demandes, Bonne conduite, Fiches en veille, ouverture automatique des quartiers, nettoyage (lignes anciennes, photos, comptes inachevés, mesures de performance de plus de 90 jours).
