@@ -58,6 +58,14 @@ Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la 
 - Preview : migration `20261022110000_phase9c_recruited_badge` appliquée par le connecteur ; la version enregistrée (horodatage du connecteur, plus ancien que le fichier) remise au nom exact ; historique et les 3 fonctions = fichier sans les blancs ; `referral_count` toujours exécutable par les membres seulement. Types : aucun changement.
 - **Décision à valider** : **9-4** le badge compte les parrainés qui ont fini leur onboarding, hors bannis et profils de test, et s'affiche dès 1 ; aucune récompense (SPEC §3).
 
+### Rapport de fin de phase 9 (2026-10-22)
+- **Fait** : les trois éléments [P1] de la SPEC. 9a clichés déconseillés du Casier (liste en base FR + EN, conseil non bloquant avec une amorce, à l'écriture et dans « Teste ton Casier ») ; 9b relance « Toujours là ? » à 48 h dans le Parloir sans horaire, une fois par membre ; 9c badge « Complices recrutés » sur la Fiche, même compteur que « Mon quartier ».
+- **Base** : 3 migrations (`20261022090000`, `20261022100000`, `20261022110000`), aucune opération destructive, appliquées sur la preview par le connecteur et vérifiées sans les blancs (historique et fonctions) ; types régénérés depuis la preview. Rien sur `main` ni sur la prod.
+- **Tests** : pgTAP 23 fichiers / 146 tests ; Vitest 205 ; parcours de bout en bout étendu (cliché à l'onboarding, relance, inscription par parrainage et badge).
+- **Écarts** : aucune modification de la SPEC. La liste anglaise des clichés est une traduction (décision 9-2).
+- **Décisions à valider** : 9-1 (périmètre : les trois [P1] de la SPEC, faute de liste du porteur), 9-2 (liste des clichés modifiable par migration seulement, deux langues pour tout Casier, liste anglaise), 9-3 (relance comptée comme faite dès qu'elle s'affiche ; une Cavale même annulée empêche la relance), 9-4 (badge : parrainés au bout de l'onboarding, hors bannis et profils de test, dès 1).
+- **Pour le passage en prod des phases 6 à 9 (après contrôle du conseiller)** : 17 migrations, de `20261019100000_phase6a_conversation_reads` à `20261022110000_phase9c_recruited_badge`, dans l'ordre et au texte exact. 9 d'entre elles contiennent le mot `delete`, `drop` ou `truncate` (corps de fonction ou commande) et passeraient donc par le porteur dans le SQL Editor : 6a, 6b Cavale, 6c, 7a, 7b, 7c ×2, 7d, 8b rétention. Sur la prod, règle du porteur : aucun connecteur d'IA avec droits d'écriture ; la façon d'appliquer les 8 autres est à décider par le porteur. Après chacune : comparaison sans les blancs (README).
+
 ## Phase 8 — Audit final (2026-10-20, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 8, SPEC §10 (sécurité technique), §17 (accessibilité), §18 (performance), §19 bis (tests), §21 (offres gratuites).
 Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la fin de la phase) :
