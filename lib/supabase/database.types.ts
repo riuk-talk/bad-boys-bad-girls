@@ -235,6 +235,30 @@ export type Database = {
           },
         ]
       }
+      casier_cliches: {
+        Row: {
+          id: number
+          is_active: boolean
+          lang: string
+          needs_detail: boolean
+          phrase: string
+        }
+        Insert: {
+          id?: never
+          is_active?: boolean
+          lang: string
+          needs_detail?: boolean
+          phrase: string
+        }
+        Update: {
+          id?: never
+          is_active?: boolean
+          lang?: string
+          needs_detail?: boolean
+          phrase?: string
+        }
+        Relationships: []
+      }
       consents: {
         Row: {
           created_at: string
@@ -2115,6 +2139,13 @@ export type Database = {
           p_user: string
         }
         Returns: undefined
+      }
+      get_casier_cliches: {
+        Args: never
+        Returns: {
+          needs_detail: boolean
+          phrase: string
+        }[]
       }
       get_conversation: { Args: { p_conversation: string }; Returns: Json }
       get_dates: { Args: { p_conversation: string }; Returns: Json }
