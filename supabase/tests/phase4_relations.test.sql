@@ -210,7 +210,7 @@ begin
   return next is((select array_agg(k order by k) from jsonb_object_keys(public.get_fiche(b)) k),
     array['age', 'bio', 'casier_changed_since_request', 'charges', 'city', 'common_points', 'complicity',
       'cooldown_until', 'distance_km', 'ecrou', 'gender', 'good_conduct', 'id', 'my_request_status',
-      'on_file_since', 'photos', 'pseudo', 'requests_open', 'seek_age_max', 'seek_age_min',
+      'on_file_since', 'photos', 'pseudo', 'recruited', 'requests_open', 'seek_age_max', 'seek_age_min',
       'seeking_genders', 'tribes'], 'get_fiche: exactly these keys');
   perform pg_temp.as_user(b);
   return next is((select array_agg(k order by k) from jsonb_object_keys(public.get_permit(v)) k),
