@@ -28,19 +28,23 @@ type Props = {
   pseudo: string;
   charges: string[];
   souffleur: PrompterInput;
+  /** The bet made on the back of the placard: already chosen when the Demande opens. */
+  guess: number;
+  onGuess: (guess: number) => void;
 };
 
 /**
  * La Demande de parloir (SPEC §7, maquette Demande.dc.html): the bet on the true charge, an
- * optional note and the Souffleur. The bet stays secret until the visit, for both.
+ * optional note and the Souffleur. The bet stays secret until the visit, for both. It opens with
+ * the bet made on the placard (FichePancarte.dc.html), still changeable; nothing of it is
+ * recorded before « Déposer ma demande » (rule 14).
  */
-export function RequestModal({ badId, accent, pseudo, charges, souffleur }: Props) {
+export function RequestModal({ badId, accent, pseudo, charges, souffleur, guess, onGuess }: Props) {
   const t = useTranslations("Relations.request");
   const errorT = useTranslations("Relations.errors");
   const prompterT = useTranslations("Prompter");
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [guess, setGuess] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const [hooks, setHooks] = useState<Hook[]>([]);
   const [state, formAction, pending] = useActionState(sendVisitRequestAction, IDLE);
@@ -85,7 +89,7 @@ export function RequestModal({ badId, accent, pseudo, charges, souffleur }: Prop
           "font-display w-full rounded-[4px] text-xl uppercase",
         )}
       >
-        {t("open")}
+        {t("openWithBet", { number: guess })}
       </button>
       <Modal
         open={open}
@@ -134,7 +138,7 @@ export function RequestModal({ badId, accent, pseudo, charges, souffleur }: Prop
                         name="guess"
                         value={value}
                         checked={checked}
-                        onChange={() => setGuess(value)}
+                        onChange={() => onGuess(value)}
                         className="sr-only"
                       />
                       <span
@@ -215,7 +219,7 @@ export function RequestModal({ badId, accent, pseudo, charges, souffleur }: Prop
             </section>
             <button
               type="submit"
-              disabled={pending || guess === null || length > NOTE_MAX}
+              disabled={pending || length > NOTE_MAX}
               aria-busy={pending}
               className={buttonClasses(
                 "primary",
@@ -225,9 +229,6 @@ export function RequestModal({ badId, accent, pseudo, charges, souffleur }: Prop
             >
               {t("submit")}
             </button>
-            {guess === null ? (
-              <p className="text-grey -mt-2 text-center text-xs">{t("chooseFirst")}</p>
-            ) : null}
             <p role="alert" className="text-red-bright min-h-5 text-sm font-medium">
               {state.status === "error" ? errorT(state.message as "generic") : null}
             </p>

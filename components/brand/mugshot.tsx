@@ -18,6 +18,7 @@ export function Mugshot({
   className,
   priority = false,
   fill = false,
+  top = false,
 }: {
   src: string;
   alt: string;
@@ -26,6 +27,11 @@ export function Mugshot({
   priority?: boolean;
   /** Fills its positioned parent (absolute, inset 0) instead of sizing itself. */
   fill?: boolean;
+  /**
+   * Framed on the face and shoulders (the placard Fiche, 2026-10-23): the photo fills the frame
+   * from its top, its bottom is left under the placard.
+   */
+  top?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const overLines = !cutout || failed;
@@ -45,7 +51,11 @@ export function Mugshot({
         onError={() => setFailed(true)}
         className={cn(
           "absolute inset-0 size-full",
-          cutout ? "object-contain object-bottom" : "object-cover",
+          top
+            ? "object-cover object-[50%_10%]"
+            : cutout
+              ? "object-contain object-bottom"
+              : "object-cover",
           failed && "invisible",
         )}
       />

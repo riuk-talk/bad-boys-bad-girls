@@ -31,6 +31,8 @@
   --color-accent: #d4a437;
   --color-accent-hover: #e2b54a;
   --color-accent-ink: #765a0e;
+  /* The same colour on the black placard of the Fiche: red #ff5c74 5.7:1 (#ee3a55: 4.35). */
+  --color-accent-board: #d4a437;
 
   --font-display: var(--font-anton), "Impact", "Arial Narrow", sans-serif;
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
@@ -127,16 +129,19 @@
   --color-accent: #d4a437;
   --color-accent-hover: #e2b54a;
   --color-accent-ink: #765a0e;
+  --color-accent-board: #d4a437;
 }
 [data-accent="red"] {
   --color-accent: #ee3a55;
   --color-accent-hover: #f45a71;
   --color-accent-ink: #b5172e;
+  --color-accent-board: #ff5c74;
 }
 [data-accent="cream"] {
   --color-accent: #f2e8d5;
   --color-accent-hover: #fffaf0;
   --color-accent-ink: #34343b;
+  --color-accent-board: #f2e8d5;
 }
 
 /* Aged paper texture for the Fiche, pure CSS (no image request). */
@@ -244,13 +249,6 @@
   );
 }
 
-/* The Bad's Fiche as a case file (PARCOURS-DESIGN §2, maquette Fiche.dc.html). */
-.dossier-paper {
-  background-color: #efe6d2;
-  background-image: radial-gradient(rgb(120 100 70 / 0.1) 1px, transparent 1px);
-  background-size: 5px 5px;
-  color: var(--color-ink);
-}
 /* The mugshot wall of the reference (decision of the owner, 2026-10-23: version B): one fixed
    height chart for every member (public/brand/mur-toise.svg, transparent), behind a cut-out photo;
    the same lines over a photo kept as it is (version A, the fallback). */
@@ -268,26 +266,6 @@
   background-size: cover;
   mix-blend-mode: multiply;
   opacity: 0.45;
-}
-.dossier-wall {
-  background-color: #bdb7ac;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 13px,
-    rgb(14 14 16 / 0.35) 13px 14px
-  );
-}
-.dossier-barcode {
-  background-color: #efe6d2;
-  background-image: repeating-linear-gradient(
-    to right,
-    #0e0e10 0 2px,
-    transparent 2px 4px,
-    #0e0e10 4px 5px,
-    transparent 5px 8px,
-    #0e0e10 8px 11px,
-    transparent 11px 13px
-  );
 }
 /* La Promenade: dark height-chart lines behind each Bad (maquette Promenade.dc.html). */
 .yard-wall {
@@ -316,4 +294,47 @@
     transparent 0 60px,
     rgb(242 232 213 / 0.025) 60px 90px
   );
+}
+
+/* The placard of the Fiche (docs/design/parcours/FichePancarte.dc.html, 2026-10-23): a black
+   board with white letters, on two rods, turned over in 3D. Both sides share one grid cell, so
+   the board takes the height of the longer one. */
+.placard-scene {
+  perspective: 1100px;
+}
+.placard {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.placard[data-flipped] {
+  transform: rotateY(180deg);
+}
+.placard-side {
+  grid-area: 1 / 1;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.placard-back {
+  transform: rotateY(180deg);
+}
+.placard-board {
+  background-color: #1c1c1f;
+  background-image: repeating-linear-gradient(to bottom, #1c1c1f 0 5px, #141416 5px 6px);
+  border: 5px solid #5a4630;
+  border-radius: 3px;
+  box-shadow: 0 12px 22px rgb(0 0 0 / 0.55);
+  color: #f4f1ea;
+}
+.placard-letters {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
+}
+@media (prefers-reduced-motion: reduce) {
+  .placard {
+    transition: none;
+  }
 }
