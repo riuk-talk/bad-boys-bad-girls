@@ -77,7 +77,7 @@ export default async function MailboxPage() {
                 href={`/courrier/${row.request_id}`}
                 className="hover:border-accent bg-cream text-ink flex gap-3 rounded-md border border-[#2a2a2e] p-3"
               >
-                <div className="relative flex h-[68px] w-14 shrink-0 items-end justify-center overflow-hidden rounded-[3px] bg-[#2a2a2e]">
+                <div className="mugshot-wall relative flex h-[68px] w-14 shrink-0 items-end justify-center overflow-hidden rounded-[3px]">
                   {row.photo_small ? (
                     <Image
                       src={publicPhotoUrl(supabase, row.photo_small) ?? ""}

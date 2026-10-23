@@ -1,8 +1,8 @@
 import { Check, ChevronLeft, Lock, UserRound } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { Mugshot } from "@/components/brand/mugshot";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { Decision } from "@/components/relations/decision";
 import { ScheduleStatus } from "@/components/relations/schedule-status";
@@ -67,21 +67,19 @@ export default async function LetterPage({ params, searchParams }: Props) {
           </span>
         </div>
         <div className="flex gap-3.5">
-          <div className="relative flex h-[136px] w-[110px] shrink-0 items-end justify-center overflow-hidden rounded-[3px] bg-[#2a2a2e]">
-            {photo ? (
-              <Image
-                src={photo}
-                alt={t("photoAlt", { pseudo: permit.pseudo })}
-                fill
-                sizes="110px"
-                unoptimized
-                className="object-cover"
-                priority
-              />
-            ) : (
+          {photo ? (
+            <Mugshot
+              src={photo}
+              alt={t("photoAlt", { pseudo: permit.pseudo })}
+              cutout={permit.photo?.cutout === true}
+              priority
+              className="h-[136px] w-[110px] shrink-0 rounded-[3px]"
+            />
+          ) : (
+            <div className="relative flex h-[136px] w-[110px] shrink-0 items-end justify-center overflow-hidden rounded-[3px] bg-[#2a2a2e]">
               <UserRound aria-hidden="true" className="text-cream/40 size-24" strokeWidth={1.2} />
-            )}
-          </div>
+            </div>
+          )}
           <div className="flex flex-col gap-1.5">
             <h1
               id="permit-title"

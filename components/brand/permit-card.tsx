@@ -1,8 +1,8 @@
 import { UserRound } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { caseNumberFromId } from "@/lib/case-number";
 import { cn } from "@/lib/cn";
+import { Mugshot } from "./mugshot";
 import { Stamp } from "./stamp";
 
 export type PermitCardData = {
@@ -10,7 +10,7 @@ export type PermitCardData = {
   pseudo: string;
   age: number;
   city: string;
-  photo?: { src: string; width: number; height: number } | null;
+  photo?: { src: string; width: number; height: number; cutout?: boolean } | null;
   motive: string;
   signs: string[];
   /** Photo validated by the Greffe: the Permis is delivered (SPEC v7 §5 bis). */
@@ -43,15 +43,11 @@ export function PermitCard({ data, className }: { data: PermitCardData; classNam
       <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-4 p-5 sm:grid-cols-[9rem_minmax(0,1fr)]">
         <div className="bg-ink-3 relative aspect-[4/5] overflow-hidden rounded-md">
           {data.photo ? (
-            <Image
+            <Mugshot
               src={data.photo.src}
               alt={t("photoAlt", { pseudo: data.pseudo })}
-              width={data.photo.width}
-              height={data.photo.height}
-              sizes="9rem"
-              loading="lazy"
-              unoptimized
-              className="size-full object-cover"
+              cutout={data.photo.cutout === true}
+              fill
             />
           ) : (
             <div className="flex size-full items-end justify-center">

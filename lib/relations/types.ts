@@ -16,6 +16,8 @@ const photo = z.object({
   position: z.number(),
   large: z.nullable(z.string()),
   small: z.nullable(z.string()),
+  /** Cut out in the browser: shown in front of the wall (2026-10-23, version B). */
+  cutout: z.optional(z.boolean()),
 });
 const tribe = z.object({ label, detail: z.nullable(z.string()) });
 const commonPoint = z.object({ question: label, answer: label });

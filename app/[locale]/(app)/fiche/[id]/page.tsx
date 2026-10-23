@@ -35,9 +35,11 @@ export default async function FichePage({ params }: Props) {
   const t = await getTranslations("Relations.fichePage");
   const isSelf = userId === fiche.id;
 
-  const photoUrls: Record<number, string | null> = {};
-  for (const photo of fiche.photos)
-    photoUrls[photo.position] = publicPhotoUrl(supabase, photo.large);
+  const photoUrls: Record<number, { url: string; cutout: boolean } | null> = {};
+  for (const photo of fiche.photos) {
+    const url = publicPhotoUrl(supabase, photo.large);
+    photoUrls[photo.position] = url ? { url, cutout: photo.cutout === true } : null;
+  }
 
   let action: ReactNode = null;
   if (isSelf) {

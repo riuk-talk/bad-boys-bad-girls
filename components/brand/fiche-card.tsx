@@ -1,8 +1,8 @@
 import { Paperclip, UserRound } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { caseNumberFromId } from "@/lib/case-number";
 import { cn } from "@/lib/cn";
+import { Mugshot } from "./mugshot";
 import { Stamp } from "./stamp";
 import { Toise } from "./toise";
 
@@ -11,7 +11,7 @@ export type FicheCardData = {
   pseudo: string;
   age: number;
   city: string;
-  photo?: { src: string; width: number; height: number } | null;
+  photo?: { src: string; width: number; height: number; cutout?: boolean } | null;
   signs: string[];
   charges: string[];
   bio?: string | null;
@@ -41,22 +41,20 @@ export function FicheCard({ data, className }: { data: FicheCardData; className?
         strokeWidth={1.75}
       />
       <div className="relative aspect-[4/5] lg:aspect-auto lg:min-h-full">
-        <Toise />
         {data.photo ? (
-          <Image
+          <Mugshot
             src={data.photo.src}
             alt={t("photoAlt", { pseudo: data.pseudo })}
-            width={data.photo.width}
-            height={data.photo.height}
-            sizes="(min-width: 1024px) 40vw, 100vw"
-            loading="lazy"
-            unoptimized
-            className="relative size-full object-cover"
+            cutout={data.photo.cutout === true}
+            fill
           />
         ) : (
-          <div className="relative flex size-full items-end justify-center">
-            <UserRound aria-hidden="true" className="text-cream/25 h-3/4 w-3/4" strokeWidth={1} />
-          </div>
+          <>
+            <Toise />
+            <div className="relative flex size-full items-end justify-center">
+              <UserRound aria-hidden="true" className="text-cream/25 h-3/4 w-3/4" strokeWidth={1} />
+            </div>
+          </>
         )}
       </div>
       <div className="flex flex-col">

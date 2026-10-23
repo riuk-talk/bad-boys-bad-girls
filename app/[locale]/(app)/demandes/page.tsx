@@ -248,7 +248,7 @@ export default async function MyRequestsPage() {
 
 function Avatar({ url }: { url: string | null }) {
   return (
-    <div className="relative flex size-11 shrink-0 items-end justify-center overflow-hidden rounded-full bg-[#1c1c20]">
+    <div className="mugshot-wall relative flex size-11 shrink-0 items-end justify-center overflow-hidden rounded-full">
       {url ? (
         <Image src={url} alt="" fill sizes="44px" unoptimized className="object-cover" />
       ) : (

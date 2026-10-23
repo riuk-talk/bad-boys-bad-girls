@@ -71,7 +71,7 @@ export default async function VisitsPage() {
                 className="border-line bg-ink-2 flex flex-col gap-3 rounded-md border p-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="relative flex size-11 shrink-0 items-end justify-center overflow-hidden rounded-full bg-[#1c1c20]">
+                  <div className="mugshot-wall relative flex size-11 shrink-0 items-end justify-center overflow-hidden rounded-full">
                     {url ? (
                       <Image
                         src={url}

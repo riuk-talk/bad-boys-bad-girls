@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { Mugshot } from "@/components/brand/mugshot";
 import { Button } from "@/components/ui/button";
 import { requireMember } from "@/lib/auth/user";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -54,6 +55,11 @@ export default async function GreffePage({ searchParams }: Props) {
         )
     : { data: [] };
   const urlOf = (path: string) => signed?.find((entry) => entry.path === path)?.signedUrl ?? null;
+  // Shown as the members will see it: cut out on the wall, or with the graduations (2026-10-23).
+  const { data: cutouts } = rows.length
+    ? await member.supabase.rpc("admin_photo_cutouts", { p_ids: rows.map((row) => row.photo_id) })
+    : { data: [] };
+  const cut = new Set((cutouts ?? []).filter((c) => c.is_cutout).map((c) => c.photo_id));
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
@@ -86,16 +92,28 @@ export default async function GreffePage({ searchParams }: Props) {
               key={row.photo_id}
               className="border-line space-y-3 rounded-lg border bg-[#121214] p-3"
             >
-              <div className="toise-wall aspect-[3/4] overflow-hidden rounded-sm">
-                {url ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL of a private file
-                  <img
-                    src={url}
-                    alt={t("photoAlt", { position, pseudo: row.pseudo ?? "" })}
-                    className="size-full object-contain"
-                  />
-                ) : null}
-              </div>
+              {url && key ? (
+                <Mugshot
+                  src={url}
+                  alt={t("photoAlt", { position, pseudo: row.pseudo ?? "" })}
+                  cutout={cut.has(row.photo_id)}
+                  className="aspect-[3/4] rounded-sm"
+                />
+              ) : (
+                <div className="toise-wall aspect-[3/4] overflow-hidden rounded-sm">
+                  {url ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL of a private file
+                    <img
+                      src={url}
+                      alt={t("photoAlt", { position, pseudo: row.pseudo ?? "" })}
+                      className="size-full object-contain"
+                    />
+                  ) : null}
+                </div>
+              )}
+              <p className="text-grey text-xs" data-testid="cutout-state">
+                {key ? (cut.has(row.photo_id) ? t("cutout") : t("asIs")) : null}
+              </p>
               <p className="font-semibold">
                 {row.pseudo} · {t(`roles.${row.role}`)} ·{" "}
                 <span className="text-accent">{position}</span>

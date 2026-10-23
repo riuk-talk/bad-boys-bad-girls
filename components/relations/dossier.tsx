@@ -1,12 +1,12 @@
 import { Check, UserRound } from "lucide-react";
-import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
+import { Mugshot } from "@/components/brand/mugshot";
 import { accentForGender } from "@/lib/accent";
 import { cn } from "@/lib/cn";
 import { type FicheView, localize, tribeText } from "@/lib/relations/types";
 
-type PhotoUrls = Record<number, string | null>;
+type PhotoUrls = Record<number, { url: string; cutout: boolean } | null>;
 
 /** « Bad girl » / « Bad boy » / « Bad » (the archetype follows the gender). */
 function archetypeKey(gender: FicheView["gender"]) {
@@ -41,34 +41,23 @@ function Row({
 }
 
 function Pose({
-  url,
+  photo,
   alt,
   side,
 }: {
-  url: string | null;
+  photo: { url: string; cutout: boolean } | null;
   alt: string;
   side: "left" | "face" | "right";
 }) {
-  return (
+  const frame = cn("border-ink border-2", side === "face" ? "flex-[1.35] border-x-0" : "flex-1");
+  // The wall of the site behind a cut-out pose, the graduations over a pose kept as it is.
+  return photo ? (
+    <Mugshot src={photo.url} alt={alt} cutout={photo.cutout} priority className={frame} />
+  ) : (
     <div
-      className={cn(
-        "dossier-wall border-ink relative flex items-end justify-center overflow-hidden border-2",
-        side === "face" ? "flex-[1.35] border-x-0" : "flex-1",
-      )}
+      className={cn("mugshot-wall relative flex items-end justify-center overflow-hidden", frame)}
     >
-      {url ? (
-        <Image
-          src={url}
-          alt={alt}
-          fill
-          sizes="(min-width: 1024px) 12rem, 33vw"
-          unoptimized
-          priority
-          className="object-cover"
-        />
-      ) : (
-        <UserRound aria-hidden="true" className="h-4/5 w-4/5 text-[#26262a]" strokeWidth={1.2} />
-      )}
+      <UserRound aria-hidden="true" className="h-4/5 w-4/5 text-[#26262a]" strokeWidth={1.2} />
     </div>
   );
 }
@@ -145,9 +134,13 @@ export async function Dossier({ fiche, photos }: { fiche: FicheView; photos: Pho
         <span id="dossier-photos">{t("photos")}</span>
       </SectionTitle>
       <div className="flex h-44 lg:h-56">
-        <Pose url={photos[1] ?? null} alt={t("poseLeft", { pseudo: fiche.pseudo })} side="left" />
-        <Pose url={photos[0] ?? null} alt={t("poseFace", { pseudo: fiche.pseudo })} side="face" />
-        <Pose url={photos[2] ?? null} alt={t("poseRight", { pseudo: fiche.pseudo })} side="right" />
+        <Pose photo={photos[1] ?? null} alt={t("poseLeft", { pseudo: fiche.pseudo })} side="left" />
+        <Pose photo={photos[0] ?? null} alt={t("poseFace", { pseudo: fiche.pseudo })} side="face" />
+        <Pose
+          photo={photos[2] ?? null}
+          alt={t("poseRight", { pseudo: fiche.pseudo })}
+          side="right"
+        />
         <div
           aria-hidden="true"
           className="font-display bg-ink ml-1.5 flex w-[30px] flex-col justify-between py-1 text-center text-[10px] text-[#efe6d2]"

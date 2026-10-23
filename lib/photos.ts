@@ -8,6 +8,8 @@ export type PhotoInfo = {
   url: string | null;
   status: Database["public"]["Enums"]["moderation_status"];
   reason: string | null;
+  /** Cut out in the browser: shown in front of the wall (2026-10-23, version B). */
+  cutout: boolean;
 };
 
 /**
@@ -21,7 +23,7 @@ export async function photoInfos(
 ): Promise<Record<number, PhotoInfo | null>> {
   const { data: photos } = await supabase
     .from("photos")
-    .select("position, status, pending_path, public_path_large, rejection_reason")
+    .select("position, status, pending_path, public_path_large, rejection_reason, is_cutout")
     .eq("owner_id", userId)
     .in("position", positions);
   const result: Record<number, PhotoInfo | null> = Object.fromEntries(
@@ -43,7 +45,12 @@ export async function photoInfos(
         : photo.status === "pending"
           ? (signed?.find((entry) => entry.path === photo.pending_path)?.signedUrl ?? null)
           : null;
-    result[photo.position] = { url, status: photo.status, reason: photo.rejection_reason };
+    result[photo.position] = {
+      url,
+      status: photo.status,
+      reason: photo.rejection_reason,
+      cutout: photo.is_cutout,
+    };
   }
   return result;
 }

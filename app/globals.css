@@ -251,6 +251,24 @@
   background-size: 5px 5px;
   color: var(--color-ink);
 }
+/* The mugshot wall of the reference (decision of the owner, 2026-10-23: version B): one fixed
+   height chart for every member (public/brand/mur-toise.svg, transparent), behind a cut-out photo;
+   the same lines over a photo kept as it is (version A, the fallback). */
+.mugshot-wall {
+  background-color: #bdb7ac;
+  background-image:
+    radial-gradient(ellipse at 50% 35%, rgb(255 255 255 / 0.18), transparent 70%),
+    url("/brand/mur-toise.svg");
+  background-position: center bottom;
+  background-size: cover;
+}
+.mugshot-lines {
+  background-image: url("/brand/mur-toise.svg");
+  background-position: center bottom;
+  background-size: cover;
+  mix-blend-mode: multiply;
+  opacity: 0.45;
+}
 .dossier-wall {
   background-color: #bdb7ac;
   background-image: repeating-linear-gradient(

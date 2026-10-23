@@ -63,7 +63,7 @@ export default async function MyFichePage() {
       .maybeSingle(),
     supabase
       .from("photos")
-      .select("id, position, status, pending_path, rejection_reason")
+      .select("id, position, status, pending_path, rejection_reason, is_cutout")
       .eq("owner_id", userId)
       .order("position"),
     supabase.from("tribes").select("id, label").order("sort"),
@@ -139,7 +139,8 @@ export default async function MyFichePage() {
     const label = tribeLabels.get(row.tribe_id) ?? "";
     return row.detail ? `${label} — ${row.detail}` : label;
   });
-  const photo = mainUrl && main ? { src: mainUrl, width: 960, height: 1200 } : null;
+  const photo =
+    mainUrl && main ? { src: mainUrl, width: 960, height: 1200, cutout: main.is_cutout } : null;
   // Décisions du Greffe (Phase 7a): the outcome of my reports and the decisions about me.
   const { count: unreadDecisions } = await supabase
     .from("notifications")
