@@ -208,7 +208,20 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
 
-    const segmented = await ready.segment(canvas);
+    const segmented = await ready.segment(canvas).catch(async (error: unknown) => {
+      if (ready.name !== "worker") throw error;
+      // The worker loaded but could not compute: from now on, the page cuts out itself.
+      workerFailure = error instanceof Error ? error.message : String(error);
+      stopWorker("compute failed");
+      engine = loadInPage();
+      engine.catch(() => {
+        engine = null;
+      });
+      const page = await within(engine, Math.max(0, CUTOUT_LOAD_BUDGET_MS - loadMs));
+      if (!page) throw new Error("page engine too slow to load");
+      detail = `page (worker: ${workerFailure})`;
+      return page.segment(canvas);
+    });
     if (!segmented) {
       return {
         decision: decideCutout({ supported: true, loadMs, runMs: runMs() }),

@@ -15,12 +15,17 @@ function load() {
       self.importScripts(`${BASE}/wasm/vision_bundle.js`);
       const { FilesetResolver, ImageSegmenter } = self.Vision;
       const fileset = await FilesetResolver.forVisionTasks(`${BASE}/wasm`);
-      return ImageSegmenter.createFromOptions(fileset, {
+      const model = await ImageSegmenter.createFromOptions(fileset, {
         baseOptions: { modelAssetPath: `${BASE}/selfie_segmenter.tflite`, delegate: "CPU" },
         runningMode: "IMAGE",
         outputCategoryMask: false,
         outputConfidenceMasks: true,
       });
+      // A first segmentation on a small blank picture: some browsers load the model in a worker
+      // but cannot compute there (WebKit: no WebGL context in workers). The load then fails, and
+      // the page cuts out itself (lib/image/cutout.ts).
+      model.segment(new ImageData(32, 32)).close();
+      return model;
     })();
     // A failed load may be retried with the next photo.
     segmenter.catch(() => {
