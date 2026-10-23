@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Mugshot } from "@/components/brand/mugshot";
+import { PlacardPreview } from "@/components/brand/placard";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import type { CutoutResult } from "@/lib/image/cutout";
@@ -93,10 +94,13 @@ export function useObjectUrl(blob: Blob | null): string | null {
  */
 function CutoutDialog({
   photo,
+  placard,
   onDone,
   onReplace,
 }: {
   photo: Blob;
+  /** A pose of a Bad: shown with the placard of the Fiche in front of its bottom. */
+  placard: boolean;
   onDone: (choice: PhotoChoice | null) => void;
   onReplace: (file: File) => void;
 }) {
@@ -157,12 +161,10 @@ function CutoutDialog({
         ) : (
           <>
             {cut && cutoutUrl ? (
-              <Mugshot
-                src={cutoutUrl}
-                alt={t("cutoutAlt")}
-                cutout
-                className="mx-auto aspect-[3/4] w-48 rounded-sm"
-              />
+              <div className="relative mx-auto aspect-[3/4] w-48 overflow-hidden rounded-sm">
+                <Mugshot src={cutoutUrl} alt={t("cutoutAlt")} cutout fill top={placard} />
+                {placard ? <PlacardPreview title={t("placardTitle")} /> : null}
+              </div>
             ) : (
               <>
                 <p role="status" className="font-semibold">
@@ -171,12 +173,16 @@ function CutoutDialog({
                   )}
                 </p>
                 {original ? (
-                  <Mugshot
-                    src={original}
-                    alt={t("originalAlt")}
-                    cutout={false}
-                    className="mx-auto aspect-[3/4] w-40 rounded-sm"
-                  />
+                  <div className="relative mx-auto aspect-[3/4] w-40 overflow-hidden rounded-sm">
+                    <Mugshot
+                      src={original}
+                      alt={t("originalAlt")}
+                      cutout={false}
+                      fill
+                      top={placard}
+                    />
+                    {placard ? <PlacardPreview title={t("placardTitle")} /> : null}
+                  </div>
                 ) : null}
               </>
             )}
@@ -204,7 +210,10 @@ function CutoutDialog({
  * picked with « Changer de photo » is prepared by `prepare` (the same compression as the first
  * one) and previewed in turn; if it cannot be read, the promise is rejected.
  */
-export function useCutoutChoice(prepare: (file: File) => Promise<Blob>): {
+export function useCutoutChoice(
+  prepare: (file: File) => Promise<Blob>,
+  { placard = false }: { placard?: boolean } = {},
+): {
   choose: (photo: Blob) => Promise<PhotoChoice | null>;
   dialog: ReactNode;
 } {
@@ -227,6 +236,7 @@ export function useCutoutChoice(prepare: (file: File) => Promise<Blob>): {
     <CutoutDialog
       key={request.key}
       photo={request.photo}
+      placard={placard}
       onDone={(choice) => {
         request.resolve(choice);
         setRequest(null);

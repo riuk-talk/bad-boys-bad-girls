@@ -14,6 +14,7 @@ import {
   type StepState,
 } from "@/app/[locale]/(app)/onboarding/actions";
 import { Mugshot } from "@/components/brand/mugshot";
+import { FramingGuide } from "@/components/brand/placard";
 import { Stamp } from "@/components/brand/stamp";
 import { Toise } from "@/components/brand/toise";
 import { Button } from "@/components/ui/button";
@@ -333,6 +334,7 @@ export function PhotoStepForm({ last }: { last: boolean }) {
   const { choose, dialog } = useCutoutChoice(prepareForUpload);
   const engine = usePreloadCutout();
   const errorT = useTranslations("Onboarding.errors");
+  const cutoutT = useTranslations("Onboarding.cutout");
 
   useEffect(
     () => () => {
@@ -385,7 +387,8 @@ export function PhotoStepForm({ last }: { last: boolean }) {
           <Mugshot src={preview} alt={t("photo.previewAlt")} cutout={cutout} fill />
         ) : (
           <div className="relative flex size-full items-center justify-center">
-            <ImagePlus aria-hidden="true" className="text-cream/40 size-16" />
+            <FramingGuide label={cutoutT("framing")} placard={cutoutT("placard")} />
+            <ImagePlus aria-hidden="true" className="text-cream/40 -mt-[20%] size-16" />
           </div>
         )}
       </div>

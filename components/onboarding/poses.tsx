@@ -10,6 +10,7 @@ import {
   type StepState,
 } from "@/app/[locale]/(app)/onboarding/actions";
 import { Mugshot } from "@/components/brand/mugshot";
+import { FramingGuide } from "@/components/brand/placard";
 import {
   prepareForUpload,
   useCutoutChoice,
@@ -39,13 +40,14 @@ function PoseSlot({
   onUploaded: (position: number) => void;
 }) {
   const t = useTranslations("Onboarding.poses");
+  const cutoutT = useTranslations("Onboarding.cutout");
   const errorT = useTranslations("Onboarding.errors");
   const id = useId();
   const reasonT = useTranslations("Greffe.reasons");
   const [url, setUrl] = useState(initial?.url ?? null);
   const [cutout, setCutout] = useState(initial?.cutout ?? false);
   const [status, setStatus] = useState(initial?.status ?? null);
-  const { choose, dialog } = useCutoutChoice(prepareForUpload);
+  const { choose, dialog } = useCutoutChoice(prepareForUpload, { placard: true });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const label = t(slot.key);
@@ -104,10 +106,13 @@ function PoseSlot({
         {url ? (
           <Mugshot src={url} alt={t("previewAlt", { pose: label })} cutout={cutout} fill />
         ) : (
-          <span className="flex flex-col items-center gap-1 text-sm font-bold">
-            <Camera aria-hidden="true" className="size-6" />
-            {t("add")}
-          </span>
+          <>
+            <FramingGuide placard={cutoutT("placard")} />
+            <span className="relative -mt-[25%] flex flex-col items-center gap-1 text-sm font-bold">
+              <Camera aria-hidden="true" className="size-6" />
+              {t("add")}
+            </span>
+          </>
         )}
         <input
           id={id}
@@ -173,16 +178,20 @@ function PoseSlots({
   onUploaded: (position: number) => void;
 }) {
   const engine = usePreloadCutout();
+  const t = useTranslations("Onboarding.cutout");
   return (
-    <div className="flex items-end gap-2.5" data-cutout-engine={engine}>
-      {SLOTS.map((slot) => (
-        <PoseSlot
-          key={slot.position}
-          slot={slot}
-          initial={photos[slot.position] ?? null}
-          onUploaded={onUploaded}
-        />
-      ))}
+    <div className="space-y-2" data-cutout-engine={engine}>
+      <p className="font-stamp text-center text-sm text-[#e6dcc8]">{t("framing")}</p>
+      <div className="flex items-end gap-2.5">
+        {SLOTS.map((slot) => (
+          <PoseSlot
+            key={slot.position}
+            slot={slot}
+            initial={photos[slot.position] ?? null}
+            onUploaded={onUploaded}
+          />
+        ))}
+      </div>
     </div>
   );
 }
