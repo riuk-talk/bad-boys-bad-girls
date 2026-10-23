@@ -39,12 +39,38 @@ describe("csp", () => {
 });
 
 describe("WebAssembly for the in-browser cut-out (2026-10-23)", () => {
-  it("never on a page: neither WebAssembly nor JS eval", async () => {
+  it("allows WebAssembly, never JS eval, only when asked", async () => {
     const { buildCsp } = await import("@/lib/security/csp");
+    const withWasm = buildCsp("n0nce", { isDev: false, wasm: true });
+    expect(withWasm).toContain("'wasm-unsafe-eval'");
+    expect(withWasm).not.toMatch(/'unsafe-eval'/);
     const page = buildCsp("n0nce", { isDev: false, supabaseUrl: "https://x.supabase.co" });
     expect(page).not.toContain("wasm-unsafe-eval");
-    expect(page).not.toMatch(/'unsafe-eval'/);
     expect(page).toMatch(/worker-src 'self' blob:/);
+  });
+
+  it("only on the photo pages", async () => {
+    const { needsWasm } = await import("@/lib/security/csp");
+    for (const path of [
+      "/onboarding/5",
+      "/en/onboarding/6",
+      "/ma-fiche",
+      "/fr/ma-fiche/photos",
+      "/admin/greffe",
+      "/fr/admin/greffe/lot",
+    ]) {
+      expect(needsWasm(path), path).toBe(true);
+    }
+    for (const path of [
+      "/",
+      "/promenade",
+      "/fiche/12",
+      "/ma-fichette",
+      "/admin",
+      "/admin/greffes",
+    ]) {
+      expect(needsWasm(path), path).toBe(false);
+    }
   });
 
   it("the worker alone: WebAssembly, scripts and requests from the site only", async () => {

@@ -103,6 +103,7 @@ function CutoutDialog({
         data-decision={result?.decision.kind ?? "working"}
         data-reason={result?.decision.kind === "as_is" ? result.decision.reason : undefined}
         data-ms={result?.elapsedMs}
+        data-detail={result?.detail}
       >
         <p className="text-grey text-sm">{t("local")}</p>
         {!ready ? (

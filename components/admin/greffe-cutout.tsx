@@ -23,7 +23,10 @@ async function cutOutUrl(src: string): Promise<{ blob: Blob | null; reason: stri
   const result = await cutOut(await response.blob());
   return result.decision.kind === "cutout" && result.blob
     ? { blob: result.blob, reason: null }
-    : { blob: null, reason: result.decision.kind === "as_is" ? result.decision.reason : "error" };
+    : {
+        blob: null,
+        reason: `${result.decision.kind === "as_is" ? result.decision.reason : "error"} ${result.detail ?? ""}`,
+      };
 }
 
 function send(

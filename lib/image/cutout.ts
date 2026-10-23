@@ -2,9 +2,11 @@
  * In-browser cut-out of the member's photo (owner's final decision 2026-10-23): MediaPipe Image
  * Segmenter (Apache-2.0) with the Selfie Segmentation model (Apache-2.0), both served by the site
  * itself (public/vendor/mediapipe). The segmentation runs in a worker
- * (public/workers/cutout-worker.js) with its own policy allowing WebAssembly, so that no page
- * needs to allow it. The photo never leaves the device for this; only the result is sent.
+ * (public/workers/cutout-worker.js) under its own policy allowing WebAssembly; where the worker
+ * cannot run it (WebKit, measured in CI), it runs in the page, which the photo pages allow
+ * (lib/security/csp). The photo never leaves the device for this; only the result is sent.
  */
+import type { ImageSegmenter } from "@mediapipe/tasks-vision";
 import {
   CUTOUT_LOAD_BUDGET_MS,
   CUTOUT_RUN_BUDGET_MS,
@@ -15,6 +17,8 @@ import {
 } from "./cutout-policy";
 
 const WORKER_PATH = "/workers/cutout-worker.js";
+const WASM_PATH = "/vendor/mediapipe/wasm";
+const MODEL_PATH = "/vendor/mediapipe/selfie_segmenter.tflite";
 /** The server keeps 1200 px at most (lib/image/process.ts): no need to send more. */
 const MAX_SIDE = 1200;
 /** Under the server's limit for an upload (2 MB). */
@@ -24,7 +28,6 @@ type Mask = { mask: Float32Array; width: number; height: number };
 type Reply = { id: number; ok: boolean; error?: string } & Partial<Mask>;
 
 let worker: Worker | null = null;
-let loaded: Promise<void> | null = null;
 let lastId = 0;
 const waiting = new Map<
   number,
@@ -34,7 +37,6 @@ const waiting = new Map<
 function stopWorker(reason: string) {
   worker?.terminate();
   worker = null;
-  loaded = null;
   for (const pending of waiting.values()) pending.reject(new Error(reason));
   waiting.clear();
 }
@@ -49,7 +51,7 @@ function ask(message: { type: "load" } | { type: "segment"; bitmap: ImageBitmap 
       if (event.data.ok) pending.resolve(event.data);
       else pending.reject(new Error(event.data.error ?? "worker"));
     };
-    worker.onerror = () => stopWorker("worker failed");
+    worker.onerror = (event) => stopWorker(`worker failed: ${event.message || "no message"}`);
   }
   lastId += 1;
   const id = lastId;
@@ -61,14 +63,76 @@ function ask(message: { type: "load" } | { type: "segment"; bitmap: ImageBitmap 
   });
 }
 
+/** Where the segmentation runs: the worker, or the page when the worker cannot run it. */
+type Engine = {
+  name: "worker" | "page";
+  segment: (canvas: HTMLCanvasElement) => Promise<Mask | null>;
+};
+
+const workerEngine: Engine = {
+  name: "worker",
+  async segment(canvas) {
+    const reply = await within(
+      ask({ type: "segment", bitmap: await createImageBitmap(canvas) }),
+      CUTOUT_RUN_BUDGET_MS,
+    );
+    if (!reply) {
+      // Too slow: the worker is stopped, it will be started again for the next photo.
+      stopWorker("too slow");
+      return null;
+    }
+    if (!reply.mask || !reply.width || !reply.height) throw new Error("no mask");
+    return { mask: reply.mask, width: reply.width, height: reply.height };
+  },
+};
+
+function pageEngine(segmenter: ImageSegmenter): Engine {
+  return {
+    name: "page",
+    async segment(canvas) {
+      const result = segmenter.segment(canvas);
+      const mask = result.confidenceMasks?.[0];
+      if (!mask) throw new Error("no mask");
+      const values = mask.getAsFloat32Array().slice();
+      const { width, height } = mask;
+      result.close();
+      return { mask: values, width, height };
+    },
+  };
+}
+
+async function loadInPage(): Promise<Engine> {
+  const { FilesetResolver, ImageSegmenter } = await import("@mediapipe/tasks-vision");
+  const fileset = await FilesetResolver.forVisionTasks(WASM_PATH);
+  const segmenter = await ImageSegmenter.createFromOptions(fileset, {
+    baseOptions: { modelAssetPath: MODEL_PATH, delegate: "CPU" },
+    runningMode: "IMAGE",
+    outputCategoryMask: false,
+    outputConfidenceMasks: true,
+  });
+  return pageEngine(segmenter);
+}
+
+let engine: Promise<Engine> | null = null;
+/** Why the worker could not be used, if it could not (shown to the tests, never to members). */
+let workerFailure: string | null = null;
+
 /** Starts loading the runtime and the model (the step calls it on arrival); shared afterwards. */
-export function preloadCutout(): Promise<void> {
-  if (!loaded) {
-    loaded = ask({ type: "load" }).then(() => undefined);
+export function preloadCutout(): Promise<Engine> {
+  if (!engine) {
+    engine = ask({ type: "load" })
+      .then(() => workerEngine)
+      .catch((error: unknown) => {
+        workerFailure = error instanceof Error ? error.message : String(error);
+        stopWorker("load failed");
+        return loadInPage();
+      });
     // A failed load may be retried with the next photo.
-    loaded.catch(() => stopWorker("load failed"));
+    engine.catch(() => {
+      engine = null;
+    });
   }
-  return loaded;
+  return engine;
 }
 
 function within<T>(promise: Promise<T>, ms: number): Promise<T | null> {
@@ -83,6 +147,8 @@ export type CutoutResult = {
   /** The cut-out (WebP with transparency, PNG where the browser cannot encode WebP). */
   blob: Blob | null;
   elapsedMs: number;
+  /** Where it ran, and why not in the worker (diagnostics for the tests). */
+  detail?: string;
 };
 
 function supported(): boolean {
@@ -117,19 +183,18 @@ async function encodeCutout(canvas: HTMLCanvasElement): Promise<Blob | null> {
 export async function cutOut(photo: Blob): Promise<CutoutResult> {
   const started = performance.now();
   const elapsed = () => Math.round(performance.now() - started);
+  let detail: string | undefined;
   if (!supported()) {
     return { decision: decideCutout({ supported: false }), blob: null, elapsedMs: 0 };
   }
   try {
     // Past the loading budget, give up waiting (the original goes to the Greffe).
-    const ready = await within(
-      preloadCutout().then(() => true),
-      CUTOUT_LOAD_BUDGET_MS,
-    );
+    const ready = await within(preloadCutout(), CUTOUT_LOAD_BUDGET_MS);
     const loadMs = elapsed();
     if (!ready) {
       return { decision: decideCutout({ supported: true, loadMs }), blob: null, elapsedMs: loadMs };
     }
+    detail = workerFailure ? `${ready.name} (worker: ${workerFailure})` : ready.name;
     const runStarted = performance.now();
     const runMs = () => Math.round(performance.now() - runStarted);
 
@@ -143,21 +208,16 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
 
-    const reply = await within(
-      ask({ type: "segment", bitmap: await createImageBitmap(canvas) }),
-      CUTOUT_RUN_BUDGET_MS,
-    );
-    if (!reply) {
-      // Too slow: the worker is stopped, it will be started again for the next photo.
-      stopWorker("too slow");
+    const segmented = await ready.segment(canvas);
+    if (!segmented) {
       return {
         decision: decideCutout({ supported: true, loadMs, runMs: runMs() }),
         blob: null,
         elapsedMs: elapsed(),
+        detail,
       };
     }
-    const { mask: values, width, height } = reply;
-    if (!values || !width || !height) throw new Error("no mask");
+    const { mask: values, width, height } = segmented;
     const share = personShare(values);
     // The mask, as an alpha layer at its own size, then stretched (smoothly) on the photo.
     const layer = document.createElement("canvas");
@@ -175,7 +235,7 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
       runMs: runMs(),
       personShare: share,
     });
-    if (decision.kind !== "cutout") return { decision, blob: null, elapsedMs: elapsed() };
+    if (decision.kind !== "cutout") return { decision, blob: null, elapsedMs: elapsed(), detail };
 
     context.globalCompositeOperation = "destination-in";
     context.imageSmoothingQuality = "high";
@@ -186,14 +246,17 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
         decision: decideCutout({ supported: true, failed: true }),
         blob: null,
         elapsedMs: elapsed(),
+        detail,
       };
     }
-    return { decision, blob, elapsedMs: elapsed() };
-  } catch {
+    return { decision, blob, elapsedMs: elapsed(), detail };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     return {
       decision: decideCutout({ supported: true, failed: true }),
       blob: null,
       elapsedMs: elapsed(),
+      detail: `${detail ?? (workerFailure ? `worker: ${workerFailure}` : "load")}; ${message}`,
     };
   }
 }

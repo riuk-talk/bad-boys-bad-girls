@@ -6,7 +6,7 @@
  */
 export function buildCsp(
   nonce: string,
-  options: { isDev: boolean; supabaseUrl?: string; https?: boolean },
+  options: { isDev: boolean; supabaseUrl?: string; https?: boolean; wasm?: boolean },
 ): string {
   const supabase = options.supabaseUrl ?? "";
   // Realtime: wss:// for https://, ws:// for the local stack (WebKit does not derive one from the other).
@@ -18,6 +18,8 @@ export function buildCsp(
       `'nonce-${nonce}'`,
       "'strict-dynamic'",
       ...(options.isDev ? ["'unsafe-eval'"] : []),
+      // WebAssembly only (never JS eval), on the photo pages: the cut-out's fallback in the page.
+      ...(options.wasm ? ["'wasm-unsafe-eval'"] : []),
     ],
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": ["'self'", "data:", "blob:", ...(supabase ? [supabase] : [])],
@@ -49,9 +51,17 @@ export function generateNonce(): string {
 }
 
 /**
+ * The photo pages: the onboarding, Ma fiche and the Greffe. There, when the cut-out worker cannot
+ * run (WebKit), the page runs the segmentation itself (lib/image/cutout.ts).
+ */
+export function needsWasm(pathname: string): boolean {
+  return /^(\/(fr|en))?\/(onboarding|ma-fiche|admin\/greffe)(\/|$)/.test(pathname);
+}
+
+/**
  * The policy of the cut-out worker (public/workers/cutout-worker.js, next.config.ts): scripts and
  * requests from the site only, plus WebAssembly (never JS eval). A dedicated worker gets its own
- * policy from its response, so the pages never need to allow WebAssembly.
+ * policy from its response (Chromium), so a photo page reached by a link still cuts out.
  */
 export const CUTOUT_WORKER_CSP =
   "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'";
