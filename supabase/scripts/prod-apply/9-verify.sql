@@ -3,7 +3,7 @@
 -- Comparaison sans les blancs (règle du conseiller du 2026-10-22). La colonne « sans_commentaires »
 -- « dont_commentaires_seuls » dit en plus combien d'écarts ne tiennent qu'aux commentaires `--`
 -- (information pour le conseiller, pas une règle).
--- Attendu : 0 partout, sauf « historique_ok » = 18.
+-- Attendu : 0 partout, sauf « historique_ok » = 19.
 
 -- 1. Historique des migrations des phases 6 à 9
 select count(*) filter (where md5(regexp_replace(array_to_string(m.statements, ';'), '\s', '', 'g')) = x.expected and m.name = x.name) as historique_ok,
@@ -27,7 +27,8 @@ from (values
   ('20261022090000', 'phase9a_casier_cliches', 'deb524ced3478b4667b8eaa48534af5b'),
   ('20261022100000', 'phase9b_parloir_nudge', '11e2afc9d09a3955af7246f7af54ebfe'),
   ('20261022110000', 'phase9c_recruited_badge', 'f73a5a5f5783260eebf50446f86ff447'),
-  ('20261023090000', 'photo_cutout', 'fe84c450c87d0e41af1c16b03ca10ba4')
+  ('20261023090000', 'photo_cutout', 'fe84c450c87d0e41af1c16b03ca10ba4'),
+  ('20261023120000', 'photo_cutout_required', '972a866396d4f9bf69a66b5c2c21560c')
 ) as x (version, name, expected)
 left join supabase_migrations.schema_migrations m on m.version = x.version;
 
@@ -62,9 +63,12 @@ with expected (signature, body, body_no_comments, secdef, anon, auth) as (values
   ('public.admin_launch_mode()', '7364df9a33927be1869efd589c9a71bc', '7364df9a33927be1869efd589c9a71bc', true, false, true),
   ('public.admin_member(p_user uuid)', '06b93dc4b9d70382eb181611c944a656', '06b93dc4b9d70382eb181611c944a656', true, false, true),
   ('public.admin_moderation_log(p_limit integer)', 'c734e62a6a62aa64263008c558c659dd', 'c734e62a6a62aa64263008c558c659dd', true, false, true),
+  ('public.admin_photo_batch(p_limit integer)', 'f241486ced3521cdfb9f271174aa5159', 'f241486ced3521cdfb9f271174aa5159', true, false, true),
   ('public.admin_photo_cutouts(p_ids uuid[])', 'da7b690fb89fe1d79e0fe8a33a49508e', 'da7b690fb89fe1d79e0fe8a33a49508e', true, false, true),
   ('public.admin_photo_queue(p_limit integer)', '28231c10ece80f15c9c3f5d4797d8499', '28231c10ece80f15c9c3f5d4797d8499', true, false, true),
+  ('public.admin_photos_to_cut_out(p_ids uuid[])', 'a263919f65e5cec618b97401c9f9929b', 'a263919f65e5cec618b97401c9f9929b', true, false, true),
   ('public.admin_questions()', '3671b74f513ee59710368ca4ea3b289a', '3671b74f513ee59710368ca4ea3b289a', true, false, true),
+  ('public.admin_replace_public_photo(p_photo uuid, p_large text, p_small text)', '15781e29e35207374c88709b8f845e62', '15781e29e35207374c88709b8f845e62', true, false, true),
   ('public.admin_report_queue(p_limit integer)', '3ec6c3cbbbd0a18163139efe414dfbc1', '3ec6c3cbbbd0a18163139efe414dfbc1', true, false, true),
   ('public.admin_sanction(p_user uuid, p_action moderation_action_type, p_reason text, p_days integer)', '3657bddc9c9d9c11ee7db97545988fc4', '3657bddc9c9d9c11ee7db97545988fc4', true, false, true),
   ('public.admin_save_keyword(p_term text, p_lang text, p_category report_category, p_active boolean, p_keyword integer)', '82bedaf77aacb4af07b9e68b1d845be5', '82bedaf77aacb4af07b9e68b1d845be5', true, false, true),
@@ -73,6 +77,7 @@ with expected (signature, body, body_no_comments, secdef, anon, auth) as (values
   ('public.admin_save_zone(p_slug text, p_name text, p_center_place bigint, p_radius_km smallint, p_timezone text, p_threshold_bads integer, p_women_pct smallint, p_men_pct smallint, p_auto_open boolean, p_zone smallint)', '100157c0c48d209f7179b1ce22557145', '100157c0c48d209f7179b1ce22557145', true, false, true),
   ('public.admin_set_launch_mode(p_mode launch_mode)', '0d97611f04a0a61b36927e138bc45625', '0d97611f04a0a61b36927e138bc45625', true, false, true),
   ('public.admin_set_zone_status(p_zone smallint, p_status zone_status)', 'b8b5320b22083167d61d720f5db365f4', 'b8b5320b22083167d61d720f5db365f4', true, false, true),
+  ('public.admin_store_cutout(p_photo uuid, p_pending_path text)', '7f5880c10047a6ba2090d78663d6cf79', '7f5880c10047a6ba2090d78663d6cf79', true, false, true),
   ('public.admin_tribes()', 'a4de27a737a73857e7dca7402dfa293f', 'a4de27a737a73857e7dca7402dfa293f', true, false, true),
   ('public.admin_web_vitals(p_days integer)', 'b8da308d6a361151a72fb9392fe0bf5b', 'b8da308d6a361151a72fb9392fe0bf5b', true, false, true),
   ('public.admin_zone_health(p_zone smallint, p_from date, p_to date)', 'ead9f892b148e79c59012c965d40d416', 'ead9f892b148e79c59012c965d40d416', true, false, true),
@@ -181,6 +186,7 @@ with expected (signature, body, body_no_comments, secdef, anon, auth) as (values
   ('public.pair_cooldown_until(p_visitor uuid, p_bad uuid)', 'cb4be4f7f27e1e6c7eb328562983b031', 'cb4be4f7f27e1e6c7eb328562983b031', true, false, false),
   ('public.photo_rejection_reasons()', '310f83d33912146672fc02348ad277ab', '310f83d33912146672fc02348ad277ab', false, false, false),
   ('public.photos_before_insert()', 'fcff9486b348a64511495b872a0defc3', '7c6772bbbd6eef2a0bd469b5728c16c8', true, false, false),
+  ('public.photos_cutout_default()', '57657f28137ed6dbe0906337232328a1', '57657f28137ed6dbe0906337232328a1', false, false, false),
   ('public.photos_notify_admins()', 'cd4fcf8345aad55638ff422585d92dd1', 'cd4fcf8345aad55638ff422585d92dd1', true, false, false),
   ('public.place_name(p_place bigint)', '9e8b6de92f6f8a98ea01a8c205622084', '9e8b6de92f6f8a98ea01a8c205622084', true, false, false),
   ('public.prepare_my_account_deletion()', '53c099446fd3cb4ad314657a55cc45fd', '53c099446fd3cb4ad314657a55cc45fd', true, false, true),
@@ -249,7 +255,9 @@ from expected e full join actual a on a.signature = e.signature;
 select (select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace
         where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity) as tables_sans_rls,
   (select count(*) from information_schema.role_table_grants
-   where grantee = 'anon' and table_schema = 'public') as droits_anon_tables;
+   where grantee = 'anon' and table_schema = 'public') as droits_anon_tables,
+  -- Le détourage en lot est réservé à la preview : jamais activé en production (attendu : false).
+  (select photo_batch_allowed from public.app_settings) as lot_photos_actif;
 
 -- 4. Tâches planifiées (pg_cron) attendues après les phases 6 à 9
 select string_agg(jobname || ' ' || schedule, ' | ' order by jobname) as taches from cron.job;

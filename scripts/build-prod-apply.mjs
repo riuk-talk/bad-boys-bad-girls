@@ -59,6 +59,7 @@ const BATCHES = [
       "20261022100000_phase9b_parloir_nudge",
       "20261022110000_phase9c_recruited_badge",
       "20261023090000_photo_cutout",
+      "20261023120000_photo_cutout_required",
     ],
   },
 ];
@@ -192,7 +193,9 @@ const verify = [
   "select (select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace",
   "        where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity) as tables_sans_rls,",
   "  (select count(*) from information_schema.role_table_grants",
-  "   where grantee = 'anon' and table_schema = 'public') as droits_anon_tables;",
+  "   where grantee = 'anon' and table_schema = 'public') as droits_anon_tables,",
+  "  -- Le détourage en lot est réservé à la preview : jamais activé en production (attendu : false).",
+  "  (select photo_batch_allowed from public.app_settings) as lot_photos_actif;",
   "",
   "-- 4. Tâches planifiées (pg_cron) attendues après les phases 6 à 9",
   "select string_agg(jobname || ' ' || schedule, ' | ' order by jobname) as taches from cron.job;",

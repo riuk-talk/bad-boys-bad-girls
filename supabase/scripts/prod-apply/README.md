@@ -16,7 +16,7 @@ Les scripts sont générés par `scripts/build-prod-apply.mjs` : ne pas les modi
 | `5-phase7-jobs-rgpd.sql` | 7c tâches, 7c Fiches inactives, 7d RGPD | 7c ×2, 7d |
 | `6-phase7-email-report.sql` | 7e e-mails, 7f signalement d'un message | — |
 | `7-phase8.sql` | 8b Web Vitals, 8b conservation 90 jours | 8b conservation |
-| `8-phase9.sql` | 9a clichés, 9b relance, 9c complices, 9e photos détourées | — |
+| `8-phase9.sql` | 9a clichés, 9b relance, 9c complices, 9e photos détourées (2 migrations) | — |
 | `9-verify.sql` | contrôle, **lecture seule** | — |
 
 ## Fonctionnement
@@ -40,9 +40,10 @@ Quand le script contient `delete`, `drop` ou `truncate`, l'éditeur demande une 
 
 1. Dans le SQL Editor : coller **un** script, l'exécuter, puis vérifier le tableau des empreintes. Passer ensuite au suivant, de 1 à 8.
 2. Lancer `9-verify.sql`. Attendu :
-   - `historique_ok` = 18, et 0 dans toutes les autres colonnes ;
+   - `historique_ok` = 19, et 0 dans toutes les autres colonnes ;
    - `tables_sans_rls` = 0 ;
    - `droits_anon_tables` = 0 ;
+   - `lot_photos_actif` = false : le détourage en lot est réservé à la preview, **ne jamais l'activer en production** ;
    - 11 tâches planifiées.
 3. Envoyer le résultat du script 9 au conseiller.
 
@@ -73,6 +74,6 @@ node scripts/build-prod-apply.mjs supabase/scripts/prod-apply/expected-functions
 
 Le test a été fait sur une base locale remise à l'état de `main` (`supabase db reset --version 20261018150000`), avec les scripts 1 à 8 lancés dans l'ordre :
 
-- empreintes égales pour les 18 migrations ;
-- script 9 : 18 / 0 / 0, aucune fonction absente, en trop ou différente, droits identiques, 0 table sans RLS, 11 tâches ;
+- empreintes égales pour les 19 migrations ;
+- script 9 : 19 / 0 / 0, aucune fonction absente, en trop ou différente (197 fonctions), droits identiques, 0 table sans RLS, lot désactivé, 11 tâches ;
 - un second lancement du script 8 est refusé par la garde.
