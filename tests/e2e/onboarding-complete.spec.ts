@@ -5,7 +5,7 @@ import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 import { settled } from "./helpers/settle";
 import { openGreffe } from "./helpers/admin";
-import { confirmPhoto, portrait } from "./helpers/onboarding";
+import { confirmPhoto, cutoutReady, portrait } from "./helpers/onboarding";
 
 // Full onboardings in 8 steps (Bad and Visitor, SPEC v7.4 §4) and the Greffe against the DEV Supabase project, with throwaway
 // confirmed accounts created through the admin API (no e-mail sent) and deleted afterwards.
@@ -65,6 +65,7 @@ async function seekingStep(page: Page, gender: string, next: number) {
 }
 
 async function choosePhoto(page: Page) {
+  await cutoutReady(page);
   await page
     .locator('input[type="file"]')
     .setInputFiles({ name: "moi.jpg", mimeType: "image/jpeg", buffer: await photoWithGps() });
@@ -74,6 +75,7 @@ async function choosePhoto(page: Page) {
 
 /** Bad, step 5 « Passe à la toise »: one file per pose (uploaded as soon as chosen). */
 async function addPose(page: Page, pose: "Profil gauche" | "Face · obligatoire" | "Profil droit") {
+  await cutoutReady(page);
   await page
     .getByLabel(`Ajouter : ${pose}`)
     .setInputFiles({ name: `${pose}.jpg`, mimeType: "image/jpeg", buffer: await photoWithGps() });

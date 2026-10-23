@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 import sharp from "sharp";
 import { openGreffe } from "./helpers/admin";
-import { confirmPhoto, identity, seeking, signUp } from "./helpers/onboarding";
+import { confirmPhoto, cutoutReady, identity, seeking, signUp } from "./helpers/onboarding";
 
 // The photo on the height chart (owner's final decision 2026-10-23), LOCAL STACK ONLY: the same
 // wall for everyone, no choice. A Bad at « Passe à la toise » sends a real portrait
@@ -85,6 +85,7 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     // Left profile: the device cannot cut it out (runtime blocked); the original goes to the Greffe.
     await page.route("**/vendor/mediapipe/**", (route) => route.abort());
     await page.reload();
+    await cutoutReady(page);
     await page
       .getByLabel("Ajouter : Profil gauche")
       .setInputFiles({ name: "left.jpg", mimeType: "image/jpeg", buffer: person });
@@ -99,6 +100,7 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     // The worker cannot run (as on WebKit): the photo page cuts out in the page itself.
     await page.route("**/workers/**", (route) => route.abort());
     await page.reload();
+    await cutoutReady(page);
 
     // Face: cut out on the device; « Changer de photo » first picks another file, then it is sent.
     await page
@@ -154,6 +156,7 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     );
     await expect(card("Profil gauche").getByRole("button", { name: "Valider" })).toHaveCount(0);
     const before = (await photosOf()).find((p) => p.position === 1)!.pending_path!;
+    await cutoutReady(greffe);
     await card("Profil gauche").getByRole("button", { name: "Détourer" }).click();
     await expect(card("Profil gauche").getByTestId("greffe-cutout")).toHaveAttribute(
       "data-step",
@@ -219,6 +222,7 @@ test.describe("photo cut-out in the browser (local stack)", () => {
 
     await admin.from("app_settings").update({ photo_batch_allowed: true }).eq("id", true);
     await page.goto("/admin/greffe/lot");
+    await cutoutReady(page);
     const item = (pose: string) =>
       page
         .getByTestId("batch-item")
@@ -283,6 +287,7 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     const cdp = await page.context().newCDPSession(page);
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: 6 });
     await page.reload();
+    await cutoutReady(page);
     const opened = Date.now();
     const runs: string[] = [];
     for (const label of ["cold", "warm"]) {

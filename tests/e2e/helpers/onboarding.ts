@@ -64,6 +64,15 @@ export function portrait() {
 }
 
 /**
+ * Waits until the photo page knows where the cut-out will run (worker, page, or none): a page
+ * reached by a link may load itself again once first (components/onboarding/cutout-choice.tsx).
+ */
+export async function cutoutReady(page: Page) {
+  await expect(page.locator("[data-cutout-engine]").first()).toBeAttached({ timeout: 20_000 });
+  await expect(page.locator('[data-cutout-engine="loading"]')).toHaveCount(0, { timeout: 20_000 });
+}
+
+/**
  * The preview of a chosen photo (owner's final decision 2026-10-23): waits for the cut-out made on
  * the device, then « Déposer au Greffe ». Returns what the device decided ("cutout", or "as_is"
  * when the original goes to the Greffe for its cut-out) with the time it took.
@@ -128,6 +137,7 @@ export async function onboardBad(page: Page, pseudo: string, charges: readonly s
   await identity(page, pseudo, "Femme");
   await seeking(page, "Homme", 5);
   for (const pose of ["Profil gauche", "Face · obligatoire", "Profil droit"]) {
+    await cutoutReady(page);
     await page
       .getByLabel(`Ajouter : ${pose}`)
       .setInputFiles({ name: "pose.jpg", mimeType: "image/jpeg", buffer: await portrait() });
@@ -159,6 +169,7 @@ export async function onboardVisitor(page: Page, pseudo: string, motive: string)
   await page.getByRole("button", { name: /traversé l'Espagne/ }).click();
   await next(page, 5, "J'ai compris, je prends mon Permis");
   await seeking(page, "Femme", 6);
+  await cutoutReady(page);
   await page
     .locator('input[type="file"]')
     .setInputFiles({ name: "moi.jpg", mimeType: "image/jpeg", buffer: await portrait() });
