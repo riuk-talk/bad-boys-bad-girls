@@ -37,3 +37,23 @@ describe("csp", () => {
     expect(generateNonce()).not.toBe(a);
   });
 });
+
+describe("WebAssembly for the in-browser cut-out (2026-10-23)", () => {
+  it("allows WebAssembly, never JS eval, only when asked", async () => {
+    const { buildCsp } = await import("@/lib/security/csp");
+    const withWasm = buildCsp("n0nce", { isDev: false, wasm: true });
+    expect(withWasm).toContain("'wasm-unsafe-eval'");
+    expect(withWasm).not.toMatch(/'unsafe-eval'/);
+    expect(buildCsp("n0nce", { isDev: false })).not.toContain("wasm-unsafe-eval");
+  });
+
+  it("only on the photo pages", async () => {
+    const { needsWasm } = await import("@/lib/security/csp");
+    for (const path of ["/onboarding/5", "/en/onboarding/6", "/ma-fiche", "/fr/ma-fiche/photos"]) {
+      expect(needsWasm(path), path).toBe(true);
+    }
+    for (const path of ["/", "/promenade", "/fiche/12", "/ma-fichette", "/admin/greffe"]) {
+      expect(needsWasm(path), path).toBe(false);
+    }
+  });
+});

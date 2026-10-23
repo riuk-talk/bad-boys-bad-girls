@@ -6,7 +6,7 @@
  */
 export function buildCsp(
   nonce: string,
-  options: { isDev: boolean; supabaseUrl?: string; https?: boolean },
+  options: { isDev: boolean; supabaseUrl?: string; https?: boolean; wasm?: boolean },
 ): string {
   const supabase = options.supabaseUrl ?? "";
   // Realtime: wss:// for https://, ws:// for the local stack (WebKit does not derive one from the other).
@@ -18,6 +18,8 @@ export function buildCsp(
       `'nonce-${nonce}'`,
       "'strict-dynamic'",
       ...(options.isDev ? ["'unsafe-eval'"] : []),
+      // WebAssembly only (never JS eval), on the photo pages: the cut-out runs in the browser.
+      ...(options.wasm ? ["'wasm-unsafe-eval'"] : []),
     ],
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": ["'self'", "data:", "blob:", ...(supabase ? [supabase] : [])],
@@ -46,4 +48,9 @@ export function generateNonce(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   return btoa(String.fromCharCode(...bytes));
+}
+
+/** The pages that cut a photo out in the browser (MediaPipe, WebAssembly): onboarding, Ma fiche. */
+export function needsWasm(pathname: string): boolean {
+  return /^(\/(fr|en))?\/(onboarding|ma-fiche)(\/|$)/.test(pathname);
 }

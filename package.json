@@ -18,9 +18,13 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "brand:build": "node scripts/build-brand-assets.mjs",
-    "lighthouse": "node scripts/lighthouse.mjs"
+    "lighthouse": "node scripts/lighthouse.mjs",
+    "vendor:mediapipe": "node scripts/vendor-mediapipe.mjs",
+    "predev": "node scripts/vendor-mediapipe.mjs",
+    "prebuild": "node scripts/vendor-mediapipe.mjs"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "1.0.1",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.2",
     "clsx": "2.1.1",
