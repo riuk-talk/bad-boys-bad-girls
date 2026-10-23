@@ -6,7 +6,7 @@ import { randomBytes } from "node:crypto";
 import { openGreffe } from "./helpers/admin";
 import { FakePushService } from "./helpers/fake-push-service";
 import { auditSignedIn, LIGHTHOUSE_CATEGORIES } from "./helpers/lighthouse";
-import { onboardBad, onboardVisitor, signUp } from "./helpers/onboarding";
+import { cutoutReady, onboardBad, onboardVisitor, signUp } from "./helpers/onboarding";
 import { settled } from "./helpers/settle";
 
 // THE end-to-end journey, LOCAL STACK ONLY (scripts/ci/local-env.mjs). Owner's rule (2026-10-07):
@@ -78,6 +78,9 @@ async function login(browser: Browser, email: string, password: string): Promise
   await page.getByLabel("Mot de passe", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Se connecter" }).click();
   await page.waitForURL((target) => !/^\/(connexion|onboarding)$/.test(target.pathname));
+  // Landing on a photo page (Ma Fiche) by a client-side navigation: it may load itself again once
+  // (components/onboarding/cutout-choice.tsx); wait for it before going anywhere else.
+  if ((await page.locator("[data-cutout-engine]").count()) > 0) await cutoutReady(page);
   return page;
 }
 

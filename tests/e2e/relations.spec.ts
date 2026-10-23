@@ -4,6 +4,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { settled } from "./helpers/settle";
+import { cutoutReady } from "./helpers/onboarding";
 
 // Phase 4 end to end against a Supabase project (the local stack in CI, or the DEV project): a Visitor finds a Bad, files a Demande de
 // parloir with the Souffleur, the Bad reads it in the Courrier and accepts; reports, blocks,
@@ -77,6 +78,8 @@ async function login(browser: Browser, email: string, password: string) {
   // The login goes to /onboarding, which redirects a finished member once more: wait for the
   // final page, or the next navigation is interrupted (WebKit).
   await page.waitForURL((target) => !/^\/(connexion|onboarding)$/.test(target.pathname));
+  // A photo page reached by a client-side navigation may load itself again once: wait for it.
+  if ((await page.locator("[data-cutout-engine]").count()) > 0) await cutoutReady(page);
   return page;
 }
 

@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { openGreffe } from "./helpers/admin";
+import { cutoutReady } from "./helpers/onboarding";
 
 // Phase 7 end to end, LOCAL STACK ONLY: a Visitor reports a Bad, the Greffe (an admin, second
 // factor) upholds it with a warning and two motives, each one reads their exposé des motifs; the
@@ -39,6 +40,8 @@ async function login(browser: Browser, email: string, password: string) {
   await page.getByLabel("Mot de passe", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Se connecter" }).click();
   await page.waitForURL((target) => !/^\/(connexion|onboarding)$/.test(target.pathname));
+  // A photo page reached by a client-side navigation may load itself again once: wait for it.
+  if ((await page.locator("[data-cutout-engine]").count()) > 0) await cutoutReady(page);
   return page;
 }
 
