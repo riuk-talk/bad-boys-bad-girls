@@ -13,6 +13,7 @@ import {
   uploadPhotoAction,
   type StepState,
 } from "@/app/[locale]/(app)/onboarding/actions";
+import { Mugshot } from "@/components/brand/mugshot";
 import { Stamp } from "@/components/brand/stamp";
 import { Toise } from "@/components/brand/toise";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import { submitWithoutReset } from "@/lib/forms/submit";
 import { ROLES, VISIT_MOTIVE_MAX, type Role } from "@/lib/onboarding/config";
 import { Constants, type Database } from "@/lib/supabase/database.types";
 import { CityPicker } from "./city-picker";
+import { useCutoutChoice, usePreloadCutout } from "./cutout-choice";
 
 type Gender = Database["public"]["Enums"]["gender"];
 type Action = (state: StepState, form: FormData) => Promise<StepState>;
@@ -321,6 +323,9 @@ export function PhotoStepForm({ last }: { last: boolean }) {
   const [preparing, setPreparing] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const [cutout, setCutout] = useState(false);
+  const { choose, dialog } = useCutoutChoice();
+  usePreloadCutout();
   const errorT = useTranslations("Onboarding.errors");
 
   useEffect(
@@ -336,9 +341,13 @@ export function PhotoStepForm({ last }: { last: boolean }) {
     setPreparing(true);
     try {
       const { compressForUpload } = await import("@/lib/image/compress");
-      const blob = await compressForUpload(file);
-      setPhotoBlob(blob);
-      setPreview(URL.createObjectURL(blob));
+      const compressed = await compressForUpload(file);
+      // The preview, cut out on the device or as it is: nothing leaves before the choice.
+      const choice = await choose(compressed);
+      if (!choice) return;
+      setPhotoBlob(choice.blob);
+      setCutout(choice.cutout);
+      setPreview(URL.createObjectURL(choice.blob));
     } catch {
       setPhotoBlob(null);
       setLocalError(errorT("photoUnreadable"));
@@ -366,12 +375,7 @@ export function PhotoStepForm({ last }: { last: boolean }) {
       <div className="relative mx-auto aspect-[4/5] w-full max-w-xs overflow-hidden rounded-[var(--radius-card)]">
         <Toise />
         {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element -- local blob preview, never optimised
-          <img
-            src={preview}
-            alt={t("photo.previewAlt")}
-            className="relative size-full object-cover"
-          />
+          <Mugshot src={preview} alt={t("photo.previewAlt")} cutout={cutout} fill />
         ) : (
           <div className="relative flex size-full items-center justify-center">
             <ImagePlus aria-hidden="true" className="text-cream/40 size-16" />
@@ -393,7 +397,12 @@ export function PhotoStepForm({ last }: { last: boolean }) {
             className="sr-only"
             aria-invalid={photoError ? true : undefined}
             aria-describedby={photoError ? `${id}-error` : undefined}
-            onChange={(event) => void onFile(event.target.files?.[0])}
+            onChange={(event) => {
+              // Read, then cleared: the same file may be chosen again after a cancel.
+              const chosen = event.target.files?.[0];
+              event.target.value = "";
+              void onFile(chosen);
+            }}
           />
         </label>
         <p aria-live="polite" className="text-grey min-h-6 text-center text-sm">
@@ -407,6 +416,7 @@ export function PhotoStepForm({ last }: { last: boolean }) {
       </div>
       <Submit pending={step.pending || preparing}>{last ? t("finish") : t("next")}</Submit>
       <Alert message={step.message} />
+      {dialog}
     </form>
   );
 }

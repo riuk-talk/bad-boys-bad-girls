@@ -106,7 +106,11 @@
     "sign": "Open for visits",
     "doorLabel_bad": "Cell B",
     "doorLabel_visitor": "Visiting room",
-    "ticker": ["Guilty of charm", "Bad, not toxic", "Here, nothing happens without your consent"],
+    "ticker": [
+      "Guilty of charm",
+      "Bad, not toxic",
+      "Here, nothing happens without your consent"
+    ],
     "sideKicker_bad": "You step up to the height chart",
     "sideKicker_visitor": "You come to visit",
     "pieceLabel": "Exhibit no. {number}",
@@ -123,7 +127,9 @@
       },
       {
         "title": "Visitor side",
-        "points": ["You choose the time of your visit from the ones offered."]
+        "points": [
+          "You choose the time of your visit from the ones offered."
+        ]
       },
       {
         "title": "For everyone",
@@ -269,7 +275,11 @@
     "pseudoHint": "3 to 20 characters.",
     "pseudoError": "This nickname is taken.",
     "city": "City",
-    "cities": ["Toulon", "Nice", "Hyères"],
+    "cities": [
+      "Toulon",
+      "Nice",
+      "Hyères"
+    ],
     "consent": "I am 18 or older",
     "badges": "Badges",
     "badgeOpen": "Open to visits",
@@ -279,7 +289,10 @@
     "fiche": "File card",
     "ficheSamplePseudo": "Sample",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tattooed"],
+    "ficheSampleSigns": [
+      "Biker — Kawasaki Z650 café racer",
+      "Tattooed"
+    ],
     "ficheSampleCharges": [
       "Once rode across Spain without booking a single night",
       "Has a tattoo they refuse to explain",
@@ -433,7 +446,9 @@
         },
         {
           "title": "8. Governing law",
-          "paragraphs": ["[TO COMPLETE: governing law and competent court]"]
+          "paragraphs": [
+            "[TO COMPLETE: governing law and competent court]"
+          ]
         }
       ]
     },
@@ -517,7 +532,9 @@
         },
         {
           "title": "Website",
-          "paragraphs": ["Website address: [DOMAINE]"]
+          "paragraphs": [
+            "Website address: [DOMAINE]"
+          ]
         }
       ]
     }
@@ -816,6 +833,23 @@
       "ready": "My Record is ready",
       "rework": "Rework it",
       "cliche": "Anyone could write that. Give a real fact."
+    },
+    "cutout": {
+      "title": "Your photo on the wall",
+      "local": "The cut-out happens here, on your device: your photo goes nowhere until you choose.",
+      "working": "Cutting out…",
+      "cutoutCaption": "Cut out, on the wall",
+      "asIsCaption": "As it is",
+      "cutoutAlt": "Preview: your photo cut out, on the height chart",
+      "asIsAlt": "Preview: your photo as it is, with the graduations",
+      "useCutout": "Use this cut-out",
+      "keepAsIs": "Keep my photo as it is",
+      "useAsIs": "Use this photo",
+      "fallback_unsupported": "Your browser cannot cut out a photo: it will be shown as it is, graduations on top.",
+      "fallback_error": "The cut-out did not work: your photo will be shown as it is, graduations on top.",
+      "fallback_too_slow": "The cut-out takes too long on this phone: your photo will be shown as it is, graduations on top.",
+      "fallback_no_person": "No one clearly visible in this photo: it will be shown as it is, graduations on top.",
+      "fallback_refused": "Your photo will be shown as it is, graduations on top."
     }
   },
   "MyFiche": {
@@ -986,7 +1020,9 @@
       "wrong_pose": "wrong pose (face or profile)",
       "not_adult": "the person looks underage",
       "other": "photo not in line with the Registry's rules"
-    }
+    },
+    "cutout": "Cut out, on the height chart",
+    "asIs": "As it is, graduations on top"
   },
   "Prompter": {
     "common": [

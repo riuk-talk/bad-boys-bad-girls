@@ -106,7 +106,11 @@
     "sign": "Ouvert aux visites",
     "doorLabel_bad": "Cellule B",
     "doorLabel_visitor": "Parloir",
-    "ticker": ["Coupables de charme", "Bad, pas toxique", "Ici, rien ne se fait sans ton accord"],
+    "ticker": [
+      "Coupables de charme",
+      "Bad, pas toxique",
+      "Ici, rien ne se fait sans ton accord"
+    ],
     "sideKicker_bad": "Tu passes à la toise",
     "sideKicker_visitor": "Tu viens en visite",
     "pieceLabel": "Pièce n° {number}",
@@ -123,7 +127,9 @@
       },
       {
         "title": "Côté Visiteur",
-        "points": ["Tu choisis l'heure de ta visite parmi celles proposées."]
+        "points": [
+          "Tu choisis l'heure de ta visite parmi celles proposées."
+        ]
       },
       {
         "title": "Pour tous",
@@ -269,7 +275,11 @@
     "pseudoHint": "De 3 à 20 caractères.",
     "pseudoError": "Ce pseudo est déjà pris.",
     "city": "Ville",
-    "cities": ["Toulon", "Nice", "Hyères"],
+    "cities": [
+      "Toulon",
+      "Nice",
+      "Hyères"
+    ],
     "consent": "J'ai 18 ans ou plus",
     "badges": "Badges",
     "badgeOpen": "Ouvert aux visites",
@@ -279,7 +289,10 @@
     "fiche": "Carte Fiche",
     "ficheSamplePseudo": "Exemple",
     "ficheSampleCity": "Toulon",
-    "ficheSampleSigns": ["Biker — Kawasaki Z650 café racer", "Tatoué·e"],
+    "ficheSampleSigns": [
+      "Biker — Kawasaki Z650 café racer",
+      "Tatoué·e"
+    ],
     "ficheSampleCharges": [
       "A déjà traversé l'Espagne en moto sans réserver une seule nuit",
       "A un tatouage dont il refuse d'expliquer le sens",
@@ -433,7 +446,9 @@
         },
         {
           "title": "8. Droit applicable",
-          "paragraphs": ["[À COMPLÉTER : droit applicable et juridiction compétente]"]
+          "paragraphs": [
+            "[À COMPLÉTER : droit applicable et juridiction compétente]"
+          ]
         }
       ]
     },
@@ -517,7 +532,9 @@
         },
         {
           "title": "Site",
-          "paragraphs": ["Adresse du site : [DOMAINE]"]
+          "paragraphs": [
+            "Adresse du site : [DOMAINE]"
+          ]
         }
       ]
     }
@@ -816,6 +833,23 @@
       "ready": "Mon Casier est prêt",
       "rework": "Le retravailler",
       "cliche": "Ça, tout le monde peut l'écrire. Donne un vrai fait."
+    },
+    "cutout": {
+      "title": "Ta photo sur le mur",
+      "local": "Le détourage se fait ici, sur ton appareil : ta photo ne part nulle part avant que tu choisisses.",
+      "working": "Détourage en cours…",
+      "cutoutCaption": "Détourée, sur le mur",
+      "asIsCaption": "Telle quelle",
+      "cutoutAlt": "Aperçu : ta photo détourée, posée sur le mur gradué",
+      "asIsAlt": "Aperçu : ta photo telle quelle, avec les graduations",
+      "useCutout": "Utiliser ce détourage",
+      "keepAsIs": "Garder ma photo telle quelle",
+      "useAsIs": "Utiliser cette photo",
+      "fallback_unsupported": "Ton navigateur ne sait pas détourer une photo : elle sera posée telle quelle, graduations par-dessus.",
+      "fallback_error": "Le détourage n'a pas marché : ta photo sera posée telle quelle, graduations par-dessus.",
+      "fallback_too_slow": "Le détourage prend trop de temps sur ce téléphone : ta photo sera posée telle quelle, graduations par-dessus.",
+      "fallback_no_person": "Personne de bien visible sur cette photo : elle sera posée telle quelle, graduations par-dessus.",
+      "fallback_refused": "Ta photo sera posée telle quelle, graduations par-dessus."
     }
   },
   "MyFiche": {
@@ -986,7 +1020,9 @@
       "wrong_pose": "la pose ne correspond pas (face ou profil)",
       "not_adult": "la personne paraît mineure",
       "other": "photo non conforme au règlement du Greffe"
-    }
+    },
+    "cutout": "Détourée, posée sur le mur gradué",
+    "asIs": "Telle quelle, graduations par-dessus"
   },
   "Prompter": {
     "common": [

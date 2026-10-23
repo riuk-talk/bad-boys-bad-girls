@@ -239,7 +239,10 @@ export async function uploadPhotoAction(_state: StepState, form: FormData): Prom
 
   let processed: Awaited<ReturnType<typeof processPhoto>>;
   try {
-    processed = await processPhoto(Buffer.from(await file.arrayBuffer()));
+    // The 3 poses and the photo of the Permis may arrive cut out (the browser, version B).
+    processed = await processPhoto(Buffer.from(await file.arrayBuffer()), {
+      keepCutout: position <= 2,
+    });
   } catch (error) {
     return fail({
       photo: error instanceof PhotoError ? PHOTO_ERRORS[error.reason] : "photoUnreadable",
@@ -272,16 +275,28 @@ export async function uploadPhotoAction(_state: StepState, form: FormData): Prom
     }
     await member.supabase.from("photos").delete().eq("id", previous.id);
   }
-  const { error } = await member.supabase.from("photos").insert({
-    owner_id: member.userId,
-    position,
-    pending_path: `${base}.webp`,
-    width: processed.width,
-    height: processed.height,
-  });
-  if (error) {
+  const { data: inserted, error } = await member.supabase
+    .from("photos")
+    .insert({
+      owner_id: member.userId,
+      position,
+      pending_path: `${base}.webp`,
+      width: processed.width,
+      height: processed.height,
+    })
+    .select("id")
+    .single();
+  if (error || !inserted) {
     await bucket.remove([`${base}.webp`, `${base}-s.webp`]);
     return failMessage("generic");
+  }
+  // Cut out or not is the server's finding on the file, never the member's say (secret key).
+  if (processed.cutout) {
+    const { error: flagError } = await createAdminClient()
+      .from("photos")
+      .update({ is_cutout: true })
+      .eq("id", inserted.id);
+    if (flagError) return failMessage("generic");
   }
 
   if (form.get("onboarding") === "1") {

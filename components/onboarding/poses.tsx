@@ -9,6 +9,8 @@ import {
   uploadPhotoAction,
   type StepState,
 } from "@/app/[locale]/(app)/onboarding/actions";
+import { Mugshot } from "@/components/brand/mugshot";
+import { useCutoutChoice, usePreloadCutout } from "@/components/onboarding/cutout-choice";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import type { PhotoInfo } from "@/lib/photos";
@@ -37,7 +39,9 @@ function PoseSlot({
   const id = useId();
   const reasonT = useTranslations("Greffe.reasons");
   const [url, setUrl] = useState(initial?.url ?? null);
+  const [cutout, setCutout] = useState(initial?.cutout ?? false);
   const [status, setStatus] = useState(initial?.status ?? null);
+  const { choose, dialog } = useCutoutChoice();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const label = t(slot.key);
@@ -56,7 +60,11 @@ function PoseSlot({
     setBusy(true);
     try {
       const { compressForUpload } = await import("@/lib/image/compress");
-      const blob = await compressForUpload(file);
+      const compressed = await compressForUpload(file);
+      // The preview, cut out on the device or as it is: nothing leaves before the choice.
+      const choice = await choose(compressed);
+      if (!choice) return;
+      const blob = choice.blob;
       const form = new FormData();
       form.set("photo", blob, "photo");
       form.set("position", String(slot.position));
@@ -67,6 +75,7 @@ function PoseSlot({
         return;
       }
       setUrl(URL.createObjectURL(blob));
+      setCutout(choice.cutout);
       setStatus("pending");
       onUploaded(slot.position);
     } catch {
@@ -91,12 +100,7 @@ function PoseSlot({
         )}
       >
         {url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- private signed URL or local blob
-          <img
-            src={url}
-            alt={t("previewAlt", { pose: label })}
-            className="size-full object-cover"
-          />
+          <Mugshot src={url} alt={t("previewAlt", { pose: label })} cutout={cutout} fill />
         ) : (
           <span className="flex flex-col items-center gap-1 text-sm font-bold">
             <Camera aria-hidden="true" className="size-6" />
@@ -111,7 +115,12 @@ function PoseSlot({
           aria-label={`${url ? t("replace") : t("add")} : ${label}`}
           aria-describedby={error ? `${id}-error` : undefined}
           disabled={busy}
-          onChange={(event) => void onFile(event.target.files?.[0])}
+          onChange={(event) => {
+            // Read, then cleared: the same file may be chosen again after a cancel.
+            const chosen = event.target.files?.[0];
+            event.target.value = "";
+            void onFile(chosen);
+          }}
         />
       </label>
       <span className="font-stamp text-center text-[11px] tracking-[0.1em] text-[#e6dcc8] uppercase">
@@ -138,6 +147,7 @@ function PoseSlot({
           <span className="text-grey">{t("todo")}</span>
         )}
       </span>
+      {dialog}
       {error ? (
         <p
           id={`${id}-error`}
@@ -158,6 +168,7 @@ function PoseSlots({
   photos: Record<number, PhotoInfo | null>;
   onUploaded: (position: number) => void;
 }) {
+  usePreloadCutout();
   return (
     <div className="flex items-end gap-2.5">
       {SLOTS.map((slot) => (

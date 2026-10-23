@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { startTransition, useActionState, useEffect, useId, useRef, useState } from "react";
 import { uploadPhotoAction, type StepState } from "@/app/[locale]/(app)/onboarding/actions";
+import { useCutoutChoice } from "@/components/onboarding/cutout-choice";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
 
@@ -42,6 +43,7 @@ export function PhotoManager({
     ? 0
     : positions.find((p) => !photos.some((photo) => photo.position === p));
   const replacing = single && photos.length > 0;
+  const { choose, dialog } = useCutoutChoice();
 
   useEffect(() => {
     if (state.status === "done") {
@@ -55,7 +57,11 @@ export function PhotoManager({
     setPreparing(true);
     try {
       const { compressForUpload } = await import("@/lib/image/compress");
-      const blob = await compressForUpload(file);
+      const compressed = await compressForUpload(file);
+      // The photo of the Permis (position 0) goes through the same preview as at the onboarding.
+      const choice = freePosition === 0 ? await choose(compressed) : { blob: compressed };
+      if (!choice) return;
+      const blob = choice.blob;
       const form = new FormData();
       form.set("photo", blob, "photo");
       form.set("position", String(freePosition));
@@ -118,6 +124,7 @@ export function PhotoManager({
           </label>
         </form>
       ) : null}
+      {dialog}
       <p aria-live="polite" className="min-h-6 text-sm">
         {error ? <span className="text-red-bright">{errors(error as "generic")}</span> : null}
       </p>
