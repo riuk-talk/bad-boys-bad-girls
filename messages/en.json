@@ -1211,7 +1211,11 @@
       "stampTop": "BAD BOY",
       "stampBottom": "BAD GIRL",
       "accomplices": "Accomplices",
-      "recruited": "{count, plural, one {# accomplice recruited} other {# accomplices recruited}}"
+      "recruited": "{count, plural, one {# accomplice recruited} other {# accomplices recruited}}",
+      "viewLarge": "See the file full size",
+      "closeLarge": "Close",
+      "largeLabel": "Case file of {pseudo}, full size",
+      "rotateHint": "Turn your phone to see it whole."
     },
     "fichePage": {
       "selfPreview": "This is your File, as Visitors see it.",

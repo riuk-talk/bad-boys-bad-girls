@@ -1211,7 +1211,11 @@
       "stampTop": "BAD BOY",
       "stampBottom": "BAD GIRL",
       "accomplices": "Complices",
-      "recruited": "{count, plural, one {# complice recruté} other {# complices recrutés}}"
+      "recruited": "{count, plural, one {# complice recruté} other {# complices recrutés}}",
+      "viewLarge": "Voir le dossier en grand",
+      "closeLarge": "Fermer",
+      "largeLabel": "Dossier judiciaire de {pseudo}, en grand",
+      "rotateHint": "Tourne ton téléphone pour le voir en entier."
     },
     "fichePage": {
       "selfPreview": "C'est ta Fiche, telle que les Visiteurs la voient.",

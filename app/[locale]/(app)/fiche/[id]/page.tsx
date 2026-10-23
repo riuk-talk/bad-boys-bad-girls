@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { Dossier } from "@/components/relations/dossier";
+import { DossierViewer } from "@/components/relations/dossier-viewer";
 import { RequestModal } from "@/components/relations/request-modal";
 import { SafetyActions } from "@/components/relations/safety-actions";
 import { accentForGender } from "@/lib/accent";
@@ -109,7 +110,9 @@ export default async function FichePage({ params }: Props) {
         <ChevronLeft aria-hidden="true" className="size-4" />
         {isSelf ? t("backToMyFiche") : t("back")}
       </LocalizedLink>
-      <Dossier fiche={fiche} photos={photoUrls} />
+      <DossierViewer pseudo={fiche.pseudo}>
+        <Dossier fiche={fiche} photos={photoUrls} />
+      </DossierViewer>
       {!isSelf ? (
         <SafetyActions
           memberId={fiche.id}
