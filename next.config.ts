@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { CUTOUT_WORKER_CSP } from "./lib/security/csp";
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
@@ -38,6 +39,14 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "Cache-Control", value: "no-cache, max-age=0" },
           { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+      {
+        // The cut-out worker runs under its own policy: the only place WebAssembly is allowed.
+        source: "/workers/cutout-worker.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, max-age=0" },
+          { key: "Content-Security-Policy", value: CUTOUT_WORKER_CSP },
         ],
       },
       {

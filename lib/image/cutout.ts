@@ -1,46 +1,81 @@
 /**
- * In-browser cut-out of the member's photo (owner's decision 2026-10-23, version B): MediaPipe
- * Image Segmenter (Apache-2.0) with the Selfie Segmentation model (Apache-2.0), both served by the
- * site itself (public/vendor/mediapipe). The photo never leaves the device for this; only the
- * result the member chooses is sent. Loaded with a dynamic import on the photo steps only.
+ * In-browser cut-out of the member's photo (owner's final decision 2026-10-23): MediaPipe Image
+ * Segmenter (Apache-2.0) with the Selfie Segmentation model (Apache-2.0), both served by the site
+ * itself (public/vendor/mediapipe). The segmentation runs in a worker
+ * (public/workers/cutout-worker.js) with its own policy allowing WebAssembly, so that no page
+ * needs to allow it. The photo never leaves the device for this; only the result is sent.
  */
-import type { ImageSegmenter } from "@mediapipe/tasks-vision";
 import {
   CUTOUT_LOAD_BUDGET_MS,
+  CUTOUT_RUN_BUDGET_MS,
   decideCutout,
   maskAlpha,
   personShare,
   type CutoutDecision,
 } from "./cutout-policy";
 
-const WASM_PATH = "/vendor/mediapipe/wasm";
-const MODEL_PATH = "/vendor/mediapipe/selfie_segmenter.tflite";
+const WORKER_PATH = "/workers/cutout-worker.js";
 /** The server keeps 1200 px at most (lib/image/process.ts): no need to send more. */
 const MAX_SIDE = 1200;
 /** Under the server's limit for an upload (2 MB). */
 const MAX_BYTES = 1_900_000;
 
-let segmenter: Promise<ImageSegmenter> | null = null;
+type Mask = { mask: Float32Array; width: number; height: number };
+type Reply = { id: number; ok: boolean; error?: string } & Partial<Mask>;
+
+let worker: Worker | null = null;
+let loaded: Promise<void> | null = null;
+let lastId = 0;
+const waiting = new Map<
+  number,
+  { resolve: (reply: Reply) => void; reject: (error: Error) => void }
+>();
+
+function stopWorker(reason: string) {
+  worker?.terminate();
+  worker = null;
+  loaded = null;
+  for (const pending of waiting.values()) pending.reject(new Error(reason));
+  waiting.clear();
+}
+
+function ask(message: { type: "load" } | { type: "segment"; bitmap: ImageBitmap }): Promise<Reply> {
+  if (!worker) {
+    worker = new Worker(WORKER_PATH);
+    worker.onmessage = (event: MessageEvent<Reply>) => {
+      const pending = waiting.get(event.data.id);
+      waiting.delete(event.data.id);
+      if (!pending) return;
+      if (event.data.ok) pending.resolve(event.data);
+      else pending.reject(new Error(event.data.error ?? "worker"));
+    };
+    worker.onerror = () => stopWorker("worker failed");
+  }
+  lastId += 1;
+  const id = lastId;
+  const target = worker;
+  return new Promise<Reply>((resolve, reject) => {
+    waiting.set(id, { resolve, reject });
+    if (message.type === "segment") target.postMessage({ id, ...message }, [message.bitmap]);
+    else target.postMessage({ id, ...message });
+  });
+}
 
 /** Starts loading the runtime and the model (the step calls it on arrival); shared afterwards. */
-export function preloadCutout(): Promise<ImageSegmenter> {
-  if (!segmenter) {
-    segmenter = (async () => {
-      const { FilesetResolver, ImageSegmenter } = await import("@mediapipe/tasks-vision");
-      const fileset = await FilesetResolver.forVisionTasks(WASM_PATH);
-      return ImageSegmenter.createFromOptions(fileset, {
-        baseOptions: { modelAssetPath: MODEL_PATH, delegate: "CPU" },
-        runningMode: "IMAGE",
-        outputCategoryMask: false,
-        outputConfidenceMasks: true,
-      });
-    })();
+export function preloadCutout(): Promise<void> {
+  if (!loaded) {
+    loaded = ask({ type: "load" }).then(() => undefined);
     // A failed load may be retried with the next photo.
-    segmenter.catch(() => {
-      segmenter = null;
-    });
+    loaded.catch(() => stopWorker("load failed"));
   }
-  return segmenter;
+  return loaded;
+}
+
+function within<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    promise,
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms + 1)),
+  ]);
 }
 
 export type CutoutResult = {
@@ -53,6 +88,7 @@ export type CutoutResult = {
 function supported(): boolean {
   return (
     typeof WebAssembly === "object" &&
+    typeof Worker === "function" &&
     typeof createImageBitmap === "function" &&
     typeof document !== "undefined"
   );
@@ -76,7 +112,7 @@ async function encodeCutout(canvas: HTMLCanvasElement): Promise<Blob | null> {
 /**
  * Cuts the person out of `photo`. Two budgets (lib/image/cutout-policy.ts): the loading of the
  * runtime when the step had not finished preloading it, then the computing. The decision says
- * whether the result may be offered; anything else keeps the photo as it is.
+ * whether the result may be offered; otherwise the original goes to the Greffe for its cut-out.
  */
 export async function cutOut(photo: Blob): Promise<CutoutResult> {
   const started = performance.now();
@@ -85,16 +121,17 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
     return { decision: decideCutout({ supported: false }), blob: null, elapsedMs: 0 };
   }
   try {
-    // Past the loading budget, give up waiting (the photo stays as it is).
-    const timeout = new Promise<null>((resolve) =>
-      setTimeout(() => resolve(null), CUTOUT_LOAD_BUDGET_MS + 1),
+    // Past the loading budget, give up waiting (the original goes to the Greffe).
+    const ready = await within(
+      preloadCutout().then(() => true),
+      CUTOUT_LOAD_BUDGET_MS,
     );
-    const model = await Promise.race([preloadCutout(), timeout]);
     const loadMs = elapsed();
-    if (!model) {
+    if (!ready) {
       return { decision: decideCutout({ supported: true, loadMs }), blob: null, elapsedMs: loadMs };
     }
     const runStarted = performance.now();
+    const runMs = () => Math.round(performance.now() - runStarted);
 
     const bitmap = await createImageBitmap(photo);
     const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
@@ -106,26 +143,36 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
 
-    const result = model.segment(canvas);
-    const mask = result.confidenceMasks?.[0];
-    if (!mask) throw new Error("no mask");
-    const values = mask.getAsFloat32Array();
+    const reply = await within(
+      ask({ type: "segment", bitmap: await createImageBitmap(canvas) }),
+      CUTOUT_RUN_BUDGET_MS,
+    );
+    if (!reply) {
+      // Too slow: the worker is stopped, it will be started again for the next photo.
+      stopWorker("too slow");
+      return {
+        decision: decideCutout({ supported: true, loadMs, runMs: runMs() }),
+        blob: null,
+        elapsedMs: elapsed(),
+      };
+    }
+    const { mask: values, width, height } = reply;
+    if (!values || !width || !height) throw new Error("no mask");
     const share = personShare(values);
     // The mask, as an alpha layer at its own size, then stretched (smoothly) on the photo.
     const layer = document.createElement("canvas");
-    layer.width = mask.width;
-    layer.height = mask.height;
+    layer.width = width;
+    layer.height = height;
     const layerContext = layer.getContext("2d");
     if (!layerContext) throw new Error("no 2d context");
-    const pixels = layerContext.createImageData(mask.width, mask.height);
+    const pixels = layerContext.createImageData(width, height);
     for (let i = 0; i < values.length; i += 1) pixels.data[i * 4 + 3] = maskAlpha(values[i] ?? 0);
     layerContext.putImageData(pixels, 0, 0);
-    result.close();
 
     const decision = decideCutout({
       supported: true,
       loadMs,
-      runMs: Math.round(performance.now() - runStarted),
+      runMs: runMs(),
       personShare: share,
     });
     if (decision.kind !== "cutout") return { decision, blob: null, elapsedMs: elapsed() };
