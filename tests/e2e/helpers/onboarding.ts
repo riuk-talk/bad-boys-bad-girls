@@ -74,10 +74,13 @@ export async function confirmPhoto(page: Page) {
   const decision = (await result.getAttribute("data-decision")) ?? "";
   const ms = Number(await result.getAttribute("data-ms"));
   const reason = await result.getAttribute("data-reason");
+  // Where the cut-out ran (worker or page) and why not in the worker: printed for the CI logs.
+  const detail = (await result.getAttribute("data-detail")) ?? "";
+  console.log(`cut-out: ${decision} ${reason ?? ""} ${ms} ms · ${detail}`);
   const dialog = page.getByRole("dialog", { name: "Ta photo sur le mur" });
   await dialog.getByRole("button", { name: "Déposer au Greffe" }).click();
   await expect(dialog).toBeHidden();
-  return { decision, reason, ms };
+  return { decision, reason, ms, detail };
 }
 
 async function next(page: Page, step: number, button = "Continuer") {

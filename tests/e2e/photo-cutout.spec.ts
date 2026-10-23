@@ -96,6 +96,8 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     expect(left).toMatchObject({ decision: "as_is", reason: "error" });
     await expect(page.getByText("Le Greffe la détoure")).toBeVisible({ timeout: 20_000 });
     await page.unroute("**/vendor/mediapipe/**");
+    // The worker cannot run (as on WebKit): the photo page cuts out in the page itself.
+    await page.route("**/workers/**", (route) => route.abort());
     await page.reload();
 
     // Face: cut out on the device; « Changer de photo » first picks another file, then it is sent.
@@ -107,8 +109,9 @@ test.describe("photo cut-out in the browser (local stack)", () => {
       .getByLabel("Changer de photo")
       .setInputFiles({ name: "face.jpg", mimeType: "image/jpeg", buffer: person });
     const face = await confirmPhoto(page);
-    console.log(`cut-out (face): ${face.decision} in ${face.ms} ms`);
     expect(face.decision).toBe("cutout");
+    expect(face.detail).toMatch(/^page/);
+    await page.unroute("**/workers/**");
     await expect(page.getByRole("img", { name: "Ta photo : Face · obligatoire" })).toBeVisible({
       timeout: 20_000,
     });
