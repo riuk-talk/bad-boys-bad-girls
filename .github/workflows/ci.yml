@@ -79,10 +79,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # The runner image already has Chrome and its libraries: Chromium needs no apt package.
+          # WebKit needs its own (GStreamer, codecs…), installed by apt.
           - project: pixel-7
             browser: chromium
+            deps: ""
           - project: iphone-14
             browser: webkit
+            deps: "--with-deps"
     name: e2e (${{ matrix.project }})
     env:
       CI: "true"
@@ -107,12 +111,30 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-      # apt stalled on a mirror more than once (CI n° 55, 61, 62: no timeout, the job waited until
-      # it was stopped): a stalled download is now abandoned after 30 s and retried.
-      - name: Retries and timeouts for apt
+      # apt was slow or stalled on its mirror several times (CI n° 55, 61, 62, 64: up to 8 minutes,
+      # once past the 15-minute limit). A stalled download is abandoned after 15 s and retried, and
+      # the packages WebKit needs are kept between runs, so apt mostly has nothing to download.
+      - name: Retries, timeouts and kept packages for apt
         run: |
-          printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' \
-            | sudo tee /etc/apt/apt.conf.d/80-ci-retries > /dev/null
+          printf '%s\n' 'Acquire::Retries "5";' 'Acquire::http::Timeout "15";' \
+            'Acquire::https::Timeout "15";' 'APT::Keep-Downloaded-Packages "true";' \
+            'Binary::apt::APT::Keep-Downloaded-Packages "true";' \
+            | sudo tee /etc/apt/apt.conf.d/80-ci > /dev/null
+
+      - name: Cache the apt packages of the browser
+        if: matrix.deps != ''
+        uses: actions/cache@v4
+        with:
+          path: ~/apt-cache
+          key: apt-${{ matrix.browser }}-ubuntu-24.04-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: apt-${{ matrix.browser }}-ubuntu-24.04-
+
+      - name: Restore the kept apt packages
+        if: matrix.deps != ''
+        run: |
+          if compgen -G "$HOME/apt-cache/*.deb" > /dev/null; then
+            sudo cp "$HOME"/apt-cache/*.deb /var/cache/apt/archives/
+          fi
 
       # The two slow downloads (Docker images, the browser) run in the background while the
       # application builds; each one writes its exit code to a file that a later step waits for.
@@ -120,7 +142,7 @@ jobs:
         run: |
           (pnpm exec supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta \
             > "$RUNNER_TEMP/supabase.log" 2>&1; echo $? > "$RUNNER_TEMP/supabase.exit") &
-          (pnpm exec playwright install --with-deps ${{ matrix.browser }} \
+          (pnpm exec playwright install ${{ matrix.deps }} ${{ matrix.browser }} \
             > "$RUNNER_TEMP/browsers.log" 2>&1; echo $? > "$RUNNER_TEMP/browsers.exit") &
 
       - name: Wait for the local Supabase stack
@@ -134,6 +156,14 @@ jobs:
 
       - name: Wait for the browser
         run: scripts/ci/wait-for.sh browsers
+
+      - name: Keep the apt packages for the next run
+        if: matrix.deps != ''
+        run: |
+          mkdir -p "$HOME/apt-cache"
+          if compgen -G "/var/cache/apt/archives/*.deb" > /dev/null; then
+            cp /var/cache/apt/archives/*.deb "$HOME/apt-cache/"
+          fi
 
       - name: End-to-end (${{ matrix.project }})
         run: pnpm exec playwright test --project=${{ matrix.project }}
