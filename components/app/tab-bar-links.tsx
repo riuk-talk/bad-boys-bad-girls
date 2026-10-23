@@ -64,16 +64,21 @@ export function TabBarLinks({ tabs, initial }: { tabs: readonly TabLink[]; initi
     };
   }, [pathname]);
 
-  // WCAG 2.4.11: what takes the focus under the sticky bar is brought above it (scrollIntoView
-  // honours the scroll-padding of globals.css; the browser's own focus scroll does not).
+  // WCAG 2.4.11: what takes the focus under the sticky bar is brought above it, by exactly the
+  // part it hides. Once at once, and once more at the next frame: WebKit runs its own focus scroll
+  // after the event and may put the element back under the bar (CI n° 63 and 65, /mon-casier).
   useEffect(() => {
+    const lift = (target: HTMLElement) => {
+      const bar = document.querySelector("[data-tab-bar]");
+      if (!bar || bar.contains(target) || !target.isConnected) return;
+      const hidden = target.getBoundingClientRect().bottom - bar.getBoundingClientRect().top;
+      if (hidden > 0) window.scrollBy(0, hidden + 8);
+    };
     const onFocus = (event: FocusEvent) => {
       const target = event.target;
-      const bar = document.querySelector("[data-tab-bar]");
-      if (!(target instanceof HTMLElement) || !bar || bar.contains(target)) return;
-      if (target.getBoundingClientRect().bottom > bar.getBoundingClientRect().top) {
-        target.scrollIntoView({ block: "nearest" });
-      }
+      if (!(target instanceof HTMLElement)) return;
+      lift(target);
+      requestAnimationFrame(() => lift(target));
     };
     document.addEventListener("focusin", onFocus);
     return () => document.removeEventListener("focusin", onFocus);
