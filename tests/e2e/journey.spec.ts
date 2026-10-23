@@ -676,7 +676,12 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
       const hidden: string[] = [];
       for (let step = 0; step < 80; step++) {
         await page.keyboard.press("Tab");
-        const state = await page.evaluate(() => {
+        // Measured once the page has settled (two frames: the browser's focus scroll, then the
+        // correction of components/app/tab-bar-links.tsx).
+        const state = await page.evaluate(async () => {
+          await new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          );
           const el = document.activeElement;
           const bar = document.querySelector("[data-tab-bar]");
           if (!el || el === document.body) return { done: true, hidden: null };
