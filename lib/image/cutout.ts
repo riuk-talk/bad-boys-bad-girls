@@ -25,7 +25,7 @@ const MAX_SIDE = 1200;
 const MAX_BYTES = 1_900_000;
 
 type Mask = { mask: Float32Array; width: number; height: number };
-type Reply = { id: number; ok: boolean; error?: string } & Partial<Mask>;
+type Reply = { id: number; ok: boolean; error?: string; webgl?: boolean } & Partial<Mask>;
 
 let worker: Worker | null = null;
 let lastId = 0;
@@ -41,7 +41,9 @@ function stopWorker(reason: string) {
   waiting.clear();
 }
 
-function ask(message: { type: "load" } | { type: "segment"; bitmap: ImageBitmap }): Promise<Reply> {
+function ask(
+  message: { type: "caps" } | { type: "load" } | { type: "segment"; bitmap: ImageBitmap },
+): Promise<Reply> {
   if (!worker) {
     worker = new Worker(WORKER_PATH);
     worker.onmessage = (event: MessageEvent<Reply>) => {
@@ -113,6 +115,44 @@ async function loadInPage(): Promise<Engine> {
   return pageEngine(segmenter);
 }
 
+/** The smallest valid module: compiling it tells whether the page's policy allows WebAssembly. */
+const EMPTY_MODULE = new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]);
+
+function wasmAllowedInPage(): boolean {
+  try {
+    new WebAssembly.Module(EMPTY_MODULE);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Where the cut-out can run, found at once, before any download: the worker when it has a WebGL
+ * context, otherwise the page when its policy allows WebAssembly (the photo pages, loaded
+ * directly), otherwise nowhere ("none": a photo page reached by a link keeps the policy of the
+ * page before it; usePreloadCutout then loads it again).
+ */
+export type EngineChoice = "worker" | "page" | "none";
+let choice: Promise<EngineChoice> | null = null;
+
+export function chooseEngine(): Promise<EngineChoice> {
+  if (!choice) {
+    choice = (async () => {
+      if (!supported()) return "none";
+      const caps = await within(
+        ask({ type: "caps" }).catch(() => null),
+        3_000,
+      );
+      if (caps?.webgl) return "worker";
+      workerFailure = caps ? "no WebGL context in the worker" : "worker did not start";
+      stopWorker("not used");
+      return wasmAllowedInPage() ? "page" : "none";
+    })();
+  }
+  return choice;
+}
+
 let engine: Promise<Engine> | null = null;
 /** Why the worker could not be used, if it could not (shown to the tests, never to members). */
 let workerFailure: string | null = null;
@@ -120,13 +160,18 @@ let workerFailure: string | null = null;
 /** Starts loading the runtime and the model (the step calls it on arrival); shared afterwards. */
 export function preloadCutout(): Promise<Engine> {
   if (!engine) {
-    engine = ask({ type: "load" })
-      .then(() => workerEngine)
-      .catch((error: unknown) => {
-        workerFailure = error instanceof Error ? error.message : String(error);
-        stopWorker("load failed");
-        return loadInPage();
-      });
+    engine = chooseEngine().then((where) => {
+      if (where === "page") return loadInPage();
+      if (where === "none") throw new Error("WebAssembly not allowed here");
+      return ask({ type: "load" })
+        .then(() => workerEngine)
+        .catch((error: unknown) => {
+          workerFailure = error instanceof Error ? error.message : String(error);
+          stopWorker("load failed");
+          if (!wasmAllowedInPage()) throw error;
+          return loadInPage();
+        });
+    });
     // A failed load may be retried with the next photo.
     engine.catch(() => {
       engine = null;
@@ -209,7 +254,7 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
     bitmap.close();
 
     const segmented = await ready.segment(canvas).catch(async (error: unknown) => {
-      if (ready.name !== "worker") throw error;
+      if (ready.name !== "worker" || !wasmAllowedInPage()) throw error;
       // The worker loaded but could not compute: from now on, the page cuts out itself.
       workerFailure = error instanceof Error ? error.message : String(error);
       stopWorker("compute failed");

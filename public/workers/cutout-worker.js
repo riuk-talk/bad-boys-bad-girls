@@ -37,6 +37,19 @@ function load() {
 
 self.onmessage = async (event) => {
   const { id, type, bitmap } = event.data;
+  if (type === "caps") {
+    // Whether this worker can compute at all (MediaPipe needs a WebGL context): answered at once,
+    // before any download.
+    let webgl = false;
+    try {
+      const canvas = new OffscreenCanvas(1, 1);
+      webgl = Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+    } catch {
+      webgl = false;
+    }
+    self.postMessage({ id, ok: true, webgl });
+    return;
+  }
   try {
     const model = await load();
     if (type === "load") {

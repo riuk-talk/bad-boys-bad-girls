@@ -331,7 +331,7 @@ export function PhotoStepForm({ last }: { last: boolean }) {
   }, [sendRequest]);
   const [cutout, setCutout] = useState(false);
   const { choose, dialog } = useCutoutChoice(prepareForUpload);
-  usePreloadCutout();
+  const engine = usePreloadCutout();
   const errorT = useTranslations("Onboarding.errors");
 
   useEffect(
@@ -367,6 +367,7 @@ export function PhotoStepForm({ last }: { last: boolean }) {
     <form
       id="photo-form"
       ref={formRef}
+      data-cutout-engine={engine}
       noValidate
       onSubmit={submitWithoutReset(step.formAction, (form) => {
         form.delete("file");

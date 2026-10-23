@@ -48,7 +48,7 @@ export function PhotoManager({
     : positions.find((p) => !photos.some((photo) => photo.position === p));
   const replacing = single && photos.length > 0;
   const { choose, dialog } = useCutoutChoice(prepareForUpload);
-  usePreloadCutout();
+  const engine = usePreloadCutout();
 
   useEffect(() => {
     if (state.status === "done") {
@@ -81,7 +81,7 @@ export function PhotoManager({
   const error = state.status === "error" ? (state.fields?.photo ?? state.message) : undefined;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-cutout-engine={engine}>
       <ul className="grid grid-cols-3 gap-3">
         {photos.map((photo) => (
           <li key={photo.id} className="bg-ink-3 relative aspect-[4/5] overflow-hidden rounded-lg">

@@ -51,7 +51,7 @@ type Step = "idle" | "working" | "ready" | "failed" | "saving" | "error";
 export function GreffeCutout({ photoId, src, alt }: { photoId: string; src: string; alt: string }) {
   const t = useTranslations("Greffe.cutoutTool");
   const router = useRouter();
-  usePreloadCutout();
+  const engine = usePreloadCutout();
   const [step, setStep] = useState<Step>("idle");
   const [blob, setBlob] = useState<Blob | null>(null);
   const [reason, setReason] = useState<string | null>(null);
@@ -77,6 +77,7 @@ export function GreffeCutout({ photoId, src, alt }: { photoId: string; src: stri
     <div
       className="space-y-2"
       data-testid="greffe-cutout"
+      data-cutout-engine={engine}
       data-step={step}
       data-reason={reason ?? undefined}
     >
@@ -197,7 +198,7 @@ function BatchRow({
  */
 export function PhotoBatch({ items }: { items: Item[] }) {
   const t = useTranslations("Greffe.batch");
-  usePreloadCutout();
+  const engine = usePreloadCutout();
   const [states, setStates] = useState<Record<string, ItemState>>(() =>
     Object.fromEntries(items.map((item) => [item.photoId, { step: "waiting" }])),
   );
@@ -206,6 +207,7 @@ export function PhotoBatch({ items }: { items: Item[] }) {
 
   // One cut-out at a time, in order; the first item still waiting is the one being cut out.
   useEffect(() => {
+    if (engine === "loading") return;
     let alive = true;
     void (async () => {
       for (const item of items) {
@@ -220,7 +222,7 @@ export function PhotoBatch({ items }: { items: Item[] }) {
     return () => {
       alive = false;
     };
-  }, [items]);
+  }, [items, engine]);
   const working = items.find((item) => states[item.photoId]?.step === "waiting")?.photoId;
 
   async function validate(item: Item) {
@@ -237,7 +239,7 @@ export function PhotoBatch({ items }: { items: Item[] }) {
 
   const ready = items.filter((item) => states[item.photoId]?.step === "ready").length;
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-cutout-engine={engine}>
       <Button type="button" disabled={ready === 0} onClick={() => void validateAll()}>
         {t("validateAll", { count: ready })}
       </Button>

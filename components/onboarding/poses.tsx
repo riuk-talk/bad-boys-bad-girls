@@ -172,9 +172,9 @@ function PoseSlots({
   photos: Record<number, PhotoInfo | null>;
   onUploaded: (position: number) => void;
 }) {
-  usePreloadCutout();
+  const engine = usePreloadCutout();
   return (
-    <div className="flex items-end gap-2.5">
+    <div className="flex items-end gap-2.5" data-cutout-engine={engine}>
       {SLOTS.map((slot) => (
         <PoseSlot
           key={slot.position}

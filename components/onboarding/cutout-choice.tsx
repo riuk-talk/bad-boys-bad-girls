@@ -10,13 +10,43 @@ import type { CutoutResult } from "@/lib/image/cutout";
 /** What is sent: the cut-out, or the original that the Greffe will cut out (`cutout` false). */
 export type PhotoChoice = { blob: Blob; cutout: boolean };
 
-/** Starts loading the cut-out runtime as soon as a photo page is shown (shared afterwards). */
-export function usePreloadCutout() {
+const RELOADED_KEY = "cutout-reloaded";
+
+/** Loads the page again, once per page, to get the photo page's own policy. */
+function reloadOnce(): boolean {
+  try {
+    if (sessionStorage.getItem(RELOADED_KEY) === location.pathname) return false;
+    sessionStorage.setItem(RELOADED_KEY, location.pathname);
+  } catch {
+    return false;
+  }
+  location.reload();
+  return true;
+}
+
+/**
+ * Starts loading the cut-out runtime as soon as a photo page is shown (shared afterwards), and
+ * returns where the cut-out will run ("loading" until known; data-cutout-engine for the tests).
+ * Where it cannot run at all (a photo page reached by a link, in a browser whose worker cannot
+ * compute), the page is loaded again once, right away, to get its own policy.
+ */
+export function usePreloadCutout(): string {
+  const [engine, setEngine] = useState("loading");
   useEffect(() => {
+    let alive = true;
     void import("@/lib/image/cutout")
-      .then((module) => module.preloadCutout())
+      .then(async (module) => {
+        const where = await module.chooseEngine();
+        if (where === "none" && reloadOnce()) return;
+        if (alive) setEngine(where);
+        await module.preloadCutout();
+      })
       .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
   }, []);
+  return engine;
 }
 
 /** Runs the cut-out of `photo` on the device; any failure is a decision, never an exception. */
