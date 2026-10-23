@@ -112,6 +112,7 @@ export type Database = {
           email_daily_quota: number
           id: boolean
           launch_mode: Database["public"]["Enums"]["launch_mode"]
+          photo_batch_allowed: boolean
           promenade_max_appearances_per_day: number
           storage_alert_mb: number
           updated_at: string
@@ -125,6 +126,7 @@ export type Database = {
           email_daily_quota?: number
           id?: boolean
           launch_mode?: Database["public"]["Enums"]["launch_mode"]
+          photo_batch_allowed?: boolean
           promenade_max_appearances_per_day?: number
           storage_alert_mb?: number
           updated_at?: string
@@ -138,6 +140,7 @@ export type Database = {
           email_daily_quota?: number
           id?: boolean
           launch_mode?: Database["public"]["Enums"]["launch_mode"]
+          photo_batch_allowed?: boolean
           promenade_max_appearances_per_day?: number
           storage_alert_mb?: number
           updated_at?: string
@@ -861,6 +864,7 @@ export type Database = {
           height: number | null
           id: string
           is_cutout: boolean
+          needs_cutout: boolean
           owner_id: string
           path_rotated_at: string | null
           pending_path: string | null
@@ -878,6 +882,7 @@ export type Database = {
           height?: number | null
           id?: string
           is_cutout?: boolean
+          needs_cutout?: boolean
           owner_id: string
           path_rotated_at?: string | null
           pending_path?: string | null
@@ -895,6 +900,7 @@ export type Database = {
           height?: number | null
           id?: string
           is_cutout?: boolean
+          needs_cutout?: boolean
           owner_id?: string
           path_rotated_at?: string | null
           pending_path?: string | null
@@ -1807,6 +1813,16 @@ export type Database = {
           target_user_id: string
         }[]
       }
+      admin_photo_batch: {
+        Args: { p_limit: number }
+        Returns: {
+          photo_id: string
+          photo_position: number
+          pseudo: string
+          public_path_large: string
+          role: Database["public"]["Enums"]["member_role"]
+        }[]
+      }
       admin_photo_cutouts: {
         Args: { p_ids: string[] }
         Returns: {
@@ -1828,6 +1844,7 @@ export type Database = {
           role: Database["public"]["Enums"]["member_role"]
         }[]
       }
+      admin_photos_to_cut_out: { Args: { p_ids: string[] }; Returns: string[] }
       admin_questions: {
         Args: never
         Returns: {
@@ -1839,6 +1856,13 @@ export type Database = {
           phase: Database["public"]["Enums"]["question_phase"]
           question_id: number
           sort_position: number
+        }[]
+      }
+      admin_replace_public_photo: {
+        Args: { p_large: string; p_photo: string; p_small: string }
+        Returns: {
+          old_large: string
+          old_small: string
         }[]
       }
       admin_report_queue: {
@@ -1926,6 +1950,10 @@ export type Database = {
           p_zone: number
         }
         Returns: undefined
+      }
+      admin_store_cutout: {
+        Args: { p_pending_path: string; p_photo: string }
+        Returns: string
       }
       admin_tribes: {
         Args: never
