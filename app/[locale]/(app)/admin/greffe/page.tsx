@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { GreffeCutout } from "@/components/admin/greffe-cutout";
 import { Mugshot } from "@/components/brand/mugshot";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
+import { photoBatchAllowed } from "@/lib/photo-batch";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { decidePhotoAction } from "./actions";
 
@@ -60,6 +63,13 @@ export default async function GreffePage({ searchParams }: Props) {
     ? await member.supabase.rpc("admin_photo_cutouts", { p_ids: rows.map((row) => row.photo_id) })
     : { data: [] };
   const cut = new Set((cutouts ?? []).filter((c) => c.is_cutout).map((c) => c.photo_id));
+  // Not cut out by the member's device: the Greffe cuts it out before validating (2026-10-23).
+  const { data: toCut } = rows.length
+    ? await member.supabase.rpc("admin_photos_to_cut_out", {
+        p_ids: rows.map((row) => row.photo_id),
+      })
+    : { data: [] };
+  const waiting = new Set(toCut ?? []);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
@@ -69,7 +79,14 @@ export default async function GreffePage({ searchParams }: Props) {
         <p className="text-accent font-semibold" role="status">
           {t("waiting", { count: rows.length })}
         </p>
-        {error === "notPending" || error === "generic" ? (
+        {photoBatchAllowed(process.env.NEXT_PUBLIC_SUPABASE_URL) ? (
+          <p>
+            <Link href="/admin/greffe/lot" className="text-accent underline underline-offset-4">
+              {t("batch.link")}
+            </Link>
+          </p>
+        ) : null}
+        {error === "notPending" || error === "needsCutout" || error === "generic" ? (
           <p role="alert" className="text-red-bright font-medium">
             {t(`errors.${error}`)}
           </p>
@@ -112,18 +129,32 @@ export default async function GreffePage({ searchParams }: Props) {
                 </div>
               )}
               <p className="text-grey text-xs" data-testid="cutout-state">
-                {key ? (cut.has(row.photo_id) ? t("cutout") : t("asIs")) : null}
+                {key
+                  ? cut.has(row.photo_id)
+                    ? t("cutout")
+                    : waiting.has(row.photo_id)
+                      ? t("needsCutout")
+                      : t("asIs")
+                  : null}
               </p>
               <p className="font-semibold">
                 {row.pseudo} · {t(`roles.${row.role}`)} ·{" "}
                 <span className="text-accent">{position}</span>
               </p>
-              <form action={decidePhotoAction} className="space-y-2">
-                <input type="hidden" name="photoId" value={row.photo_id} />
-                <Button type="submit" name="decision" value="approve" className="w-full">
-                  {t("approve")}
-                </Button>
-              </form>
+              {waiting.has(row.photo_id) && url ? (
+                <GreffeCutout
+                  photoId={row.photo_id}
+                  src={url}
+                  alt={t("photoAlt", { position, pseudo: row.pseudo ?? "" })}
+                />
+              ) : (
+                <form action={decidePhotoAction} className="space-y-2">
+                  <input type="hidden" name="photoId" value={row.photo_id} />
+                  <Button type="submit" name="decision" value="approve" className="w-full">
+                    {t("approve")}
+                  </Button>
+                </form>
+              )}
               <form action={decidePhotoAction} className="space-y-2">
                 <input type="hidden" name="photoId" value={row.photo_id} />
                 <label className="block text-sm" htmlFor={`reason-${row.photo_id}`}>
