@@ -5,7 +5,7 @@ import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 import { settled } from "./helpers/settle";
 import { openGreffe } from "./helpers/admin";
-import { confirmPhoto } from "./helpers/onboarding";
+import { confirmPhoto, portrait } from "./helpers/onboarding";
 
 // Full onboardings in 8 steps (Bad and Visitor, SPEC v7.4 §4) and the Greffe against the DEV Supabase project, with throwaway
 // confirmed accounts created through the admin API (no e-mail sent) and deleted afterwards.
@@ -24,8 +24,9 @@ async function axeViolations(page: Page) {
   );
 }
 
+/** The portrait of the tests, with a GPS position in its metadata. */
 async function photoWithGps() {
-  return sharp({ create: { width: 1600, height: 2000, channels: 3, background: "#7a4a2a" } })
+  return sharp(await portrait())
     .jpeg()
     .withExif({ IFD3: { GPSLatitudeRef: "N", GPSLatitude: "43/1 7/1 0/1" } })
     .toBuffer();
@@ -67,8 +68,8 @@ async function choosePhoto(page: Page) {
   await page
     .locator('input[type="file"]')
     .setInputFiles({ name: "moi.jpg", mimeType: "image/jpeg", buffer: await photoWithGps() });
+  // « Déposer au Greffe » sends the photo and moves on.
   await confirmPhoto(page);
-  await expect(page.getByRole("img", { name: "Aperçu de ta photo" })).toBeVisible();
 }
 
 /** Bad, step 5 « Passe à la toise »: one file per pose (uploaded as soon as chosen). */
@@ -348,7 +349,6 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
     await expect(page.getByRole("heading", { name: "Qui tu viens voir" })).toBeVisible();
     await seekingStep(page, "Femme", 6);
     await choosePhoto(page);
-    await page.getByRole("button", { name: "Continuer" }).click();
     await page.waitForURL(/onboarding\/7/, { waitUntil: "commit" });
 
     await page.getByRole("button", { name: "Continuer" }).click();

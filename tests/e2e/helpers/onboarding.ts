@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import sharp from "sharp";
+import { readFile } from "node:fs/promises";
 
 // A real sign-up and a real onboarding, through the screens (Phase 8d, end-to-end journey). The
 // same steps as signup.spec.ts and onboarding-complete.spec.ts, without their extra checks.
@@ -58,33 +58,24 @@ export async function signUp(
   await page.waitForURL(/onboarding\/1/, { waitUntil: "commit" });
 }
 
-async function photo(color: string) {
-  return sharp({ create: { width: 1600, height: 2000, channels: 3, background: color } })
-    .jpeg()
-    .toBuffer();
+/** A real portrait (cut from the reference image of the project): the device cuts it out. */
+export function portrait() {
+  return readFile("tests/e2e/fixtures/person.jpg");
 }
 
 /**
- * The preview of a chosen photo (2026-10-23, version B): waits for the cut-out made on the device,
- * then keeps the cut-out when there is one (or the photo as it is when `asIs`), and returns what
- * the browser decided ("cutout" or "as_is") with the time it took.
+ * The preview of a chosen photo (owner's final decision 2026-10-23): waits for the cut-out made on
+ * the device, then « Déposer au Greffe ». Returns what the device decided ("cutout", or "as_is"
+ * when the original goes to the Greffe for its cut-out) with the time it took.
  */
-export async function confirmPhoto(page: Page, { asIs = false } = {}) {
+export async function confirmPhoto(page: Page) {
   const result = page.getByTestId("cutout-result");
   await expect(result).not.toHaveAttribute("data-decision", "working", { timeout: 60_000 });
   const decision = (await result.getAttribute("data-decision")) ?? "";
   const ms = Number(await result.getAttribute("data-ms"));
   const reason = await result.getAttribute("data-reason");
   const dialog = page.getByRole("dialog", { name: "Ta photo sur le mur" });
-  if (decision === "cutout") {
-    await dialog
-      .getByRole("button", {
-        name: asIs ? "Garder ma photo telle quelle" : "Utiliser ce détourage",
-      })
-      .click();
-  } else {
-    await dialog.getByRole("button", { name: "Utiliser cette photo" }).click();
-  }
+  await dialog.getByRole("button", { name: "Déposer au Greffe" }).click();
   await expect(dialog).toBeHidden();
   return { decision, reason, ms };
 }
@@ -136,9 +127,8 @@ export async function onboardBad(page: Page, pseudo: string, charges: readonly s
   for (const pose of ["Profil gauche", "Face · obligatoire", "Profil droit"]) {
     await page
       .getByLabel(`Ajouter : ${pose}`)
-      .setInputFiles({ name: "pose.jpg", mimeType: "image/jpeg", buffer: await photo("#7a2a3a") });
-    // A plain colour: no one to cut out, the photo is kept as it is (version A).
-    expect((await confirmPhoto(page)).decision).toBe("as_is");
+      .setInputFiles({ name: "pose.jpg", mimeType: "image/jpeg", buffer: await portrait() });
+    expect((await confirmPhoto(page)).decision).toBe("cutout");
     await expect(page.getByRole("img", { name: `Ta photo : ${pose}` })).toBeVisible({
       timeout: 20_000,
     });
@@ -168,10 +158,10 @@ export async function onboardVisitor(page: Page, pseudo: string, motive: string)
   await seeking(page, "Femme", 6);
   await page
     .locator('input[type="file"]')
-    .setInputFiles({ name: "moi.jpg", mimeType: "image/jpeg", buffer: await photo("#2a4a7a") });
-  await confirmPhoto(page);
-  await expect(page.getByRole("img", { name: "Aperçu de ta photo" })).toBeVisible();
-  await next(page, 7);
+    .setInputFiles({ name: "moi.jpg", mimeType: "image/jpeg", buffer: await portrait() });
+  // « Déposer au Greffe » sends the photo and moves on.
+  expect((await confirmPhoto(page)).decision).toBe("cutout");
+  await page.waitForURL(/onboarding\/7/, { waitUntil: "commit" });
   await page.getByLabel("Motif de visite").fill(motive);
   await next(page, 8);
   await interrogation(page, "Terminer mon Permis");
