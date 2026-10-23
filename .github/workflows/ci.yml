@@ -100,6 +100,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The browser binaries are kept between runs (same Playwright version, same key).
+      - name: Cache the browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      # apt stalled on a mirror more than once (CI n° 55, 61, 62: no timeout, the job waited until
+      # it was stopped): a stalled download is now abandoned after 30 s and retried.
+      - name: Retries and timeouts for apt
+        run: |
+          printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' \
+            | sudo tee /etc/apt/apt.conf.d/80-ci-retries > /dev/null
+
       # The two slow downloads (Docker images, the browser) run in the background while the
       # application builds; each one writes its exit code to a file that a later step waits for.
       - name: Start local Supabase and install the browser (background)
