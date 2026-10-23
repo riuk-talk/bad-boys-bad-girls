@@ -100,12 +100,13 @@ Deux demandes le même jour : la version B (détourage dans le navigateur, avec 
     - le site doit être branché sur la base preview (`lib/photo-batch.ts`, tests unitaires ; une pile locale pour les tests) ;
     - la base doit l'autoriser (`app_settings.photo_batch_allowed`, faux par défaut). Sinon les fonctions SQL refusent et la page n'existe pas (pgTAP, e2e).
   - Activé par Claude sur la preview le 2026-10-23 : 7 photos validées y attendent. **Jamais en production** : le script de contrôle de la prod vérifie que le lot reste désactivé.
-- **Fichiers auto-hébergés, CSP** :
+- **Fichiers auto-hébergés, CSP** (CI n° 59 annulée par la limite de temps après l'échec du worker sous WebKit ; corrigé ci-dessous) :
   - le modèle est versionné dans `public/vendor/mediapipe/` ; le runtime (bundle et wasm) est copié depuis `node_modules` au `predev` / `prebuild` (`scripts/vendor-mediapipe.mjs`), sans être versionné ;
   - chargés seulement sur les pages photo : « Passe à la toise », photo du Permis, Ma Fiche, Greffe ;
-  - **la segmentation tourne dans un worker** (`public/workers/cutout-worker.js`), servi avec sa propre CSP : `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'` (`next.config.ts`, testé) ;
-  - **aucune page n'autorise plus WebAssembly** (plus strict que la version B).
-  - Raison : une page atteinte par navigation interne garde la CSP de la page d'avant. La version B échouait donc sur Ma Fiche et au Greffe quand on y arrivait par un lien. Un rechargement automatique a été essayé, puis abandonné : il coupait les navigations.
+  - **la segmentation tourne d'abord dans un worker** (`public/workers/cutout-worker.js`), servi avec sa propre CSP : `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'` (`next.config.ts`, testé). Raison : une page atteinte par navigation interne garde la CSP de la page d'avant. Sans le worker, le détourage échouait donc sur Ma Fiche et au Greffe quand on y arrivait par un lien. Un rechargement automatique a été essayé, puis abandonné : il coupait les navigations ;
+  - **secours dans la page** : sur WebKit (iPhone 14 en CI n° 59), le worker ne détoure pas. La page fait alors la segmentation elle-même, et seules les pages photo l'autorisent (`'wasm-unsafe-eval'` sur `/onboarding`, `/ma-fiche`, `/admin/greffe`, testé), comme dans la version B déjà verte en CI n° 58 ;
+  - un test e2e bloque le worker et vérifie le détourage dans la page. La cause exacte côté WebKit n'est pas établie (pas de WebKit en local) : la CI affiche désormais où le détourage a tourné et pourquoi le worker a échoué ;
+  - limite connue : sur WebKit, une page photo atteinte par un lien interne n'a ni worker utilisable ni droit WebAssembly. La photo part alors au Greffe, qui la détoure.
 - **Fichier envoyé** : WebP, avec transparence quand il est détouré (le serveur garde la transparence seulement pour les positions 0 à 2), sous 256 Ko (e2e : ≤ 262 144 octets). Safari n'encode pas le WebP dans le navigateur : il envoie un PNG, que le serveur convertit en WebP.
 - **Ce que voit le Greffe = ce qui sera affiché** : chaque pose est rendue avec le composant de la Fiche (`components/brand/mugshot.tsx`).
 - **Mur gradué commun** : `public/brand/mur-toise.svg` (graduations de 120 à 200 cm), un fond fixe du site, le même pour les 3 poses et la photo du Visiteur. Pas de bouton « Me mettre au mur ».
@@ -138,7 +139,7 @@ Deux demandes le même jour : la version B (détourage dans le navigateur, avec 
   - **9-6** : `is_cutout` et `needs_cutout` sont décidés par la base (valeur par défaut) et par le serveur (transparence trouvée), jamais par le membre.
   - **9-7** : seules les positions 0 à 2 sont détourées (3 poses du Bad, photo du Visiteur). Les photos supplémentaires 3 à 5 du Bad restent telles quelles.
   - **9-8** : le runtime est copié au build plutôt que versionné.
-  - **9-9** : WebAssembly autorisé seulement dans le worker du détourage, sous sa propre CSP ; aucune page ne l'autorise.
+  - **9-9** : WebAssembly autorisé dans le worker du détourage (sa propre CSP) et, en secours, sur les seules pages photo ; jamais `'unsafe-eval'`.
   - **9-10** : « personne trouvée » insuffisante sur l'appareil : la photo part au Greffe (qui la détoure, ou la refuse avec un motif) plutôt que d'être bloquée chez le membre.
   - **9-11** : le lot a deux verrous (adresse de la base et réglage dans la base) ; activé sur la preview seulement.
   - **9-12** : écart avec la demande (4) : les graduations par-dessus servent aussi pour une photo d'origine pas encore détourée (en attente au Greffe, ou validée avant la décision et pas encore traitée par le lot), et pas seulement quand une image détourée ne charge pas. Sans cela, ces photos n'auraient aucun rendu commun.
