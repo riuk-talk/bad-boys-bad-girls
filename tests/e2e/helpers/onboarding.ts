@@ -64,13 +64,38 @@ async function photo(color: string) {
     .toBuffer();
 }
 
+/**
+ * The preview of a chosen photo (2026-10-23, version B): waits for the cut-out made on the device,
+ * then keeps the cut-out when there is one (or the photo as it is when `asIs`), and returns what
+ * the browser decided ("cutout" or "as_is") with the time it took.
+ */
+export async function confirmPhoto(page: Page, { asIs = false } = {}) {
+  const result = page.getByTestId("cutout-result");
+  await expect(result).not.toHaveAttribute("data-decision", "working", { timeout: 60_000 });
+  const decision = (await result.getAttribute("data-decision")) ?? "";
+  const ms = Number(await result.getAttribute("data-ms"));
+  const reason = await result.getAttribute("data-reason");
+  const dialog = page.getByRole("dialog", { name: "Ta photo sur le mur" });
+  if (decision === "cutout") {
+    await dialog
+      .getByRole("button", {
+        name: asIs ? "Garder ma photo telle quelle" : "Utiliser ce détourage",
+      })
+      .click();
+  } else {
+    await dialog.getByRole("button", { name: "Utiliser cette photo" }).click();
+  }
+  await expect(dialog).toBeHidden();
+  return { decision, reason, ms };
+}
+
 async function next(page: Page, step: number, button = "Continuer") {
   await page.getByRole("button", { name: button }).click();
   await page.waitForURL(new RegExp(`onboarding/${step}`), { waitUntil: "commit" });
 }
 
 /** Steps 1 (age, rules) and 2 (identity in Toulon), then the role (preselected by the door). */
-async function identity(page: Page, pseudo: string, gender: "Femme" | "Homme") {
+export async function identity(page: Page, pseudo: string, gender: "Femme" | "Homme") {
   await page.getByLabel("Date de naissance").fill("1990-04-21");
   await page.getByLabel("J'atteste avoir 18 ans ou plus.").check();
   await page.locator("#terms").check();
@@ -84,7 +109,7 @@ async function identity(page: Page, pseudo: string, gender: "Femme" | "Homme") {
   await next(page, 4);
 }
 
-async function seeking(page: Page, gender: "Femme" | "Homme", step: number) {
+export async function seeking(page: Page, gender: "Femme" | "Homme", step: number) {
   await page.getByLabel(gender, { exact: true }).check();
   await page.getByLabel("Âge minimum").fill("25");
   await page.getByLabel("Âge maximum").fill("45");
@@ -112,6 +137,8 @@ export async function onboardBad(page: Page, pseudo: string, charges: readonly s
     await page
       .getByLabel(`Ajouter : ${pose}`)
       .setInputFiles({ name: "pose.jpg", mimeType: "image/jpeg", buffer: await photo("#7a2a3a") });
+    // A plain colour: no one to cut out, the photo is kept as it is (version A).
+    expect((await confirmPhoto(page)).decision).toBe("as_is");
     await expect(page.getByRole("img", { name: `Ta photo : ${pose}` })).toBeVisible({
       timeout: 20_000,
     });
@@ -142,6 +169,7 @@ export async function onboardVisitor(page: Page, pseudo: string, motive: string)
   await page
     .locator('input[type="file"]')
     .setInputFiles({ name: "moi.jpg", mimeType: "image/jpeg", buffer: await photo("#2a4a7a") });
+  await confirmPhoto(page);
   await expect(page.getByRole("img", { name: "Aperçu de ta photo" })).toBeVisible();
   await next(page, 7);
   await page.getByLabel("Motif de visite").fill(motive);

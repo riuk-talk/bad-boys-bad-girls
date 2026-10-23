@@ -5,6 +5,7 @@ import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 import { settled } from "./helpers/settle";
 import { openGreffe } from "./helpers/admin";
+import { confirmPhoto } from "./helpers/onboarding";
 
 // Full onboardings in 8 steps (Bad and Visitor, SPEC v7.4 §4) and the Greffe against the DEV Supabase project, with throwaway
 // confirmed accounts created through the admin API (no e-mail sent) and deleted afterwards.
@@ -66,6 +67,7 @@ async function choosePhoto(page: Page) {
   await page
     .locator('input[type="file"]')
     .setInputFiles({ name: "moi.jpg", mimeType: "image/jpeg", buffer: await photoWithGps() });
+  await confirmPhoto(page);
   await expect(page.getByRole("img", { name: "Aperçu de ta photo" })).toBeVisible();
 }
 
@@ -74,6 +76,7 @@ async function addPose(page: Page, pose: "Profil gauche" | "Face · obligatoire"
   await page
     .getByLabel(`Ajouter : ${pose}`)
     .setInputFiles({ name: `${pose}.jpg`, mimeType: "image/jpeg", buffer: await photoWithGps() });
+  await confirmPhoto(page);
   await expect(page.getByRole("img", { name: `Ta photo : ${pose}` })).toBeVisible({
     timeout: 20_000,
   });
