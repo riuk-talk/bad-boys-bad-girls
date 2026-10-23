@@ -148,6 +148,31 @@ Deux demandes le même jour : la version B (détourage dans le navigateur, avec 
   - **9-13** : au Permis du Visiteur, « Déposer au Greffe » envoie la photo et avance d'une étape (il n'y a plus de second bouton « Continuer » pour la photo).
 - **À vérifier sur la preview Vercel** : compression du `.wasm` (gzip ou brotli) et temps de chargement réel sur un téléphone d'entrée de gamme.
 
+### 9f — Vérification du conseiller sur la 9e (2026-10-23)
+Le fond de la 9e est validé (licences, vie privée, contrainte en base, lot, CGU). Trois points demandés.
+- **1. CI coupée à 15 min (n° 59, 60, 61)** :
+  - Cause mesurée dans les journaux de la n° 61 (2e essai). Ni le runtime (servi en local, détourage en 0,2 à 3,4 s) ni le seuil de 20 s ne sont en cause. Deux choses s'ajoutaient :
+    - une suite verte prenait déjà environ 14 min 30 sur 15 en un seul job : 4 min 30 de préparation (lint 50 s, pgTAP 74 s), puis environ 4 min 30 d'e2e par appareil, les deux à la suite ;
+    - sous WebKit, des tests échouaient puis attendaient leurs délais (60 s, plus une relance). Une page photo atteinte par navigation interne (connexion → onboarding) n'autorise pas WebAssembly, et le worker WebKit n'a pas de WebGL : la photo partait au Greffe.
+  - Corrections :
+    - le moteur est choisi tout de suite, sans téléchargement : WebGL dans le worker ? sinon WebAssembly permis par la page ? sinon la page photo se recharge une fois, avant toute action. Les tests attendent ce choix (`data-cutout-engine`) avant d'envoyer une photo ;
+    - la CI est découpée en trois jobs parallèles : vérifications et pgTAP (3 min), e2e Pixel 7 (7 min), e2e iPhone 14. Chacun installe seulement son navigateur. **Limite inchangée : 15 min par job** ;
+    - le téléchargement apt s'est figé sans délai à trois reprises (n° 55, 61, 62 : job iPhone arrêté avant les tests). apt a maintenant des délais (30 s) et 5 relances, et les navigateurs sont mis en cache.
+- **2. Fiche = planche de la référence** (`components/relations/dossier.tsx`, `dossier-viewer.tsx`) :
+  - une planche paysage dont toutes les tailles suivent sa propre largeur (unités de conteneur) ;
+  - bandeau noir et sous-ligne, tampon BONNE CONDUITE (si acquis) ;
+  - colonne gauche : Identité du sujet, Chefs d'accusation, Profil rencontre, tampon rond « Fiche validée par le Greffe », Note comportementale ;
+  - au milieu : Signes distinctifs ;
+  - à droite, sur toute la hauteur restante : « Photo signalétique · alignement 3 poses », les 3 poses détourées sur le mur gradué avec la règle, puis la ligne d'observation ;
+  - pied : code-barres, N° d'écrou, « COMPLICITÉ ». Jamais de date de naissance, de prénom réel ni de taille.
+  - Téléphone tenu droit : la planche en miniature et « Voir le dossier en grand », qui l'ouvre en plein écran (défilement dans les deux sens, « Fermer » ou Échap, focus gardé dans la fenêtre, puis rendu au bouton).
+  - Téléphone tourné ou grand écran : pleine largeur, sans bouton.
+  - Lecteur d'écran : un seul exemplaire du contenu, titres dans l'ordre (gauche, signes, poses) ; e2e sur l'ordre des titres, la miniature, le plein écran (axe), la largeur pleine à 844 × 390 et 1280 px.
+- **3. Branches `vercel/install-vercel-*`** :
+  - les 3 branches ne contiennent qu'un commit automatique de Vercel (installation de l'outil), sur le tout premier commit du dépôt. Rien à garder ;
+  - **non supprimées** : le proxy Git de la session refuse la suppression (HTTP 403), et l'outil GitHub disponible n'a pas de fonction de suppression de branche. **Action du porteur** : GitHub → Code → Branches → icône corbeille sur `vercel/install-vercel-speed-insights-68y96n`, `vercel/install-vercel-speed-insights-w7df9a` et `vercel/install-vercel-web-analytics-t5uts7` ;
+  - test ajouté : `tests/unit/no-third-party-analytics.test.ts` échoue si `@vercel/analytics` ou `@vercel/speed-insights` apparaît dans `package.json`.
+
 ## Phase 8 — Audit final (2026-10-20, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 8, SPEC §10 (sécurité technique), §17 (accessibilité), §18 (performance), §19 bis (tests), §21 (offres gratuites).
 Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la fin de la phase) :
