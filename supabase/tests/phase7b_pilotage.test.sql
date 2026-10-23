@@ -374,7 +374,10 @@ begin
   return next is(pg_temp.as_admin(adm, format('select public.admin_zone_health(%s::smallint, current_date, current_date - 1)', z)),
     '22023 invalid_period', 'period checked');
   perform pg_temp.as_user(adm, 'aal2');
-  h := public.admin_zone_health(z, current_date - 30, current_date);
+  -- The period is in Paris days, as the page sends it (lib/pilotage.ts healthPeriod): the UTC
+  -- date of the database is the day before between midnight in Paris and midnight UTC.
+  h := public.admin_zone_health(z, (now() at time zone 'Europe/Paris')::date - 30,
+    (now() at time zone 'Europe/Paris')::date);
   perform pg_temp.as_owner();
   return next is((h -> 'requests' ->> 'sent')::integer, 1, 'requests sent, seed accounts left out');
   return next is((h -> 'requests' ->> 'accepted')::integer, 1, 'acceptances');
