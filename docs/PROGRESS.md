@@ -64,7 +64,15 @@ Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la 
 - **Tests** : pgTAP 23 fichiers / 146 tests ; Vitest 205 ; parcours de bout en bout étendu (cliché à l'onboarding, relance, inscription par parrainage et badge). CI n° 55 verte au second essai : le premier s'est arrêté avant tout test e2e (installation des navigateurs par apt non terminée en 8 minutes), relancé une fois. En local : 119 tests e2e verts à 360 et 1440 px.
 - **Écarts** : aucune modification de la SPEC. La liste anglaise des clichés est une traduction (décision 9-2).
 - **Décisions à valider** : 9-1 (périmètre : les trois [P1] de la SPEC, faute de liste du porteur), 9-2 (liste des clichés modifiable par migration seulement, deux langues pour tout Casier, liste anglaise), 9-3 (relance comptée comme faite dès qu'elle s'affiche ; une Cavale même annulée empêche la relance), 9-4 (badge : parrainés au bout de l'onboarding, hors bannis et profils de test, dès 1).
-- **Pour le passage en prod des phases 6 à 9 (après contrôle du conseiller)** : 17 migrations, de `20261019100000_phase6a_conversation_reads` à `20261022110000_phase9c_recruited_badge`, dans l'ordre et au texte exact. 9 d'entre elles contiennent le mot `delete`, `drop` ou `truncate` (corps de fonction ou commande) et passeraient donc par le porteur dans le SQL Editor : 6a, 6b Cavale, 6c, 7a, 7b, 7c ×2, 7d, 8b rétention. Sur la prod, règle du porteur : aucun connecteur d'IA avec droits d'écriture ; la façon d'appliquer les 8 autres est à décider par le porteur. Après chacune : comparaison sans les blancs (README).
+- **Pour le passage en prod des phases 6 à 9 (après contrôle du conseiller)** : scripts prêts dans `supabase/scripts/prod-apply/` (2026-10-23, voir son README). Ils couvrent **18 migrations**, de `20261019100000_phase6a_conversation_reads` à `20261023090000_photo_cutout` (9e comprise).
+  - 8 scripts, à lancer par le porteur dans le SQL Editor (aucun connecteur d'IA n'écrit sur la prod), plus un 9e en lecture seule.
+  - Chaque script tourne dans une seule transaction, avec une garde d'ordre et de non-relance. Il contient le texte exact des fichiers et leur ligne d'historique, puis affiche les empreintes sans les blancs.
+  - Les scripts sont découpés après chaque `alter type ... add value`.
+  - Le script 9 compare la base aux fichiers (historique ; texte, `security definer` et droits des 192 fonctions ; RLS ; droits `anon` ; tâches planifiées) et compte à part les écarts dus aux seuls commentaires.
+  - Les scripts sont générés par `scripts/build-prod-apply.mjs`, depuis une base locale construite avec les fichiers.
+  - Test en local sur une base remise à l'état de `main` : 18 empreintes égales, 0 écart, garde vérifiée.
+  - Sur la preview, les 5 fonctions connues diffèrent des fichiers, mais leur corps sans commentaires est identique : ce sont bien des écarts de commentaires seulement.
+  - Taille d'un script : 2 à 109 Ko. **À vérifier** : la limite de taille d'une requête dans le SQL Editor.
 
 ### 9e — Photos sur le mur gradué, version B (2026-10-23, demande du porteur après la phase 9)
 Demande : détourage automatique, le personnage posé sur le vrai mur gradué ; secours en version A (graduations par-dessus la photo). Relu : SPEC §4 (photos, Greffe), `docs/PARCOURS-DESIGN.md`.
