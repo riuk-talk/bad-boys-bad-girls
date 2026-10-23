@@ -860,6 +860,7 @@ export type Database = {
           created_at: string
           height: number | null
           id: string
+          is_cutout: boolean
           owner_id: string
           path_rotated_at: string | null
           pending_path: string | null
@@ -876,6 +877,7 @@ export type Database = {
           created_at?: string
           height?: number | null
           id?: string
+          is_cutout?: boolean
           owner_id: string
           path_rotated_at?: string | null
           pending_path?: string | null
@@ -892,6 +894,7 @@ export type Database = {
           created_at?: string
           height?: number | null
           id?: string
+          is_cutout?: boolean
           owner_id?: string
           path_rotated_at?: string | null
           pending_path?: string | null
@@ -1802,6 +1805,13 @@ export type Database = {
           report_id: number
           target_pseudo: string
           target_user_id: string
+        }[]
+      }
+      admin_photo_cutouts: {
+        Args: { p_ids: string[] }
+        Returns: {
+          is_cutout: boolean
+          photo_id: string
         }[]
       }
       admin_photo_queue: {

@@ -17,6 +17,7 @@ create function pg_temp.expected_member_functions() returns text[] language sql 
     'admin_launch_mode()',
     'admin_member(p_user uuid)',
     'admin_moderation_log(p_limit integer)',
+    'admin_photo_cutouts(p_ids uuid[])',
     'admin_photo_queue(p_limit integer)',
     'admin_questions()',
     'admin_report_queue(p_limit integer)',
