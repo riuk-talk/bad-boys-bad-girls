@@ -297,73 +297,142 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       .first()
       .click();
 
-    // The Fiche: the judicial file, three charges without the true one, the N° d'écrou.
+    // The Fiche (FichePancarte.dc.html): the 3 poses on the wall, the placard in front of them.
     await page.waitForURL(/\/fiche\//);
+    const fiche = page.getByTestId("fiche");
+    await expect(fiche.getByRole("heading", { level: 1, name: bad.pseudo })).toBeVisible();
+    await expect(fiche.getByText("Dossier judiciaire")).toBeVisible();
+    await expect(fiche.getByText(/^N° \d{6}$/)).toBeVisible();
+    await expect(fiche.getByText("Complicité 100 %")).toBeVisible();
+    await expect(fiche.getByText(/^Bad girl · 30 ans · Port-Test/)).toBeVisible();
+    await expect(fiche.getByText(/^Signes : .*Triumph de 1974/)).toBeVisible();
+    await expect(fiche.getByText("Cherche : bad boys, 25 à 45 ans")).toBeVisible();
+    await expect(fiche.getByText(/^Note : Motarde, allergique/)).toBeVisible();
+    await expect(fiche.getByText("Ouvert aux visites")).toBeVisible();
+    // Never the birth date, a real name or a height (SPEC §5).
+    await expect(fiche.getByText(/1996|02\/03|cm\b|CONFIDENTIEL/)).toHaveCount(0);
+    for (const pose of ["profil gauche", "de face", "profil droit"])
+      await expect(fiche.getByRole("img", { name: `${bad.pseudo}, ${pose}` })).toBeVisible();
+    // Read as text, in order: the photos, the front, then the back (inert until turned over).
+    const order = await fiche.evaluate((root) => {
+      const nodes = [
+        root.querySelector("img"),
+        root.querySelector("h1"),
+        root.querySelector("#pancarte-charges"),
+      ];
+      return nodes.every(
+        (node, index) =>
+          node !== null &&
+          (index === 0 ||
+            (nodes[index - 1]!.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) !==
+              0),
+      );
+    });
+    expect(order).toBe(true);
+    await expect(fiche.getByRole("radio")).toHaveCount(0);
+    // No request without a bet: the bar sends to the placard first.
+    const bar = page.getByTestId("fiche-action");
+    await expect(bar.getByRole("button", { name: /^Demander une visite/ })).toHaveCount(0);
     await expect(
-      page.getByRole("heading", { name: "Dossier judiciaire · Profil rencontre" }),
+      bar.getByRole("button", { name: "Retourne la pancarte et parie pour demander" }),
     ).toBeVisible();
-    await expect(page.getByText("1 VRAI · 2 FAUX")).toBeVisible();
-    for (const charge of CHARGES)
-      await expect(page.locator("article").getByText(charge, { exact: true })).toBeVisible();
-    await expect(page.getByText(/N° D'ÉCROU \d{6} \|/)).toBeVisible();
-    await expect(page.getByText("COMPLICITÉ : 100 %")).toBeVisible();
-    await expect(page.getByText("[●●● CONFIDENTIEL]")).toBeVisible();
-    // The sheet of the reference, read in order by a screen reader: the left column, the signs,
-    // then the 3 poses (docs/design/reference-dossier-judiciaire.jpg).
-    const sheet = page.getByTestId("dossier");
-    await expect(sheet.getByRole("heading", { level: 2 })).toHaveText([
-      "Identité du sujet",
-      "Chefs d'accusation",
-      "Profil rencontre",
-      "Note comportementale",
-      "Signes distinctifs :",
-      "Photo signalétique · alignement 3 poses",
-    ]);
-    await expect(sheet.getByRole("img", { name: `${bad.pseudo}, de face` })).toBeVisible();
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "visitor-fiche");
-    const enlarge = page.getByRole("button", { name: "Voir le dossier en grand" });
-    if ((page.viewportSize()?.width ?? 1280) < 768) {
-      // A phone held upright: the sheet in miniature, and the button that opens it full screen.
-      await enlarge.click();
-      const large = page.getByRole("dialog", { name: /en grand$/ });
-      await expect(large.getByRole("button", { name: "Fermer" })).toBeFocused();
-      await expect(large.getByRole("heading", { name: "Identité du sujet" })).toBeVisible();
-      expect(await axeViolations(page)).toEqual([]);
-      await shot(page, "visitor-fiche-grand");
-      await page.keyboard.press("Escape");
-      await expect(page.getByRole("dialog", { name: /en grand$/ })).toHaveCount(0);
-      await expect(enlarge).toBeFocused();
-    }
-    // A phone turned sideways: the sheet at full width, no button.
-    await page.setViewportSize({ width: 844, height: 390 });
-    await expect(enlarge).toBeHidden();
-    // Landscape on a large screen (maquette FicheLarge.dc.html).
+
+    // « Chefs d'accusation » turns only the placard over: the 3 charges as a radio group.
+    await fiche.getByRole("button", { name: "Chefs d'accusation" }).click();
+    const charges = fiche.getByRole("group", { name: "Chefs d'accusation · 1 vrai · 2 faux" });
+    await expect(charges.getByRole("radio")).toHaveCount(3);
+    for (const charge of CHARGES)
+      await expect(charges.getByRole("radio", { name: new RegExp(charge) })).not.toBeChecked();
+    await expect(fiche.getByRole("region", { name: "Chefs d'accusation" })).toBeFocused();
+    await expect(fiche.getByRole("heading", { level: 1 })).toHaveCount(0);
+    await expect(fiche.getByRole("img", { name: `${bad.pseudo}, de face` })).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    // With less motion asked, the placard turns at once.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const duration = await page
+      .locator(".placard")
+      .evaluate((el) => parseFloat(getComputedStyle(el).transitionDuration));
+    expect(duration).toBeLessThan(0.01);
+    await page.emulateMedia({ reducedMotion: null });
+
+    // The bet, kept on the page only: nothing is recorded before the request is sent (rule 14).
+    await charges.getByText(CHARGES[0]!).click();
+    await charges.getByText(CHARGES[1]!).click();
+    const ask = bar.getByRole("button", { name: "Demander une visite · pari n° 2" });
+    await expect(ask).toBeVisible();
+    await shot(page, "visitor-fiche-verso");
+    const { count: before } = await admin
+      .from("visit_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("visitor_id", visitor.id);
+    expect(before).toBe(0);
+
+    // Back to the front, focus on its button; the bet stays.
+    await fiche.getByRole("button", { name: "Retourner" }).click();
+    await expect(fiche.getByRole("button", { name: "Chefs d'accusation" })).toBeFocused();
+    await expect(ask).toBeVisible();
+
+    // A photo full screen, the 3 poses one after the other; Escape gives the focus back.
+    const face = fiche.getByRole("button", { name: `${bad.pseudo}, de face Agrandir` });
+    await face.click();
+    const viewer = page.getByRole("dialog", { name: `Photo signalétique de ${bad.pseudo}` });
+    await expect(viewer.getByText("Pose 2 sur 3")).toBeVisible();
+    await expect(viewer.getByRole("button", { name: "Fermer" })).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await expect(viewer.getByText("Pose 3 sur 3")).toBeVisible();
+    // A swipe is a scroll of the strip.
+    await viewer.locator(".snap-x").evaluate((el) => el.scrollTo({ left: 0 }));
+    await expect(viewer.getByText("Pose 1 sur 3")).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "visitor-fiche-photo");
+    await page.keyboard.press("Escape");
+    await expect(viewer).toHaveCount(0);
+    await expect(face).toBeFocused();
+
+    // A large screen: the same composition, enlarged and centred.
     await page.setViewportSize({ width: 1280, height: 900 });
-    await expect(enlarge).toBeHidden();
+    const box = await fiche.boundingBox();
+    expect(box?.width).toBeLessThanOrEqual(640);
+    expect(Math.abs((box?.x ?? 0) + (box?.width ?? 0) / 2 - 640)).toBeLessThan(20);
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "visitor-fiche-large");
     await page.setViewportSize({ width: 390, height: 900 });
 
-    // La Demande de parloir: the bet, the Souffleur, the secret.
-    await page.getByRole("button", { name: "Demander une visite" }).click();
-    const dialog = page.getByRole("dialog");
+    // A full Parloir: the button says so, disabled.
+    await admin.from("profiles").update({ requests_closed_manual: true }).eq("id", bad.id);
+    await page.reload();
+    await expect(bar.getByRole("button", { name: "Parloir complet" })).toBeDisabled();
+    await admin.from("profiles").update({ requests_closed_manual: false }).eq("id", bad.id);
+    await page.reload();
+
+    // La Demande de parloir opens with the bet made on the placard, still changeable.
+    await fiche.getByRole("button", { name: "Chefs d'accusation" }).click();
+    await charges.getByText(CHARGES[1]!).click();
+    await ask.click();
+    const dialog = page.getByRole("dialog", { name: "Demande de parloir" });
     await expect(dialog.getByText("Lequel est vrai, selon toi ?")).toBeVisible();
+    await expect(dialog.getByRole("radio", { name: new RegExp(CHARGES[1]!) })).toBeChecked();
     await expect(dialog.getByText(/Ton pari reste/)).toBeVisible();
     const hooks = dialog.getByRole("button", { name: /^« / });
     await expect(hooks).toHaveCount(3);
     for (const text of await hooks.allTextContents())
       for (const charge of CHARGES) expect(text).not.toContain(charge);
-    await expect(dialog.getByRole("button", { name: "Déposer ma demande" })).toBeDisabled();
+    await dialog.getByText(CHARGES[0]!).click();
+    await expect(dialog.getByRole("radio", { name: new RegExp(CHARGES[0]!) })).toBeChecked();
     await dialog.getByText(CHARGES[1]!).click();
     await hooks.nth(1).click();
     await expect(dialog.getByRole("textbox")).not.toHaveValue("");
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "visitor-demande");
     await dialog.getByRole("button", { name: "Déposer ma demande" }).click();
-    await expect(dialog.getByRole("heading", { name: "Demande déposée au Parloir" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Demande déposée au Parloir" })).toBeVisible();
     // Nothing about the bet comes back: no « Bien vu », no « Raté », no true line.
-    await expect(dialog.getByText(/Bien vu|Raté/)).toHaveCount(0);
+    await expect(page.getByRole("dialog").getByText(/Bien vu|Raté/)).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    // Once sent, the button follows the request.
+    await expect(bar.getByRole("button", { name: "Demande envoyée" })).toBeDisabled();
 
     await page.goto("/demandes");
     await expect(page.getByText("EN ATTENTE")).toBeVisible();
@@ -443,6 +512,26 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       .single();
     expect(request?.status).toBe("accepted");
     expect(request?.guess_correct).toBe(true);
+
+    // « Voir ma Fiche »: the Fiche as a Visitor sees it, back readable, no bet, no request.
+    await page.goto("/ma-fiche");
+    await page.getByRole("link", { name: "Voir ma Fiche" }).click();
+    await page.waitForURL(/\/fiche\//);
+    const own = page.getByTestId("fiche");
+    await expect(own.getByRole("heading", { level: 1, name: bad.pseudo })).toBeVisible();
+    await own.getByRole("button", { name: "Chefs d'accusation" }).click();
+    await expect(
+      own.getByRole("heading", { name: "Chefs d'accusation · 1 vrai · 2 faux" }),
+    ).toBeVisible();
+    await expect(own.getByRole("listitem")).toHaveText(CHARGES.map((c, i) => `${i + 1}. ${c}`));
+    await expect(own.getByRole("radio")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Demander une visite/ })).toHaveCount(0);
+    await expect(
+      page.getByText("C'est ta Fiche, telle que les Visiteurs la voient."),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Signaler" })).toHaveCount(0);
+    expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "bad-voir-ma-fiche");
 
     // Pause and cap from Ma Fiche / the Courrier settings.
     await page.goto("/ma-fiche");

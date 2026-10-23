@@ -136,11 +136,26 @@ async function interrogation(page: Page, finish: string) {
 export async function onboardBad(page: Page, pseudo: string, charges: readonly string[]) {
   await identity(page, pseudo, "Femme");
   await seeking(page, "Homme", 5);
+  // The framing guide: where the placard of the Fiche will stand, and the rule of the Greffe.
+  await expect(page.getByText("Visage et épaules dans le cadre", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("listitem").filter({ hasText: /^Visage et épaules dans le cadre :/ }),
+  ).toBeVisible();
+  if (process.env.E2E_SCREENSHOTS)
+    await page.screenshot({ path: `${process.env.E2E_SCREENSHOTS}/bad-toise.png`, fullPage: true });
   for (const pose of ["Profil gauche", "Face · obligatoire", "Profil droit"]) {
     await cutoutReady(page);
     await page
       .getByLabel(`Ajouter : ${pose}`)
       .setInputFiles({ name: "pose.jpg", mimeType: "image/jpeg", buffer: await portrait() });
+    if (process.env.E2E_SCREENSHOTS && pose === "Profil gauche") {
+      await expect(page.getByTestId("cutout-result")).not.toHaveAttribute(
+        "data-decision",
+        "working",
+        { timeout: 60_000 },
+      );
+      await page.screenshot({ path: `${process.env.E2E_SCREENSHOTS}/bad-toise-apercu.png` });
+    }
     expect((await confirmPhoto(page)).decision).toBe("cutout");
     await expect(page.getByRole("img", { name: `Ta photo : ${pose}` })).toBeVisible({
       timeout: 20_000,
