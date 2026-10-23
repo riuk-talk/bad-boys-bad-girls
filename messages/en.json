@@ -401,7 +401,8 @@
           "title": "3. Your account and File",
           "paragraphs": [
             "You agree to provide accurate information, use photos of yourself, and create only one account.",
-            "Your main photo must show your face. Photos are checked by a human before becoming visible."
+            "Your main photo must show your face. Photos are checked by a human before becoming visible.",
+            "[TO COMPLETE: Your photo is cut out automatically and placed on the background of the site.]"
           ]
         },
         {
@@ -458,7 +459,8 @@
           "title": "3. Photos",
           "paragraphs": [
             "Photo metadata (including GPS location) is removed before upload and checked on our servers.",
-            "Once approved, your photos are served from a long, unguessable web address. That address is renewed when you delete a photo, after 30 days on pause and in case of a ban; everything is erased when you delete your account."
+            "Once approved, your photos are served from a long, unguessable web address. That address is renewed when you delete a photo, after 30 days on pause and in case of a ban; everything is erased when you delete your account.",
+            "[TO COMPLETE: Your photo is cut out automatically and placed on the background of the site.]"
           ]
         },
         {
@@ -688,7 +690,8 @@
       ],
       "submit": "Hand in to the Registry",
       "approved": "Approved",
-      "rejected": "Refused: {reason}"
+      "rejected": "Refused: {reason}",
+      "greffeCutout": "The Registry cuts it out"
     },
     "casier": {
       "lead": "Start with the true one: the most striking fact about you. The two false ones come next.",
@@ -819,20 +822,16 @@
     },
     "cutout": {
       "title": "Your photo on the wall",
-      "local": "The cut-out happens here, on your device: your photo goes nowhere until you choose.",
+      "local": "Your photo is cut out here, on your device, then put on the wall of the site. Nothing leaves before « Hand in to the Registry ».",
       "working": "Cutting out…",
-      "cutoutCaption": "Cut out, on the wall",
-      "asIsCaption": "As it is",
       "cutoutAlt": "Preview: your photo cut out, on the height chart",
-      "asIsAlt": "Preview: your photo as it is, with the graduations",
-      "useCutout": "Use this cut-out",
-      "keepAsIs": "Keep my photo as it is",
-      "useAsIs": "Use this photo",
-      "fallback_unsupported": "Your browser cannot cut out a photo: it will be shown as it is, graduations on top.",
-      "fallback_error": "The cut-out did not work: your photo will be shown as it is, graduations on top.",
-      "fallback_too_slow": "The cut-out takes too long on this phone: your photo will be shown as it is, graduations on top.",
-      "fallback_no_person": "No one clearly visible in this photo: it will be shown as it is, graduations on top.",
-      "fallback_refused": "Your photo will be shown as it is, graduations on top."
+      "originalAlt": "Preview: your photo, before its cut-out",
+      "send": "Hand in to the Registry",
+      "change": "Change photo",
+      "fallback_unsupported": "Your browser cannot cut out a photo. The Registry will cut it out before validating it.",
+      "fallback_error": "The cut-out did not work on your device. The Registry will cut it out before validating it.",
+      "fallback_too_slow": "The cut-out takes too long on this phone. The Registry will cut it out before validating it.",
+      "fallback_no_person": "No one clearly visible in this photo. The Registry will cut it out before validating it, or ask you for another photo."
     }
   },
   "MyFiche": {
@@ -992,7 +991,8 @@
     "done": "Decision recorded.",
     "errors": {
       "notPending": "This photo has already been handled.",
-      "generic": "The decision could not be recorded. Try again."
+      "generic": "The decision could not be recorded. Try again.",
+      "needsCutout": "This photo must be cut out first."
     },
     "reasons": {
       "face_hidden": "face not visible enough",
@@ -1005,7 +1005,40 @@
       "other": "photo not in line with the Registry's rules"
     },
     "cutout": "Cut out, on the height chart",
-    "asIs": "As it is, graduations on top"
+    "asIs": "Validated before the cut-out, graduations on top",
+    "needsCutout": "To be cut out by the Registry before validation",
+    "cutoutTool": {
+      "run": "Cut out",
+      "retry": "Cut out again",
+      "save": "Save the cut-out",
+      "working": "Cutting out…",
+      "failed": "The cut-out did not work. Try again, or refuse the photo with a motive.",
+      "error": "The cut-out could not be saved. Try again.",
+      "previewAlt": "Cut-out of: {alt}"
+    },
+    "batch": {
+      "link": "Cut out the photos validated before the cut-out (preview)",
+      "title": "Batch cut-out",
+      "lead": "Preview only. The photos validated before the mandatory cut-out, cut out here one by one: check each preview before validating.",
+      "count": "{count, plural, =0 {No photo} one {# photo} other {# photos}} to cut out",
+      "empty": "Every validated photo is cut out.",
+      "before": "Before",
+      "after": "After",
+      "beforeAlt": "Before: {alt}",
+      "afterAlt": "After: {alt}",
+      "validate": "Validate",
+      "keep": "Keep the old one",
+      "validateAll": "Validate all ({count})",
+      "states": {
+        "waiting": "Waiting",
+        "working": "Cutting out…",
+        "failed": "The cut-out did not work: the old one stays.",
+        "saving": "Saving…",
+        "done": "Replaced by the cut-out.",
+        "kept": "Old one kept.",
+        "error": "Saving failed: the old one stays."
+      }
+    }
   },
   "Prompter": {
     "common": [

@@ -401,7 +401,8 @@
           "title": "3. Ton compte et ta Fiche",
           "paragraphs": [
             "Tu t'engages à fournir des informations exactes, à utiliser des photos de toi, et à ne créer qu'un seul compte.",
-            "Ta photo principale doit montrer ton visage. Les photos sont vérifiées par un humain avant d'être visibles."
+            "Ta photo principale doit montrer ton visage. Les photos sont vérifiées par un humain avant d'être visibles.",
+            "[À COMPLÉTER : Ta photo est détourée automatiquement et placée sur le fond du site.]"
           ]
         },
         {
@@ -458,7 +459,8 @@
           "title": "3. Photos",
           "paragraphs": [
             "Les métadonnées de tes photos (dont la position GPS) sont supprimées avant l'envoi et contrôlées sur nos serveurs.",
-            "Une fois validées, tes photos sont servies par une adresse web longue et impossible à deviner. Cette adresse est renouvelée quand tu supprimes une photo, après 30 jours de pause et en cas de bannissement ; tout est effacé quand tu supprimes ton compte."
+            "Une fois validées, tes photos sont servies par une adresse web longue et impossible à deviner. Cette adresse est renouvelée quand tu supprimes une photo, après 30 jours de pause et en cas de bannissement ; tout est effacé quand tu supprimes ton compte.",
+            "[À COMPLÉTER : Ta photo est détourée automatiquement et placée sur le fond du site.]"
           ]
         },
         {
@@ -688,7 +690,8 @@
       ],
       "submit": "Déposer au Greffe",
       "approved": "Validée",
-      "rejected": "Refusée : {reason}"
+      "rejected": "Refusée : {reason}",
+      "greffeCutout": "Le Greffe la détoure"
     },
     "casier": {
       "lead": "On commence par le vrai : ton fait le plus marquant. Les deux faux viendront après.",
@@ -819,20 +822,16 @@
     },
     "cutout": {
       "title": "Ta photo sur le mur",
-      "local": "Le détourage se fait ici, sur ton appareil : ta photo ne part nulle part avant que tu choisisses.",
+      "local": "Ta photo est détourée ici, sur ton appareil, puis posée sur le mur du site. Rien ne part avant « Déposer au Greffe ».",
       "working": "Détourage en cours…",
-      "cutoutCaption": "Détourée, sur le mur",
-      "asIsCaption": "Telle quelle",
       "cutoutAlt": "Aperçu : ta photo détourée, posée sur le mur gradué",
-      "asIsAlt": "Aperçu : ta photo telle quelle, avec les graduations",
-      "useCutout": "Utiliser ce détourage",
-      "keepAsIs": "Garder ma photo telle quelle",
-      "useAsIs": "Utiliser cette photo",
-      "fallback_unsupported": "Ton navigateur ne sait pas détourer une photo : elle sera posée telle quelle, graduations par-dessus.",
-      "fallback_error": "Le détourage n'a pas marché : ta photo sera posée telle quelle, graduations par-dessus.",
-      "fallback_too_slow": "Le détourage prend trop de temps sur ce téléphone : ta photo sera posée telle quelle, graduations par-dessus.",
-      "fallback_no_person": "Personne de bien visible sur cette photo : elle sera posée telle quelle, graduations par-dessus.",
-      "fallback_refused": "Ta photo sera posée telle quelle, graduations par-dessus."
+      "originalAlt": "Aperçu : ta photo, avant son détourage",
+      "send": "Déposer au Greffe",
+      "change": "Changer de photo",
+      "fallback_unsupported": "Ton navigateur ne sait pas détourer une photo. Le Greffe la détourera avant de la valider.",
+      "fallback_error": "Le détourage n'a pas abouti sur ton appareil. Le Greffe la détourera avant de la valider.",
+      "fallback_too_slow": "Le détourage prend trop de temps sur ce téléphone. Le Greffe la détourera avant de la valider.",
+      "fallback_no_person": "Personne de bien visible sur cette photo. Le Greffe la détourera avant de la valider, ou te demandera une autre photo."
     }
   },
   "MyFiche": {
@@ -992,7 +991,8 @@
     "done": "Décision enregistrée.",
     "errors": {
       "notPending": "Cette photo a déjà été traitée.",
-      "generic": "La décision n'a pas pu être enregistrée. Réessaie."
+      "generic": "La décision n'a pas pu être enregistrée. Réessaie.",
+      "needsCutout": "Cette photo doit d'abord être détourée."
     },
     "reasons": {
       "face_hidden": "visage pas assez visible",
@@ -1005,7 +1005,40 @@
       "other": "photo non conforme au règlement du Greffe"
     },
     "cutout": "Détourée, posée sur le mur gradué",
-    "asIs": "Telle quelle, graduations par-dessus"
+    "asIs": "Validée avant le détourage, graduations par-dessus",
+    "needsCutout": "À détourer par le Greffe avant validation",
+    "cutoutTool": {
+      "run": "Détourer",
+      "retry": "Recommencer le détourage",
+      "save": "Enregistrer le détourage",
+      "working": "Détourage en cours…",
+      "failed": "Le détourage n'a pas abouti. Recommence, ou refuse la photo avec un motif.",
+      "error": "Le détourage n'a pas pu être enregistré. Réessaie.",
+      "previewAlt": "Détourage de : {alt}"
+    },
+    "batch": {
+      "link": "Détourer les photos validées avant le détourage (preview)",
+      "title": "Détourage en lot",
+      "lead": "Preview seulement. Les photos validées avant le détourage obligatoire, détourées ici une à une : vérifie chaque aperçu avant de valider.",
+      "count": "{count, plural, =0 {Aucune photo} one {# photo} other {# photos}} à détourer",
+      "empty": "Toutes les photos validées sont détourées.",
+      "before": "Avant",
+      "after": "Après",
+      "beforeAlt": "Avant : {alt}",
+      "afterAlt": "Après : {alt}",
+      "validate": "Valider",
+      "keep": "Garder l'ancienne",
+      "validateAll": "Tout valider ({count})",
+      "states": {
+        "waiting": "En attente",
+        "working": "Détourage en cours…",
+        "failed": "Le détourage n'a pas abouti : l'ancienne reste.",
+        "saving": "Enregistrement…",
+        "done": "Remplacée par le détourage.",
+        "kept": "Ancienne gardée.",
+        "error": "Échec de l'enregistrement : l'ancienne reste."
+      }
+    }
   },
   "Prompter": {
     "common": [

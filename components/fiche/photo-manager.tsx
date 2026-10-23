@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { startTransition, useActionState, useEffect, useId, useRef, useState } from "react";
 import { uploadPhotoAction, type StepState } from "@/app/[locale]/(app)/onboarding/actions";
-import { useCutoutChoice } from "@/components/onboarding/cutout-choice";
+import {
+  prepareForUpload,
+  useCutoutChoice,
+  usePreloadCutout,
+} from "@/components/onboarding/cutout-choice";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
 
@@ -43,7 +47,8 @@ export function PhotoManager({
     ? 0
     : positions.find((p) => !photos.some((photo) => photo.position === p));
   const replacing = single && photos.length > 0;
-  const { choose, dialog } = useCutoutChoice();
+  const { choose, dialog } = useCutoutChoice(prepareForUpload);
+  usePreloadCutout();
 
   useEffect(() => {
     if (state.status === "done") {
@@ -56,8 +61,7 @@ export function PhotoManager({
     if (!file || freePosition === undefined) return;
     setPreparing(true);
     try {
-      const { compressForUpload } = await import("@/lib/image/compress");
-      const compressed = await compressForUpload(file);
+      const compressed = await prepareForUpload(file);
       // The photo of the Permis (position 0) goes through the same preview as at the onboarding.
       const choice = freePosition === 0 ? await choose(compressed) : { blob: compressed };
       if (!choice) return;

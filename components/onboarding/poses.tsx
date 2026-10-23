@@ -10,7 +10,11 @@ import {
   type StepState,
 } from "@/app/[locale]/(app)/onboarding/actions";
 import { Mugshot } from "@/components/brand/mugshot";
-import { useCutoutChoice, usePreloadCutout } from "@/components/onboarding/cutout-choice";
+import {
+  prepareForUpload,
+  useCutoutChoice,
+  usePreloadCutout,
+} from "@/components/onboarding/cutout-choice";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import type { PhotoInfo } from "@/lib/photos";
@@ -41,7 +45,7 @@ function PoseSlot({
   const [url, setUrl] = useState(initial?.url ?? null);
   const [cutout, setCutout] = useState(initial?.cutout ?? false);
   const [status, setStatus] = useState(initial?.status ?? null);
-  const { choose, dialog } = useCutoutChoice();
+  const { choose, dialog } = useCutoutChoice(prepareForUpload);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const label = t(slot.key);
@@ -59,10 +63,8 @@ function PoseSlot({
     setError(undefined);
     setBusy(true);
     try {
-      const { compressForUpload } = await import("@/lib/image/compress");
-      const compressed = await compressForUpload(file);
-      // The preview, cut out on the device or as it is: nothing leaves before the choice.
-      const choice = await choose(compressed);
+      // The preview on the wall, cut out on the device: nothing leaves before « Déposer au Greffe ».
+      const choice = await choose(await prepareForUpload(file));
       if (!choice) return;
       const blob = choice.blob;
       const form = new FormData();
@@ -138,6 +140,8 @@ function PoseSlot({
           <span className="text-red-bright">
             {t("rejected", { reason: reasonT((initial?.reason ?? "other") as "other") })}
           </span>
+        ) : url && !cutout ? (
+          <span className="text-grey">{t("greffeCutout")}</span>
         ) : url ? (
           <span className="text-green-bright inline-flex items-center gap-1">
             <Check aria-hidden="true" className="size-3.5" />

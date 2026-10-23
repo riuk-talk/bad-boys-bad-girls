@@ -239,7 +239,8 @@ export async function uploadPhotoAction(_state: StepState, form: FormData): Prom
 
   let processed: Awaited<ReturnType<typeof processPhoto>>;
   try {
-    // The 3 poses and the photo of the Permis may arrive cut out (the browser, version B).
+    // The 3 poses and the photo of the Permis arrive cut out by the browser; otherwise they wait
+    // for the Greffe's cut-out (photos.needs_cutout, set by the database at the insert).
     processed = await processPhoto(Buffer.from(await file.arrayBuffer()), {
       keepCutout: position <= 2,
     });
@@ -294,7 +295,7 @@ export async function uploadPhotoAction(_state: StepState, form: FormData): Prom
   if (processed.cutout) {
     const { error: flagError } = await createAdminClient()
       .from("photos")
-      .update({ is_cutout: true })
+      .update({ is_cutout: true, needs_cutout: false })
       .eq("id", inserted.id);
     if (flagError) return failMessage("generic");
   }

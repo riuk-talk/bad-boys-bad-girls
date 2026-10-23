@@ -2,7 +2,7 @@
 
 import { Check, ImagePlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useActionState, useEffect, useId, useState, type ReactNode } from "react";
+import { useActionState, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
   saveAgeStep,
   saveIdentityStep,
@@ -26,7 +26,7 @@ import { submitWithoutReset } from "@/lib/forms/submit";
 import { ROLES, VISIT_MOTIVE_MAX, type Role } from "@/lib/onboarding/config";
 import { Constants, type Database } from "@/lib/supabase/database.types";
 import { CityPicker } from "./city-picker";
-import { useCutoutChoice, usePreloadCutout } from "./cutout-choice";
+import { prepareForUpload, useCutoutChoice, usePreloadCutout } from "./cutout-choice";
 
 type Gender = Database["public"]["Enums"]["gender"];
 type Action = (state: StepState, form: FormData) => Promise<StepState>;
@@ -323,8 +323,14 @@ export function PhotoStepForm({ last }: { last: boolean }) {
   const [preparing, setPreparing] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  // « Déposer au Greffe » in the preview sends the photo: the form is submitted once it holds it.
+  const [sendRequest, setSendRequest] = useState(0);
+  useEffect(() => {
+    if (sendRequest > 0) formRef.current?.requestSubmit();
+  }, [sendRequest]);
   const [cutout, setCutout] = useState(false);
-  const { choose, dialog } = useCutoutChoice();
+  const { choose, dialog } = useCutoutChoice(prepareForUpload);
   usePreloadCutout();
   const errorT = useTranslations("Onboarding.errors");
 
@@ -340,14 +346,13 @@ export function PhotoStepForm({ last }: { last: boolean }) {
     setLocalError(undefined);
     setPreparing(true);
     try {
-      const { compressForUpload } = await import("@/lib/image/compress");
-      const compressed = await compressForUpload(file);
-      // The preview, cut out on the device or as it is: nothing leaves before the choice.
-      const choice = await choose(compressed);
+      // The preview on the wall, cut out on the device: « Déposer au Greffe » sends it.
+      const choice = await choose(await prepareForUpload(file));
       if (!choice) return;
       setPhotoBlob(choice.blob);
       setCutout(choice.cutout);
       setPreview(URL.createObjectURL(choice.blob));
+      setSendRequest((count) => count + 1);
     } catch {
       setPhotoBlob(null);
       setLocalError(errorT("photoUnreadable"));
@@ -361,6 +366,7 @@ export function PhotoStepForm({ last }: { last: boolean }) {
   return (
     <form
       id="photo-form"
+      ref={formRef}
       noValidate
       onSubmit={submitWithoutReset(step.formAction, (form) => {
         form.delete("file");
