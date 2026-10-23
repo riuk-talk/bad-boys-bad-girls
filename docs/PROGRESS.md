@@ -4,7 +4,7 @@
 
 ## Phase en cours
 
-**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : validée par le conseiller** (2026-10-20 : cause réelle corrigée, CI n° 27 verte deux fois), décisions 6-1 à 6-14 validées ; en attente de la fusion (rien sur `main` ni sur la prod). **Phase 7 (modération, pilotage, tâches planifiées, RGPD, e-mails) : validée par le conseiller** (2026-10-20, décisions 7-1 à 7-43, trois réserves notées) ; preview à jour sauf le script 5 (indentation, à lancer avec psql). Rien sur `main` ni sur la prod. **Phase 8 (audit final) validée par le conseiller** (2026-10-22). **Phase 9 (éléments [P1]) terminée, en attente de la validation du conseiller** (2026-10-22, CI n° 55 verte : 70 tests e2e sur Pixel 7 et iPhone 14, aucun instable ; rapport dans la section Phase 9, décisions 9-1 à 9-4). Branche `phase-9`. Rappel : le passage en prod des phases 6 à 9 se fera en une fois, après contrôle du conseiller. Phase 8 : (2026-10-20, CI n° 51 verte : 68 tests e2e sur Pixel 7 et iPhone 14, aucun instable) : rapport de fin de phase dans la section Phase 8, décisions 8-1 à 8-7 à valider, deux actions du porteur sur la preview (scripts 5 puis 6 avec psql ; mot de passe de 12 caractères dans Supabase Auth). Branche `phase-8`.
+**Phase 5 terminée et en production** (2026-10-19) : fusionnée dans `main` (PR #12, `b00a8f7`) et déployée par le conseiller après vérification de la prod (36 migrations identiques aux fichiers, fonctions identiques à la preview, 0 table sans RLS, coffre vide hors poivre). Super admin de prod accordé au compte du porteur. **Phase 6 (Parloir sans horaire et Cavale) : validée par le conseiller** (2026-10-20 : cause réelle corrigée, CI n° 27 verte deux fois), décisions 6-1 à 6-14 validées ; en attente de la fusion (rien sur `main` ni sur la prod). **Phase 7 (modération, pilotage, tâches planifiées, RGPD, e-mails) : validée par le conseiller** (2026-10-20, décisions 7-1 à 7-43, trois réserves notées) ; preview à jour sauf le script 5 (indentation, à lancer avec psql). Rien sur `main` ni sur la prod. **Phase 8 (audit final) validée par le conseiller** (2026-10-22). **Phase 9 (éléments [P1]) terminée, en attente de la validation du conseiller** (2026-10-22, CI n° 55 verte : 70 tests e2e sur Pixel 7 et iPhone 14, aucun instable ; rapport dans la section Phase 9, décisions 9-1 à 9-4). Branche `phase-9`. **Phase 9e (photos sur le mur gradué, version B, demande du porteur du 2026-10-23)** : faite, décisions 9-5 à 9-9 à valider. Rappel : le passage en prod des phases 6 à 9 se fera en une fois, après contrôle du conseiller. Phase 8 : (2026-10-20, CI n° 51 verte : 68 tests e2e sur Pixel 7 et iPhone 14, aucun instable) : rapport de fin de phase dans la section Phase 8, décisions 8-1 à 8-7 à valider, deux actions du porteur sur la preview (scripts 5 puis 6 avec psql ; mot de passe de 12 caractères dans Supabase Auth). Branche `phase-8`.
 
 ## Bases Supabase : preview et production (2026-10-17)
 
@@ -65,6 +65,58 @@ Découpage (CI verte avant chaque sous-phase suivante ; arrêt et rapport à la 
 - **Écarts** : aucune modification de la SPEC. La liste anglaise des clichés est une traduction (décision 9-2).
 - **Décisions à valider** : 9-1 (périmètre : les trois [P1] de la SPEC, faute de liste du porteur), 9-2 (liste des clichés modifiable par migration seulement, deux langues pour tout Casier, liste anglaise), 9-3 (relance comptée comme faite dès qu'elle s'affiche ; une Cavale même annulée empêche la relance), 9-4 (badge : parrainés au bout de l'onboarding, hors bannis et profils de test, dès 1).
 - **Pour le passage en prod des phases 6 à 9 (après contrôle du conseiller)** : 17 migrations, de `20261019100000_phase6a_conversation_reads` à `20261022110000_phase9c_recruited_badge`, dans l'ordre et au texte exact. 9 d'entre elles contiennent le mot `delete`, `drop` ou `truncate` (corps de fonction ou commande) et passeraient donc par le porteur dans le SQL Editor : 6a, 6b Cavale, 6c, 7a, 7b, 7c ×2, 7d, 8b rétention. Sur la prod, règle du porteur : aucun connecteur d'IA avec droits d'écriture ; la façon d'appliquer les 8 autres est à décider par le porteur. Après chacune : comparaison sans les blancs (README).
+
+### 9e — Photos sur le mur gradué, version B (2026-10-23, demande du porteur après la phase 9)
+Demande : détourage automatique, le personnage posé sur le vrai mur gradué ; secours en version A (graduations par-dessus la photo). Relu : SPEC §4 (photos, Greffe), `docs/PARCOURS-DESIGN.md`.
+- **Outil et licences (vérifiées le 2026-10-23)** :
+  - Code : `@mediapipe/tasks-vision` **1.0.1** (Google), licence **Apache-2.0** (fichier `LICENSE` du paquet et `package.json`). Version du 2026-07-31 retenue plutôt que 1.1.x (publiée en octobre, trop récente).
+  - Modèle : **MediaPipe Selfie Segmentation** (`selfie_segmenter.tflite`, 249 537 octets, entrée 256 × 256), licence **Apache License 2.0** d'après sa fiche modèle (Google, 6 mai 2021). Usages exclus par la fiche : surveillance et reconnaissance d'identité ; ici, seul le fond est retiré.
+  - MODNet vérifié (code et modèles Apache-2.0), non retenu : MediaPipe est plus léger et n'ajoute pas onnxruntime-web.
+  - Non utilisés : `@imgly/background-removal` (AGPL) et BRIA RMBG (licence non commerciale).
+- **Sur l'appareil du membre** : le détourage tourne dans le navigateur, à l'upload, avant tout envoi ; la photo originale ne part vers aucun service tiers. Seul le fichier choisi par le membre part, vers notre serveur comme avant.
+- **Fichiers auto-hébergés** :
+  - le modèle est versionné dans `public/vendor/mediapipe/` ;
+  - le runtime wasm est copié depuis `node_modules` au `predev` / `prebuild` (`scripts/vendor-mediapipe.mjs`), sans être versionné (11,7 Mo).
+  - Chargés uniquement par un import dynamique sur « Passe à la toise », la photo du Permis, et dans Ma Fiche (les 3 poses du Bad, la photo du Visiteur).
+  - CSP : `'wasm-unsafe-eval'` ajouté **seulement** sur `/onboarding` et `/ma-fiche` (`needsWasm`, testé) ; aucun CDN, aucune autre source.
+- **Aperçu avant « Déposer au Greffe »** : fenêtre « Ta photo sur le mur ».
+  - Si le détourage réussit : les deux versions côte à côte, avec « Utiliser ce détourage » ou « Garder ma photo telle quelle ».
+  - Pendant le calcul : « Garder ma photo telle quelle » permet d'arrêter d'attendre.
+  - Si le détourage échoue : un message, puis « Utiliser cette photo » en version A.
+- **Secours, version A** (`lib/image/cutout-policy.ts`, tests unitaires). La photo reste telle quelle dans ces cas :
+  - navigateur sans WebAssembly ;
+  - erreur ;
+  - chargement > **20 s** ou calcul > **5 s** ;
+  - personne trouvée sur moins de 8 % ou plus de 92 % de l'image ;
+  - refus du membre.
+- **Fichier envoyé** : WebP avec transparence si détouré.
+  - Le serveur (`lib/image/process.ts`) garde la transparence seulement pour les 3 poses et seulement si au moins 2 % des pixels sont transparents. Sinon, l'image est aplatie sur la couleur du mur `#bdb7ac`.
+  - Le fichier reste sous 256 Ko (test e2e : ≤ 262 144 octets).
+  - Safari n'encode pas le WebP dans le navigateur : il envoie un PNG, que le serveur convertit en WebP.
+  - `photos.is_cutout` est écrit par le serveur avec la clé secrète. Les membres n'ont aucun droit sur cette colonne (pgTAP).
+- **Le Greffe voit ce qui sera affiché** : `admin_photo_cutouts` (admin avec second facteur) ; chaque pose est rendue comme sur la Fiche, avec la mention « Détourée, posée sur le mur gradué » ou « Telle quelle, graduations par-dessus ».
+- **Mur gradué commun** : `public/brand/mur-toise.svg` (graduations de 120 à 200 cm), un fond fixe du site, le même pour les 3 poses et la photo du Visiteur (`components/brand/mugshot.tsx`). Une photo détourée se pose devant ; une photo telle quelle reçoit les graduations par-dessus. Les vignettes (Courrier, demandes, visites) ont le même fond.
+- **Mesures du temps de détourage** (Chromium, photo de test 800 × 1114, `E2E_CUTOUT_MEASURE=true pnpm exec playwright test photo-cutout --project=pixel-7`) :
+  - Sans bridage : 713 à 857 ms (796 ms au dernier passage).
+  - **Téléphone d'entrée de gamme simulé** (CPU 6 × plus lent, « 4G lente » 1,6 Mbit/s et 150 ms), runtime déjà chargé : **497 à 1 335 ms**. Le budget de calcul de 5 s garde une marge d'au moins 3 ×.
+  - Même téléphone, à froid, photo choisie 1,5 s après l'ouverture de l'étape : le runtime se télécharge en 16,6 s (`vision_wasm_internal.wasm`, 3,45 Mo compressés), le script en 0,5 s et le modèle en 1,3 s. Le budget de chargement de 20 s est dépassé (20,9 s) : la photo est proposée telle quelle, comme prévu. Dans l'usage normal, le préchargement commence à l'arrivée sur l'étape, pendant que le membre prend sa photo.
+- **Tests** :
+  - Vitest : 220 tests, dont le choix de secours (budgets, marges, part de la personne, refus) et la transparence côté serveur.
+  - pgTAP : 24 fichiers, 148 tests, dont `phase9e_photo_cutout` et la liste figée de la 8a complétée.
+  - e2e `photo-cutout` : vraie inscription d'un Bad ; face détourée, profil gauche gardé tel quel ; `is_cutout` vérifié en base ; WebP sous la limite ; le Greffe voit les deux états.
+  - Les parcours `onboarding-complete` et `journey` passent par l'aperçu (photos unies, gardées telles quelles).
+  - En local : 40 tests verts sur Pixel 7 et 121 à 360 et 1440 px. WebKit (iPhone 14) est testé en CI seulement.
+- **Preview** :
+  - migration `20261023090000_photo_cutout` appliquée par le connecteur (aucune opération destructive), version remise au nom du fichier ;
+  - historique et corps des 2 fonctions identiques au fichier sans les blancs ; droits vérifiés (`admin_photo_cutouts` : membres connectés, contrôle admin dedans ; `anon` rien ; `is_cutout` en lecture seule) ;
+  - types régénérés depuis la preview.
+- **Décisions à valider** :
+  - **9-5** : budgets de 5 s (calcul) et 20 s (chargement), fixés d'après la mesure.
+  - **9-6** : `is_cutout` écrit par le serveur, jamais par le membre.
+  - **9-7** : seules les 3 poses et la photo du Visiteur sont détourées. Les photos supplémentaires 3 à 5 du Bad restent telles quelles, graduations par-dessus.
+  - **9-8** : le runtime wasm est copié au build plutôt que versionné.
+  - **9-9** : `'wasm-unsafe-eval'` seulement sur les pages photo.
+- **À vérifier sur la preview Vercel** : compression du `.wasm` (gzip ou brotli) et temps de chargement réel sur un téléphone d'entrée de gamme.
 
 ## Phase 8 — Audit final (2026-10-20, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 8, SPEC §10 (sécurité technique), §17 (accessibilité), §18 (performance), §19 bis (tests), §21 (offres gratuites).
@@ -766,6 +818,7 @@ Toutes les dépendances sont figées à la version exacte dans `package.json` (p
 | lighthouse | 13.5.0 (+ chrome-launcher 1.2.2) |
 | supabase (CLI) | 2.119.0 |
 | sharp | 0.35.5 |
+| @mediapipe/tasks-vision | 1.0.1 (Apache-2.0 ; modèle Selfie Segmentation, Apache 2.0) |
 
 ## Contraintes d'environnement constatées
 
