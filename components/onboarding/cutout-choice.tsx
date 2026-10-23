@@ -34,10 +34,13 @@ export function usePreloadCutout(): string {
   const [engine, setEngine] = useState("loading");
   useEffect(() => {
     let alive = true;
+    const page = location.pathname;
     void import("@/lib/image/cutout")
       .then(async (module) => {
         const where = await module.chooseEngine();
-        if (where === "none" && reloadOnce()) return;
+        // Only while this page is still the one shown: the member may have left it meanwhile
+        // (a reload would then load the other page and cut its requests).
+        if (where === "none" && alive && location.pathname === page && reloadOnce()) return;
         if (alive) setEngine(where);
         await module.preloadCutout();
       })
