@@ -305,10 +305,39 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await expect(page.getByText(/N° D'ÉCROU \d{6} \|/)).toBeVisible();
     await expect(page.getByText("COMPLICITÉ : 100 %")).toBeVisible();
     await expect(page.getByText("[●●● CONFIDENTIEL]")).toBeVisible();
+    // The sheet of the reference, read in order by a screen reader: the left column, the signs,
+    // then the 3 poses (docs/design/reference-dossier-judiciaire.jpg).
+    const sheet = page.getByTestId("dossier");
+    await expect(sheet.getByRole("heading", { level: 2 })).toHaveText([
+      "Identité du sujet",
+      "Chefs d'accusation",
+      "Profil rencontre",
+      "Note comportementale",
+      "Signes distinctifs :",
+      "Photo signalétique · alignement 3 poses",
+    ]);
+    await expect(sheet.getByRole("img", { name: `${bad.pseudo}, de face` })).toBeVisible();
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "visitor-fiche");
+    const enlarge = page.getByRole("button", { name: "Voir le dossier en grand" });
+    if ((page.viewportSize()?.width ?? 1280) < 768) {
+      // A phone held upright: the sheet in miniature, and the button that opens it full screen.
+      await enlarge.click();
+      const large = page.getByRole("dialog", { name: /en grand$/ });
+      await expect(large.getByRole("button", { name: "Fermer" })).toBeFocused();
+      await expect(large.getByRole("heading", { name: "Identité du sujet" })).toBeVisible();
+      expect(await axeViolations(page)).toEqual([]);
+      await shot(page, "visitor-fiche-grand");
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("dialog", { name: /en grand$/ })).toHaveCount(0);
+      await expect(enlarge).toBeFocused();
+    }
+    // A phone turned sideways: the sheet at full width, no button.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await expect(enlarge).toBeHidden();
     // Landscape on a large screen (maquette FicheLarge.dc.html).
     await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(enlarge).toBeHidden();
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "visitor-fiche-large");
     await page.setViewportSize({ width: 390, height: 900 });
