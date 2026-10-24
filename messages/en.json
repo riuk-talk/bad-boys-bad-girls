@@ -1021,11 +1021,11 @@
       "previewAlt": "Cut-out of: {alt}"
     },
     "batch": {
-      "link": "Cut out the photos validated before the cut-out (preview)",
+      "link": "Re-cut the validated photos (preview)",
       "title": "Batch cut-out",
-      "lead": "Preview only. The photos validated before the mandatory cut-out, cut out here one by one: check each preview before validating.",
-      "count": "{count, plural, =0 {No photo} one {# photo} other {# photos}} to cut out",
-      "empty": "Every validated photo is cut out.",
+      "lead": "Preview only. Each validated pose is re-cut here with the new engine (MODNet, edges faded and cleaned), the ones already cut out included: check each preview before validating. A photo already cut out has lost its original: its edge gets finer, what was lost does not come back.",
+      "count": "{count, plural, =0 {No photo} one {# photo} other {# photos}} to re-cut",
+      "empty": "Every validated photo is re-cut.",
       "before": "Before",
       "after": "After",
       "beforeAlt": "Before: {alt}",
@@ -1038,7 +1038,7 @@
         "working": "Cutting out…",
         "failed": "The cut-out did not work: the old one stays.",
         "saving": "Saving…",
-        "done": "Replaced by the cut-out.",
+        "done": "Replaced by the new cut-out.",
         "kept": "Old one kept.",
         "error": "Saving failed: the old one stays."
       }

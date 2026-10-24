@@ -154,10 +154,19 @@ begin
   select * into r from public.admin_replace_public_photo(ph, 'n.webp', 'n-s.webp');
   return next is(r.old_large, 'old.webp', 'the previous files are returned, to be removed');
   select count(*) into n from public.admin_photo_batch(100) where photo_id = ph;
-  return next is(n, 0, 'a cut-out photo leaves the batch');
+  return next is(n, 0, 'a re-cut photo leaves the batch');
   perform pg_temp.as_owner();
-  return next ok((select is_cutout and public_path_large = 'n.webp' from public.photos where id = ph),
-    'the validated photo is now cut out');
+  return next ok((select is_cutout and public_path_large = 'n.webp' and recut_at is not null
+    from public.photos where id = ph), 'the validated photo is now cut out, and re-cut');
+  -- 9i: a pose already cut out by the previous engine is re-cut too, once.
+  update public.photos set is_cutout = true, recut_at = null where id = ph;
+  perform pg_temp.as_admin(g);
+  select count(*) into n from public.admin_photo_batch(100) where photo_id = ph;
+  perform pg_temp.as_owner();
+  return next is(n, 1, 'a pose cut out before 9i is in the batch until it is re-cut');
+  return next ok(not has_column_privilege('authenticated', 'public.photos', 'recut_at', 'update')
+    and not has_column_privilege('authenticated', 'public.photos', 'recut_at', 'insert'),
+    'members cannot write recut_at');
   return next ok(not has_column_privilege('authenticated', 'public.app_settings', 'photo_batch_allowed', 'update'),
     'members cannot switch the batch on');
 end $$;

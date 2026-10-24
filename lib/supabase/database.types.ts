@@ -871,6 +871,7 @@ export type Database = {
           position: number
           public_path_large: string | null
           public_path_small: string | null
+          recut_at: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -889,6 +890,7 @@ export type Database = {
           position: number
           public_path_large?: string | null
           public_path_small?: string | null
+          recut_at?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -907,6 +909,7 @@ export type Database = {
           position?: number
           public_path_large?: string | null
           public_path_small?: string | null
+          recut_at?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null

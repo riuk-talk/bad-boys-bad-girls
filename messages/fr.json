@@ -1021,11 +1021,11 @@
       "previewAlt": "Détourage de : {alt}"
     },
     "batch": {
-      "link": "Détourer les photos validées avant le détourage (preview)",
+      "link": "Redétourer les photos validées (preview)",
       "title": "Détourage en lot",
-      "lead": "Preview seulement. Les photos validées avant le détourage obligatoire, détourées ici une à une : vérifie chaque aperçu avant de valider.",
-      "count": "{count, plural, =0 {Aucune photo} one {# photo} other {# photos}} à détourer",
-      "empty": "Toutes les photos validées sont détourées.",
+      "lead": "Preview seulement. Chaque pose validée est redétourée ici avec le nouveau moteur (MODNet, bords effacés et nettoyés), celles déjà détourées comprises : vérifie chaque aperçu avant de valider. Une photo déjà détourée n'a plus son original : son contour s'affine, ce qui avait été perdu ne revient pas.",
+      "count": "{count, plural, =0 {Aucune photo} one {# photo} other {# photos}} à redétourer",
+      "empty": "Toutes les photos validées sont redétourées.",
       "before": "Avant",
       "after": "Après",
       "beforeAlt": "Avant : {alt}",
@@ -1038,7 +1038,7 @@
         "working": "Détourage en cours…",
         "failed": "Le détourage n'a pas abouti : l'ancienne reste.",
         "saving": "Enregistrement…",
-        "done": "Remplacée par le détourage.",
+        "done": "Remplacée par le nouveau détourage.",
         "kept": "Ancienne gardée.",
         "error": "Échec de l'enregistrement : l'ancienne reste."
       }
