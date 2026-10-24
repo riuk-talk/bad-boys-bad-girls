@@ -486,6 +486,37 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await expect(zoom).toHaveCount(0);
     const ask = bar.getByRole("button", { name: "Demander une visite · pari n° 2" });
     await expect(ask).toBeFocused();
+    // The buttons take the colour of the connected member's gender (a man: gold), what
+    // represents the Bad takes hers (red) (PARCOURS-DESIGN §1).
+    await page.mouse.move(0, 0); // not hovered: the colour at rest
+    await expect(ask).toHaveCSS("background-color", "rgb(212, 164, 55)");
+    await expect(small).toBeVisible();
+    await expect(fiche).toHaveAttribute("data-accent", "red");
+
+    // A non-binary Visitor: the same buttons in cream, the Bad's placard still red; AA (axe).
+    await admin.from("profiles").update({ gender: "non_binary" }).eq("id", visitor.id);
+    await admin
+      .from("profiles")
+      .update({ seeking_genders: ["man", "non_binary"] })
+      .eq("id", bad.id);
+    await page.reload();
+    await small.click();
+    await zoom.getByRole("button", { name: "Retourner : chefs d'accusation" }).click();
+    await charges.getByText(CHARGES[0]!).click();
+    await page.mouse.move(0, 0); // not hovered: the colour at rest
+    await expect(validate).toHaveCSS("background-color", "rgb(242, 232, 213)");
+    await validate.click();
+    const askCream = bar.getByRole("button", { name: "Demander une visite · pari n° 1" });
+    await page.mouse.move(0, 0); // not hovered: the colour at rest
+    await expect(askCream).toHaveCSS("background-color", "rgb(242, 232, 213)");
+    await expect(fiche).toHaveAttribute("data-accent", "red");
+    expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "visitor-fiche-bouton-creme");
+    await admin.from("profiles").update({ gender: "man" }).eq("id", visitor.id);
+    await admin
+      .from("profiles")
+      .update({ seeking_genders: ["man"] })
+      .eq("id", bad.id);
 
     // A full Parloir: the button says so, disabled.
     await admin.from("profiles").update({ requests_closed_manual: true }).eq("id", bad.id);
