@@ -34,6 +34,12 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       {
+        // The cut-out model and runtime (9i): versioned addresses, downloaded on the photo steps
+        // only, then kept by the browser.
+        source: "/vendor/:runtime(modnet|onnxruntime)/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         // The service worker must always be re-checked, and may load nothing from elsewhere.
         source: "/sw.js",
         headers: [

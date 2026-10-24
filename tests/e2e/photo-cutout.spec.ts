@@ -82,8 +82,10 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     bad.id = users.users.find((u) => u.email === bad.email)?.id ?? "";
     const dialog = page.getByRole("dialog", { name: "Ta photo sur le mur" });
 
-    // Left profile: the device cannot cut it out (runtime blocked); the original goes to the Greffe.
-    await page.route("**/vendor/mediapipe/**", (route) => route.abort());
+    // Left profile: the device cannot cut it out (MODNet and the MediaPipe fallback blocked, as
+    // on a device too old or too slow for both); the original goes to the Greffe.
+    const runtimes = /\/vendor\/(mediapipe|modnet|onnxruntime)\//;
+    await page.route(runtimes, (route) => route.abort());
     await page.reload();
     await cutoutReady(page);
     await page
@@ -96,8 +98,9 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     const left = await confirmPhoto(page);
     expect(left).toMatchObject({ decision: "as_is", reason: "error" });
     await expect(page.getByText("Le Greffe la détoure")).toBeVisible({ timeout: 20_000 });
-    await page.unroute("**/vendor/mediapipe/**");
-    // The worker cannot run (as on WebKit): the photo page cuts out in the page itself.
+    await page.unroute(runtimes);
+    // No worker at all: MODNet cannot run (it runs in the worker), the photo page cuts out with
+    // the MediaPipe fallback in the page itself.
     await page.route("**/workers/**", (route) => route.abort());
     await page.reload();
     await cutoutReady(page);
@@ -112,7 +115,7 @@ test.describe("photo cut-out in the browser (local stack)", () => {
       .setInputFiles({ name: "face.jpg", mimeType: "image/jpeg", buffer: person });
     const face = await confirmPhoto(page);
     expect(face.decision).toBe("cutout");
-    expect(face.detail).toMatch(/^page/);
+    expect(face.detail).toMatch(/^page \(modnet: /);
     await page.unroute("**/workers/**");
     await expect(page.getByRole("img", { name: "Ta photo : Face · obligatoire" })).toBeVisible({
       timeout: 20_000,

@@ -14,5 +14,6 @@ supabase/.branches
 supabase/.temp
 .DS_Store
 
-# MediaPipe WASM, copied from node_modules at build time (scripts/vendor-mediapipe.mjs)
+# Cut-out runtimes, copied from node_modules at build time (scripts/vendor-runtimes.mjs)
 /public/vendor/mediapipe/wasm/
+/public/vendor/onnxruntime/

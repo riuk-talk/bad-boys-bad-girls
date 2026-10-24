@@ -156,7 +156,8 @@ export async function onboardBad(page: Page, pseudo: string, charges: readonly s
       );
       await page.screenshot({ path: `${process.env.E2E_SCREENSHOTS}/bad-toise-apercu.png` });
     }
-    expect((await confirmPhoto(page)).decision).toBe("cutout");
+    // Cut out on the device by MODNet (9i), in the worker, on Pixel 7 and iPhone 14 alike.
+    expect(await confirmPhoto(page)).toMatchObject({ decision: "cutout", detail: "modnet" });
     await expect(page.getByRole("img", { name: `Ta photo : ${pose}` })).toBeVisible({
       timeout: 20_000,
     });

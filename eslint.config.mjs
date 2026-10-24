@@ -12,7 +12,7 @@ export default defineConfig([
     "test-results/**",
     "next-env.d.ts",
     "lib/supabase/database.types.ts",
-    // Third-party runtime copied from node_modules at build time (scripts/vendor-mediapipe.mjs).
+    // Third-party runtime copied from node_modules at build time (scripts/vendor-runtimes.mjs).
     "public/vendor/**",
   ]),
   {

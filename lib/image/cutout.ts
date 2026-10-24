@@ -1,10 +1,13 @@
 /**
- * In-browser cut-out of the member's photo (owner's final decision 2026-10-23): MediaPipe Image
- * Segmenter (Apache-2.0) with the Selfie Segmentation model (Apache-2.0), both served by the site
- * itself (public/vendor/mediapipe). The segmentation runs in a worker
- * (public/workers/cutout-worker.js) under its own policy allowing WebAssembly; where the worker
- * cannot run it (WebKit, measured in CI), it runs in the page, which the photo pages allow
- * (lib/security/csp). The photo never leaves the device for this; only the result is sent.
+ * In-browser cut-out of the member's photo (owner's final decision 2026-10-23; engine of 9i):
+ * MODNet portrait matting (Apache-2.0) run by onnxruntime-web (MIT) in the worker
+ * (public/workers/cutout-worker.js), under its own policy allowing WebAssembly. When MODNet
+ * cannot (time, memory, an old device), the fallback is the previous engine: MediaPipe Image
+ * Segmenter with the Selfie Segmentation model (Apache-2.0), in the worker, or in the page where
+ * the worker cannot run it (WebKit). Everything is served by the site itself (public/vendor), and
+ * downloaded on the photo steps only. Then the same edge treatment for both (lib/image/matting).
+ * The photo never leaves the device for this; only the result is sent, to the Greffe, which
+ * validates it (never automatically).
  */
 import type { ImageSegmenter } from "@mediapipe/tasks-vision";
 import {
@@ -15,6 +18,7 @@ import {
   personShare,
   type CutoutDecision,
 } from "./cutout-policy";
+import { refineCutout } from "./matting";
 
 const WORKER_PATH = "/workers/cutout-worker.js";
 const WASM_PATH = "/vendor/mediapipe/wasm";
@@ -42,7 +46,12 @@ function stopWorker(reason: string) {
 }
 
 function ask(
-  message: { type: "caps" } | { type: "load" } | { type: "segment"; bitmap: ImageBitmap },
+  message:
+    | { type: "caps" }
+    | { type: "load" }
+    | { type: "modnet-load" }
+    | { type: "segment"; bitmap: ImageBitmap }
+    | { type: "modnet"; bitmap: ImageBitmap },
 ): Promise<Reply> {
   if (!worker) {
     worker = new Worker(WORKER_PATH);
@@ -60,12 +69,46 @@ function ask(
   const target = worker;
   return new Promise<Reply>((resolve, reject) => {
     waiting.set(id, { resolve, reject });
-    if (message.type === "segment") target.postMessage({ id, ...message }, [message.bitmap]);
+    if (message.type === "segment" || message.type === "modnet")
+      target.postMessage({ id, ...message }, [message.bitmap]);
     else target.postMessage({ id, ...message });
   });
 }
 
-/** Where the segmentation runs: the worker, or the page when the worker cannot run it. */
+/**
+ * MODNet in the worker: started on the photo steps (preloadCutout), given up for the session
+ * after a failure or a photo over the time budget (the device is too slow for it).
+ */
+let modnet: Promise<void> | null = null;
+let modnetFailure: string | null = null;
+
+function preloadModnet(): Promise<void> {
+  if (modnetFailure) return Promise.reject(new Error(modnetFailure));
+  if (!modnet) {
+    modnet = ask({ type: "modnet-load" }).then(() => undefined);
+    modnet.catch((error: unknown) => {
+      modnetFailure = error instanceof Error ? error.message : String(error);
+      modnet = null;
+    });
+  }
+  return modnet;
+}
+
+async function modnetMatte(canvas: HTMLCanvasElement): Promise<Mask | null> {
+  const reply = await within(
+    ask({ type: "modnet", bitmap: await createImageBitmap(canvas) }),
+    CUTOUT_RUN_BUDGET_MS,
+  );
+  if (!reply) {
+    modnetFailure = "too slow";
+    stopWorker("too slow");
+    return null;
+  }
+  if (!reply.mask || !reply.width || !reply.height) throw new Error("no matte");
+  return { mask: reply.mask, width: reply.width, height: reply.height };
+}
+
+/** Where the MediaPipe segmentation runs: the worker, or the page when the worker cannot. */
 type Engine = {
   name: "worker" | "page";
   segment: (canvas: HTMLCanvasElement) => Promise<Mask | null>;
@@ -157,8 +200,15 @@ let engine: Promise<Engine> | null = null;
 /** Why the worker could not be used, if it could not (shown to the tests, never to members). */
 let workerFailure: string | null = null;
 
-/** Starts loading the runtime and the model (the step calls it on arrival); shared afterwards. */
-export function preloadCutout(): Promise<Engine> {
+/**
+ * Starts loading MODNet (the photo steps call it on arrival); shared afterwards. MediaPipe, the
+ * fallback, is only loaded when MODNet fails.
+ */
+export function preloadCutout(): Promise<void> {
+  return preloadModnet().catch(() => undefined);
+}
+
+function preloadMediapipe(): Promise<Engine> {
   if (!engine) {
     engine = chooseEngine().then((where) => {
       if (where === "page") return loadInPage();
@@ -233,71 +283,109 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
     return { decision: decideCutout({ supported: false }), blob: null, elapsedMs: 0 };
   }
   try {
-    // Past the loading budget, give up waiting (the original goes to the Greffe).
-    const ready = await within(preloadCutout(), CUTOUT_LOAD_BUDGET_MS);
-    const loadMs = elapsed();
-    if (!ready) {
-      return { decision: decideCutout({ supported: true, loadMs }), blob: null, elapsedMs: loadMs };
-    }
-    detail = workerFailure ? `${ready.name} (worker: ${workerFailure})` : ready.name;
-    const runStarted = performance.now();
-    const runMs = () => Math.round(performance.now() - runStarted);
-
     const bitmap = await createImageBitmap(photo);
     const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(bitmap.width * scale);
     canvas.height = Math.round(bitmap.height * scale);
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
     if (!context) throw new Error("no 2d context");
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
+    const { width: w, height: h } = canvas;
+    const image = context.getImageData(0, 0, w, h);
+    // A picture already cut out (the Greffe's batch on the preview): seen by the model on a
+    // neutral grey, and never more opaque afterwards than it was.
+    const previousAlpha = flattenTransparency(image.data);
+    if (previousAlpha) context.putImageData(image, 0, 0);
 
-    const segmented = await ready.segment(canvas).catch(async (error: unknown) => {
-      if (ready.name !== "worker" || !wasmAllowedInPage()) throw error;
-      // The worker loaded but could not compute: from now on, the page cuts out itself.
-      workerFailure = error instanceof Error ? error.message : String(error);
-      stopWorker("compute failed");
-      engine = loadInPage();
-      engine.catch(() => {
-        engine = null;
+    let matte: Mask | null = null;
+    let loadMs = 0;
+    let runMs = 0;
+    // 1. MODNet, in the worker.
+    const modnetStarted = performance.now();
+    const ready = await within(
+      preloadModnet().then(
+        () => true,
+        () => false,
+      ),
+      CUTOUT_LOAD_BUDGET_MS,
+    );
+    loadMs = Math.round(performance.now() - modnetStarted);
+    if (ready) {
+      const runStarted = performance.now();
+      matte = await modnetMatte(canvas).catch((error: unknown) => {
+        modnetFailure = error instanceof Error ? error.message : String(error);
+        return null;
       });
-      const page = await within(engine, Math.max(0, CUTOUT_LOAD_BUDGET_MS - loadMs));
-      if (!page) throw new Error("page engine too slow to load");
-      detail = `page (worker: ${workerFailure})`;
-      return page.segment(canvas);
-    });
-    if (!segmented) {
-      return {
-        decision: decideCutout({ supported: true, loadMs, runMs: runMs() }),
-        blob: null,
-        elapsedMs: elapsed(),
-        detail,
-      };
+      runMs = Math.round(performance.now() - runStarted);
+      if (matte) detail = "modnet";
+    } else if (!modnetFailure) {
+      modnetFailure = "too slow to load";
     }
-    const { mask: values, width, height } = segmented;
-    const share = personShare(values);
-    // The mask, as an alpha layer at its own size, then stretched (smoothly) on the photo.
-    const layer = document.createElement("canvas");
-    layer.width = width;
-    layer.height = height;
-    const layerContext = layer.getContext("2d");
-    if (!layerContext) throw new Error("no 2d context");
-    const pixels = layerContext.createImageData(width, height);
-    for (let i = 0; i < values.length; i += 1) pixels.data[i * 4 + 3] = maskAlpha(values[i] ?? 0);
-    layerContext.putImageData(pixels, 0, 0);
 
-    const decision = decideCutout({
-      supported: true,
-      loadMs,
-      runMs: runMs(),
-      personShare: share,
-    });
+    // 2. The fallback: MediaPipe (worker, or page), with its own budgets.
+    if (!matte) {
+      const fallbackStarted = performance.now();
+      const engineReady = await within(preloadMediapipe(), CUTOUT_LOAD_BUDGET_MS);
+      loadMs = Math.round(performance.now() - fallbackStarted);
+      if (!engineReady) {
+        return {
+          decision: decideCutout({ supported: true, loadMs }),
+          blob: null,
+          elapsedMs: elapsed(),
+          detail: `mediapipe load (modnet: ${modnetFailure})`,
+        };
+      }
+      const failures = () =>
+        [`modnet: ${modnetFailure}`, workerFailure ? `worker: ${workerFailure}` : null]
+          .filter(Boolean)
+          .join("; ");
+      detail = `${engineReady.name} (${failures()})`;
+      const runStarted = performance.now();
+      const segmented = await engineReady.segment(canvas).catch(async (error: unknown) => {
+        if (engineReady.name !== "worker" || !wasmAllowedInPage()) throw error;
+        // The worker loaded but could not compute: from now on, the page cuts out itself.
+        workerFailure = error instanceof Error ? error.message : String(error);
+        stopWorker("compute failed");
+        engine = loadInPage();
+        engine.catch(() => {
+          engine = null;
+        });
+        const page = await within(engine, Math.max(0, CUTOUT_LOAD_BUDGET_MS - loadMs));
+        if (!page) throw new Error("page engine too slow to load");
+        detail = `page (${failures()})`;
+        return page.segment(canvas);
+      });
+      runMs = Math.round(performance.now() - runStarted);
+      if (!segmented) {
+        return {
+          decision: decideCutout({ supported: true, loadMs, runMs }),
+          blob: null,
+          elapsedMs: elapsed(),
+          detail,
+        };
+      }
+      // The person confidence, as an alpha matte (the same soft edge as before).
+      const alpha = new Float32Array(segmented.mask.length);
+      for (let i = 0; i < alpha.length; i += 1) alpha[i] = maskAlpha(segmented.mask[i] ?? 0) / 255;
+      matte = { mask: alpha, width: segmented.width, height: segmented.height };
+    }
+
+    const refineStarted = performance.now();
+    const share = personShare(matte.mask);
+    const early = decideCutout({ supported: true, loadMs, runMs, personShare: share });
+    if (early.kind !== "cutout") return { decision: early, blob: null, elapsedMs: elapsed(), detail };
+    refineCutout(image.data, w, h, matte.mask, matte.width, matte.height);
+    if (previousAlpha) {
+      for (let i = 0; i < w * h; i += 1)
+        image.data[i * 4 + 3] = Math.min(image.data[i * 4 + 3] ?? 0, previousAlpha[i] ?? 0);
+    }
+    context.putImageData(image, 0, 0);
+    // The edge treatment counts in the computing budget.
+    runMs += Math.round(performance.now() - refineStarted);
+    const decision = decideCutout({ supported: true, loadMs, runMs, personShare: share });
     if (decision.kind !== "cutout") return { decision, blob: null, elapsedMs: elapsed(), detail };
-
-    context.globalCompositeOperation = "destination-in";
-    context.imageSmoothingQuality = "high";
-    context.drawImage(layer, 0, 0, canvas.width, canvas.height);
     const blob = await encodeCutout(canvas);
     if (!blob) {
       return {
@@ -317,4 +405,27 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
       detail: `${detail ?? (workerFailure ? `worker: ${workerFailure}` : "load")}; ${message}`,
     };
   }
+}
+
+/**
+ * When the picture has transparency (already cut out), lays it on a neutral grey in place and
+ * returns its former alpha; null for an opaque picture.
+ */
+function flattenTransparency(rgba: Uint8ClampedArray): Uint8ClampedArray | null {
+  let transparent = false;
+  for (let i = 3; i < rgba.length; i += 4) {
+    if ((rgba[i] ?? 255) < 250) {
+      transparent = true;
+      break;
+    }
+  }
+  if (!transparent) return null;
+  const alpha = new Uint8ClampedArray(rgba.length / 4);
+  for (let i = 0; i < alpha.length; i += 1) {
+    const a = (rgba[i * 4 + 3] ?? 255) / 255;
+    alpha[i] = rgba[i * 4 + 3] ?? 255;
+    for (let c = 0; c < 3; c += 1) rgba[i * 4 + c] = (rgba[i * 4 + c] ?? 0) * a + 128 * (1 - a);
+    rgba[i * 4 + 3] = 255;
+  }
+  return alpha;
 }
