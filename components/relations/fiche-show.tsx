@@ -8,7 +8,7 @@ import { accentForGender } from "@/lib/accent";
 import { cn } from "@/lib/cn";
 import type { PrompterInput } from "@/lib/prompter";
 import type { FicheAction } from "@/lib/relations/fiche-action";
-import { type FicheView, localize, tribeText } from "@/lib/relations/types";
+import { agreeLabel, type FicheView, localize, tribeText } from "@/lib/relations/types";
 
 type Photo = { url: string; cutout: boolean };
 type PhotoUrls = Record<number, Photo | null>;
@@ -213,7 +213,7 @@ export function FicheShow({
   const line = [fiche.age !== null ? t("years", { age: fiche.age }) : null, ...place]
     .filter(Boolean)
     .join(" · ");
-  const signs = fiche.tribes.map((tribe) => tribeText(tribe, locale));
+  const signs = fiche.tribes.map((tribe) => tribeText(tribe, locale, fiche.gender));
   const seeking = fiche.seeking_genders.map((gender) => t(`seeking_${gender}`)).join(", ");
   const common = fiche.common_points.map((point) => localize(point.answer, locale));
   const ecrou = fiche.ecrou ?? "—";
@@ -397,6 +397,12 @@ export function FicheShow({
             );
           })}
 
+          {/* The bottom of the wall darkens over the photos (under the placard): the bodies fade
+              into it, no straight cut shows (9i). */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-[calc(var(--ph)*0.3)] bg-gradient-to-t from-[#0e0e10]/90 via-[#0e0e10]/45 to-transparent"
+          />
           {fiche.good_conduct ? (
             <p className="fiche-stamp font-display absolute top-[92px] right-[30px] z-[7] rotate-[9deg] px-3.5 py-2 text-[13px] leading-none text-[#b5172e]">
               <span className="block rounded-sm bg-[#f2e8d5]/85 px-1 py-0.5">
@@ -420,24 +426,31 @@ export function FicheShow({
               }}
               onPointerDown={(event) => event.stopPropagation()}
               onPointerUp={(event) => event.stopPropagation()}
-              className="fiche-felt fiche-frame placard-letters focus-visible:outline-accent absolute z-[8] w-[calc(var(--pw)*0.847)] cursor-pointer border-[36px_24px_25px_24px] px-2 pt-1 pb-0.5 text-left drop-shadow-[0_8px_10px_rgb(0_0_0/0.45)] focus-visible:outline-3"
+              className="fiche-felt fiche-frame placard-letters focus-visible:outline-accent absolute z-[8] w-[calc(var(--pw)*0.847)] cursor-pointer border-[22px_15px_15px_15px] px-1.5 pt-0.5 pb-0 text-left drop-shadow-[0_8px_10px_rgb(0_0_0/0.45)] focus-visible:outline-3"
               style={{
                 left: "calc(var(--mid) - var(--pw) * 0.4235)",
-                top: "calc(var(--wh) - var(--ph) * 0.54)",
+                // The bottom of its wooden frame 10 px above the bottom of the wall (9i). Thin frame
+                // and tight lines: it stays within the bottom 30 % of the pose, where the framing
+                // guide puts it, so the face of the middle pose is clear on every screen.
+                bottom: "10px",
               }}
               data-testid="placard-small"
             >
               <span className="sr-only">{t("placardOf", { pseudo: fiche.pseudo })} </span>
-              <span className="block text-[20px] leading-none tracking-[0.1em] break-words text-[var(--color-accent-board)]">
+              <span className="block text-[18px] leading-none tracking-[0.1em] break-words text-[var(--color-accent-board)]">
                 {fiche.pseudo}
               </span>
-              <span className="mt-1 block text-[12px] tracking-[0.06em]">{line}</span>
+              <span className="mt-0.5 block truncate text-[11px] leading-tight tracking-[0.06em]">
+                {line}
+              </span>
               {signs.length ? (
-                <span className="mt-0.5 block truncate text-[11px] tracking-[0.04em] text-[#dcd6ca]">
-                  {fiche.tribes.map((tribe) => localize(tribe.label, locale)).join(" · ")}
+                <span className="block truncate text-[10px] leading-tight tracking-[0.04em] text-[#dcd6ca]">
+                  {fiche.tribes
+                    .map((tribe) => agreeLabel(localize(tribe.label, locale), fiche.gender))
+                    .join(" · ")}
                 </span>
               ) : null}
-              <span className="mt-1 flex justify-between text-[10px] text-[#c9c3b8]">
+              <span className="mt-0.5 flex justify-between text-[10px] leading-tight text-[#c9c3b8]">
                 <span>{t("ecrou", { ecrou })}</span>
                 <span>{t("enlarge")} ⤢</span>
               </span>

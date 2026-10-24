@@ -362,6 +362,19 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await expect(small).toContainText("30 ans · Port-Test");
     await expect(small).toContainText(/N° \d{6}/);
     await expect(small).toContainText("Agrandir");
+    // Low on the wall (9i): the bottom of its frame about 10 px above the bottom of the wall, and
+    // within the bottom third of the middle pose (the framing guide keeps the face and shoulders
+    // above 67 %), on a small and a large phone.
+    for (const width of [360, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      const wallBox = (await fiche.getByTestId("fiche-wall").boundingBox())!;
+      const placardBox = (await small.boundingBox())!;
+      const centerBox = (await fiche.getByTestId("pose-center").boundingBox())!;
+      const gap = wallBox.y + wallBox.height - (placardBox.y + placardBox.height);
+      expect(gap).toBeGreaterThanOrEqual(6);
+      expect(gap).toBeLessThanOrEqual(14);
+      expect(placardBox.y).toBeGreaterThanOrEqual(centerBox.y + centerBox.height * 0.67);
+    }
     // Never the birth date, a real name or a height (SPEC §5).
     await expect(fiche.getByText(/1996|02\/03|cm\b|CONFIDENTIEL/)).toHaveCount(0);
     // No request without a bet; Signaler and Bloquer behind the flag.
