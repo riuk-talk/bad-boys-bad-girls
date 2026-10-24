@@ -281,7 +281,7 @@ export function FicheShow({
             swiped.current = true;
             shift(dx < 0 ? 1 : -1);
           }}
-          className="mugshot-wall relative h-[var(--wh)] touch-pan-y overflow-hidden"
+          className="mugshot-wall relative h-[var(--wh)] touch-pan-y overflow-hidden select-none"
           data-testid="fiche-wall"
           data-base={base}
         >
