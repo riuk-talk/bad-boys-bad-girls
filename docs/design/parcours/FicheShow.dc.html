@@ -17,15 +17,15 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 .wall{background-color:#B9B3A8;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 27px,rgba(14,14,16,.42) 27px,rgba(14,14,16,.42) 28px)}
 .board{background-color:#1C1C1F;background-image:repeating-linear-gradient(to bottom,#1C1C1F 0,#1C1C1F 5px,#141416 5px,#141416 6px)}
 .peg{font-family:'Inter Tight',sans-serif;font-weight:800;text-transform:uppercase;color:#F4F1EA;letter-spacing:1.5px;text-shadow:0 1px 0 rgba(0,0,0,.6)}
-.pose{position:absolute;bottom:0;width:280px;height:364px;padding:0;border:0;background:transparent;cursor:pointer}
+.pose{position:absolute;bottom:0;width:300px;height:390px;padding:0;border:0;background:transparent;cursor:pointer}
 .layer{position:absolute;inset:0;transition:opacity .8s ease,filter .8s ease}
 .layer svg{position:absolute;left:0;bottom:0;width:100%;height:100%}
 .pose:focus-visible,.round:focus-visible,.small:focus-visible,.x:focus-visible{outline:3px solid #E8B84A;outline-offset:-3px}
 .round{width:44px;height:44px;border-radius:50%;border:2px solid #4A4A50;background:rgba(14,14,16,.7);color:#F2E8D5;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
-.small{position:absolute;left:92px;top:332px;width:190px;padding:8px 10px 7px;border:4px solid #5A4630;border-radius:3px;box-shadow:0 10px 18px rgba(0,0,0,.55);cursor:pointer;text-align:left;box-sizing:border-box;z-index:8}
+.small{position:absolute;left:92px;top:452px;width:206px;padding:8px 10px 7px;border:4px solid #5A4630;border-radius:3px;box-shadow:0 10px 18px rgba(0,0,0,.55);cursor:pointer;text-align:left;box-sizing:border-box;z-index:8}
 .x{position:absolute;top:8px;right:8px;width:44px;height:44px;border-radius:50%;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
 .scene{perspective:1300px}
-.card{position:relative;width:354px;height:500px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.card{position:relative;width:354px;height:395px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
 .side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px;overflow:hidden;box-shadow:0 22px 44px rgba(0,0,0,.65);box-sizing:border-box}
 .back{transform:rotateY(180deg)}
 .zoom{animation:zoom .4s cubic-bezier(.2,.9,.3,1.05) both;transform-origin:50% 0%}
@@ -40,33 +40,33 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 <div class="room" style="position: relative; width: 390px; height: 844px; color: #F2E8D5; font-family: 'Inter Tight', sans-serif; overflow: hidden">
 <div style="height: 52px; padding: 4px 12px 0; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box">
 <a href="#retour" style="display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 6px; font-size: 14px; font-weight: 600; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>Découverte</a>
-<div style="display: flex; align-items: center; gap: 8px"><span style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 2px; color: #B8AE9C">COMPLICITÉ</span><span style="font-family: Anton, sans-serif; font-size: 22px; color: #EE3A55">82 %</span></div>
+<div style="display: flex; align-items: center; gap: 4px"><span style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 2px; color: #B8AE9C">COMPLICITÉ</span><span style="font-family: Anton, sans-serif; font-size: 22px; color: #EE3A55; margin-right: 4px">82 %</span><a href="#signaler-bloquer" aria-label="Signaler ou bloquer" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: #B8AE9C"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.3 2 1.3 0 2.4-.3 3.3-.8a.5.5 0 0 1 .7.4V14a1 1 0 0 1-.4.8A6 6 0 0 1 15.3 16c-2.3 0-4.3-2-7.3-2a6 6 0 0 0-4 1.3"></path></svg></a></div>
 </div>
 
-<div class="wall" onPointerDown="{{ down }}" onPointerUp="{{ up }}" style="position: absolute; left: 0; top: 52px; width: 390px; height: 512px; overflow: hidden; touch-action: pan-y">
+<div class="wall" onPointerDown="{{ down }}" onPointerUp="{{ up }}" style="position: absolute; left: 0; top: 52px; width: 390px; height: 652px; overflow: hidden; touch-action: pan-y">
 <div aria-hidden="true" style="position: absolute; inset: 0; background: radial-gradient(ellipse 55% 45% at 50% 30%,rgba(255,250,235,.5),rgba(255,250,235,0) 70%)"></div>
-<p style="position: absolute; left: 10px; top: 8px; margin: 0; padding: 3px 7px; background: #0E0E10; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 1.5px; color: #EFE6D2; z-index: 6">PHOTO SIGNALÉTIQUE · N° 0412</p>
+<div style="position: absolute; left: 10px; right: 36px; top: 10px; padding: 6px 10px 5px; background: #EFE6D2; box-shadow: 0 3px 0 #0E0E10; z-index: 6; color: #0E0E10"><p style="margin: 0; font-family: Anton, sans-serif; font-size: 26px; line-height: 1; letter-spacing: .5px; text-transform: uppercase">Dossier judiciaire</p><p style="margin: 3px 0 0; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 1px; color: #B5172E">PHOTO SIGNALÉTIQUE · ALIGNEMENT 3 POSES</p></div>
 <div aria-hidden="true" style="position: absolute; right: 0; top: 0; bottom: 0; width: 26px; background: rgba(14,14,16,.88); display: flex; flex-direction: column; justify-content: space-around; font-family: Anton, sans-serif; font-size: 10px; color: #EFE6D2; text-align: center; z-index: 6"><span>200</span><span>190</span><span>180</span><span style="background: #E0233F; color: #0E0E10">170</span><span>160</span><span>150</span><span>140</span><span>130</span></div>
 
-<button type="button" class="pose" onClick="{{ goLeft }}" aria-label="{{leftLabel}}" style="left: -88px; z-index: 2; filter: brightness(.82)">
+<button type="button" class="pose" onClick="{{ goLeft }}" aria-label="{{leftLabel}}" style="left: -100px; z-index: 2; filter: brightness(.82)">
 <div class="layer" style="opacity: {{l0}}; filter: {{lf0}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g><ellipse cx="47" cy="36" rx="20" ry="24" fill="#2A2A2F"></ellipse><path d="M64 30L74 46L64 49Z" fill="#2A2A2F"></path><rect x="38" y="54" width="17" height="24" fill="#2A2A2F"></rect><path d="M8 130C10 96 26 78 46 76C68 78 88 96 90 130Z" fill="#2A2A2F"></path></g></svg></div>
 <div class="layer" style="opacity: {{l1}}; filter: {{lf1}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><ellipse cx="50" cy="36" rx="19" ry="24" fill="#2A2A2F"></ellipse><rect x="42" y="54" width="16" height="22" fill="#2A2A2F"></rect><path d="M2 130C4 94 24 76 50 74C76 76 96 94 98 130Z" fill="#2A2A2F"></path></svg></div>
 <div class="layer" style="opacity: {{l2}}; filter: {{lf2}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g transform="translate(100 0) scale(-1 1)"><ellipse cx="47" cy="36" rx="20" ry="24" fill="#2A2A2F"></ellipse><path d="M64 30L74 46L64 49Z" fill="#2A2A2F"></path><rect x="38" y="54" width="17" height="24" fill="#2A2A2F"></rect><path d="M8 130C10 96 26 78 46 76C68 78 88 96 90 130Z" fill="#2A2A2F"></path></g></svg></div>
 </button>
 
-<button type="button" class="pose" onClick="{{ goRight }}" aria-label="{{rightLabel}}" style="left: 172px; z-index: 2; filter: brightness(.82)">
+<button type="button" class="pose" onClick="{{ goRight }}" aria-label="{{rightLabel}}" style="left: 164px; z-index: 2; filter: brightness(.82)">
 <div class="layer" style="opacity: {{r0}}; filter: {{rf0}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g><ellipse cx="47" cy="36" rx="20" ry="24" fill="#2A2A2F"></ellipse><path d="M64 30L74 46L64 49Z" fill="#2A2A2F"></path><rect x="38" y="54" width="17" height="24" fill="#2A2A2F"></rect><path d="M8 130C10 96 26 78 46 76C68 78 88 96 90 130Z" fill="#2A2A2F"></path></g></svg></div>
 <div class="layer" style="opacity: {{r1}}; filter: {{rf1}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><ellipse cx="50" cy="36" rx="19" ry="24" fill="#2A2A2F"></ellipse><rect x="42" y="54" width="16" height="22" fill="#2A2A2F"></rect><path d="M2 130C4 94 24 76 50 74C76 76 96 94 98 130Z" fill="#2A2A2F"></path></svg></div>
 <div class="layer" style="opacity: {{r2}}; filter: {{rf2}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g transform="translate(100 0) scale(-1 1)"><ellipse cx="47" cy="36" rx="20" ry="24" fill="#2A2A2F"></ellipse><path d="M64 30L74 46L64 49Z" fill="#2A2A2F"></path><rect x="38" y="54" width="17" height="24" fill="#2A2A2F"></rect><path d="M8 130C10 96 26 78 46 76C68 78 88 96 90 130Z" fill="#2A2A2F"></path></g></svg></div>
 </button>
 
-<button type="button" class="pose" aria-label="{{centerLabel}}" style="left: 42px; z-index: 4; cursor: default">
+<button type="button" class="pose" aria-label="{{centerLabel}}" style="left: 32px; z-index: 4; cursor: default">
 <div class="layer" style="opacity: {{c0}}; filter: {{cf0}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g><ellipse cx="47" cy="36" rx="20" ry="24" fill="#16161A"></ellipse><path d="M64 30L74 46L64 49Z" fill="#16161A"></path><rect x="38" y="54" width="17" height="24" fill="#16161A"></rect><path d="M8 130C10 96 26 78 46 76C68 78 88 96 90 130Z" fill="#16161A"></path></g></svg></div>
 <div class="layer" style="opacity: {{c1}}; filter: {{cf1}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><ellipse cx="50" cy="36" rx="19" ry="24" fill="#16161A"></ellipse><rect x="42" y="54" width="16" height="22" fill="#16161A"></rect><path d="M2 130C4 94 24 76 50 74C76 76 96 94 98 130Z" fill="#16161A"></path></svg></div>
 <div class="layer" style="opacity: {{c2}}; filter: {{cf2}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g transform="translate(100 0) scale(-1 1)"><ellipse cx="47" cy="36" rx="20" ry="24" fill="#16161A"></ellipse><path d="M64 30L74 46L64 49Z" fill="#16161A"></path><rect x="38" y="54" width="17" height="24" fill="#16161A"></rect><path d="M8 130C10 96 26 78 46 76C68 78 88 96 90 130Z" fill="#16161A"></path></g></svg></div>
 </button>
 
-<div style="position: absolute; right: 34px; top: 40px; padding: 3px 7px; border: 3px solid #E0233F; border-radius: 6px; background: rgba(239,230,210,.94); color: #B5172E; font-family: Anton, sans-serif; font-size: 13px; line-height: 1; transform: rotate(9deg); z-index: 7">BONNE<br>CONDUITE</div>
+<div style="position: absolute; right: 34px; top: 84px; padding: 3px 7px; border: 3px solid #E0233F; border-radius: 6px; background: rgba(239,230,210,.94); color: #B5172E; font-family: Anton, sans-serif; font-size: 13px; line-height: 1; transform: rotate(9deg); z-index: 7">BONNE<br>CONDUITE</div>
 
 <sc-if value="{{small}}" hint-placeholder-val="{{ true }}">
 <button type="button" class="small board" onClick="{{ openFront }}" aria-expanded="false" aria-label="Agrandir la pancarte de Lune_Noire">
@@ -79,33 +79,25 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 </sc-if>
 </div>
 
-<div style="position: absolute; left: 0; right: 0; top: 572px; display: flex; justify-content: center; align-items: center; gap: 16px">
-<button type="button" class="round" onClick="{{ prev }}" aria-label="Pose précédente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
-<div style="display: flex; gap: 6px" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="3"><span style="width: {{d.w}}; height: 6px; border-radius: 3px; background: {{d.bg}}; transition: width .3s"></span></sc-for></div>
-<button type="button" class="round" onClick="{{ next }}" aria-label="Pose suivante"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
-</div>
 
-<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 8px; background: rgba(14,14,16,.95); border-top: 1px solid #2A2A2E">
-<button type="button" onClick="{{ openBack }}" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #EFE6D2; border: 3px solid #0E0E10; box-shadow: 4px 4px 0 #E0233F; color: #0E0E10; text-align: left; cursor: pointer">
-<span style="font-family: Anton, sans-serif; font-size: 30px; line-height: 1; color: #B5172E">3</span>
-<span style="flex: 1"><span style="display: block; font-family: Anton, sans-serif; font-size: 16px; text-transform: uppercase">Chefs d'accusation</span><span style="display: block; font-family: 'Special Elite', monospace; font-size: 12px">{{betLine}}</span></span>
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
-</button>
+<div class="paper" style="position: absolute; left: 0; right: 0; top: 704px; bottom: 0; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; color: #0E0E10; border-top: 4px solid #0E0E10">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg width="96" height="30" viewBox="0 0 96 30" aria-hidden="true"><g fill="#0E0E10"><rect x="0" width="3" height="30"></rect><rect x="5" width="1" height="30"></rect><rect x="8" width="2" height="30"></rect><rect x="13" width="4" height="30"></rect><rect x="19" width="1" height="30"></rect><rect x="22" width="2" height="30"></rect><rect x="27" width="3" height="30"></rect><rect x="32" width="1" height="30"></rect><rect x="35" width="4" height="30"></rect><rect x="41" width="2" height="30"></rect><rect x="45" width="1" height="30"></rect><rect x="48" width="3" height="30"></rect><rect x="53" width="2" height="30"></rect><rect x="57" width="1" height="30"></rect><rect x="60" width="4" height="30"></rect><rect x="66" width="2" height="30"></rect><rect x="70" width="1" height="30"></rect><rect x="73" width="3" height="30"></rect><rect x="78" width="2" height="30"></rect><rect x="82" width="4" height="30"></rect><rect x="88" width="1" height="30"></rect><rect x="91" width="3" height="30"></rect></g></svg>
+<p style="margin: 0; flex: 1; font-family: 'Special Elite', monospace; font-size: 12px; line-height: 1.35; letter-spacing: 1px">DOSSIER N° 0412<br>PAGE 1/1 · QUARTIER : NICE</p>
+</div>
 <sc-if value="{{hasBet}}" hint-placeholder-val="{{ false }}">
-<a href="#demande" style="display: flex; justify-content: center; align-items: center; min-height: 54px; background: #D4A437; color: #0E0E10; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; text-decoration: none; border-radius: 4px">Demander une visite</a>
+<a href="#demande" style="display: flex; justify-content: center; align-items: center; min-height: 54px; background: #D4A437; color: #0E0E10; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; text-decoration: none; border: 3px solid #0E0E10">Demander une visite · pari n° {{bet}}</a>
 </sc-if>
 <sc-if value="{{noBet}}" hint-placeholder-val="{{ true }}">
-<p style="margin: 0; min-height: 54px; display: flex; align-items: center; justify-content: center; border: 2px dashed #4A4A50; border-radius: 4px; font-size: 14px; font-weight: 600; color: #B8AE9C">Parie d'abord pour demander une visite</p>
+<p style="margin: 0; min-height: 54px; display: flex; align-items: center; justify-content: center; border: 2px dashed #6A6256; font-family: 'Special Elite', monospace; font-size: 13px; color: #3A342C; text-align: center">Retourne la pancarte pour parier</p>
 </sc-if>
-<div style="display: flex; justify-content: center; gap: 28px"><a href="#signaler" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: #B8AE9C">Signaler</a><a href="#bloquer" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; color: #B8AE9C">Bloquer</a></div>
 </div>
 
 <sc-if value="{{zoomed}}" hint-placeholder-val="{{ false }}">
-<div class="scene zoom" role="region" aria-label="Pancarte de Lune_Noire, agrandie" style="position: absolute; left: 18px; top: 330px; z-index: 20">
+<div class="scene zoom" role="region" aria-label="Pancarte de Lune_Noire, agrandie" style="position: absolute; left: 18px; top: 440px; z-index: 20">
 <div class="card" style="transform: {{cardTransform}}">
-<section class="side board" aria-hidden="{{frontHidden}}" style="pointer-events: {{frontEvents}}; border: 6px solid #5A4630; padding: 14px 16px; display: flex; flex-direction: column; gap: 7px">
+<section class="side board" aria-hidden="{{frontHidden}}" style="pointer-events: {{frontEvents}}; border: 6px solid #5A4630; padding: 14px 16px; display: flex; flex-direction: column; gap: 5px">
 <button type="button" class="x" onClick="{{ closeZoom }}" aria-label="Réduire la pancarte"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F1EA" stroke-width="2.4" aria-hidden="true"><path d="M4 14h6v6"></path><path d="M20 10h-6V4"></path><path d="m14 10 7-7"></path><path d="m3 21 7-7"></path></svg></button>
-<p class="peg" style="margin: 0; font-size: 11px; letter-spacing: 3px; color: #C9C3B8">Dossier judiciaire · N° 0412</p>
 <p class="peg" style="margin: 2px 0 0; font-size: 32px; line-height: 1; letter-spacing: 3px; color: #FF5C74">Lune_Noire</p>
 <p class="peg" style="margin: 0; font-size: 15px">Bad girl · 29 ans · Nice · 34 km</p>
 <div style="height: 1px; background: #3A3A40; margin: 2px 0"></div>
@@ -165,9 +157,6 @@ class Component extends DCLogic {
       centerLabel: 'Pose au centre : ' + names[shown(1)],
       goLeft: function () { self.shift(-1); },
       goRight: function () { self.shift(1); },
-      dots: [0, 1, 2].map(function (i) { return { w: shown(1) === i ? '22px' : '6px', bg: shown(1) === i ? '#EE3A55' : '#5A5A60' }; }),
-      prev: function () { self.shift(-1); },
-      next: function () { self.shift(1); },
       down: function (e) { self.startX = e.clientX; },
       up: function (e) {
         if (self.startX === null) return;
@@ -194,6 +183,7 @@ class Component extends DCLogic {
       confirm: function () { if (self.state.pick) self.setState({ bet: self.state.pick, zoomed: false }); },
       hasBet: this.state.bet > 0,
       noBet: this.state.bet === 0,
+      bet: this.state.bet,
       betLine: this.state.bet > 0 ? 'Ton pari : le n° ' + this.state.bet + '. Touche pour changer.' : '1 vrai, 2 faux. Touche pour parier.'
     });
   }
