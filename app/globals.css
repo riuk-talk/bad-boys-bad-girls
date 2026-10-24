@@ -33,6 +33,8 @@
   --color-accent-ink: #765a0e;
   /* The same colour on the black placard of the Fiche: red #ff5c74 5.7:1 (#ee3a55: 4.35). */
   --color-accent-board: #d4a437;
+  /* On the paper texture (public/brand/textures/papier.webp), worst light spot: red 6.7:1. */
+  --color-accent-paper: #665010;
 
   --font-display: var(--font-anton), "Impact", "Arial Narrow", sans-serif;
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
@@ -130,18 +132,21 @@
   --color-accent-hover: #e2b54a;
   --color-accent-ink: #765a0e;
   --color-accent-board: #d4a437;
+  --color-accent-paper: #665010;
 }
 [data-accent="red"] {
   --color-accent: #ee3a55;
   --color-accent-hover: #f45a71;
   --color-accent-ink: #b5172e;
   --color-accent-board: #ff5c74;
+  --color-accent-paper: #9a1226;
 }
 [data-accent="cream"] {
   --color-accent: #f2e8d5;
   --color-accent-hover: #fffaf0;
   --color-accent-ink: #34343b;
   --color-accent-board: #f2e8d5;
+  --color-accent-paper: #34343b;
 }
 
 /* Aged paper texture for the Fiche, pure CSS (no image request). */
@@ -249,21 +254,15 @@
   );
 }
 
-/* The mugshot wall of the reference (decision of the owner, 2026-10-23: version B): one fixed
-   height chart for every member (public/brand/mur-toise.svg, transparent), behind a cut-out photo;
-   the same lines over a photo kept as it is (version A, the fallback). */
+/* The common wall (owner's decision 2026-10-24, Fiche v7): one photographed height chart for
+   every member (public/brand/textures/mur-toise.webp), behind a cut-out photo; the same wall
+   over a photo kept as it is (the fallback). The cut-outs keep their transparency (9e): the wall
+   is never baked into a stored photo. */
 .mugshot-wall {
-  background-color: #bdb7ac;
-  background-image:
-    radial-gradient(ellipse at 50% 35%, rgb(255 255 255 / 0.18), transparent 70%),
-    url("/brand/mur-toise.svg");
-  background-position: center bottom;
-  background-size: cover;
+  background: #7a6d5e url("/brand/textures/mur-toise.webp") center top / cover no-repeat;
 }
 .mugshot-lines {
-  background-image: url("/brand/mur-toise.svg");
-  background-position: center bottom;
-  background-size: cover;
+  background: url("/brand/textures/mur-toise.webp") center top / cover no-repeat;
   mix-blend-mode: multiply;
   opacity: 0.45;
 }
@@ -296,28 +295,7 @@
   );
 }
 
-/* The placard of the Fiche (docs/design/parcours/FichePancarte.dc.html, 2026-10-23): a black
-   board with white letters, on two rods, turned over in 3D. Both sides share one grid cell, so
-   the board takes the height of the longer one. */
-.placard-scene {
-  perspective: 1100px;
-}
-.placard {
-  display: grid;
-  transform-style: preserve-3d;
-  transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1);
-}
-.placard[data-flipped] {
-  transform: rotateY(180deg);
-}
-.placard-side {
-  grid-area: 1 / 1;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-.placard-back {
-  transform: rotateY(180deg);
-}
+/* The mini placards of the Promenade and Découverte cards (9g). */
 .placard-board {
   background-color: #1c1c1f;
   background-image: repeating-linear-gradient(to bottom, #1c1c1f 0 5px, #141416 5px 6px);
@@ -333,8 +311,71 @@
   letter-spacing: 0.12em;
   text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
 }
+
+/* La Fiche v7 (docs/design/parcours/FicheShow.dc.html, 2026-10-24): textures as CSS backgrounds
+   from public/brand/textures (same origin, img-src 'self'). */
+.fiche-felt {
+  background: #1c1c1f url("/brand/textures/feutre.webp") 0 0 / 220px;
+}
+.fiche-paper {
+  background: #f1e9d6 url("/brand/textures/papier.webp") 0 0 / 400px;
+  color: var(--color-ink);
+}
+.fiche-frame {
+  border-style: solid;
+  border-color: transparent;
+  border-image: url("/brand/textures/cadre-pancarte.webp") 177 113 119 115 stretch;
+  background-clip: padding-box;
+}
+.fiche-stamp {
+  background: url("/brand/textures/tampon.webp") center / 100% 100% no-repeat;
+}
+.fiche-sprite {
+  position: absolute;
+  background-image: url("/brand/textures/accessoires.webp");
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+/* The 3 poses: the frames never move, only the images change (cross-fade with a light blur). */
+.fiche-layer {
+  transition:
+    opacity 0.8s ease,
+    filter 0.8s ease;
+}
+.fiche-zoom {
+  animation: fiche-zoom 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.05) both;
+  transform-origin: 50% 0%;
+}
+@keyframes fiche-zoom {
+  from {
+    transform: scale(0.55);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.fiche-card {
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.fiche-card[data-flipped] {
+  transform: rotateY(180deg);
+}
+.fiche-side {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.fiche-back {
+  transform: rotateY(180deg);
+}
 @media (prefers-reduced-motion: reduce) {
-  .placard {
+  .fiche-layer,
+  .fiche-card {
     transition: none;
+  }
+  .fiche-zoom {
+    animation: none;
   }
 }
