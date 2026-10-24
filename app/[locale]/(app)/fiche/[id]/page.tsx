@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { LocalizedLink } from "@/components/i18n/localized-link";
-import { FichePancarte } from "@/components/relations/fiche-pancarte";
+import { FicheShow } from "@/components/relations/fiche-show";
 import { SafetyActions } from "@/components/relations/safety-actions";
 import { type PrompterInput, sharedTribeLabels } from "@/lib/prompter";
 import { ficheAction } from "@/lib/relations/fiche-action";
@@ -16,7 +16,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Relations.pancarte" });
+  const t = await getTranslations({ locale, namespace: "Relations.fiche" });
   return { title: t("metaTitle") };
 }
 
@@ -96,8 +96,8 @@ export default async function FichePage({ params }: Props) {
                 : null;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-2 px-2.5 py-2 sm:px-6 sm:py-6">
-      <FichePancarte
+    <div className="mx-auto w-full max-w-3xl">
+      <FicheShow
         fiche={fiche}
         photos={photoUrls}
         action={action}

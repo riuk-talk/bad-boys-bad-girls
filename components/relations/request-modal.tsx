@@ -31,15 +31,28 @@ type Props = {
   /** The bet made on the back of the placard: already chosen when the Demande opens. */
   guess: number;
   onGuess: (guess: number) => void;
+  /** The button that opens the Demande: its id (to give it the focus) and its look. */
+  triggerId?: string;
+  triggerClassName?: string;
 };
 
 /**
  * La Demande de parloir (SPEC §7, maquette Demande.dc.html): the bet on the true charge, an
  * optional note and the Souffleur. The bet stays secret until the visit, for both. It opens with
- * the bet made on the placard (FichePancarte.dc.html), still changeable; nothing of it is
+ * the bet made on the placard (FicheShow.dc.html), still changeable; nothing of it is
  * recorded before « Déposer ma demande » (rule 14).
  */
-export function RequestModal({ badId, accent, pseudo, charges, souffleur, guess, onGuess }: Props) {
+export function RequestModal({
+  badId,
+  accent,
+  pseudo,
+  charges,
+  souffleur,
+  guess,
+  onGuess,
+  triggerId,
+  triggerClassName,
+}: Props) {
   const t = useTranslations("Relations.request");
   const errorT = useTranslations("Relations.errors");
   const prompterT = useTranslations("Prompter");
@@ -82,12 +95,12 @@ export function RequestModal({ badId, accent, pseudo, charges, souffleur, guess,
     <>
       <button
         type="button"
+        id={triggerId}
         onClick={openModal}
-        className={buttonClasses(
-          "primary",
-          "lg",
-          "font-display w-full rounded-[4px] text-xl uppercase",
-        )}
+        className={
+          triggerClassName ??
+          buttonClasses("primary", "lg", "font-display w-full rounded-[4px] text-xl uppercase")
+        }
       >
         {t("openWithBet", { number: guess })}
       </button>
