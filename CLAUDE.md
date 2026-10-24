@@ -72,7 +72,7 @@ Esprit : un site de rencontre **dans le même esprit que les prisons**, en style
 | Le QCM | L'Interrogatoire (« INTERROGATOIRE · 3/10 ») | `questions`, `answers` |
 | Score QCM | Indice de complicité | `complicity_score` |
 | Présentation du Bad | Note comportementale | `profile.bio` |
-| Panneau noir de la Fiche, sur deux tiges, devant le bas des 3 poses (recto : le dossier ; verso : les chefs d'accusation et le pari) | La pancarte | `components/relations/fiche-pancarte.tsx` |
+| Panneau de feutre noir dans un cadre de bois, suspendu sous le menton de la pose du centre ; s'agrandit (recto : le dossier ; verso papier : les chefs d'accusation et le pari) | La pancarte | `components/relations/fiche-show.tsx` |
 | Bloc identité de la Fiche | Identité du sujet | `get_fiche` |
 | Identifiant public de la Fiche | N° d'écrou (aléatoire, jamais l'id interne) | Phase 4 |
 | Étape photos du Bad (3 poses : face, profil gauche, profil droit) | Passe à la toise / Photo signalétique | `photos.position` 0, 1, 2 |

@@ -1,6 +1,6 @@
 # Parcours complet : décisions de design du porteur (2026-10-05)
 
-> Validé par Chris le 2026-10-05. Maquettes (mobile 390 px, plus une Fiche grand écran) dans `docs/design/parcours/` : ce sont des fichiers d'un outil de design (styles en ligne). Reproduis **le rendu et les règles**, pas le code. Références visuelles du porteur : `docs/design/reference-dossier-judiciaire.jpg` (ancienne Fiche, **remplacée le 2026-10-23** par `FichePancarte.dc.html`, voir §2) et `docs/design/reference-parloir-ancienne.jpg` (ancienne piste néon, **abandonnée** au profit du style « cabine », voir §5).
+> Validé par Chris le 2026-10-05. Maquettes (mobile 390 px, plus une Fiche grand écran) dans `docs/design/parcours/` : ce sont des fichiers d'un outil de design (styles en ligne). Reproduis **le rendu et les règles**, pas le code. Références visuelles du porteur : `docs/design/reference-dossier-judiciaire.jpg` (ancienne Fiche, remplacée par `FichePancarte.dc.html` le 2026-10-23 puis par `FicheShow.dc.html` le 2026-10-24, voir §2) et `docs/design/reference-parloir-ancienne.jpg` (ancienne piste néon, **abandonnée** au profit du style « cabine », voir §5).
 > Ce document **complète et remplace** la SPEC sur les points ci-dessous. Mets à jour SPEC, CLAUDE.md (vocabulaire) et SCHEMA en conséquence.
 
 ## 1. Les couleurs désignent le genre, jamais le rôle
@@ -15,25 +15,20 @@
 - Contrastes AA inchangés : le rouge en petit texte sur fond sombre = `#EE3A55` ; sur papier crème = `#B5172E` ; l'or sur papier crème = `#765A0E` (5,33:1 ; `#8A6A12` ne faisait que 4,16:1, refusé par axe — validé par Chris le 2026-10-06).
 - Le vert (exception §1 bis) reste réservé aux retours du jeu et aux statuts positifs (Bien vu, Le vrai, Visite acceptée, Casier vierge, Ouvert aux visites).
 
-## 2. La Fiche du Bad = les 3 poses et la pancarte (décision du porteur, 2026-10-23)
+## 2. La Fiche du Bad = la Fiche v7 (décision du porteur, 2026-10-24)
 
-Maquette : `docs/design/parcours/FichePancarte.dc.html`. Elle **remplace** la planche du dossier judiciaire (`reference-dossier-judiciaire.jpg`, `Fiche.dc.html`, `FicheLarge.dc.html`, mise en page de la 9d, vue miniature et plein écran comprises) : ces fichiers restent dans `docs/design/` pour mémoire, ils ne font plus foi.
+Maquette : `docs/design/parcours/FicheShow.dc.html`, textures `docs/design/parcours/img/*.webp` (copiées dans `public/brand/textures/`). Elle **remplace** la Fiche « pancarte » de la 9g (`FichePancarte.dc.html`) et la planche du dossier judiciaire (`reference-dossier-judiciaire.jpg`, `Fiche.dc.html`, `FicheLarge.dc.html`), conservées pour mémoire.
 
-- **Les 3 poses** détourées, côte à côte sur le mur gradué : profil gauche, **face au centre (plus large)**, profil droit. Tampon **« BONNE CONDUITE »** en haut à droite si le badge est acquis. Toucher une photo l'ouvre **en plein écran**, avec un balayage entre les 3 poses (flèches, bouton « Fermer », Échap).
-- **La pancarte** : un panneau noir à lettres blanches, sur deux tiges, devant le bas des photos.
-  - **Recto** : « Dossier judiciaire », **N° d'écrou**, **pseudo** (couleur du genre de la personne affichée), archétype · âge · quartier et distance, signes distinctifs, ce que la personne cherche, **note comportementale abrégée**, statut (« Ouvert aux visites » / « Parloir complet »), complices recrutés s'il y en a.
-  - Le bouton **« Chefs d'accusation »** ne retourne **que la pancarte** (rotation 3D, coupée si l'utilisateur a demandé moins de mouvement).
-  - **Verso** : les 3 chefs d'accusation, « 1 vrai · 2 faux ». Pour un Visiteur qui peut demander une visite : un **groupe radio** (fieldset + legend) pour parier. Sinon (sa propre Fiche, demande en cours…) : une simple liste.
-- **La complicité** en haut, à côté du lien de retour.
-- **Le pari** coché sur la pancarte est transmis à la **Demande de parloir**, qui s'ouvre avec ce choix (modifiable). Bouton **« Demander une visite · pari n° X »**. Sans pari : « Retourne la pancarte et parie pour demander ». Rien du pari n'est enregistré avant l'envoi de la demande (règle 14).
-- **Le bouton suit l'état** : demande en cours = « Demande envoyée » (désactivé) ; « Parloir complet » (désactivé) ; visite acceptée, Permis permanent, Affaire classée en cours = explication ; Visiteur sans Permis délivré = explication ; blocage = la Fiche n'existe plus pour lui (404).
-- **« Voir ma Fiche »** (Ma Fiche, Bad) : sa Fiche telle qu'un Visiteur la voit, verso consultable, sans pari ni bouton de demande.
-- **Grand écran** : la même composition, agrandie et centrée (640 px au plus), pas de planche.
-- **Cartes de la Promenade et de la Découverte** : la photo de face sur le mur, avec une **mini-pancarte** (pseudo, âge, quartier).
-- **Prise de photo** (« Passe à la toise », photo du Permis) : un repère de cadrage montre la zone de la pancarte, consigne **« Visage et épaules dans le cadre »** (aussi dans le règlement du Greffe). L'aperçu détouré d'une pose montre la photo avec la pancarte.
-- **Accessibilité** : la pancarte se lit comme du texte ; ordre de lecture photos → recto → verso (la face cachée est inerte) ; contraste AA (rouge `#FF5C74` sur le noir de la pancarte, 5,7:1).
-- **Jamais affichés** (SPEC §5, non négociable) : date de naissance, prénom ou nom réel, taille.
-- **N° d'écrou** : identifiant public **aléatoire** (ex. 4 à 6 chiffres, unique), jamais l'identifiant interne ni un compteur séquentiel (pas d'énumération des membres).
+- **Le mur** (`mur-toise.webp`, mur commun de tout le site, remplace `mur-toise.svg`) occupe l'écran de l'en-tête au pied de page, avec la toise chiffrée en code à droite.
+- **Les 3 poses** ont la même taille (300 × 390 sur 390 px de large) ; celle du centre est devant et chevauche les deux autres, assombries. Les silhouettes détourées remplissent leur cadre : recadrage automatique (lu dans la transparence), ancrées en bas, la tête près du haut.
+- **Glissement** : les cadres ne bougent jamais, seules les images changent, en fondu enchaîné avec un léger flou (0,8 s), en boucle dans les deux sens ; seuil 40 px, `touch-action: pan-y`. Toucher une pose de côté la met au centre. Aucune flèche, aucun point. Moins de mouvement demandé : changement sans animation.
+- **Habillage dossier** : bandeau papier « DOSSIER JUDICIAIRE · PHOTO SIGNALÉTIQUE · ALIGNEMENT 3 POSES » avec trombone et ruban adhésif (sprite `accessoires.webp`) ; tampon « BONNE CONDUITE » (`tampon.webp`, texte en code) si le badge est acquis ; pied de page papier : code-barres, « DOSSIER N° {écrou} · PAGE 1/1 · QUARTIER : {ville} », trace de café à 45 %.
+- **La pancarte** : petite, cadre de bois (`cadre-pancarte.webp` en `border-image`) et fond de feutre, sous le menton de la pose du centre, lisible sans être ouverte (pseudo, âge · ville · distance, signes, N° d'écrou, « Agrandir »). Au toucher, elle s'agrandit sur le bas de l'écran ; les têtes restent visibles, pas de voile, le glissement marche toujours. Recto : signes distinctifs, cherche, points communs, note comportementale (en entier), « Retourner : chefs d'accusation ». Verso (papier) : les 3 chefs d'accusation en boutons radio et « Valider mon pari » (désactivé sans choix). « Réduire » (44 px) sur les deux faces, Échap. Face cachée : `pointer-events: none`, `inert`, `aria-hidden`.
+- **Le pari** validé est transmis à la Demande de parloir (bouton or « Demander une visite · pari n° X » dans le pied de page ; avant : « Retourne la pancarte pour parier »). Rien n'est enregistré avant l'envoi ; le résultat n'est jamais révélé avant la visite (règle 14).
+- **Signaler et Bloquer** : derrière l'icône drapeau en haut à droite (44 px, « Signaler ou bloquer »), qui ouvre les parcours existants.
+- **États** (inchangés depuis la 9g) : « Demande envoyée » et « Parloir complet » désactivés, explications sinon ; « Voir ma Fiche » pour le Bad, verso consultable, sans pari ni demande.
+- **Couleurs** selon le genre de la personne affichée ; encre sur papier plus foncée pour l'AA (rouge `#9A1226`, or `#665010`) ; aucun texte posé directement sur le mur.
+- **Jamais affichés** (SPEC §5, non négociable) : date de naissance, prénom ou nom réel, taille. **N° d'écrou** aléatoire, jamais l'identifiant interne.
 
 ## 3. Alignement 3 poses obligatoire pour les Bads
 
@@ -76,7 +71,8 @@ Inchangés et simples : Signaler, Bloquer, Conseils sécurité. Toujours interdi
 | `Main.dc.html` | Bad · étape 6 · assistant du Casier | 3 |
 | `QCM.dc.html` | Étape 8 · L'Interrogatoire (« Affiner » ouvert) | 3 |
 | `Promenade.dc.html` | Visiteur · La Promenade 21:00 | 4 |
-| `FichePancarte.dc.html` | Fiche d'un Bad : 3 poses et la pancarte (remplace les deux suivantes, 2026-10-23) | 9 |
+| `FicheShow.dc.html` (+ `img/`) | Fiche d'un Bad v7 : mur commun, 3 poses, pancarte agrandissable (2026-10-24) | 9 |
+| `FichePancarte.dc.html` | Fiche 9g, remplacée par la v7 | 9 |
 | `Fiche.dc.html` / `FicheLarge.dc.html` | Ancienne Fiche (téléphone / grand écran), ne fait plus foi | 4 |
 | `Demande.dc.html` | Demande de parloir (pari, mot, Souffleur) | 4 |
 | `MesDemandes.dc.html` | Mes demandes de parloir + choix de l'heure | 4–5 |
