@@ -14,7 +14,10 @@
 body{margin:0}
 a{color:#F2E8D5}a:hover{color:#E8B84A}
 .room{background:#0E0E10}
-.wall{background-color:#B9B3A8;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 27px,rgba(14,14,16,.42) 27px,rgba(14,14,16,.42) 28px)}
+.wall{background:#B9B3A8 url(img/mur-toise.webp) center top/cover no-repeat}
+.board{background:#1C1C1F url(img/feutre.webp) 0 0/220px}
+.frame{border-style:solid;border-color:transparent;border-image:url(img/cadre-pancarte.webp) 177 113 119 115 stretch}
+.sprite{position:absolute;background-image:url(img/accessoires.webp);background-repeat:no-repeat;pointer-events:none}
 .board{background-color:#1C1C1F;background-image:repeating-linear-gradient(to bottom,#1C1C1F 0,#1C1C1F 5px,#141416 5px,#141416 6px)}
 .peg{font-family:'Inter Tight',sans-serif;font-weight:800;text-transform:uppercase;color:#F4F1EA;letter-spacing:1.5px;text-shadow:0 1px 0 rgba(0,0,0,.6)}
 .pose{position:absolute;bottom:0;width:300px;height:390px;padding:0;border:0;background:transparent;cursor:pointer}
@@ -22,10 +25,10 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 .layer svg{position:absolute;left:0;bottom:0;width:100%;height:100%}
 .pose:focus-visible,.round:focus-visible,.small:focus-visible,.x:focus-visible{outline:3px solid #E8B84A;outline-offset:-3px}
 .round{width:44px;height:44px;border-radius:50%;border:2px solid #4A4A50;background:rgba(14,14,16,.7);color:#F2E8D5;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
-.small{position:absolute;left:92px;top:452px;width:206px;padding:8px 10px 7px;border:4px solid #5A4630;border-radius:3px;box-shadow:0 10px 18px rgba(0,0,0,.55);cursor:pointer;text-align:left;box-sizing:border-box;z-index:8}
+.small{position:absolute;left:68px;top:420px;width:254px;padding:4px 8px 2px;border-width:36px 24px 25px 24px;background-clip:padding-box;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45));cursor:pointer;text-align:left;box-sizing:border-box;z-index:8}
 .x{position:absolute;top:8px;right:8px;width:44px;height:44px;border-radius:50%;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
 .scene{perspective:1300px}
-.card{position:relative;width:354px;height:395px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.card{position:relative;width:354px;height:428px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
 .side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px;overflow:hidden;box-shadow:0 22px 44px rgba(0,0,0,.65);box-sizing:border-box}
 .back{transform:rotateY(180deg)}
 .zoom{animation:zoom .4s cubic-bezier(.2,.9,.3,1.05) both;transform-origin:50% 0%}
@@ -33,7 +36,7 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 .bet{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:2px solid #0E0E10;background:#FFFFFF;cursor:pointer}
 .bet input{width:22px;height:22px;margin:0;accent-color:#B5172E;flex-shrink:0}
 .bet:focus-within{outline:3px solid #B5172E;outline-offset:2px}
-.paper{background-color:#F1E9D6;background-image:radial-gradient(rgba(120,100,70,.10) 1px,transparent 1px);background-size:5px 5px}
+.paper{background:#F1E9D6 url(img/papier.webp) 0 0/400px}
 @media (prefers-reduced-motion: reduce){.layer,.card{transition:none}.zoom{animation:none}}
 </style>
 </helmet>
@@ -44,8 +47,7 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 </div>
 
 <div class="wall" onPointerDown="{{ down }}" onPointerUp="{{ up }}" style="position: absolute; left: 0; top: 52px; width: 390px; height: 652px; overflow: hidden; touch-action: pan-y">
-<div aria-hidden="true" style="position: absolute; inset: 0; background: radial-gradient(ellipse 55% 45% at 50% 30%,rgba(255,250,235,.5),rgba(255,250,235,0) 70%)"></div>
-<div style="position: absolute; left: 10px; right: 36px; top: 10px; padding: 6px 10px 5px; background: #EFE6D2; box-shadow: 0 3px 0 #0E0E10; z-index: 6; color: #0E0E10"><p style="margin: 0; font-family: Anton, sans-serif; font-size: 26px; line-height: 1; letter-spacing: .5px; text-transform: uppercase">Dossier judiciaire</p><p style="margin: 3px 0 0; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 1px; color: #B5172E">PHOTO SIGNALÉTIQUE · ALIGNEMENT 3 POSES</p></div>
+<div class="paper" style="position: absolute; left: 10px; right: 36px; top: 12px; padding: 7px 10px 6px 34px; box-shadow: 0 4px 10px rgba(0,0,0,.45); transform: rotate(-1deg); z-index: 6; color: #0E0E10"><span class="sprite" aria-hidden="true" style="left: -10px; top: -18px; width: 52px; height: 65px; background-size: 295px 148px; background-position: -23px -15px; transform: rotate(-8deg)"></span><span class="sprite" aria-hidden="true" style="right: -14px; top: -10px; width: 89px; height: 35px; background-size: 260px 130px; background-position: -86px -18px; transform: rotate(14deg); opacity: .92"></span><p style="margin: 0; font-family: Anton, sans-serif; font-size: 26px; line-height: 1; letter-spacing: .5px; text-transform: uppercase">Dossier judiciaire</p><p style="margin: 3px 0 0; font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 1px; color: #B5172E">PHOTO SIGNALÉTIQUE · ALIGNEMENT 3 POSES</p></div>
 <div aria-hidden="true" style="position: absolute; right: 0; top: 0; bottom: 0; width: 26px; background: rgba(14,14,16,.88); display: flex; flex-direction: column; justify-content: space-around; font-family: Anton, sans-serif; font-size: 10px; color: #EFE6D2; text-align: center; z-index: 6"><span>200</span><span>190</span><span>180</span><span style="background: #E0233F; color: #0E0E10">170</span><span>160</span><span>150</span><span>140</span><span>130</span></div>
 
 <button type="button" class="pose" onClick="{{ goLeft }}" aria-label="{{leftLabel}}" style="left: -100px; z-index: 2; filter: brightness(.82)">
@@ -66,11 +68,10 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 <div class="layer" style="opacity: {{c2}}; filter: {{cf2}}"><svg viewBox="0 0 100 130" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g transform="translate(100 0) scale(-1 1)"><ellipse cx="47" cy="36" rx="20" ry="24" fill="#16161A"></ellipse><path d="M64 30L74 46L64 49Z" fill="#16161A"></path><rect x="38" y="54" width="17" height="24" fill="#16161A"></rect><path d="M8 130C10 96 26 78 46 76C68 78 88 96 90 130Z" fill="#16161A"></path></g></svg></div>
 </button>
 
-<div style="position: absolute; right: 34px; top: 84px; padding: 3px 7px; border: 3px solid #E0233F; border-radius: 6px; background: rgba(239,230,210,.94); color: #B5172E; font-family: Anton, sans-serif; font-size: 13px; line-height: 1; transform: rotate(9deg); z-index: 7">BONNE<br>CONDUITE</div>
+<div style="position: absolute; right: 30px; top: 92px; padding: 9px 14px; background: url(img/tampon.webp) center/100% 100% no-repeat; color: #B5172E; font-family: Anton, sans-serif; font-size: 13px; line-height: 1; transform: rotate(9deg); z-index: 7">BONNE<br>CONDUITE</div>
 
 <sc-if value="{{small}}" hint-placeholder-val="{{ true }}">
-<button type="button" class="small board" onClick="{{ openFront }}" aria-expanded="false" aria-label="Agrandir la pancarte de Lune_Noire">
-<span aria-hidden="true" style="position: absolute; top: -14px; left: 34px; width: 3px; height: 12px; background: #8E8E94"></span><span aria-hidden="true" style="position: absolute; top: -14px; right: 34px; width: 3px; height: 12px; background: #8E8E94"></span>
+<button type="button" class="small board frame" onClick="{{ openFront }}" aria-expanded="false" aria-label="Agrandir la pancarte de Lune_Noire">
 <span class="peg" style="display: block; font-size: 20px; line-height: 1; letter-spacing: 2px; color: #FF5C74">Lune_Noire</span>
 <span class="peg" style="display: block; margin-top: 4px; font-size: 12px">29 ans · Nice · 34 km</span>
 <span class="peg" style="display: block; margin-top: 2px; font-size: 11px; letter-spacing: 1px; color: #DCD6CA">Biker · Tatouée · Noctambule</span>
@@ -80,7 +81,7 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 </div>
 
 
-<div class="paper" style="position: absolute; left: 0; right: 0; top: 704px; bottom: 0; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; color: #0E0E10; border-top: 4px solid #0E0E10">
+<div class="paper" style="position: absolute; left: 0; right: 0; top: 704px; bottom: 0; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; color: #0E0E10; border-top: 4px solid #0E0E10"><span class="sprite" aria-hidden="true" style="right: 6px; top: 2px; width: 104px; height: 86px; background-size: 414px 207px; background-position: -293px -103px; opacity: .45"></span>
 <div style="display: flex; align-items: center; gap: 10px">
 <svg width="96" height="30" viewBox="0 0 96 30" aria-hidden="true"><g fill="#0E0E10"><rect x="0" width="3" height="30"></rect><rect x="5" width="1" height="30"></rect><rect x="8" width="2" height="30"></rect><rect x="13" width="4" height="30"></rect><rect x="19" width="1" height="30"></rect><rect x="22" width="2" height="30"></rect><rect x="27" width="3" height="30"></rect><rect x="32" width="1" height="30"></rect><rect x="35" width="4" height="30"></rect><rect x="41" width="2" height="30"></rect><rect x="45" width="1" height="30"></rect><rect x="48" width="3" height="30"></rect><rect x="53" width="2" height="30"></rect><rect x="57" width="1" height="30"></rect><rect x="60" width="4" height="30"></rect><rect x="66" width="2" height="30"></rect><rect x="70" width="1" height="30"></rect><rect x="73" width="3" height="30"></rect><rect x="78" width="2" height="30"></rect><rect x="82" width="4" height="30"></rect><rect x="88" width="1" height="30"></rect><rect x="91" width="3" height="30"></rect></g></svg>
 <p style="margin: 0; flex: 1; font-family: 'Special Elite', monospace; font-size: 12px; line-height: 1.35; letter-spacing: 1px">DOSSIER N° 0412<br>PAGE 1/1 · QUARTIER : NICE</p>
@@ -94,12 +95,12 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 </div>
 
 <sc-if value="{{zoomed}}" hint-placeholder-val="{{ false }}">
-<div class="scene zoom" role="region" aria-label="Pancarte de Lune_Noire, agrandie" style="position: absolute; left: 18px; top: 440px; z-index: 20">
+<div class="scene zoom" role="region" aria-label="Pancarte de Lune_Noire, agrandie" style="position: absolute; left: 18px; top: 408px; z-index: 20">
 <div class="card" style="transform: {{cardTransform}}">
-<section class="side board" aria-hidden="{{frontHidden}}" style="pointer-events: {{frontEvents}}; border: 6px solid #5A4630; padding: 14px 16px; display: flex; flex-direction: column; gap: 5px">
+<section class="side board frame" aria-hidden="{{frontHidden}}" style="pointer-events: {{frontEvents}}; border-width: 40px 25px 27px 25px; background-clip: padding-box; border-radius: 0; box-shadow: none; overflow: visible; filter: drop-shadow(0 16px 22px rgba(0,0,0,.6)); padding: 8px 10px; display: flex; flex-direction: column; gap: 5px">
 <button type="button" class="x" onClick="{{ closeZoom }}" aria-label="Réduire la pancarte"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F1EA" stroke-width="2.4" aria-hidden="true"><path d="M4 14h6v6"></path><path d="M20 10h-6V4"></path><path d="m14 10 7-7"></path><path d="m3 21 7-7"></path></svg></button>
 <p class="peg" style="margin: 2px 0 0; font-size: 32px; line-height: 1; letter-spacing: 3px; color: #FF5C74">Lune_Noire</p>
-<p class="peg" style="margin: 0; font-size: 15px">Bad girl · 29 ans · Nice · 34 km</p>
+<p class="peg" style="margin: 0; font-size: 13px">Bad girl · 29 ans · Nice · 34 km</p>
 <div style="height: 1px; background: #3A3A40; margin: 2px 0"></div>
 <p class="peg" style="margin: 0; font-size: 11px; color: #C9C3B8">Signes distinctifs</p>
 <p class="peg" style="margin: 0; font-size: 13px; letter-spacing: 1px; line-height: 1.4">Biker · Triumph de 1974<br>Tatouée · dragon sur la nuque<br>Noctambule · franc-parler</p>
@@ -107,7 +108,7 @@ a{color:#F2E8D5}a:hover{color:#E8B84A}
 <p class="peg" style="margin: 0; font-size: 13px; letter-spacing: 1px">Bad boys, 27 à 38 ans</p>
 <p class="peg" style="margin: 0; font-size: 11px; color: #C9C3B8">Points communs avec toi</p>
 <p class="peg" style="margin: 0; font-size: 13px; letter-spacing: 1px">Couche-tard · moto de nuit</p>
-<p style="margin: 0; font-size: 13px; line-height: 1.45; font-weight: 600; color: #DCD6CA">« Allergique aux plans trop sages. Préfère une vraie conversation à cent messages tièdes. »</p>
+<p style="margin: 0; font-size: 12px; line-height: 1.4; font-weight: 600; color: #DCD6CA">« Allergique aux plans trop sages. Préfère une vraie conversation à cent messages tièdes. »</p>
 <button type="button" onClick="{{ flip }}" style="margin-top: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; background: #FF5C74; border: 0; border-radius: 999px; color: #0E0E10; font-family: 'Inter Tight', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer">Retourner : chefs d'accusation</button>
 </section>
 <section class="side back paper" aria-hidden="{{backHidden}}" style="pointer-events: {{backEvents}}; color: #0E0E10; border: 3px solid #0E0E10; padding: 14px; display: flex; flex-direction: column; gap: 8px">
