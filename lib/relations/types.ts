@@ -74,8 +74,28 @@ export function localize(value: Label | null | undefined, locale: string): strin
   return (locale === "en" ? value.en : value.fr) ?? value.fr ?? value.en ?? "";
 }
 
-/** « Biker · Triumph de 1974 » */
-export function tribeText(tribeValue: { label: Label; detail: string | null }, locale: string) {
-  const name = localize(tribeValue.label, locale);
+/**
+ * A French inclusive label (« Tatoué·e », « Rockeur·se ») agreed with the gender of the person it
+ * describes: « Tatoué » for a man, « Tatouée » for a woman, unchanged for a non-binary or other
+ * person (9i). Labels without a middle dot, and English ones, stay as they are.
+ */
+export function agreeLabel(label: string, gender: Gender | null | undefined): string {
+  if (gender !== "man" && gender !== "woman") return label;
+  return label.replace(/([\p{L}]+)·([\p{L}]+)/gu, (_, base: string, suffix: string) => {
+    if (gender === "man") return base;
+    // Rockeur·se → Rockeuse, Créateur·rice → Créatrice, Tatoué·e → Tatouée, Musicien·ne → Musicienne.
+    if (suffix === "se" && base.endsWith("eur")) return `${base.slice(0, -1)}se`;
+    if (suffix === "rice" && base.endsWith("teur")) return `${base.slice(0, -3)}rice`;
+    return `${base}${suffix}`;
+  });
+}
+
+/** « Biker · Triumph de 1974 »; the label agreed with the gender of the person when given. */
+export function tribeText(
+  tribeValue: { label: Label; detail: string | null },
+  locale: string,
+  gender?: Gender | null,
+) {
+  const name = agreeLabel(localize(tribeValue.label, locale), gender);
   return tribeValue.detail ? `${name} · ${tribeValue.detail}` : name;
 }

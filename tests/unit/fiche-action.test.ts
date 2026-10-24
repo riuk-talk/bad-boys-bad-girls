@@ -59,3 +59,19 @@ describe("abridge", () => {
     expect(text.startsWith(short.slice(0, -1))).toBe(true);
   });
 });
+
+describe("agreeLabel", () => {
+  it("agrees an inclusive French label with the gender of the person shown", async () => {
+    const { agreeLabel } = await import("@/lib/relations/types");
+    expect(agreeLabel("Tatoué·e", "man")).toBe("Tatoué");
+    expect(agreeLabel("Tatoué·e", "woman")).toBe("Tatouée");
+    expect(agreeLabel("Tatoué·e", "non_binary")).toBe("Tatoué·e");
+    expect(agreeLabel("Tatoué·e", "other")).toBe("Tatoué·e");
+    expect(agreeLabel("Rockeur·se", "woman")).toBe("Rockeuse");
+    expect(agreeLabel("Voyageur·se", "man")).toBe("Voyageur");
+    expect(agreeLabel("Fêtard·e", "woman")).toBe("Fêtarde");
+    expect(agreeLabel("Créateur·rice", "woman")).toBe("Créatrice");
+    expect(agreeLabel("Biker", "woman")).toBe("Biker");
+    expect(agreeLabel("Tattooed", "woman")).toBe("Tattooed");
+  });
+});

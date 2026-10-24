@@ -15,6 +15,7 @@ import { redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
 import { ageFromBirthdate, completeness } from "@/lib/fiche/completeness";
 import { parseRole } from "@/lib/onboarding/config";
+import { agreeLabel } from "@/lib/relations/types";
 
 type Props = { params: Promise<{ locale: string }> };
 type Label = { fr?: string; en?: string };
@@ -136,7 +137,7 @@ export default async function MyFichePage() {
           ? "approved"
           : "pending";
   const signs = (mine ?? []).map((row) => {
-    const label = tribeLabels.get(row.tribe_id) ?? "";
+    const label = agreeLabel(tribeLabels.get(row.tribe_id) ?? "", profile.gender);
     return row.detail ? `${label} — ${row.detail}` : label;
   });
   const photo =

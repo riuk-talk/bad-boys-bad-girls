@@ -114,7 +114,7 @@ export default async function LetterPage({ params, searchParams }: Props) {
                 key={tribeText(tribe, "fr")}
                 className="inline-flex min-h-[30px] items-center rounded-full border border-[#cfc4ae] px-2.5 text-xs text-[#4a4038]"
               >
-                {tribeText(tribe, locale)}
+                {tribeText(tribe, locale, permit.gender)}
               </li>
             ))}
           </ul>
