@@ -131,6 +131,7 @@ export function FicheShow({
   back,
   safety,
   status,
+  fullscreen = false,
 }: {
   fiche: FicheView;
   photos: PhotoUrls;
@@ -142,9 +143,12 @@ export function FicheShow({
   safety: ReactNode;
   /** The explanation shown instead of the button (cooldown, Permis waiting, own Fiche…). */
   status: string | null;
+  /** Opened as a folder over the Découverte: no site header nor tab bar around it. */
+  fullscreen?: boolean;
 }) {
   const t = useTranslations("Relations.fiche");
   const locale = useLocale();
+  const root = useRef<HTMLDivElement>(null);
   const ids = useId();
   const accent = accentForGender(fiche.gender);
   const self = action.kind === "self";
@@ -184,8 +188,11 @@ export function FicheShow({
     if (!zoomed && !menu) return;
     function onKey(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
-      // A dialog of Signaler / Bloquer or of the Demande closes itself first.
-      if (document.querySelector("dialog[open]")) return;
+      // A dialog of Signaler / Bloquer or of the Demande closes itself first; the folder that
+      // holds the Fiche (DossierOverlay) waits: the placard and the menu close before it.
+      const dialogs = [...document.querySelectorAll("dialog[open]")];
+      if (dialogs.some((dialog) => !dialog.contains(root.current))) return;
+      event.preventDefault();
       if (menu) setMenu(false);
       else close();
     }
@@ -208,12 +215,14 @@ export function FicheShow({
   const vars = {
     "--pw": "min(300px, 77vw)",
     "--ph": "calc(var(--pw) * 1.3)",
-    "--wh": "max(calc(var(--ph) + 190px), calc(100dvh - 330px))",
+    "--wh": fullscreen
+      ? "max(calc(var(--ph) + 190px), calc(100dvh - 210px))"
+      : "max(calc(var(--ph) + 190px), calc(100dvh - 330px))",
     "--mid": "calc(50% - 13px)",
   } as CSSProperties;
 
   return (
-    <div data-accent={accent} className="flex flex-col" data-testid="fiche">
+    <div ref={root} data-accent={accent} className="flex flex-col" data-testid="fiche">
       <div className="flex h-13 items-center justify-between gap-2 px-3">
         {back}
         <div className="flex items-center gap-1">
