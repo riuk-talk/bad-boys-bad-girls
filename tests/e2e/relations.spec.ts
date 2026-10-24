@@ -377,10 +377,24 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await expect(center).toHaveAttribute("data-pose", "face");
     await expect(center).toHaveAccessibleName(`${bad.pseudo}, pose au centre : face`);
     const wall = fiche.getByTestId("fiche-wall");
-    const box = (await wall.boundingBox())!;
     async function swipe(dx: number) {
+      // Measured at each gesture: a notice above may have moved the page since the last one.
+      const box = (await wall.boundingBox())!;
       const y = box.y + 140;
       const x = box.x + box.width / 2;
+      // The gesture starts on the wall itself, not on the placard (which keeps its touches).
+      const start = await page.evaluate(
+        ([px, py]) => {
+          const target = document.elementFromPoint(px!, py!);
+          return target?.closest("[data-testid=placard-small]")
+            ? "placard"
+            : target?.closest("[data-testid=fiche-wall]")
+              ? "wall"
+              : (target?.outerHTML.slice(0, 80) ?? "none");
+        },
+        [x, y],
+      );
+      expect(start).toBe("wall");
       await page.mouse.move(x, y);
       await page.mouse.down();
       await page.mouse.move(x + dx / 2, y, { steps: 4 });
