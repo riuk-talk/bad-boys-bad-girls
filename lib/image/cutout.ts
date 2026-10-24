@@ -375,7 +375,8 @@ export async function cutOut(photo: Blob): Promise<CutoutResult> {
     const refineStarted = performance.now();
     const share = personShare(matte.mask);
     const early = decideCutout({ supported: true, loadMs, runMs, personShare: share });
-    if (early.kind !== "cutout") return { decision: early, blob: null, elapsedMs: elapsed(), detail };
+    if (early.kind !== "cutout")
+      return { decision: early, blob: null, elapsedMs: elapsed(), detail };
     refineCutout(image.data, w, h, matte.mask, matte.width, matte.height);
     if (previousAlpha) {
       for (let i = 0; i < w * h; i += 1)
