@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Fiche · Le tapis d'identification (carrousel, petite pancarte, dossier qui s'ouvre)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;600;700;800&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F2E8D5}a:hover{color:#E8B84A}
+.room{background:radial-gradient(ellipse 80% 55% at 50% 0%,#2A2620 0%,#121110 55%,#0A0A0C 100%)}
+.wall{background-color:#B9B3A8;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 19px,rgba(14,14,16,.38) 19px,rgba(14,14,16,.38) 20px)}
+.board{background-color:#1C1C1F;background-image:repeating-linear-gradient(to bottom,#1C1C1F 0,#1C1C1F 5px,#141416 5px,#141416 6px)}
+.peg{font-family:'Inter Tight',sans-serif;font-weight:800;text-transform:uppercase;color:#F4F1EA;letter-spacing:2px;text-shadow:0 1px 0 rgba(0,0,0,.6)}
+.paper{background-color:#F1E9D6;background-image:radial-gradient(rgba(120,100,70,.10) 1px,transparent 1px);background-size:5px 5px}
+.pose{position:absolute;padding:0;border:3px solid #0E0E10;overflow:hidden;cursor:pointer;transition:left .45s cubic-bezier(.3,.7,.2,1),top .45s cubic-bezier(.3,.7,.2,1),width .45s cubic-bezier(.3,.7,.2,1),height .45s cubic-bezier(.3,.7,.2,1),filter .45s,opacity .45s;box-shadow:0 18px 30px rgba(0,0,0,.6)}
+.pose:focus-visible,.round:focus-visible,.mini:focus-visible{outline:3px solid #E8B84A;outline-offset:3px}
+.round{width:44px;height:44px;border-radius:50%;border:2px solid #4A4A50;background:rgba(14,14,16,.7);color:#F2E8D5;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.mini{position:absolute;left:50%;transform:translateX(-50%) rotate(-2deg);bottom:96px;width:172px;padding:7px 10px 6px;border:4px solid #5A4630;border-radius:3px;box-shadow:0 10px 18px rgba(0,0,0,.6);cursor:pointer;text-align:left;z-index:5}
+.scene{perspective:1300px}
+.card{position:relative;width:330px;height:520px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:10px;overflow:hidden;box-shadow:0 26px 50px rgba(0,0,0,.7);box-sizing:border-box}
+.back{transform:rotateY(180deg)}
+.grow{animation:grow .38s cubic-bezier(.2,.9,.3,1.1) both}
+@keyframes grow{0%{transform:translateY(160px) scale(.45);opacity:0}100%{transform:none;opacity:1}}
+.bet{display:flex;gap:10px;align-items:flex-start;padding:10px;border:2px solid #0E0E10;background:#FFFFFF;cursor:pointer}
+.bet input{width:22px;height:22px;margin:0;accent-color:#B5172E;flex-shrink:0}
+.bet:focus-within{outline:3px solid #B5172E;outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.pose,.card{transition:none}.grow{animation:none}}
+</style>
+</helmet>
+<div class="room" style="position: relative; width: 390px; height: 844px; color: #F2E8D5; font-family: 'Inter Tight', sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="padding: 8px 12px 0; display: flex; justify-content: space-between; align-items: center; z-index: 6">
+<a href="#retour" style="display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 6px; font-size: 14px; font-weight: 600; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>Découverte</a>
+<div style="display: flex; align-items: center; gap: 8px"><span style="font-family: 'Special Elite', monospace; font-size: 11px; letter-spacing: 2px; color: #B8AE9C">COMPLICITÉ</span><span style="font-family: Anton, sans-serif; font-size: 22px; color: #EE3A55">82 %</span></div>
+</div>
+<div onPointerDown="{{ down }}" onPointerUp="{{ up }}" style="position: relative; height: 470px; touch-action: pan-y">
+<div aria-hidden="true" style="position: absolute; left: 50%; top: 0; width: 300px; height: 320px; transform: translateX(-50%); background: radial-gradient(ellipse 50% 60% at 50% 20%,rgba(255,244,214,.22),rgba(255,244,214,0) 70%)"></div>
+<sc-for list="{{poses}}" as="p" hint-placeholder-count="3">
+<button type="button" class="pose wall" onClick="{{p.go}}" aria-label="{{p.label}}" aria-current="{{p.current}}" style="left: {{p.left}}; top: {{p.top}}; width: {{p.w}}; height: {{p.h}}; z-index: {{p.z}}; filter: {{p.filter}}">
+<div style="position: absolute; inset: 0; background: radial-gradient(ellipse 70% 55% at 50% 25%,rgba(255,250,235,.45),rgba(255,250,235,0) 70%)"></div>
+<sc-if value="{{p.isFace}}" hint-placeholder-val="{{ true }}"><svg style="position: absolute; left: 0; bottom: 0; width: 100%; height: 92%" viewBox="10 8 100 112" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><path d="M33 46c0-20 12-32 27-32s27 12 27 32c0 5-1 9-2 12 4 6 4 18-2 24-3-6-5-9-6-12-4 8-10 12-17 12s-13-4-17-12c-1 3-3 6-6 12-6-6-6-18-2-24-1-3-2-7-2-12z" fill="#1E1E22"></path><path d="M6 124c4-30 24-44 54-44s50 14 54 44z" fill="#1E1E22"></path></svg></sc-if>
+<sc-if value="{{p.isLeft}}" hint-placeholder-val="{{ false }}"><svg style="position: absolute; left: 0; bottom: 0; width: 100%; height: 92%" viewBox="8 12 104 110" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><g transform="translate(120 0) scale(-1 1)"><path d="M50 18c18 0 30 12 30 30l-1 8 8 8-7 3 1 7c-2 6-8 8-15 7v12c22 4 36 18 40 47H12c3-30 14-44 28-50V97C27 90 20 76 20 58c0-24 13-40 30-40z" fill="#1E1E22"></path></g></svg></sc-if>
+<sc-if value="{{p.isRight}}" hint-placeholder-val="{{ false }}"><svg style="position: absolute; left: 0; bottom: 0; width: 100%; height: 92%" viewBox="8 12 104 110" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><path d="M50 18c18 0 30 12 30 30l-1 8 8 8-7 3 1 7c-2 6-8 8-15 7v12c22 4 36 18 40 47H12c3-30 14-44 28-50V97C27 90 20 76 20 58c0-24 13-40 30-40z" fill="#1E1E22"></path></svg></sc-if>
+<span style="position: absolute; left: 6px; top: 6px; padding: 2px 6px; background: #0E0E10; font-family: 'Special Elite', monospace; font-size: 10px; letter-spacing: 1px; color: #EFE6D2">{{p.tag}}</span>
+</button>
+</sc-for>
+<div aria-hidden="true" style="position: absolute; right: 12px; top: 26px; height: 318px; width: 22px; background: #0E0E10; display: flex; flex-direction: column; justify-content: space-between; padding: 4px 0; font-family: Anton, sans-serif; font-size: 9px; color: #EFE6D2; text-align: center; z-index: 4"><span>200</span><span>190</span><span>180</span><span style="background: #E0233F; color: #0E0E10">170</span><span>160</span><span>150</span></div>
+<div style="position: absolute; left: 22px; top: 18px; padding: 4px 8px; border: 3px solid #E0233F; border-radius: 6px; background: rgba(239,230,210,.92); color: #B5172E; font-family: Anton, sans-serif; font-size: 12px; line-height: 1; transform: rotate(-8deg); z-index: 4">BONNE<br>CONDUITE</div>
+<button type="button" class="mini board" onClick="{{ openFront }}" aria-label="Ouvrir la pancarte de Lune_Noire">
+<span aria-hidden="true" style="position: absolute; top: -18px; left: 34px; width: 3px; height: 16px; background: #8E8E94"></span><span aria-hidden="true" style="position: absolute; top: -18px; right: 34px; width: 3px; height: 16px; background: #8E8E94"></span>
+<span class="peg" style="display: block; font-size: 17px; line-height: 1; letter-spacing: 2px; color: #FF5C74">Lune_Noire</span>
+<span class="peg" style="display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; letter-spacing: 1.5px; color: #C9C3B8"><span>N° 0412</span><span>Toucher ▸</span></span>
+</button>
+<div style="position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 14px; z-index: 6">
+<button type="button" class="round" onClick="{{ prev }}" aria-label="Pose précédente"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+<div style="display: flex; gap: 6px" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="3"><span style="width: {{d.w}}; height: 6px; border-radius: 3px; background: {{d.bg}}; transition: width .3s"></span></sc-for></div>
+<button type="button" class="round" onClick="{{ next }}" aria-label="Pose suivante"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+</div>
+</div>
+<div style="padding: 4px 18px 0">
+<p style="margin: 0; font-family: Anton, sans-serif; font-size: 38px; line-height: .95; letter-spacing: .5px; color: #EE3A55">LUNE_NOIRE</p>
+<p style="margin: 6px 0 0; font-size: 14px; color: #E6DCC8">Bad girl · 29 ans · Nice, à 34 km · <span style="color: #6FD39A">Ouverte aux visites</span></p>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px"><span style="padding: 4px 10px; border: 1px solid #4A4A50; border-radius: 999px; font-size: 12px; font-weight: 600">Biker</span><span style="padding: 4px 10px; border: 1px solid #4A4A50; border-radius: 999px; font-size: 12px; font-weight: 600">Tatouée</span><span style="padding: 4px 10px; border: 1px solid #4A4A50; border-radius: 999px; font-size: 12px; font-weight: 600">Noctambule</span></div>
+</div>
+<button type="button" onClick="{{ openBack }}" style="margin: 14px 16px 0; display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #EFE6D2; border: 3px solid #0E0E10; box-shadow: 5px 5px 0 #E0233F; color: #0E0E10; text-align: left; cursor: pointer">
+<span style="font-family: Anton, sans-serif; font-size: 34px; line-height: 1; color: #B5172E">3</span>
+<span style="flex: 1"><span style="display: block; font-family: Anton, sans-serif; font-size: 17px; text-transform: uppercase">Chefs d'accusation</span><span style="display: block; font-family: 'Special Elite', monospace; font-size: 12px">1 vrai, 2 faux. À toi de parier.</span></span>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+</button>
+<div style="margin-top: auto; padding: 12px 16px 16px; background: rgba(14,14,16,.9); border-top: 1px solid #2A2A2E">
+<sc-if value="{{hasBet}}" hint-placeholder-val="{{ false }}">
+<a href="#demande" style="display: flex; justify-content: center; align-items: center; min-height: 54px; background: #D4A437; color: #0E0E10; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; text-decoration: none; border-radius: 4px">Demander une visite · pari n° {{bet}}</a>
+</sc-if>
+<sc-if value="{{noBet}}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{ openBack }}" style="width: 100%; min-height: 54px; background: #D4A437; border: 0; color: #0E0E10; font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; border-radius: 4px; cursor: pointer">Parier et demander une visite</button>
+</sc-if>
+</div>
+<sc-if value="{{overlay}}" hint-placeholder-val="{{ false }}">
+<div role="dialog" aria-modal="true" aria-label="Pancarte de Lune_Noire" style="position: absolute; inset: 0; z-index: 20; background: rgba(5,5,7,.82); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px">
+<div class="scene grow">
+<div class="card" style="transform: {{cardTransform}}">
+<section class="side board" aria-hidden="{{frontHidden}}" style="pointer-events: {{frontEvents}}; border: 6px solid #5A4630; padding: 18px 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="peg" style="font-size: 11px; letter-spacing: 3px; color: #C9C3B8">Dossier judiciaire</span><span class="peg" style="font-size: 12px; color: #C9C3B8">N° 0412</span></div>
+<p class="peg" style="margin: 4px 0 0; font-size: 36px; line-height: 1; letter-spacing: 3px; color: #FF5C74">Lune_Noire</p>
+<p class="peg" style="margin: 0; font-size: 16px">Bad girl · 29 ans</p>
+<p class="peg" style="margin: 0; font-size: 14px; letter-spacing: 1.5px; color: #DCD6CA">Quartier : Nice · 34 km</p>
+<div style="height: 1px; background: #3A3A40"></div>
+<p class="peg" style="margin: 0; font-size: 12px; letter-spacing: 1.5px; color: #C9C3B8">Signes distinctifs</p>
+<p class="peg" style="margin: 0; font-size: 14px; letter-spacing: 1px; line-height: 1.4">Biker · Triumph de 1974<br>Tatouée · dragon sur la nuque<br>Noctambule · franc-parler</p>
+<p class="peg" style="margin: 0; font-size: 12px; letter-spacing: 1.5px; color: #C9C3B8">Cherche</p>
+<p class="peg" style="margin: 0; font-size: 14px; letter-spacing: 1px">Bad boys, 27 à 38 ans</p>
+<p class="peg" style="margin: 0; font-size: 12px; letter-spacing: 1px; line-height: 1.45; text-transform: none; font-weight: 700; color: #DCD6CA">« Allergique aux plans trop sages. Préfère une vraie conversation à cent messages tièdes. »</p>
+<div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center">
+<span class="peg" style="font-size: 11px; letter-spacing: 1.5px; color: #8EE2B0">Ouverte aux visites</span>
+<button type="button" onClick="{{ flip }}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; background: #FF5C74; border: 0; border-radius: 999px; color: #0E0E10; font-family: 'Inter Tight', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"></path><path d="M3 21v-5h5"></path></svg>Retourner</button>
+</div>
+</section>
+<section class="side back paper" aria-hidden="{{backHidden}}" style="pointer-events: {{backEvents}}; color: #0E0E10; padding: 18px 16px; display: flex; flex-direction: column; gap: 10px">
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 9px">
+<legend style="width: 100%; padding: 0 0 4px; border-bottom: 3px solid #B5172E; display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: Anton, sans-serif; font-size: 22px; text-transform: uppercase">Chefs d'accusation</span><span style="font-family: 'Special Elite', monospace; font-size: 11px">1 VRAI · 2 FAUX</span></legend>
+<p style="margin: 6px 0 2px; font-size: 13px; font-weight: 600">Coche celui que tu crois vrai. Le résultat reste secret jusqu'à la visite.</p>
+<sc-for list="{{charges}}" as="c" hint-placeholder-count="3">
+<label class="bet" style="box-shadow: {{c.shadow}}"><input type="radio" name="pari" checked="{{c.checked}}" onChange="{{c.pick}}"><span style="font-family: 'Special Elite', monospace; font-size: 15px; line-height: 1.35"><span style="color: #B5172E">{{c.n}}.</span> {{c.text}}</span></label>
+</sc-for>
+</fieldset>
+<div style="margin-top: auto; display: flex; gap: 8px">
+<button type="button" onClick="{{ flip }}" style="min-height: 48px; padding: 0 14px; background: transparent; border: 2px solid #0E0E10; border-radius: 4px; color: #0E0E10; font-family: 'Inter Tight', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer">Recto</button>
+<button type="button" onClick="{{ confirm }}" disabled="{{confirmDisabled}}" style="flex: 1; min-height: 48px; background: {{confirmBg}}; border: 0; border-radius: 4px; color: #0E0E10; font-family: Anton, sans-serif; font-size: 17px; text-transform: uppercase; cursor: pointer">Valider mon pari</button>
+</div>
+</section>
+</div>
+</div>
+<button type="button" onClick="{{ closeOverlay }}" style="min-height: 44px; padding: 0 18px; background: transparent; border: 1px solid #6A6A70; border-radius: 999px; color: #F2E8D5; font-family: 'Inter Tight', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer">Fermer</button>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { center: 1, overlay: false, flipped: false, pick: 0, bet: 0 };
+    this.startX = null;
+  }
+  go(delta) { this.setState({ center: (this.state.center + delta + 3) % 3 }); }
+  renderVals() {
+    var self = this;
+    var tags = ['PROFIL GAUCHE', 'FACE', 'PROFIL DROIT'];
+    var slots = [
+      { left: '72px', top: '26px', w: '232px', h: '318px', z: 3, filter: 'none' },
+      { left: '238px', top: '168px', w: '118px', h: '160px', z: 2, filter: 'brightness(.62) saturate(.6)' },
+      { left: '20px', top: '168px', w: '118px', h: '160px', z: 2, filter: 'brightness(.62) saturate(.6)' }
+    ];
+    var texts = ['A dormi une nuit entière dans un photomaton.', 'A donné un nom à sa moto : Josiane.', 'A chanté sur scène devant 300 personnes.'];
+    return {
+      poses: [0, 1, 2].map(function (i) {
+        var rel = (i - self.state.center + 3) % 3;
+        var s = slots[rel];
+        return {
+          tag: tags[i], isLeft: i === 0, isFace: i === 1, isRight: i === 2,
+          left: s.left, top: s.top, w: s.w, h: s.h, z: s.z, filter: s.filter,
+          current: rel === 0 ? 'true' : 'false',
+          label: rel === 0 ? 'Pose affichée : ' + tags[i].toLowerCase() : 'Afficher la pose ' + tags[i].toLowerCase(),
+          go: function () { self.setState({ center: i }); }
+        };
+      }),
+      dots: [0, 1, 2].map(function (i) { return { w: self.state.center === i ? '22px' : '6px', bg: self.state.center === i ? '#EE3A55' : '#5A5A60' }; }),
+      prev: function () { self.go(-1); },
+      next: function () { self.go(1); },
+      down: function (e) { self.startX = e.clientX; },
+      up: function (e) {
+        if (self.startX === null) return;
+        var dx = e.clientX - self.startX; self.startX = null;
+        if (dx > 40) self.go(-1); else if (dx < -40) self.go(1);
+      },
+      overlay: this.state.overlay,
+      openFront: function () { self.setState({ overlay: true, flipped: false }); },
+      openBack: function () { self.setState({ overlay: true, flipped: true }); },
+      closeOverlay: function () { self.setState({ overlay: false }); },
+      flip: function () { self.setState({ flipped: !self.state.flipped }); },
+      cardTransform: this.state.flipped ? 'rotateY(180deg)' : 'none',
+      frontHidden: this.state.flipped ? 'true' : 'false',
+      backHidden: this.state.flipped ? 'false' : 'true',
+      frontEvents: this.state.flipped ? 'none' : 'auto',
+      backEvents: this.state.flipped ? 'auto' : 'none',
+      charges: texts.map(function (t, i) {
+        var n = i + 1;
+        return { n: n, text: t, checked: self.state.pick === n, shadow: self.state.pick === n ? '4px 4px 0 #E0233F' : 'none', pick: function () { self.setState({ pick: n }); } };
+      }),
+      confirmDisabled: this.state.pick === 0,
+      confirmBg: this.state.pick === 0 ? '#B8AE9C' : '#D4A437',
+      confirm: function () { if (self.state.pick) self.setState({ bet: self.state.pick, overlay: false }); },
+      hasBet: this.state.bet > 0,
+      noBet: this.state.bet === 0,
+      bet: this.state.bet
+    };
+  }
+}
+</script>
+</body>
+</html>
