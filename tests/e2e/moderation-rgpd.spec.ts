@@ -196,7 +196,8 @@ test.describe("Phase 7: moderation and RGPD (local stack)", () => {
   test("a report, a reasoned decision, an exposé des motifs for each side", async ({ browser }) => {
     const reporter = await login(browser, visitor.email, visitor.password);
     await reporter.goto(`/fiche/${bad.id}`);
-    await reporter.getByRole("button", { name: "Signaler" }).click();
+    await reporter.getByRole("button", { name: "Signaler ou bloquer" }).click();
+    await reporter.getByRole("button", { name: "Signaler", exact: true }).click();
     await reporter.getByLabel("Harcèlement").check();
     await reporter.getByRole("button", { name: "Envoyer le signalement" }).click();
     await expect(reporter.getByText("Merci. Le Greffe va regarder.")).toBeVisible();

@@ -297,108 +297,133 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       .first()
       .click();
 
-    // The Fiche (FichePancarte.dc.html): the 3 poses on the wall, the placard in front of them.
+    // The Fiche v7 (FicheShow.dc.html): the 3 poses on the common wall, the small placard.
     await page.waitForURL(/\/fiche\//);
     const fiche = page.getByTestId("fiche");
-    await expect(fiche.getByRole("heading", { level: 1, name: bad.pseudo })).toBeVisible();
-    await expect(fiche.getByText("Dossier judiciaire")).toBeVisible();
-    await expect(fiche.getByText(/^N° \d{6}$/)).toBeVisible();
-    await expect(fiche.getByText("Complicité 100 %")).toBeVisible();
-    await expect(fiche.getByText(/^Bad girl · 30 ans · Port-Test/)).toBeVisible();
-    await expect(fiche.getByText(/^Signes : .*Triumph de 1974/)).toBeVisible();
-    await expect(fiche.getByText("Cherche : bad boys, 25 à 45 ans")).toBeVisible();
-    await expect(fiche.getByText(/^Note : Motarde, allergique/)).toBeVisible();
-    await expect(fiche.getByText("Ouvert aux visites")).toBeVisible();
+    await expect(
+      fiche.getByRole("heading", { level: 1, name: /^Dossier judiciaire/ }),
+    ).toBeVisible();
+    await expect(fiche.getByText("Photo signalétique · alignement 3 poses")).toBeVisible();
+    await expect(fiche.getByText("100 %")).toBeVisible();
+    await expect(
+      fiche.getByText(/^Dossier n° \d{6} · page 1\/1 · quartier : Port-Test$/),
+    ).toBeVisible();
+    // Readable without opening it: pseudo, age · town · distance, signs, N° d'écrou, Agrandir.
+    const small = fiche.getByTestId("placard-small");
+    await expect(small).toContainText(bad.pseudo);
+    await expect(small).toContainText("30 ans · Port-Test");
+    await expect(small).toContainText(/N° \d{6}/);
+    await expect(small).toContainText("Agrandir");
     // Never the birth date, a real name or a height (SPEC §5).
     await expect(fiche.getByText(/1996|02\/03|cm\b|CONFIDENTIEL/)).toHaveCount(0);
-    for (const pose of ["profil gauche", "de face", "profil droit"])
-      await expect(fiche.getByRole("img", { name: `${bad.pseudo}, ${pose}` })).toBeVisible();
-    // Read as text, in order: the photos, the front, then the back (inert until turned over).
-    const order = await fiche.evaluate((root) => {
-      const nodes = [
-        root.querySelector("img"),
-        root.querySelector("h1"),
-        root.querySelector("#pancarte-charges"),
-      ];
-      return nodes.every(
-        (node, index) =>
-          node !== null &&
-          (index === 0 ||
-            (nodes[index - 1]!.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) !==
-              0),
-      );
-    });
-    expect(order).toBe(true);
-    await expect(fiche.getByRole("radio")).toHaveCount(0);
-    // No request without a bet: the bar sends to the placard first.
+    // No request without a bet; Signaler and Bloquer behind the flag.
     const bar = page.getByTestId("fiche-action");
-    await expect(bar.getByRole("button", { name: /^Demander une visite/ })).toHaveCount(0);
-    await expect(
-      bar.getByRole("button", { name: "Retourne la pancarte et parie pour demander" }),
-    ).toBeVisible();
+    await expect(bar.getByText("Retourne la pancarte pour parier")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Demander une visite/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Signaler", exact: true })).toBeHidden();
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "visitor-fiche");
 
-    // « Chefs d'accusation » turns only the placard over: the 3 charges as a radio group.
-    await fiche.getByRole("button", { name: "Chefs d'accusation" }).click();
-    const charges = fiche.getByRole("group", { name: "Chefs d'accusation · 1 vrai · 2 faux" });
-    await expect(charges.getByRole("radio")).toHaveCount(3);
-    for (const charge of CHARGES)
-      await expect(charges.getByRole("radio", { name: new RegExp(charge) })).not.toBeChecked();
-    await expect(fiche.getByRole("region", { name: "Chefs d'accusation" })).toBeFocused();
-    await expect(fiche.getByRole("heading", { level: 1 })).toHaveCount(0);
-    await expect(fiche.getByRole("img", { name: `${bad.pseudo}, de face` })).toBeVisible();
-    expect(await axeViolations(page)).toEqual([]);
-    // With less motion asked, the placard turns at once.
+    // The poses: the frames stay, only the images change; a loop both ways.
+    const center = fiche.getByTestId("pose-center");
+    await expect(center).toHaveAttribute("data-pose", "face");
+    await expect(center).toHaveAccessibleName(`${bad.pseudo}, pose au centre : face`);
+    const wall = fiche.getByTestId("fiche-wall");
+    const box = (await wall.boundingBox())!;
+    async function swipe(dx: number) {
+      const y = box.y + 140;
+      const x = box.x + box.width / 2;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x + dx / 2, y, { steps: 4 });
+      await page.mouse.move(x + dx, y, { steps: 4 });
+      await page.mouse.up();
+    }
+    await swipe(-80);
+    await expect(center).toHaveAttribute("data-pose", "right");
+    await swipe(-80);
+    await expect(center).toHaveAttribute("data-pose", "left");
+    await swipe(-80);
+    await expect(center).toHaveAttribute("data-pose", "face");
+    await swipe(80);
+    await expect(center).toHaveAttribute("data-pose", "left");
+    // Below the threshold of 40 px, nothing moves.
+    await swipe(25);
+    await expect(center).toHaveAttribute("data-pose", "left");
+    await swipe(-80);
+    await expect(center).toHaveAttribute("data-pose", "face");
+    // A touch on a side pose puts it in the centre.
+    // Touched where the side pose shows (its outer part), as a finger would.
+    const side = async (name: string, x: number) => {
+      const button = fiche.getByRole("button", { name });
+      const size = (await button.boundingBox())!;
+      await button.click({ position: { x: size.width * x, y: size.height * 0.4 } });
+    };
+    await side("Mettre au centre : profil droit", 0.45);
+    await expect(center).toHaveAttribute("data-pose", "right");
+    await side("Mettre au centre : face", 0.6);
+    await expect(center).toHaveAttribute("data-pose", "face");
+    expect(await wall.evaluate((el) => getComputedStyle(el).touchAction)).toBe("pan-y");
+    // With less motion asked, the images change without a fade.
     await page.emulateMedia({ reducedMotion: "reduce" });
-    const duration = await page
-      .locator(".placard")
+    const fade = await center
+      .locator(".fiche-layer")
+      .first()
       .evaluate((el) => parseFloat(getComputedStyle(el).transitionDuration));
-    expect(duration).toBeLessThan(0.01);
+    expect(fade).toBeLessThan(0.01);
     await page.emulateMedia({ reducedMotion: null });
 
-    // The bet, kept on the page only: nothing is recorded before the request is sent (rule 14).
+    // The placard grows over the bottom; the heads stay visible above it.
+    await small.click();
+    const zoom = page.getByRole("region", { name: `Pancarte de ${bad.pseudo}, agrandie` });
+    await expect(zoom).toBeVisible();
+    await expect(zoom.getByText("Signes distinctifs")).toBeVisible();
+    await expect(zoom.getByText("Cherche")).toBeVisible();
+    await expect(zoom.getByText("Points communs avec toi")).toBeVisible();
+    await expect(zoom.getByText(/« Motarde, allergique/)).toBeVisible();
+    const top = (await zoom.boundingBox())!.y;
+    expect(top).toBeGreaterThan((await center.boundingBox())!.y + 60);
+    await expect(zoom.getByRole("radio")).toHaveCount(0);
+    // The photos still swipe while it is open.
+    await swipe(-80);
+    await expect(center).toHaveAttribute("data-pose", "right");
+    await swipe(80);
+    expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "visitor-fiche-pancarte");
+    // Réduire, then Escape.
+    await zoom.getByRole("button", { name: "Réduire la pancarte" }).click();
+    await expect(zoom).toHaveCount(0);
+    await expect(small).toBeFocused();
+    await small.click();
+    await page.keyboard.press("Escape");
+    await expect(zoom).toHaveCount(0);
+    await expect(small).toBeFocused();
+
+    // The back: the 3 charges as radio buttons, « Valider mon pari » once one is ticked.
+    await small.click();
+    await zoom.getByRole("button", { name: "Retourner : chefs d'accusation" }).click();
+    const charges = zoom.getByRole("group", { name: "Chefs d'accusation · 1 vrai · 2 faux" });
+    await expect(charges.getByRole("radio")).toHaveCount(3);
+    const validate = zoom.getByRole("button", { name: "Valider mon pari" });
+    await expect(validate).toBeDisabled();
+    await expect(zoom.getByRole("button", { name: "Retourner : chefs d'accusation" })).toHaveCount(
+      0,
+    );
+    expect(await axeViolations(page)).toEqual([]);
     await charges.getByText(CHARGES[0]!).click();
     await charges.getByText(CHARGES[1]!).click();
-    const ask = bar.getByRole("button", { name: "Demander une visite · pari n° 2" });
-    await expect(ask).toBeVisible();
+    await expect(validate).toBeEnabled();
     await shot(page, "visitor-fiche-verso");
+    // Nothing is recorded before the request is sent (rule 14).
     const { count: before } = await admin
       .from("visit_requests")
       .select("id", { count: "exact", head: true })
       .eq("visitor_id", visitor.id);
     expect(before).toBe(0);
-
-    // Back to the front, focus on its button; the bet stays.
-    await fiche.getByRole("button", { name: "Retourner" }).click();
-    await expect(fiche.getByRole("button", { name: "Chefs d'accusation" })).toBeFocused();
-    await expect(ask).toBeVisible();
-
-    // A photo full screen, the 3 poses one after the other; Escape gives the focus back.
-    const face = fiche.getByRole("button", { name: `${bad.pseudo}, de face Agrandir` });
-    await face.click();
-    const viewer = page.getByRole("dialog", { name: `Photo signalétique de ${bad.pseudo}` });
-    await expect(viewer.getByText("Pose 2 sur 3")).toBeVisible();
-    await expect(viewer.getByRole("button", { name: "Fermer" })).toBeVisible();
-    await page.keyboard.press("ArrowRight");
-    await expect(viewer.getByText("Pose 3 sur 3")).toBeVisible();
-    // A swipe is a scroll of the strip.
-    await viewer.locator(".snap-x").evaluate((el) => el.scrollTo({ left: 0 }));
-    await expect(viewer.getByText("Pose 1 sur 3")).toBeVisible();
-    expect(await axeViolations(page)).toEqual([]);
-    await shot(page, "visitor-fiche-photo");
-    await page.keyboard.press("Escape");
-    await expect(viewer).toHaveCount(0);
-    await expect(face).toBeFocused();
-
-    // A large screen: the same composition, enlarged and centred.
-    await page.setViewportSize({ width: 1280, height: 900 });
-    const box = await fiche.boundingBox();
-    expect(box?.width).toBeLessThanOrEqual(640);
-    expect(Math.abs((box?.x ?? 0) + (box?.width ?? 0) / 2 - 640)).toBeLessThan(20);
-    expect(await axeViolations(page)).toEqual([]);
-    await shot(page, "visitor-fiche-large");
-    await page.setViewportSize({ width: 390, height: 900 });
+    await validate.click();
+    await expect(zoom).toHaveCount(0);
+    const ask = bar.getByRole("button", { name: "Demander une visite · pari n° 2" });
+    await expect(ask).toBeFocused();
 
     // A full Parloir: the button says so, disabled.
     await admin.from("profiles").update({ requests_closed_manual: true }).eq("id", bad.id);
@@ -407,9 +432,11 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await admin.from("profiles").update({ requests_closed_manual: false }).eq("id", bad.id);
     await page.reload();
 
-    // La Demande de parloir opens with the bet made on the placard, still changeable.
-    await fiche.getByRole("button", { name: "Chefs d'accusation" }).click();
+    // La Demande de parloir opens with the bet validated on the placard, still changeable.
+    await small.click();
+    await zoom.getByRole("button", { name: "Retourner : chefs d'accusation" }).click();
     await charges.getByText(CHARGES[1]!).click();
+    await validate.click();
     await ask.click();
     const dialog = page.getByRole("dialog", { name: "Demande de parloir" });
     await expect(dialog.getByText("Lequel est vrai, selon toi ?")).toBeVisible();
@@ -433,6 +460,13 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await page.keyboard.press("Escape");
     // Once sent, the button follows the request.
     await expect(bar.getByRole("button", { name: "Demande envoyée" })).toBeDisabled();
+    // A large screen: the same composition, centred.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const centered = (await center.boundingBox())!;
+    expect(Math.abs(centered.x + centered.width / 2 - 640)).toBeLessThan(40);
+    expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "visitor-fiche-large");
+    await page.setViewportSize({ width: 390, height: 900 });
 
     await page.goto("/demandes");
     await expect(page.getByText("EN ATTENTE")).toBeVisible();
@@ -518,18 +552,21 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await page.getByRole("link", { name: "Voir ma Fiche" }).click();
     await page.waitForURL(/\/fiche\//);
     const own = page.getByTestId("fiche");
-    await expect(own.getByRole("heading", { level: 1, name: bad.pseudo })).toBeVisible();
-    await own.getByRole("button", { name: "Chefs d'accusation" }).click();
+    await expect(own.getByTestId("placard-small")).toContainText(bad.pseudo);
+    await own.getByTestId("placard-small").click();
+    const ownZoom = page.getByRole("region", { name: /agrandie$/ });
+    await ownZoom.getByRole("button", { name: "Retourner : chefs d'accusation" }).click();
     await expect(
-      own.getByRole("heading", { name: "Chefs d'accusation · 1 vrai · 2 faux" }),
+      ownZoom.getByRole("heading", { name: "Chefs d'accusation · 1 vrai · 2 faux" }),
     ).toBeVisible();
-    await expect(own.getByRole("listitem")).toHaveText(CHARGES.map((c, i) => `${i + 1}. ${c}`));
-    await expect(own.getByRole("radio")).toHaveCount(0);
+    await expect(ownZoom.getByRole("listitem")).toHaveText(CHARGES.map((c, i) => `${i + 1}. ${c}`));
+    await expect(ownZoom.getByRole("radio")).toHaveCount(0);
+    await expect(ownZoom.getByRole("button", { name: "Valider mon pari" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Demander une visite/ })).toHaveCount(0);
     await expect(
       page.getByText("C'est ta Fiche, telle que les Visiteurs la voient."),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Signaler" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Signaler ou bloquer" })).toHaveCount(0);
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "bad-voir-ma-fiche");
 
@@ -554,7 +591,9 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await shot(page, "visitor-mes-demandes");
 
     await page.goto(`/fiche/${bad.id}`);
-    await page.getByRole("button", { name: "Signaler" }).click();
+    // Signaler and Bloquer, behind the flag (one touch, then the existing flows).
+    await page.getByRole("button", { name: "Signaler ou bloquer" }).click();
+    await page.getByRole("button", { name: "Signaler", exact: true }).click();
     const report = page.getByRole("dialog", { name: /Signaler/ });
     await report.getByLabel("Faux profil").check();
     expect(await axeViolations(page)).toEqual([]);
@@ -562,7 +601,7 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await expect(report.getByText(/Merci. Le Greffe va regarder/)).toBeVisible();
     await report.getByRole("button", { name: "Fermer" }).first().click();
 
-    await page.getByRole("button", { name: "Bloquer" }).click();
+    await page.getByRole("button", { name: "Bloquer", exact: true }).click();
     const block = page.getByRole("dialog", { name: /Bloquer/ });
     await block.getByRole("button", { name: "Bloquer" }).click();
     await page.waitForURL(/\/promenade/);

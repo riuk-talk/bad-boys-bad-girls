@@ -265,13 +265,15 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
       .first()
       .click();
     await page.waitForURL(/\/fiche\//);
-    await expect(page.getByText("1 complice recruté")).toBeVisible();
-    // The bet on the back of the placard, handed to the Demande de parloir.
-    await page.getByRole("button", { name: "Chefs d'accusation" }).click();
+    // The bet on the back of the placard, validated, handed to the Demande de parloir.
+    await page.getByTestId("placard-small").click();
+    await expect(page.getByText(/1 complice recruté/)).toBeVisible();
+    await page.getByRole("button", { name: "Retourner : chefs d'accusation" }).click();
     await page
       .getByRole("group", { name: /1 vrai · 2 faux/ })
       .getByText(CHARGES[0]!)
       .click();
+    await page.getByRole("button", { name: "Valider mon pari" }).click();
     await page.getByRole("button", { name: /^Demander une visite · pari n° \d$/ }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("radio", { name: new RegExp(CHARGES[0]!) })).toBeChecked();
