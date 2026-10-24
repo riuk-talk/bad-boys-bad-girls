@@ -290,12 +290,60 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await page.goto("/decouverte");
     await expect(page.getByRole("heading", { name: "La Découverte" })).toBeVisible();
     await page.getByText("Filtres").click();
+    // Each Bad is a kraft folder (DecouverteDossiers.dc.html): pseudo, age, town, distance.
+    const folder = page.getByRole("link", {
+      name: `Ouvrir le dossier de ${bad.pseudo}, 30 ans · Port-Test · 0 km`,
+    });
+    await expect(folder).toBeVisible();
+    await expect(folder).toContainText(bad.pseudo);
     expect(await axeViolations(page)).toEqual([]);
     await shot(page, "visitor-decouverte");
-    await page
-      .getByRole("link", { name: new RegExp(bad.pseudo) })
-      .first()
-      .click();
+
+    // Opened, the folder fills the screen and its cover turns away on the Fiche, at its own URL.
+    // A short window so the list scrolls: its position must survive the folder.
+    await page.setViewportSize({ width: 390, height: 560 });
+    await folder.scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy(0, 40));
+    const scrolled = await page.evaluate(() => Math.round(window.scrollY));
+    expect(scrolled).toBeGreaterThan(0);
+    const dossier = page.getByRole("dialog", { name: `Dossier de ${bad.pseudo}` });
+    async function openFolder() {
+      await folder.click();
+      await page.waitForURL(new RegExp(`/fiche/${bad.id}$`));
+      await expect(dossier).toBeVisible();
+    }
+    await openFolder();
+    expect(
+      await page
+        .getByTestId("dossier-cover")
+        .evaluate((el) => parseFloat(getComputedStyle(el).transitionDuration)),
+    ).toBeCloseTo(0.9, 1);
+    await expect(dossier).toHaveAttribute("data-phase", "2");
+    await expect(dossier.getByTestId("placard-small")).toContainText(bad.pseudo);
+    expect(await axeViolations(page)).toEqual([]);
+    await shot(page, "visitor-dossier-ouvert");
+    // « Fermer le dossier »: back to the list, scrolled as it was.
+    await dossier.getByRole("button", { name: "Fermer le dossier" }).click();
+    await page.waitForURL(/\/decouverte$/);
+    await expect(dossier).toHaveCount(0);
+    expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(scrolled);
+    // The phone's back button does the same.
+    await openFolder();
+    await page.goBack();
+    await page.waitForURL(/\/decouverte$/);
+    await expect(dossier).toHaveCount(0);
+    expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(scrolled);
+    // With less motion asked, the folder opens at once, without the turning cover.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await openFolder();
+    await expect(dossier).toHaveAttribute("data-phase", "2", { timeout: 400 });
+    await expect(page.getByTestId("dossier-cover")).toHaveCount(0);
+    await page.emulateMedia({ reducedMotion: null });
+    // The Fiche keeps its own URL: a reload (or a shared link) shows it on its own page.
+    await page.reload();
+    await expect(page.getByTestId("fiche")).toBeVisible();
+    await expect(page.getByRole("dialog", { name: `Dossier de ${bad.pseudo}` })).toHaveCount(0);
+    await page.setViewportSize({ width: 390, height: 900 });
 
     // The Fiche v7 (FicheShow.dc.html): the 3 poses on the common wall, the small placard.
     await page.waitForURL(/\/fiche\//);
