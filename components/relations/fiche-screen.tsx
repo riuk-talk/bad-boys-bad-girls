@@ -6,6 +6,7 @@ import { CloseDossier, DossierOverlay } from "@/components/relations/dossier-ove
 import { FicheShow } from "@/components/relations/fiche-show";
 import { SafetyActions } from "@/components/relations/safety-actions";
 import { type PrompterInput, sharedTribeLabels } from "@/lib/prompter";
+import { accentForGender } from "@/lib/accent";
 import { ficheAction } from "@/lib/relations/fiche-action";
 import { loadFiche, publicPhotoUrl, requireRole } from "@/lib/relations/server";
 import { localize, type Label } from "@/lib/relations/types";
@@ -19,7 +20,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 export async function FicheScreen({ id, dossier = false }: { id: string; dossier?: boolean }) {
   if (!UUID.test(id)) notFound();
-  const { supabase, userId, locale, role } = await requireRole();
+  const { supabase, userId, locale, role, profile } = await requireRole();
   const fiche = await loadFiche(supabase, id);
   if (!fiche) notFound();
   const isSelf = userId === fiche.id;
@@ -95,6 +96,7 @@ export async function FicheScreen({ id, dossier = false }: { id: string; dossier
       souffleur={souffleur}
       status={status}
       fullscreen={dossier}
+      viewerAccent={accentForGender(profile.gender)}
       back={
         dossier ? (
           <CloseDossier />

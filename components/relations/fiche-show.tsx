@@ -132,6 +132,7 @@ export function FicheShow({
   safety,
   status,
   fullscreen = false,
+  viewerAccent,
 }: {
   fiche: FicheView;
   photos: PhotoUrls;
@@ -145,6 +146,11 @@ export function FicheShow({
   status: string | null;
   /** Opened as a folder over the Découverte: no site header nor tab bar around it. */
   fullscreen?: boolean;
+  /**
+   * Colour of the connected member's gender: the buttons of the interface take it, what
+   * represents the Bad takes the Bad's (PARCOURS-DESIGN §1).
+   */
+  viewerAccent: "gold" | "red" | "cream";
 }) {
   const t = useTranslations("Relations.fiche");
   const locale = useLocale();
@@ -471,6 +477,7 @@ export function FicheShow({
             bet={bet}
             onBet={setBet}
             status={status}
+            viewerAccent={viewerAccent}
           />
         </footer>
 
@@ -642,7 +649,8 @@ export function FicheShow({
                         setZoomed(false);
                         requestAnimationFrame(() => document.getElementById("fiche-ask")?.focus());
                       }}
-                      className="font-display text-ink focus-visible:outline-ink min-h-12 flex-1 rounded bg-[#d4a437] text-[17px] uppercase focus-visible:outline-3 focus-visible:outline-offset-2 disabled:bg-[#b8ae9c] disabled:text-[#3a342c]"
+                      data-accent={viewerAccent}
+                      className="font-display text-ink focus-visible:outline-ink min-h-12 flex-1 rounded bg-[var(--color-accent)] text-[17px] uppercase hover:bg-[var(--color-accent-hover)] focus-visible:outline-3 focus-visible:outline-offset-2 disabled:bg-[#b8ae9c] disabled:text-[#3a342c]"
                     >
                       {t("validate")}
                     </button>
@@ -700,6 +708,7 @@ function FicheFoot({
   bet,
   onBet,
   status,
+  viewerAccent,
 }: {
   fiche: FicheView;
   action: FicheAction;
@@ -707,10 +716,11 @@ function FicheFoot({
   bet: number | null;
   onBet: (value: number) => void;
   status: string | null;
+  viewerAccent: "gold" | "red" | "cream";
 }) {
   const t = useTranslations("Relations.fiche");
-  const gold =
-    "font-display text-ink flex min-h-[54px] w-full items-center justify-center border-[3px] border-[#0e0e10] bg-[#d4a437] px-3 text-[20px] uppercase focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#0e0e10] disabled:bg-[#b8ae9c] disabled:text-[#3a342c]";
+  const primary =
+    "font-display text-ink flex min-h-[54px] w-full items-center justify-center border-[3px] border-[#0e0e10] bg-[var(--color-accent)] px-3 text-[20px] uppercase hover:bg-[var(--color-accent-hover)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#0e0e10] disabled:bg-[#b8ae9c] disabled:text-[#3a342c]";
   let main: ReactNode = null;
   if (action.kind === "request" && souffleur && fiche.charges.length === 3) {
     main =
@@ -724,7 +734,7 @@ function FicheFoot({
           guess={bet}
           onGuess={onBet}
           triggerId="fiche-ask"
-          triggerClassName={gold}
+          triggerClassName={primary}
         />
       ) : (
         <p className="font-stamp flex min-h-[54px] items-center justify-center border-2 border-dashed border-[#6a6256] px-3 text-center text-[13px] text-[#3a342c]">
@@ -733,14 +743,14 @@ function FicheFoot({
       );
   } else if (action.kind === "sent") {
     main = (
-      <button type="button" disabled className={gold}>
+      <button type="button" disabled className={primary}>
         {t("sent")}
       </button>
     );
   } else if (action.kind === "full") {
     main = (
       <>
-        <button type="button" disabled aria-describedby="fiche-full-hint" className={gold}>
+        <button type="button" disabled aria-describedby="fiche-full-hint" className={primary}>
           {t("fullButton")}
         </button>
         <p id="fiche-full-hint" className="text-center text-xs text-[#3a342c]">
@@ -752,6 +762,8 @@ function FicheFoot({
   return (
     <div
       className="relative flex flex-col gap-1.5"
+      // The buttons here are the interface: the colour of the connected member's gender.
+      data-accent={viewerAccent}
       data-testid="fiche-action"
       data-action={action.kind}
     >
