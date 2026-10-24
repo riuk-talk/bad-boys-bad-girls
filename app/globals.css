@@ -317,6 +317,17 @@
 .fiche-felt {
   background: #1c1c1f url("/brand/textures/feutre.webp") 0 0 / 220px;
 }
+/* The kraft folders of the Découverte: one image, cached once for every card. */
+.kraft {
+  background: #c9a878 url("/brand/textures/chemise-kraft.webp") 50% 0 / 112% auto no-repeat;
+}
+.dossier-cover {
+  transform-origin: 0 50%;
+  transition: transform 0.9s cubic-bezier(0.4, 0.1, 0.2, 1);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  box-shadow: 12px 0 30px rgb(0 0 0 / 0.6);
+}
 .fiche-paper {
   background: #f1e9d6 url("/brand/textures/papier.webp") 0 0 / 400px;
   color: var(--color-ink);
@@ -372,7 +383,8 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .fiche-layer,
-  .fiche-card {
+  .fiche-card,
+  .dossier-cover {
     transition: none;
   }
   .fiche-zoom {

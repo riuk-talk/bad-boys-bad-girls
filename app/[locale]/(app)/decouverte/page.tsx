@@ -1,7 +1,8 @@
 import { Compass, SlidersHorizontal } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { BadCard, type BadCardData } from "@/components/relations/bad-card";
+import type { BadCardData } from "@/components/relations/bad-card";
+import { DossierCard } from "@/components/relations/dossier-card";
 import { PermitPending } from "@/components/relations/permit-pending";
 import { ButtonLink } from "@/components/ui/button-link";
 import { buttonClasses } from "@/components/ui/button";
@@ -27,7 +28,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const AGES = Array.from({ length: 82 }, (_, index) => String(18 + index));
 
-/** La Découverte (SPEC §12 bis): every visible Bad, Visitors only, sorted by complicity. */
+/**
+ * La Découverte (SPEC §12 bis): every visible Bad, Visitors only, sorted by complicity; each one
+ * a kraft folder (DecouverteDossiers.dc.html, 2026-10-24) that opens the Fiche over the list.
+ */
 export default async function DiscoverPage({ searchParams }: Props) {
   const { supabase, userId, locale } = await requireRole("visitor");
   const t = await getTranslations("Relations.discover");
@@ -167,10 +171,10 @@ export default async function DiscoverPage({ searchParams }: Props) {
       </details>
 
       {bads.length > 0 ? (
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-x-3 gap-y-3.5 sm:grid-cols-3 lg:grid-cols-4">
           {bads.map((bad, index) => (
-            <li key={bad.id} className="contents">
-              <BadCard bad={bad} priority={index < 4} />
+            <li key={bad.id}>
+              <DossierCard bad={bad} priority={index < 2} />
             </li>
           ))}
         </ul>

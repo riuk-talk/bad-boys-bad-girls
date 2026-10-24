@@ -1117,7 +1117,10 @@
       "complicity": "Complicity {score}%",
       "full": "Visiting room full",
       "percent": "{score}%",
-      "age": "{age}"
+      "age": "{age}",
+      "openDossier": "Open the file of {pseudo}, {line}",
+      "goodConduct1": "GOOD",
+      "goodConduct2": "CONDUCT"
     },
     "permitPending": {
       "body": "Your Visiting Permit is still with the Registry: you can browse the Files, and you can ask for a visit as soon as your photo is approved."
@@ -1220,7 +1223,13 @@
       "full": "Visiting room full: come back when places free up.",
       "permitPending": "Your Permit is with the Registry: you can ask for a visit as soon as your photo is approved.",
       "back": "Back",
-      "backToMyFiche": "My File"
+      "backToMyFiche": "My File",
+      "closeDossier": "Close the file",
+      "dossierOf": "File of {pseudo}",
+      "caseFile": "CASE FILE",
+      "ecrou": "No. {ecrou}",
+      "years": "{age}",
+      "km": "{km} km"
     },
     "request": {
       "openWithBet": "Ask for a visit · bet no. {number}",

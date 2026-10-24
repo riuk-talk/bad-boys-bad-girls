@@ -1117,7 +1117,10 @@
       "complicity": "Complicité {score} %",
       "full": "Parloir complet",
       "percent": "{score} %",
-      "age": "{age} ans"
+      "age": "{age} ans",
+      "openDossier": "Ouvrir le dossier de {pseudo}, {line}",
+      "goodConduct1": "BONNE",
+      "goodConduct2": "CONDUITE"
     },
     "permitPending": {
       "body": "Ton Permis de visite attend encore le Greffe : tu peux regarder les Fiches, tu pourras demander une visite dès que ta photo sera validée."
@@ -1220,7 +1223,13 @@
       "full": "Parloir complet : reviens quand des places se libèrent.",
       "permitPending": "Ton Permis attend le Greffe : tu pourras demander une visite dès que ta photo sera validée.",
       "back": "Retour",
-      "backToMyFiche": "Ma Fiche"
+      "backToMyFiche": "Ma Fiche",
+      "closeDossier": "Fermer le dossier",
+      "dossierOf": "Dossier de {pseudo}",
+      "caseFile": "DOSSIER JUDICIAIRE",
+      "ecrou": "N° {ecrou}",
+      "years": "{age} ans",
+      "km": "{km} km"
     },
     "request": {
       "openWithBet": "Demander une visite · pari n° {number}",
