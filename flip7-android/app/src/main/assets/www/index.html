@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#120b2e" />
+    <title>Flip 7</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="bg" aria-hidden="true"><div class="rays"></div><div class="glow"></div></div>
+
+    <!-- HOME -->
+    <section id="screen-home" class="screen active">
+      <div class="home-inner">
+        <div class="logo" aria-label="Flip 7">
+          <div class="logo-cards" aria-hidden="true">
+            <div class="logo-card c1"></div>
+            <div class="logo-card c2"></div>
+            <div class="logo-card c3"><span>7</span></div>
+          </div>
+          <h1 class="logo-word"><span class="w-flip">FLIP</span><span class="w-seven">7</span></h1>
+          <p class="tagline">Le jeu où il faut savoir s'arrêter&nbsp;!</p>
+        </div>
+        <div class="home-buttons">
+          <button class="btn btn-primary btn-xl" data-nav="setup">Nouvelle partie</button>
+          <button class="btn btn-secondary" id="btn-continue" hidden>Reprendre la partie</button>
+          <button class="btn btn-ghost" data-nav="rules">Règles du jeu</button>
+          <button class="btn btn-ghost" data-nav="settings">Réglages</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETUP -->
+    <section id="screen-setup" class="screen">
+      <header class="screen-head">
+        <button class="icon-btn" data-nav="home" aria-label="Retour"><svg><use href="#i-back" /></svg></button>
+        <h2>Nouvelle partie</h2>
+        <span></span>
+      </header>
+      <div class="screen-body">
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Joueurs</h3>
+            <span class="muted" id="player-count"></span>
+          </div>
+          <div id="player-list"></div>
+          <div class="row-buttons">
+            <button class="btn btn-small" id="add-human">+ Humain</button>
+            <button class="btn btn-small" id="add-ai">+ IA</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><h3>Règles</h3><button class="link" id="reset-rules">Règles officielles</button></div>
+          <div class="field">
+            <label for="opt-target">Score à atteindre</label>
+            <div class="stepper" data-key="targetScore" data-min="50" data-max="1000" data-step="25"></div>
+          </div>
+          <div class="field">
+            <label for="opt-flip7count">Cartes différentes pour un Flip 7</label>
+            <div class="stepper" data-key="flip7Count" data-min="4" data-max="10" data-step="1"></div>
+          </div>
+          <div class="field">
+            <label>Bonus Flip 7</label>
+            <div class="stepper" data-key="flip7Bonus" data-min="0" data-max="50" data-step="5"></div>
+          </div>
+          <div class="field">
+            <label>Cartes « Tirer 3 » : nombre de cartes</label>
+            <div class="stepper" data-key="flip3Draws" data-min="1" data-max="5" data-step="1"></div>
+          </div>
+          <h4>Cartes Action</h4>
+          <div class="field"><label>Gel (Freeze)</label><div class="stepper" data-key="actions.freeze" data-min="0" data-max="8" data-step="1"></div></div>
+          <div class="field"><label>Tirer 3 (Flip Three)</label><div class="stepper" data-key="actions.flip3" data-min="0" data-max="8" data-step="1"></div></div>
+          <div class="field"><label>Seconde chance</label><div class="stepper" data-key="actions.second" data-min="0" data-max="8" data-step="1"></div></div>
+          <h4>Cartes Modificateur</h4>
+          <div class="chips" id="mod-chips"></div>
+          <h4>Divers</h4>
+          <div class="field toggle-field">
+            <label for="opt-reshuffle">Remélanger toute la pioche à chaque manche</label>
+            <input type="checkbox" class="switch" id="opt-reshuffle" data-key="reshuffleEachRound" />
+          </div>
+          <div class="field toggle-field">
+            <label for="opt-tie">En cas d'égalité, jouer une manche de plus</label>
+            <input type="checkbox" class="switch" id="opt-tie" data-key="tieExtra" />
+          </div>
+          <p class="muted small" id="deck-summary"></p>
+        </div>
+      </div>
+      <footer class="screen-foot">
+        <button class="btn btn-primary btn-xl" id="start-game">C'est parti&nbsp;!</button>
+      </footer>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="screen-settings" class="screen">
+      <header class="screen-head">
+        <button class="icon-btn" data-nav="back" aria-label="Retour"><svg><use href="#i-back" /></svg></button>
+        <h2>Réglages</h2>
+        <span></span>
+      </header>
+      <div class="screen-body">
+        <div class="panel">
+          <div class="field toggle-field"><label for="set-sound">Effets sonores</label><input type="checkbox" class="switch" id="set-sound" data-setting="sound" /></div>
+          <div class="field toggle-field"><label for="set-vibrate">Vibrations</label><input type="checkbox" class="switch" id="set-vibrate" data-setting="vibrate" /></div>
+          <div class="field toggle-field"><label for="set-odds">Afficher le risque de doublon</label><input type="checkbox" class="switch" id="set-odds" data-setting="showOdds" /></div>
+          <div class="field toggle-field"><label for="set-hint">Conseil de l'IA pour les humains</label><input type="checkbox" class="switch" id="set-hint" data-setting="showHint" /></div>
+          <div class="field toggle-field"><label for="set-handoff">Écran « passe le téléphone » entre humains</label><input type="checkbox" class="switch" id="set-handoff" data-setting="handoff" /></div>
+          <div class="field toggle-field"><label for="set-autonext">Enchaîner les manches automatiquement</label><input type="checkbox" class="switch" id="set-autonext" data-setting="autoNext" /></div>
+          <div class="field">
+            <label>Vitesse des animations</label>
+            <div class="segmented" data-setting="speed">
+              <button data-value="0.6">Lente</button><button data-value="1">Normale</button><button data-value="1.8">Rapide</button><button data-value="4">Éclair</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Temps de réflexion de l'IA</label>
+            <div class="segmented" data-setting="aiDelay">
+              <button data-value="1400">Long</button><button data-value="800">Normal</button><button data-value="350">Court</button><button data-value="0">Aucun</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Tapis</label>
+            <div class="segmented" data-setting="theme">
+              <button data-value="night">Nuit</button><button data-value="casino">Casino</button><button data-value="sunset">Rétro</button><button data-value="ocean">Océan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RULES -->
+    <section id="screen-rules" class="screen">
+      <header class="screen-head">
+        <button class="icon-btn" data-nav="back" aria-label="Retour"><svg><use href="#i-back" /></svg></button>
+        <h2>Règles du jeu</h2>
+        <span></span>
+      </header>
+      <div class="screen-body rules">
+        <div class="panel">
+          <h3>But du jeu</h3>
+          <p>Être le premier à atteindre <b>200 points</b> (réglable). Le score est vérifié à la fin de chaque manche : si plusieurs joueurs dépassent l'objectif, le plus haut score gagne.</p>
+          <h3>Le paquet (94 cartes)</h3>
+          <ul>
+            <li><b>Cartes Nombre</b> de 0 à 12 : il y a autant d'exemplaires que la valeur (douze 12, onze 11… un 1) et un seul 0.</li>
+            <li><b>Modificateurs</b> : +2, +4, +6, +8, +10 et ×2.</li>
+            <li><b>Actions</b> : 3 Gel, 3 Tirer 3, 3 Seconde chance.</li>
+          </ul>
+          <h3>Déroulement d'une manche</h3>
+          <p>Le donneur distribue une carte face visible à chaque joueur. Puis, à tour de rôle, chacun choisit&nbsp;:</p>
+          <ul>
+            <li><b>Piocher</b> : retourner une carte de plus.</li>
+            <li><b>Rester</b> : s'arrêter et mettre ses points en banque pour la manche.</li>
+          </ul>
+          <p>Si tu retournes un <b>nombre que tu as déjà</b>, tu sautes&nbsp;: 0 point pour la manche. La manche s'arrête quand tout le monde est resté ou a sauté.</p>
+          <h3>Flip 7&nbsp;!</h3>
+          <p>Celui qui aligne <b>7 nombres différents</b> fait un Flip 7 : la manche s'arrête immédiatement pour tout le monde et il gagne <b>15 points bonus</b>.</p>
+          <h3>Cartes Action</h3>
+          <ul>
+            <li><b>Gel</b> : choisis un joueur encore en jeu (toi compris). Il met ses points en banque et s'arrête pour la manche.</li>
+            <li><b>Tirer 3</b> : choisis un joueur en jeu (toi compris). Il doit retourner 3 cartes, une par une. Il s'arrête s'il saute ou fait un Flip 7. Une Seconde chance tirée pendant ce temps peut servir aussitôt&nbsp;; un Gel ou un Tirer 3 est résolu après les 3 cartes.</li>
+            <li><b>Seconde chance</b> : garde-la. Si tu retournes un doublon, défausse le doublon et la Seconde chance et continue. On ne peut en avoir qu'une : si tu en tires une deuxième, donne-la à un autre joueur en jeu qui n'en a pas (sinon, défausse-la).</li>
+          </ul>
+          <p>Si tu es le seul joueur encore en jeu, tu dois jouer l'action sur toi.</p>
+          <h3>Score</h3>
+          <ol>
+            <li>Additionne tes cartes Nombre.</li>
+            <li>Le ×2 double ce total (pas les autres modificateurs).</li>
+            <li>Ajoute les modificateurs +2 à +10.</li>
+            <li>Ajoute 15 si tu as fait un Flip 7.</li>
+          </ol>
+          <p>Les cartes jouées vont à la défausse. Elle n'est remélangée que lorsque la pioche est vide (réglable).</p>
+          <p class="muted small">Résumé rédigé pour cette application. Les règles officielles complètes figurent dans la notice du jeu.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAME -->
+    <section id="screen-game" class="screen game">
+      <header class="topbar">
+        <button class="icon-btn" id="btn-pause" aria-label="Menu"><svg><use href="#i-menu" /></svg></button>
+        <div class="round-info">
+          <span id="round-label">Manche 1</span>
+          <span class="sep">•</span>
+          <span id="target-label">Objectif 200</span>
+        </div>
+        <button class="icon-btn" id="btn-scores" aria-label="Scores"><svg><use href="#i-trophy" /></svg></button>
+      </header>
+
+      <div id="seats" class="seats"></div>
+
+      <div class="table-center">
+        <div class="pile deck-pile" id="deck-pile">
+          <div class="card back stack s3"></div>
+          <div class="card back stack s2"></div>
+          <div class="card back stack s1"><div class="back-art"></div></div>
+          <span class="pile-count" id="deck-count">94</span>
+        </div>
+        <div id="banner" class="banner" aria-live="polite"></div>
+        <div class="pile discard-pile" id="discard-pile">
+          <div class="pile-empty"></div>
+          <span class="pile-count" id="discard-count">0</span>
+        </div>
+      </div>
+
+      <div id="focus" class="focus"></div>
+
+      <footer class="controls" id="controls">
+        <button class="btn btn-stay" id="btn-stay"><svg><use href="#i-hand" /></svg><span>Rester</span></button>
+        <button class="btn btn-hit" id="btn-hit"><svg><use href="#i-flip" /></svg><span>Piocher</span></button>
+      </footer>
+    </section>
+
+    <!-- OVERLAYS -->
+    <div id="overlay" class="overlay" hidden><div class="sheet" id="sheet"></div></div>
+    <canvas id="fx" aria-hidden="true"></canvas>
+    <div id="flyer-layer" aria-hidden="true"></div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></symbol>
+        <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v4a5 5 0 0 1-10 0V4zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M9.5 17h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V10m0-5.5V4a1.5 1.5 0 0 1 3 0v6m0-4.5a1.5 1.5 0 0 1 3 0V12m0-3.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.6-2.2L4.2 15a1.6 1.6 0 0 1 2.4-2.1L8 14.5V11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-flip" viewBox="0 0 24 24"><rect x="3" y="5" width="10" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2" /><path d="M16 7.5c3 .5 5 2.2 5 4.5s-2 4-5 4.5M15 14.5l1.2 2-2 1.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-snow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7" /><path d="M9 4l3 2.5L15 4M9 20l3-2.5 3 2.5M3.6 10.4l3.6-.8L5.9 6.2M18.1 17.8l-1.3-3.4 3.6-.8M20.4 10.4l-3.6-.8 1.3-3.4M5.9 17.8l1.3-3.4-3.6-.8" /></g></symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.8 4.5c2.2 0 3.7 1.2 5.2 3 1.5-1.8 3-3 5.2-3 3.8 0 5.9 3.9 4.4 7.3C19.5 16.4 12 21 12 21z" fill="currentColor" /></symbol>
+        <symbol id="i-three" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 3.5v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" fill="currentColor" /></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-bust" viewBox="0 0 24 24"><path d="M12 2l2.2 5.4L20 5l-2.6 5.4L23 12l-5.6 1.6L20 19l-5.8-2.4L12 22l-2.2-5.4L4 19l2.6-5.4L1 12l5.6-1.6L4 5l5.8 2.4z" fill="currentColor" /></symbol>
+        <symbol id="i-robot" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6" /><circle cx="12" cy="3.5" r="1" /></g></symbol>
+        <symbol id="i-user" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4.4 4.2-6.5 8-6.5s7 2.1 8 6.5" /></g></symbol>
+        <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" /></symbol>
+      </defs>
+    </svg>
+
+    <script src="js/engine.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/fx.js"></script>
+    <script src="js/ui.js"></script>
+  </body>
+</html>
