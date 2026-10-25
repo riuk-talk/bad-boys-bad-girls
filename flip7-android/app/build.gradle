@@ -1,0 +1,42 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "fr.flip7.game"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "fr.flip7.game"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    signingConfigs {
+        // Shared, non-secret key so every build can update an installed copy.
+        // Replace with a private key before any public distribution.
+        shared {
+            storeFile file("../keystore/flip7-shared.jks")
+            storePassword "flip7android"
+            keyAlias "flip7"
+            keyPassword "flip7android"
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.shared
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.shared
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
