@@ -12,6 +12,8 @@ export default defineConfig([
     "test-results/**",
     "next-env.d.ts",
     "lib/supabase/database.types.ts",
+    // Separate project (Android game), not part of the Next.js app.
+    "flip7-android/**",
   ]),
   {
     rules: {

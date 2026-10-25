@@ -11,7 +11,8 @@ on:
   push:
     branches: ["**"]
     # Documentation only: no run (Actions minutes are counted on a private repository).
-    paths-ignore: ["docs/**", "**/*.md"]
+    # The Android game in flip7-android/ is a separate project, not checked by this job.
+    paths-ignore: ["docs/**", "**/*.md", "flip7-android/**"]
   pull_request:
 
 permissions:
