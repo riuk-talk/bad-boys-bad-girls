@@ -66,14 +66,14 @@
             <div class="stepper" data-key="flip7Bonus" data-min="0" data-max="50" data-step="5"></div>
           </div>
           <div class="field">
-            <label>Cartes « Tirer 3 » : nombre de cartes</label>
+            <label>Trois à la suite : nombre de cartes</label>
             <div class="stepper" data-key="flip3Draws" data-min="1" data-max="5" data-step="1"></div>
           </div>
-          <h4>Cartes Action</h4>
-          <div class="field"><label>Gel (Freeze)</label><div class="stepper" data-key="actions.freeze" data-min="0" data-max="8" data-step="1"></div></div>
-          <div class="field"><label>Tirer 3 (Flip Three)</label><div class="stepper" data-key="actions.flip3" data-min="0" data-max="8" data-step="1"></div></div>
-          <div class="field"><label>Seconde chance</label><div class="stepper" data-key="actions.second" data-min="0" data-max="8" data-step="1"></div></div>
-          <h4>Cartes Modificateur</h4>
+          <h4>Cartes Spéciales</h4>
+          <div class="field"><label>Stop</label><div class="stepper" data-key="actions.freeze" data-min="0" data-max="8" data-step="1"></div></div>
+          <div class="field"><label>Trois à la suite</label><div class="stepper" data-key="actions.flip3" data-min="0" data-max="8" data-step="1"></div></div>
+          <div class="field"><label>Seconde Chance</label><div class="stepper" data-key="actions.second" data-min="0" data-max="8" data-step="1"></div></div>
+          <h4>Cartes Bonus</h4>
           <div class="chips" id="mod-chips"></div>
           <h4>Divers</h4>
           <div class="field toggle-field">
@@ -83,6 +83,10 @@
           <div class="field toggle-field">
             <label for="opt-tie">En cas d'égalité, jouer une manche de plus</label>
             <input type="checkbox" class="switch" id="opt-tie" data-key="tieExtra" />
+          </div>
+          <div class="field toggle-field">
+            <label for="opt-deal">Variante : une carte à chacun avant le premier choix</label>
+            <input type="checkbox" class="switch" id="opt-deal" data-key="initialDeal" />
           </div>
           <p class="muted small" id="deck-summary"></p>
         </div>
@@ -138,39 +142,43 @@
       </header>
       <div class="screen-body rules">
         <div class="panel">
-          <h3>But du jeu</h3>
-          <p>Être le premier à atteindre <b>200 points</b> (réglable). Le score est vérifié à la fin de chaque manche : si plusieurs joueurs dépassent l'objectif, le plus haut score gagne.</p>
+          <h3>Principe du jeu</h3>
+          <p>On joue manche après manche jusqu'à ce qu'un joueur atteigne <b>200 points</b> (réglable). À chaque manche, collectionne des cartes pour marquer leur valeur totale, mais sache dire stop avant de recevoir un numéro que tu as déjà&nbsp;!</p>
           <h3>Le paquet (94 cartes)</h3>
           <ul>
-            <li><b>Cartes Nombre</b> de 0 à 12 : il y a autant d'exemplaires que la valeur (douze 12, onze 11… un 1) et un seul 0.</li>
-            <li><b>Modificateurs</b> : +2, +4, +6, +8, +10 et ×2.</li>
-            <li><b>Actions</b> : 3 Gel, 3 Tirer 3, 3 Seconde chance.</li>
+            <li><b>79 cartes Numéro</b> de 0 à 12 : douze 12, onze 11, dix 10… jusqu'à un seul 1, plus un seul 0 (qui ne vaut aucun point).</li>
+            <li><b>6 cartes Bonus</b> : +2, +4, +6, +8, +10 et ×2.</li>
+            <li><b>9 cartes Spéciales</b> : Stop, Trois à la suite et Seconde Chance, en 3 exemplaires chacune.</li>
           </ul>
-          <h3>Déroulement d'une manche</h3>
-          <p>Le donneur distribue une carte face visible à chaque joueur. Puis, à tour de rôle, chacun choisit&nbsp;:</p>
+          <h3>Comment jouer&nbsp;?</h3>
+          <p>En commençant par le joueur à sa gauche, le Donneur offre un choix à chaque joueur, y compris lui-même&nbsp;:</p>
           <ul>
-            <li><b>Piocher</b> : retourner une carte de plus.</li>
-            <li><b>Rester</b> : s'arrêter et mettre ses points en banque pour la manche.</li>
+            <li><b>Stop</b> : tu sors de la manche. Tes points seront ajoutés à ton total à la fin de la manche.</li>
+            <li><b>Encore</b> : le Donneur te distribue une nouvelle carte face visible.</li>
           </ul>
-          <p>Si tu retournes un <b>nombre que tu as déjà</b>, tu sautes&nbsp;: 0 point pour la manche. La manche s'arrête quand tout le monde est resté ou a sauté.</p>
+          <p>Un Numéro que tu n'avais pas : tout va bien. Un Numéro que tu avais déjà : tu <b>sautes</b>, la manche s'arrête pour toi et tu ne gagnes aucun point.</p>
+          <p>Les <b>Bonus</b> ne sont pas des Numéros : ils ne comptent pas pour le Flip 7 et ne font jamais sauter. Une carte <b>Spéciale</b> doit être appliquée tout de suite.</p>
           <h3>Flip 7&nbsp;!</h3>
-          <p>Celui qui aligne <b>7 nombres différents</b> fait un Flip 7 : la manche s'arrête immédiatement pour tout le monde et il gagne <b>15 points bonus</b>.</p>
-          <h3>Cartes Action</h3>
-          <ul>
-            <li><b>Gel</b> : choisis un joueur encore en jeu (toi compris). Il met ses points en banque et s'arrête pour la manche.</li>
-            <li><b>Tirer 3</b> : choisis un joueur en jeu (toi compris). Il doit retourner 3 cartes, une par une. Il s'arrête s'il saute ou fait un Flip 7. Une Seconde chance tirée pendant ce temps peut servir aussitôt&nbsp;; un Gel ou un Tirer 3 est résolu après les 3 cartes.</li>
-            <li><b>Seconde chance</b> : garde-la. Si tu retournes un doublon, défausse le doublon et la Seconde chance et continue. On ne peut en avoir qu'une : si tu en tires une deuxième, donne-la à un autre joueur en jeu qui n'en a pas (sinon, défausse-la).</li>
-          </ul>
-          <p>Si tu es le seul joueur encore en jeu, tu dois jouer l'action sur toi.</p>
-          <h3>Score</h3>
+          <p>Avec <b>7 cartes Numéro différentes</b>, tu réalises un Flip 7 : la manche s'arrête pour tout le monde et tu gagnes <b>15 points supplémentaires</b>.</p>
+          <h3>Fin de manche</h3>
+          <p>La manche continue jusqu'à ce que tous les joueurs soient sortis (stop ou sauté) ou qu'un joueur réalise un Flip 7. Les joueurs qui n'ont pas sauté marquent&nbsp;:</p>
           <ol>
-            <li>Additionne tes cartes Nombre.</li>
-            <li>Le ×2 double ce total (pas les autres modificateurs).</li>
-            <li>Ajoute les modificateurs +2 à +10.</li>
-            <li>Ajoute 15 si tu as fait un Flip 7.</li>
+            <li>le total de leurs cartes Numéro&nbsp;;</li>
+            <li>doublé s'ils ont le Bonus ×2&nbsp;;</li>
+            <li>plus leurs autres Bonus&nbsp;;</li>
+            <li>plus 15 en cas de Flip 7.</li>
           </ol>
-          <p>Les cartes jouées vont à la défausse. Elle n'est remélangée que lorsque la pioche est vide (réglable).</p>
-          <p class="muted small">Résumé rédigé pour cette application. Les règles officielles complètes figurent dans la notice du jeu.</p>
+          <h3>Cartes Spéciales</h3>
+          <ul>
+            <li><b>Stop</b> : cible un joueur encore dans la manche. Il en sort immédiatement et ajoutera ses points en fin de manche. Si tu es le seul encore dans la manche, tu dois te cibler toi-même.</li>
+            <li><b>Trois à la suite</b> : cible un joueur encore dans la manche (toi compris). Il reçoit les 3 prochaines cartes, une par une. On s'arrête s'il saute ou réalise un Flip 7. Une carte Spéciale révélée pendant ces 3 cartes ne s'applique qu'<b>après</b>&nbsp;; si le joueur a sauté, il doit alors cibler un autre joueur encore dans la manche.</li>
+            <li><b>Seconde Chance</b> : garde-la devant toi. Si tu reçois un Numéro qui te ferait sauter, défausse-le avec la Seconde Chance. On ne peut en avoir qu'une : une deuxième doit être donnée à un autre joueur encore dans la manche (sinon elle est défaussée). Elles sont toutes défaussées en fin de manche.</li>
+          </ul>
+          <h3>Nouvelle manche</h3>
+          <p>Les cartes jouées sont mises de côté, sans être remélangées. Le joueur à gauche du Donneur devient le nouveau Donneur. Quand le paquet est vide, on mélange les cartes défaussées pour en former un nouveau (les cartes devant les joueurs restent en place).</p>
+          <h3>Fin de la partie</h3>
+          <p>À la fin d'une manche, si au moins un joueur a 200 points ou plus, le plus haut score gagne. Il ne peut y avoir qu'un seul vainqueur : en cas d'égalité, on joue une nouvelle manche.</p>
+          <p class="muted small">Résumé de la notice officielle française. Jeu conçu par Eric Olsen.</p>
         </div>
       </div>
     </section>
@@ -206,8 +214,8 @@
       <div id="focus" class="focus"></div>
 
       <footer class="controls" id="controls">
-        <button class="btn btn-stay" id="btn-stay"><svg><use href="#i-hand" /></svg><span>Rester</span></button>
-        <button class="btn btn-hit" id="btn-hit"><svg><use href="#i-flip" /></svg><span>Piocher</span></button>
+        <button class="btn btn-stay" id="btn-stay"><svg><use href="#i-hand" /></svg><span>Stop</span></button>
+        <button class="btn btn-hit" id="btn-hit"><svg><use href="#i-flip" /></svg><span>Encore</span></button>
       </footer>
     </section>
 

@@ -14,6 +14,13 @@ Toutes les versions sont signées avec la même clé (`keystore/flip7-shared.jks
 une nouvelle version s'installe par-dessus l'ancienne sans perdre la partie en cours.
 Avant toute diffusion publique, il faut une clé privée et un autre nom (« Flip 7 » est une marque).
 
+## Illustrations des cartes
+
+Les faces des cartes (`www/img/cards/`) sont extraites de la notice officielle française
+(dessins vectoriels, voir `tools/`). Elles appartiennent à leurs auteurs : **usage personnel
+uniquement**, ne pas publier l'APK ni rendre ce dépôt public avec ces images.
+Le dos des cartes n'est pas dans la notice : il reste un dessin maison en attendant une photo.
+
 ## Contenu
 
 - `www/js/engine.js` : moteur des règles (paquet de 94 cartes, Gel, Tirer 3, Seconde chance,

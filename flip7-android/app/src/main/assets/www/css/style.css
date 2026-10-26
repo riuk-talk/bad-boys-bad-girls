@@ -1611,3 +1611,31 @@ svg {
     animation: none;
   }
 }
+
+/* ---------- Official card artwork ---------- */
+.card.art {
+  background: transparent;
+  border-radius: calc(var(--w) * 0.045);
+  box-shadow: 0 calc(var(--w) * 0.05) calc(var(--w) * 0.12) rgba(0, 0, 0, 0.4);
+  overflow: visible;
+}
+.card.art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.card.art::after {
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 32%);
+}
+.card.art.mini {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.card.art.dup {
+  box-shadow: 0 0 0 3px var(--red), 0 0 22px var(--red);
+}
+.splash.flip3 .s-main {
+  font-size: 54px;
+}

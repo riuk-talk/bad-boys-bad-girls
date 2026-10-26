@@ -28,8 +28,8 @@
   };
   const AI_NAMES = ["Robin", "Ada", "Nova", "Pixel", "Turing", "Zoé", "Hal", "Lulu", "Max", "Iris"];
   const LEVEL_ORDER = ["easy", "normal", "hard", "expert"];
-  const ACTION_LABEL = { freeze: "Gel", flip3: "Tirer 3", second: "Seconde chance" };
-  const STATUS_LABEL = { stayed: "Resté", busted: "Sauté", frozen: "Gelé", flip7: "Flip 7" };
+  const ACTION_LABEL = { freeze: "Stop", flip3: "Trois à la suite", second: "Seconde Chance" };
+  const STATUS_LABEL = { stayed: "Stop", busted: "Sauté", frozen: "Stoppé", flip7: "Flip 7" };
   const MOD_KEYS = ["+2", "+4", "+6", "+8", "+10", "x2"];
 
   const DEFAULT_SETTINGS = {
@@ -53,6 +53,7 @@
       modifiers: { "+2": 1, "+4": 1, "+6": 1, "+8": 1, "+10": 1, x2: 1 },
       reshuffleEachRound: false,
       tieExtra: true,
+      initialDeal: false,
     };
   }
   function defaultSetup() {
@@ -125,37 +126,36 @@
     return '<span class="avatar" style="--pc:' + p.color + '">' + initial(p.name) + "</span>";
   }
 
+  // Card faces come from the official artwork (img/cards/*.webp).
+  function artName(card) {
+    if (card.kind === "number") return "n" + card.value;
+    if (card.kind === "mod") return card.op === "mul" ? "x2" : "p" + card.value;
+    return { freeze: "stop", flip3: "flip3", second: "second" }[card.value];
+  }
+  function cardLabel(card) {
+    if (card.kind === "number") return String(card.value);
+    if (card.kind === "mod") return card.op === "mul" ? "Bonus ×2" : "Bonus +" + card.value;
+    return ACTION_LABEL[card.value];
+  }
   function cardHTML(card, opts) {
     const o = opts || {};
-    const cls = ["card", card.kind];
+    const cls = ["card", "art", card.kind];
     if (o.mini) cls.push("mini");
-    const attrs = ' data-cid="' + card.id + '"' + (o.style ? ' style="' + o.style + '"' : "");
-    if (card.kind === "number") {
-      const c = NUMBER_COLORS[card.value] || ["#fff", "#333"];
-      cls.push("v" + card.value);
-      const style = "--c:" + c[0] + ";--cd:" + c[1] + ";" + (o.style || "");
-      return (
-        '<div class="' + cls.join(" ") + '" data-cid="' + card.id + '" style="' + style + '">' +
-        '<span class="ring"></span><span class="big">' + card.value + "</span>" +
-        '<span class="corner tl">' + card.value + '</span><span class="corner br">' + card.value + "</span></div>"
-      );
-    }
-    if (card.kind === "mod") {
-      cls.push(card.op === "mul" ? "mul" : "add");
-      const label = card.op === "mul" ? "×2" : "+" + card.value;
-      return '<div class="' + cls.join(" ") + '"' + attrs + '><span class="big">' + label + "</span></div>";
-    }
-    cls.push(card.value);
-    if (card.value === "freeze") {
-      return '<div class="' + cls.join(" ") + '"' + attrs + '><svg class="icon"><use href="#i-snow"/></svg><span class="big">Gel</span></div>';
-    }
-    if (card.value === "flip3") {
-      return (
-        '<div class="' + cls.join(" ") + '"' + attrs + '><svg class="icon"><use href="#i-three"/></svg>' +
-        '<span class="icon-num">3</span><span class="big">Tirer 3</span></div>'
-      );
-    }
-    return '<div class="' + cls.join(" ") + '"' + attrs + '><svg class="icon"><use href="#i-heart"/></svg><span class="big">2<sup>e</sup> chance</span></div>';
+    if (card.kind === "number") cls.push("v" + card.value);
+    else if (card.kind === "action") cls.push(card.value);
+    return (
+      '<div class="' + cls.join(" ") + '" data-cid="' + card.id + '"' + (card.kind === "number" ? ' data-v="' + card.value + '"' : "") +
+      (o.style ? ' style="' + o.style + '"' : "") + ' role="img" aria-label="' + esc(cardLabel(card)) + '">' +
+      '<img src="img/cards/' + artName(card) + '.webp" alt="" draggable="false"></div>'
+    );
+  }
+  function preloadArt() {
+    const names = ["stop", "flip3", "second", "x2", "p2", "p4", "p6", "p8", "p10"];
+    for (let n = 0; n <= 12; n++) names.push("n" + n);
+    names.forEach((n) => {
+      const img = new Image();
+      img.src = "img/cards/" + n + ".webp";
+    });
   }
   function backHTML(style) {
     return '<div class="card back"' + (style ? ' style="' + style + '"' : "") + '><div class="back-art"></div></div>';
@@ -295,10 +295,11 @@
     ).join("");
     $("#opt-reshuffle").checked = !!setup.rules.reshuffleEachRound;
     $("#opt-tie").checked = !!setup.rules.tieExtra;
+    $("#opt-deal").checked = !!setup.rules.initialDeal;
     const r = setup.rules;
     const mods = MOD_KEYS.reduce((n, k) => n + (r.modifiers[k] | 0), 0);
     const acts = r.actions.freeze + r.actions.flip3 + r.actions.second;
-    $("#deck-summary").textContent = "Paquet : " + (79 + mods + acts) + " cartes (79 nombres, " + mods + " modificateurs, " + acts + " actions).";
+    $("#deck-summary").textContent = "Paquet : " + (79 + mods + acts) + " cartes (79 Numéro, " + mods + " Bonus, " + acts + " Spéciales).";
   }
   $("#player-list").addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");
@@ -382,6 +383,10 @@
     setup.rules.tieExtra = e.target.checked;
     saveSetup();
   });
+  $("#opt-deal").addEventListener("change", (e) => {
+    setup.rules.initialDeal = e.target.checked;
+    saveSetup();
+  });
   $("#reset-rules").addEventListener("click", () => {
     setup.rules = officialRules();
     sound("tap");
@@ -411,6 +416,7 @@
       modifiers: Object.assign({}, r.modifiers),
       reshuffleEachRound: r.reshuffleEachRound,
       tieRule: r.tieExtra ? "extra" : "shared",
+      initialDeal: !!r.initialDeal,
     };
     startLoop(E.createGame(config));
   }
@@ -507,7 +513,7 @@
       const pct = Math.round(pb * 100);
       let hint = "";
       if (settings.showHint && p.type === "human" && game.pending && game.pending.type === "turn" && game.pending.player === p.index) {
-        hint = ' · conseil : <span class="hint">' + (hintFor(p.index).hit ? "piocher" : "rester") + "</span>";
+        hint = ' · conseil : <span class="hint">' + (hintFor(p.index).hit ? "encore" : "stop") + "</span>";
       }
       meter =
         '<div class="meter"><span>Risque de doublon</span><span class="bar"><b style="width:' + Math.max(3, pct) +
@@ -538,8 +544,8 @@
     const p = myTurn ? game.players[game.pending.player] : null;
     $("#btn-stay").disabled = !myTurn;
     $("#btn-hit").disabled = !myTurn;
-    if (p) $("#btn-stay span").textContent = "Rester (" + E.roundScore(game, p) + ")";
-    else $("#btn-stay span").textContent = "Rester";
+    if (p) $("#btn-stay span").textContent = "Stop (" + E.roundScore(game, p) + ")";
+    else $("#btn-stay span").textContent = "Stop";
   }
 
   function setBanner(html, cls) {
@@ -706,7 +712,7 @@
           break;
         case "bust": {
           renderGame();
-          const dups = $$("#focus .card.number").filter((c) => c.querySelector(".big").textContent === String(ev.card.value));
+          const dups = $$('#focus .card.number[data-v="' + ev.card.value + '"]');
           dups.forEach((c) => c.classList.add("dup"));
           shake($("#focus"));
           flash("rgba(255,40,60,.5)");
@@ -721,7 +727,7 @@
           renderGame();
           sound("saved");
           vibrate(40);
-          splash("SAUVÉ&nbsp;!", "Seconde chance utilisée par " + playerName(ev.player), "second");
+          splash("SAUVÉ&nbsp;!", "Seconde Chance utilisée par " + playerName(ev.player), "second");
           await wait(1200);
           break;
         case "secondChanceKept": {
@@ -731,12 +737,12 @@
             const [x, y] = centerOf(el);
             FX.burst(x, y, ["#ff7aa8", "#ffd1e3", "#fff"], 22, { speed: 6 });
           }
-          setBanner(playerName(ev.player) + " garde une<br>Seconde chance");
+          setBanner(playerName(ev.player) + " garde une<br>Seconde Chance");
           await wait(600);
           break;
         }
         case "secondChanceDiscarded":
-          toast("Personne ne peut recevoir cette Seconde chance : elle est défaussée");
+          toast("Personne ne peut recevoir cette Seconde Chance : elle est défaussée");
           renderGame();
           await wait(500);
           break;
@@ -748,7 +754,7 @@
             const [x, y] = centerOf(s);
             FX.burst(x, y, ["#ff7aa8", "#ffd1e3", "#fff"], 22, { speed: 6 });
           }
-          splash("CADEAU", playerName(ev.player) + " donne sa Seconde chance à " + playerName(ev.target), "second", 1300);
+          splash("CADEAU", playerName(ev.player) + " donne la Seconde Chance à " + playerName(ev.target), "second", 1300);
           await wait(1100);
           break;
         }
@@ -763,7 +769,7 @@
           }
           flash("rgba(150,235,255,.45)");
           const self = ev.target === ev.player;
-          splash("GEL&nbsp;!", self ? playerName(ev.target) + " se gèle avec " + ev.score + " pts" : playerName(ev.target) + " est gelé·e avec " + ev.score + " pts", "freeze");
+          splash("STOP&nbsp;!", playerName(ev.target) + (self ? " se stoppe" : " est stoppé·e") + " avec " + ev.score + " pts", "freeze");
           await wait(1400);
           break;
         }
@@ -771,11 +777,11 @@
           focusIndex = ev.target;
           renderGame();
           sound("flip3");
-          splash("TIRER 3&nbsp;!", playerName(ev.target) + " doit retourner " + game.config.flip3Draws + " cartes", "flip3");
+          splash("TROIS À<br>LA SUITE&nbsp;!", playerName(ev.target) + " reçoit les " + game.config.flip3Draws + " prochaines cartes", "flip3");
           await wait(1300);
           break;
         case "actionDeferred":
-          toast(ACTION_LABEL[ev.card.value] + " mis de côté : il sera joué après les " + game.config.flip3Draws + " cartes");
+          toast(ACTION_LABEL[ev.card.value] + " mise de côté : elle s'appliquera après les " + game.config.flip3Draws + " cartes");
           await wait(400);
           break;
         case "actionWasted":
@@ -797,7 +803,7 @@
         case "stay": {
           renderGame();
           sound("stay");
-          setBanner(playerName(ev.player) + " reste<small>" + ev.score + " points en banque</small>");
+          setBanner(playerName(ev.player) + " dit stop<small>" + ev.score + " points mis de côté</small>");
           await wait(700);
           break;
         }
@@ -948,9 +954,9 @@
     return new Promise((resolve) => {
       const me = game.players[pending.player];
       const titles = {
-        freeze: ["Gel&nbsp;!", "Qui doit s'arrêter et mettre ses points en banque&nbsp;?"],
-        flip3: ["Tirer 3&nbsp;!", "Qui doit retourner " + game.config.flip3Draws + " cartes&nbsp;?"],
-        second: ["Seconde chance", "Tu en as déjà une : à qui la donner&nbsp;?"],
+        freeze: ["Stop&nbsp;!", "quel joueur sort de la manche&nbsp;?"],
+        flip3: ["Trois à la suite&nbsp;!", "quel joueur reçoit les " + game.config.flip3Draws + " prochaines cartes&nbsp;?"],
+        second: ["Seconde Chance", "à quel joueur donner cette Seconde Chance&nbsp;?"],
       };
       const suggestion = settings.showHint ? hintFor(pending.player).target : -1;
       const list = pending.options
@@ -1146,5 +1152,6 @@
   };
 
   applySettings();
+  preloadArt();
   show("home", false);
 })(this);
