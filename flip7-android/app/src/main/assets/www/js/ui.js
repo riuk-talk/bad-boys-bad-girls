@@ -150,7 +150,7 @@
     );
   }
   function preloadArt() {
-    const names = ["stop", "flip3", "second", "x2", "p2", "p4", "p6", "p8", "p10"];
+    const names = ["back", "stop", "flip3", "second", "x2", "p2", "p4", "p6", "p8", "p10"];
     for (let n = 0; n <= 12; n++) names.push("n" + n);
     names.forEach((n) => {
       const img = new Image();
@@ -158,7 +158,7 @@
     });
   }
   function backHTML(style) {
-    return '<div class="card back"' + (style ? ' style="' + style + '"' : "") + '><div class="back-art"></div></div>';
+    return '<div class="card art back"' + (style ? ' style="' + style + '"' : "") + '><img src="img/cards/back.webp" alt="" draggable="false"></div>';
   }
 
   // ---------- Navigation ----------

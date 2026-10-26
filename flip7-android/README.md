@@ -19,7 +19,7 @@ Avant toute diffusion publique, il faut une clé privée et un autre nom (« Fli
 Les faces des cartes (`www/img/cards/`) sont extraites de la notice officielle française
 (dessins vectoriels, voir `tools/`). Elles appartiennent à leurs auteurs : **usage personnel
 uniquement**, ne pas publier l'APK ni rendre ce dépôt public avec ces images.
-Le dos des cartes n'est pas dans la notice : il reste un dessin maison en attendant une photo.
+Le dos des cartes vient d'une photo d'une vraie carte (redressée, `tools/straighten_back.py`) ; le logo de l'accueil vient de la couverture de la notice (`tools/extract_logo.py`).
 
 ## Contenu
 

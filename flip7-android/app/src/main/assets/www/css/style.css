@@ -1639,3 +1639,32 @@ svg {
 .splash.flip3 .s-main {
   font-size: 54px;
 }
+
+/* ---------- Official logo (home) ---------- */
+.logo-official {
+  margin: 4vh 0 0;
+  animation: logo-in 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) both, logo-float 4.5s ease-in-out 0.9s infinite;
+}
+.logo-official img {
+  display: block;
+  width: 96%;
+  max-width: 520px;
+  margin: 0 auto;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
+}
+@keyframes logo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-6deg);
+  }
+}
+@keyframes logo-float {
+  50% {
+    transform: translateY(-8px) rotate(-1deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-official {
+    animation: none;
+  }
+}
