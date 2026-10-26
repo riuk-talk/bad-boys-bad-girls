@@ -11,7 +11,7 @@ function countCards(state) {
     if (state.phase === "playing") n += r.numbers.length + r.mods.length + r.actions.length + (r.second ? 1 : 0);
   }
   // An action card waiting for its target is held by the task or the pending decision.
-  n += state.queue.filter((t) => t.t === "choose").length;
+  n += state.queue.filter((t) => t.t === "choose" || t.t === "special").length;
   if (state.pending && state.pending.type === "target") n += 1;
   return n;
 }
@@ -21,6 +21,13 @@ function runUntilPending(state) {
   let guard = 0;
   while (!state.pending && state.phase === "playing" && guard++ < 1000) events.push(...E.advance(state));
   return events;
+}
+
+function setupRound(state) {
+  E.advance(state);
+  state.queue = [];
+  state.pending = null;
+  for (const p of state.players) p.round.numbers = [];
 }
 
 function playGame(config, seed) {
@@ -160,4 +167,49 @@ test("stronger AI wins more often than the beginner", () => {
     for (const w of s.winners) wins[s.players[w].level]++;
   }
   assert.ok(wins.expert > wins.easy, JSON.stringify(wins));
+});
+
+test("official French rules: no initial deal, the first player chooses right away", () => {
+  const s = E.createGame({ players: [{ name: "A" }, { name: "B" }] }, 11);
+  E.advance(s);
+  runUntilPending(s);
+  assert.equal(s.pending.type, "turn");
+  assert.ok(s.players.every((p) => p.round.numbers.length === 0));
+  assert.equal(s.pending.player, (s.dealer + 1) % 2);
+});
+
+test("initial deal variant gives one card to everyone first", () => {
+  const s = E.createGame({ players: [{ name: "A" }, { name: "B" }], initialDeal: true, actions: { freeze: 0, flip3: 0, second: 0 } }, 11);
+  E.advance(s);
+  runUntilPending(s);
+  assert.ok(s.players.every((p) => p.round.numbers.length + p.round.mods.length === 1));
+});
+
+test("Second Chance revealed during Trois a la suite does not protect during the draws", () => {
+  const s = E.createGame({ players: [{ name: "A" }, { name: "B" }, { name: "C" }] }, 13);
+  setupRound(s);
+  s.players[1].round.numbers = [{ id: 2000, kind: "number", value: 5 }];
+  s.deck.push({ id: 2003, kind: "number", value: 7 });
+  s.deck.push({ id: 2002, kind: "number", value: 5 });
+  s.deck.push({ id: 2001, kind: "action", value: "second" });
+  s.queue = [{ t: "draw", p: 1, src: "flip3" }, { t: "draw", p: 1, src: "flip3" }, { t: "draw", p: 1, src: "flip3" }, { t: "flip3End", p: 1 }];
+  runUntilPending(s);
+  assert.equal(s.players[1].round.status, "busted");
+  // Busted: the Second Chance must go to another player still in the round.
+  assert.equal(s.pending.type, "target");
+  assert.equal(s.pending.action, "second");
+  assert.deepEqual(s.pending.options, [0, 2]);
+});
+
+test("a player who busts during Trois a la suite still plays a revealed Stop on someone else", () => {
+  const s = E.createGame({ players: [{ name: "A" }, { name: "B" }, { name: "C" }] }, 17);
+  setupRound(s);
+  s.players[1].round.numbers = [{ id: 3000, kind: "number", value: 9 }];
+  s.deck.push({ id: 3002, kind: "number", value: 9 });
+  s.deck.push({ id: 3001, kind: "action", value: "freeze" });
+  s.queue = [{ t: "draw", p: 1, src: "flip3" }, { t: "draw", p: 1, src: "flip3" }, { t: "draw", p: 1, src: "flip3" }, { t: "flip3End", p: 1 }];
+  runUntilPending(s);
+  assert.equal(s.players[1].round.status, "busted");
+  assert.equal(s.pending.action, "freeze");
+  assert.deepEqual(s.pending.options, [0, 2]);
 });

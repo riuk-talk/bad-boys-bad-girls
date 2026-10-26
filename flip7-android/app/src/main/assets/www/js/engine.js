@@ -22,6 +22,7 @@
     reshuffleEachRound: false,
     tieRule: "extra", // "extra": play another round, "shared": tied players all win
     flip3Draws: 3,
+    initialDeal: false, // variant: deal one card to everyone before the first choice
   };
 
   // ---------- RNG (serialisable) ----------
@@ -206,8 +207,10 @@
       events.push({ type: "reshuffle", count: state.deck.length });
     }
     const tasks = [];
-    for (let k = 1; k <= state.players.length; k++) {
-      tasks.push({ t: "deal", p: (state.dealer + k) % state.players.length });
+    if (state.config.initialDeal) {
+      for (let k = 1; k <= state.players.length; k++) {
+        tasks.push({ t: "deal", p: (state.dealer + k) % state.players.length });
+      }
     }
     tasks.push({ t: "turn", p: nextIndex(state, state.dealer) });
     state.queue = tasks;
@@ -263,9 +266,19 @@
       return;
     }
 
-    // Action cards
+    // Special cards revealed during "Trois à la suite" only apply after the draws (or the bust).
+    if (src === "flip3") {
+      player.round.actions.push(card);
+      events.push({ type: "actionDeferred", player: p, card: card });
+      return;
+    }
+    resolveSpecial(state, p, card, events);
+  }
+
+  function resolveSpecial(state, p, card, events) {
+    const player = state.players[p];
     if (card.value === "second") {
-      if (!player.round.second) {
+      if (isActive(player) && !player.round.second) {
         player.round.second = card;
         events.push({ type: "secondChanceKept", player: p, card: card });
         return;
@@ -286,12 +299,6 @@
       return;
     }
 
-    // Freeze or Flip Three
-    if (src === "flip3") {
-      player.round.actions.push(card);
-      events.push({ type: "actionDeferred", player: p, card: card });
-      return;
-    }
     pushFront(state, [{ t: "choose", p: p, action: card.value, card: card }]);
   }
 
@@ -344,19 +351,20 @@
         return;
       }
       case "flip3End": {
+        // Applied even if the player busted: they then target another player still in the round.
         const player = state.players[task.p];
         const deferred = player.round.actions;
         player.round.actions = [];
-        if (!isActive(player)) {
-          for (const c of deferred) state.discard.push(c);
-          return;
-        }
         pushFront(
           state,
           deferred.map(function (c) {
-            return { t: "choose", p: task.p, action: c.value, card: c };
+            return { t: "special", p: task.p, card: c };
           })
         );
+        return;
+      }
+      case "special": {
+        resolveSpecial(state, task.p, task.card, events);
         return;
       }
       case "choose": {
