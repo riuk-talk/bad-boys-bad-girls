@@ -160,14 +160,21 @@ export default async function GreffePage({ searchParams }: Props) {
                   </Button>
                 </form>
               )}
-              {/* A pose not cut out: cutting it out stays the default; the waiver is a choice
-                  folded away next to it, with an internal motive (9k). */}
+              {/* A pose not cut out: cutting it out stays the default (first); validating it
+                  without cut-out is shown right under it, with a required internal motive (9k). */}
               {key && !cut.has(row.photo_id) ? (
-                <details className="border-line rounded-lg border px-3 py-2">
-                  <summary className="min-h-11 cursor-pointer content-center text-sm font-semibold">
+                <section
+                  aria-labelledby={`waive-title-${row.photo_id}`}
+                  className="border-line rounded-lg border px-3 py-2"
+                  data-testid="waive"
+                >
+                  <h2
+                    id={`waive-title-${row.photo_id}`}
+                    className="min-h-11 content-center text-sm font-semibold"
+                  >
                     {t("waive.summary")}
-                  </summary>
-                  <form action={decidePhotoAction} className="space-y-2 pt-2">
+                  </h2>
+                  <form action={decidePhotoAction} className="space-y-2">
                     <input type="hidden" name="photoId" value={row.photo_id} />
                     <p className="text-cream/85 text-sm">{t("waive.lead")}</p>
                     <label className="block text-sm" htmlFor={`waive-${row.photo_id}`}>
@@ -208,7 +215,7 @@ export default async function GreffePage({ searchParams }: Props) {
                       {t("waive.submit")}
                     </Button>
                   </form>
-                </details>
+                </section>
               ) : null}
               <form action={decidePhotoAction} className="space-y-2">
                 <input type="hidden" name="photoId" value={row.photo_id} />

@@ -311,11 +311,10 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await expect(card.getByTestId("cutout-state")).toHaveText(
       "À détourer par le Greffe avant validation",
     );
-    // Cutting out stays the default; the waiver is folded away next to it.
+    // Cutting out stays the default (first); the button to validate without cut-out is in
+    // view right under it, with its required motive.
     await expect(card.getByRole("button", { name: "Détourer" })).toBeVisible();
     const waiver = card.getByRole("button", { name: "Valider sans détourage" });
-    await expect(waiver).toBeHidden();
-    await card.locator("summary").click();
     await expect(waiver).toBeVisible();
     await expect(card.getByLabel("Motif (interne)")).toHaveAttribute("required", "");
     expect(await axeViolations(greffe)).toEqual([]);
@@ -328,7 +327,6 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
         .filter({ hasText: "Choisis un motif ; pour « autre », précise-le." }),
     ).toBeVisible();
     const motive = "Fond trop proche du visage";
-    await card.locator("summary").click();
     await card.getByLabel("Motif (interne)").selectOption("other");
     await card.getByLabel(/Précise le motif/).fill(motive);
     await waiver.click();
