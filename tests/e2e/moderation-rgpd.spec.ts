@@ -106,10 +106,12 @@ test.describe("Phase 7: moderation and RGPD (local stack)", () => {
       .select("id")
       .single();
     if (error) throw error;
+    // Validated as cut out (9k: a validated pose is cut out, or waived by the Greffe).
     await admin
       .from("photos")
       .update({
         status: "approved",
+        is_cutout: true,
         public_path_large: `${name}.webp`,
         public_path_small: `${name}-s.webp`,
       })

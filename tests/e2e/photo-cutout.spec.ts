@@ -190,7 +190,8 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     browser,
   }) => {
     test.skip(!greffier.totpSecret, "needs the first test");
-    // Two validated poses as they were before the decision: the original, not cut out.
+    // Two validated poses as they were before 9i: an old file, cut out by the previous engine
+    // (9k: a validated pose is cut out or waived, never as it is), not re-cut yet.
     const original = await sharp(await readFile("tests/e2e/fixtures/person.jpg"))
       .webp()
       .toBuffer();
@@ -207,14 +208,11 @@ test.describe("photo cut-out in the browser (local stack)", () => {
       published.push(
         ...[photo.public_path_large!, photo.public_path_large!.replace(/\.webp$/, "-s.webp")],
       );
-      await admin
+      const { error } = await admin
         .from("photos")
-        .update({
-          public_path_large: `${name}.webp`,
-          public_path_small: `${name}-s.webp`,
-          is_cutout: false,
-        })
+        .update({ public_path_large: `${name}.webp`, public_path_small: `${name}-s.webp` })
         .eq("id", photo.id);
+      if (error) throw error;
     }
 
     const page = await (await browser.newContext()).newPage();
@@ -245,7 +243,7 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     const leftRow = after.find((p) => p.position === 1)!;
     expect(faceRow.is_cutout).toBe(true);
     expect(faceRow.public_path_large).not.toBe(old[0]);
-    expect([leftRow.is_cutout, leftRow.public_path_large]).toEqual([false, old[1]]);
+    expect([leftRow.is_cutout, leftRow.public_path_large]).toEqual([true, old[1]]);
     // The replaced files are gone; the kept ones stay.
     const { data: listed } = await admin.storage
       .from("photos")

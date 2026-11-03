@@ -4,6 +4,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { settled } from "./helpers/settle";
+import { openGreffe } from "./helpers/admin";
 import { cutoutReady } from "./helpers/onboarding";
 
 // Phase 4 end to end against a Supabase project (the local stack in CI, or the DEV project): a Visitor finds a Bad, files a Demande de
@@ -140,14 +141,41 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       .select("id")
       .single();
     if (error) throw error;
-    await admin
+    // Validated as cut out (9k: a validated pose is cut out, or waived by the Greffe).
+    const { error: approveError } = await admin
       .from("photos")
       .update({
         status: "approved",
+        is_cutout: true,
         public_path_large: `${name}.webp`,
         public_path_small: `${name}-s.webp`,
       })
       .eq("id", data.id);
+    if (approveError) throw approveError;
+  }
+
+  /** A pose sent as it is (the device could not cut it out): it waits for the Greffe. */
+  async function poseForTheGreffe(owner: string, position: number, color: string) {
+    const name = `${owner}/${randomUUID()}`;
+    const large = await sharp({
+      create: { width: 960, height: 1200, channels: 3, background: color },
+    })
+      .webp()
+      .toBuffer();
+    const small = await sharp(large).resize(320, 400).webp().toBuffer();
+    for (const [path, body] of [
+      [`${name}.webp`, large],
+      [`${name}-s.webp`, small],
+    ] as const) {
+      const { error } = await admin.storage
+        .from("photos-pending")
+        .upload(path, body, { contentType: "image/webp" });
+      if (error) throw error;
+    }
+    const { error } = await admin
+      .from("photos")
+      .insert({ owner_id: owner, position, pending_path: `${name}.webp`, needs_cutout: true });
+    if (error) throw error;
   }
 
   async function member(
@@ -202,9 +230,12 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       tribe_id: 1,
       detail: role === "bad" ? "Triumph de 1974" : null,
     });
-    for (const position of role === "bad" ? [0, 1, 2] : [0]) {
-      await approvedPhoto(target.id, position, gender === "woman" ? "#7a2a3a" : "#2a4a7a");
+    const color = gender === "woman" ? "#7a2a3a" : "#2a4a7a";
+    for (const position of role === "bad" ? [0, 1] : [0]) {
+      await approvedPhoto(target.id, position, color);
     }
+    // The Bad's right profile waits for the Greffe, which validates it without cut-out (9k).
+    if (role === "bad") await poseForTheGreffe(target.id, 2, "#5a3a2a");
   }
 
   test.beforeAll(async () => {
@@ -246,10 +277,98 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
   });
 
   test.afterAll(async () => {
+    for (const userId of accounts) {
+      const { data: rows } = await admin
+        .from("photos")
+        .select("public_path_large, public_path_small")
+        .eq("owner_id", userId);
+      for (const row of rows ?? [])
+        for (const path of [row.public_path_large, row.public_path_small])
+          if (path && !publicFiles.includes(path)) publicFiles.push(path);
+      const { data: pending } = await admin.storage.from("photos-pending").list(userId);
+      if (pending?.length)
+        await admin.storage
+          .from("photos-pending")
+          .remove(pending.map((file) => `${userId}/${file.name}`));
+    }
     if (publicFiles.length) await admin.storage.from("photos").remove(publicFiles);
     for (const userId of accounts) await admin.auth.admin.deleteUser(userId);
     if (zoneId) await admin.from("launch_zones").delete().eq("id", zoneId);
     if (placeId) await admin.from("places").delete().eq("id", placeId);
+  });
+
+  test("Greffe: a pose validated without cut-out, the motive kept internal (9k)", async ({
+    browser,
+  }) => {
+    const greffier = { ...(await account()), totpSecret: "" };
+    await admin.from("admin_users").insert({ user_id: greffier.id, note: "e2e waiver" });
+    const greffe = await (await browser.newContext()).newPage();
+    greffier.totpSecret = await openGreffe(greffe, greffier);
+    await greffe.goto("/admin/greffe");
+    const card = greffe
+      .getByRole("listitem")
+      .filter({ has: greffe.locator("p", { hasText: `${bad.pseudo} · Bad · Profil droit` }) });
+    await expect(card.getByTestId("cutout-state")).toHaveText(
+      "À détourer par le Greffe avant validation",
+    );
+    // Cutting out stays the default; the waiver is folded away next to it.
+    await expect(card.getByRole("button", { name: "Détourer" })).toBeVisible();
+    const waiver = card.getByRole("button", { name: "Valider sans détourage" });
+    await expect(waiver).toBeHidden();
+    await card.locator("summary").click();
+    await expect(waiver).toBeVisible();
+    await expect(card.getByLabel("Motif (interne)")).toHaveAttribute("required", "");
+    expect(await axeViolations(greffe)).toEqual([]);
+    // « Autre » without its text: refused.
+    await card.getByLabel("Motif (interne)").selectOption("other");
+    await waiver.click();
+    await expect(
+      greffe
+        .getByRole("alert")
+        .filter({ hasText: "Choisis un motif ; pour « autre », précise-le." }),
+    ).toBeVisible();
+    const motive = "Fond trop proche du visage";
+    await card.locator("summary").click();
+    await card.getByLabel("Motif (interne)").selectOption("other");
+    await card.getByLabel(/Précise le motif/).fill(motive);
+    await waiver.click();
+    await expect(greffe.getByText("Décision enregistrée.")).toBeVisible();
+    await expect(card).toHaveCount(0);
+    await greffe.context().close();
+
+    const { data: pose } = await admin
+      .from("photos")
+      .select("status, is_cutout, cutout_waived, cutout_waived_reason, pending_path")
+      .eq("owner_id", bad.id)
+      .eq("position", 2)
+      .single();
+    expect(pose).toEqual({
+      status: "approved",
+      is_cutout: false,
+      cutout_waived: true,
+      cutout_waived_reason: `other: ${motive}`,
+      pending_path: null,
+    });
+    const { data: logged } = await admin
+      .from("moderation_actions")
+      .select("action, reason, admin_id")
+      .eq("target_user_id", bad.id);
+    expect(logged).toEqual([
+      { action: "photo_cutout_waive", reason: `other: ${motive}`, admin_id: greffier.id },
+    ]);
+    // The member is told the photo is validated, never the motive.
+    const { data: told } = await admin
+      .from("notifications")
+      .select("payload")
+      .eq("user_id", bad.id)
+      .eq("type", "moderation_decision");
+    expect(told).toEqual([{ payload: { photo_position: 2, approved: true, reason: null } }]);
+    const page = await login(browser, bad.email, bad.password);
+    await page.goto("/ma-fiche");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(motive);
+    await expect(page.locator("body")).not.toContainText("sans détourage");
+    await page.context().close();
   });
 
   test("Visitor: Promenade, Découverte, the Fiche as a judicial file, the Demande de parloir", async ({
@@ -436,6 +555,22 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     };
     await side("Mettre au centre : profil droit", 0.45);
     await expect(center).toHaveAttribute("data-pose", "right");
+    // The right profile, validated without cut-out (9k): a print stapled to the wall, white
+    // border and shadow, the size of the other poses; the others stay cut out on the wall.
+    const printLayer = center.locator(".fiche-layer", { has: page.getByTestId("pose-print") });
+    await expect(printLayer).toHaveCSS("opacity", "1");
+    const print = printLayer.getByTestId("pose-print");
+    await expect(print).toHaveCSS("border-top-color", "rgb(251, 248, 241)");
+    expect(await print.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe("none");
+    {
+      const frame = (await center.boundingBox())!;
+      const box = (await print.boundingBox())!;
+      expect(box.width).toBeGreaterThan(frame.width * 0.9);
+      expect(box.height).toBeGreaterThan(frame.height * 0.9);
+    }
+    // One print per frame (each frame holds the 3 poses as layers): only that pose.
+    await expect(fiche.getByTestId("pose-print")).toHaveCount(3);
+    await shot(page, "visitor-fiche-print");
     await side("Mettre au centre : face", 0.6);
     await expect(center).toHaveAttribute("data-pose", "face");
     expect(await wall.evaluate((el) => getComputedStyle(el).touchAction)).toBe("pan-y");
