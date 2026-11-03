@@ -429,12 +429,21 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       await page.waitForURL(new RegExp(`/fiche/${bad.id}$`));
       await expect(dossier).toBeVisible();
     }
+    // The cover lives one second only: its turn is read by the page the moment it appears, not
+    // afterwards (a slow device may already be removing it).
+    await page.evaluate(() => {
+      const w = window as unknown as { coverTurn?: number };
+      new MutationObserver((_, observer) => {
+        const cover = document.querySelector("[data-testid=dossier-cover]");
+        if (!cover) return;
+        w.coverTurn = parseFloat(getComputedStyle(cover).transitionDuration);
+        observer.disconnect();
+      }).observe(document.body, { childList: true, subtree: true });
+    });
     await openFolder();
-    expect(
-      await page
-        .getByTestId("dossier-cover")
-        .evaluate((el) => parseFloat(getComputedStyle(el).transitionDuration)),
-    ).toBeCloseTo(0.9, 1);
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { coverTurn?: number }).coverTurn))
+      .toBeCloseTo(0.9, 1);
     await expect(dossier).toHaveAttribute("data-phase", "2");
     await expect(dossier.getByTestId("placard-small")).toContainText(bad.pseudo);
     expect(await axeViolations(page)).toEqual([]);
