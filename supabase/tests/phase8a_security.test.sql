@@ -8,6 +8,7 @@ create function pg_temp.expected_member_functions() returns text[] language sql 
   select array[
     'accept_visit_request(p_request uuid, p_slots timestamp with time zone[])',
     'ack_parloir_nudge(p_conversation uuid)',
+    'admin_approve_without_cutout(p_photo uuid, p_reason text, p_detail text, p_public_large text, p_public_small text)',
     'admin_decide_flag(p_flag bigint, p_decision text, p_reason text)',
     'admin_decide_photo(p_photo uuid, p_approve boolean, p_reason text, p_public_large text, p_public_small text)',
     'admin_decide_report(p_report bigint, p_upheld boolean, p_reason_reporter text, p_action moderation_action_type, p_reason_target text, p_days integer)',
@@ -33,6 +34,7 @@ create function pg_temp.expected_member_functions() returns text[] language sql 
     'admin_set_zone_status(p_zone smallint, p_status zone_status)',
     'admin_store_cutout(p_photo uuid, p_pending_path text)',
     'admin_tribes()',
+    'admin_waive_cutout(p_photo uuid, p_reason text, p_detail text)',
     'admin_web_vitals(p_days integer)',
     'admin_zone_health(p_zone smallint, p_from date, p_to date)',
     'admin_zones()',

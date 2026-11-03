@@ -406,7 +406,7 @@ begin
     select id, p, id || '/' || p || '.webp' from unnest(array[w1, w2, m1, paused, gone, nophoto]) id,
       generate_series(0, 2) p;
   insert into public.photos (owner_id, position, pending_path) values (v, 0, v || '/0.webp');
-  update public.photos set status = 'approved' where owner_id <> nophoto;
+  update public.photos set status = 'approved', is_cutout = true where owner_id <> nophoto;
   perform pg_temp.as_user(me);
   return next is(pg_temp.val('select bads from public.zone_progress()'), '3',
     'only active, visible Bads count (not paused, not inactive > 30 days, approved photo, no Visitor)');

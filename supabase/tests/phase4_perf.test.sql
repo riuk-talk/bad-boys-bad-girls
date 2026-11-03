@@ -56,7 +56,7 @@ begin
   select p.id, pos, p.id || '/' || gen_random_uuid() || '.webp'
   from perf_ids p cross join generate_series(0, 2) pos
   where p.role = 'bad' or pos = 0;
-  update public.photos ph set status = 'approved', pending_path = null,
+  update public.photos ph set status = 'approved', pending_path = null, is_cutout = true,
     public_path_large = gen_random_uuid() || '.webp', public_path_small = gen_random_uuid() || '-s.webp'
   from perf_ids p where ph.owner_id = p.id;
 

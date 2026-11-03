@@ -131,8 +131,9 @@ declare b uuid := pg_temp.new_member('bad'); g uuid := pg_temp.new_member('visit
   r record;
 begin
   insert into public.photos (owner_id, position, pending_path) values (b, 2, b || '/r.webp') returning id into ph;
-  update public.photos set status = 'approved', public_path_large = 'old.webp', public_path_small = 'old-s.webp'
-    where id = ph;
+  -- Cut out by the previous engine, not re-cut yet (9k: a validated pose is cut out or waived).
+  update public.photos set status = 'approved', public_path_large = 'old.webp', public_path_small = 'old-s.webp',
+    is_cutout = true where id = ph;
   insert into public.admin_users (user_id) values (g);
 
   perform pg_temp.as_admin(g);

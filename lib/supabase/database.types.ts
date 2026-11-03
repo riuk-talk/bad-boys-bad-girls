@@ -861,6 +861,8 @@ export type Database = {
       photos: {
         Row: {
           created_at: string
+          cutout_waived: boolean
+          cutout_waived_reason: string | null
           height: number | null
           id: string
           is_cutout: boolean
@@ -880,6 +882,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          cutout_waived?: boolean
+          cutout_waived_reason?: string | null
           height?: number | null
           id?: string
           is_cutout?: boolean
@@ -899,6 +903,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          cutout_waived?: boolean
+          cutout_waived_reason?: string | null
           height?: number | null
           id?: string
           is_cutout?: boolean
@@ -1737,6 +1743,16 @@ export type Database = {
         Args: { p_conversation: string }
         Returns: undefined
       }
+      admin_approve_without_cutout: {
+        Args: {
+          p_detail: string
+          p_photo: string
+          p_public_large: string
+          p_public_small: string
+          p_reason: string
+        }
+        Returns: string
+      }
       admin_decide_flag: {
         Args: { p_decision: string; p_flag: number; p_reason?: string }
         Returns: undefined
@@ -1969,6 +1985,10 @@ export type Database = {
           sort: number
           tribe_id: number
         }[]
+      }
+      admin_waive_cutout: {
+        Args: { p_detail?: string; p_photo: string; p_reason: string }
+        Returns: undefined
       }
       admin_web_vitals: {
         Args: { p_days?: number }
@@ -2416,6 +2436,7 @@ export type Database = {
         Args: { p_bad: string; p_visitor: string }
         Returns: string
       }
+      photo_cutout_waiver_reasons: { Args: never; Returns: string[] }
       photo_rejection_reasons: { Args: never; Returns: string[] }
       place_name: { Args: { p_place: number }; Returns: string }
       prepare_my_account_deletion: {
@@ -2623,6 +2644,7 @@ export type Database = {
         | "text_clear"
         | "text_remove"
         | "revoke_good_conduct"
+        | "photo_cutout_waive"
       moderation_status: "pending" | "approved" | "rejected"
       notification_type:
         | "request_received"
@@ -2879,6 +2901,7 @@ export const Constants = {
         "text_clear",
         "text_remove",
         "revoke_good_conduct",
+        "photo_cutout_waive",
       ],
       moderation_status: ["pending", "approved", "rejected"],
       notification_type: [

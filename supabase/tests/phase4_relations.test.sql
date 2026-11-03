@@ -41,7 +41,7 @@ end $$;
 create function pg_temp.approve_photo(p_owner uuid, p_position integer) returns void language sql as $$
   insert into public.photos (owner_id, position, pending_path)
   values (p_owner, p_position, p_owner || '/' || gen_random_uuid() || '.webp');
-  update public.photos set status = 'approved', pending_path = null,
+  update public.photos set status = 'approved', pending_path = null, is_cutout = true,
     public_path_large = gen_random_uuid() || '.webp', public_path_small = gen_random_uuid() || '-s.webp'
   where owner_id = p_owner and position = p_position;
 $$;

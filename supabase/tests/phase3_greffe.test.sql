@@ -76,10 +76,11 @@ begin
   return result;
 end $$;
 
--- A pending photo at a position, as the database owner.
+-- A pending photo at a position, as the database owner, cut out (9k: a validated pose is cut out
+-- or waived).
 create function pg_temp.pending_photo(p_owner uuid, p_position smallint) returns uuid language sql as $$
-  insert into public.photos (owner_id, position, pending_path)
-  values (p_owner, p_position, p_owner || '/' || gen_random_uuid() || '.webp') returning id
+  insert into public.photos (owner_id, position, pending_path, is_cutout)
+  values (p_owner, p_position, p_owner || '/' || gen_random_uuid() || '.webp', true) returning id
 $$;
 
 create function pg_temp.new_admin() returns uuid language plpgsql as $$
@@ -256,11 +257,11 @@ begin
   update public.profiles set onboarding_completed_at = now(), last_seen_at = now() where id = w;
   insert into public.photos (owner_id, position, pending_path)
     select w, p, w || '/' || p || '.webp' from generate_series(0, 2) p;
-  update public.photos set status = 'approved' where owner_id = w and position in (0, 1);
+  update public.photos set status = 'approved', is_cutout = true where owner_id = w and position in (0, 1);
   perform pg_temp.as_user(me);
   return next is(pg_temp.val('select bads from public.zone_progress()'), '0', 'two validated poses out of three: not counted');
   perform pg_temp.as_owner();
-  update public.photos set status = 'approved' where owner_id = w and position = 2;
+  update public.photos set status = 'approved', is_cutout = true where owner_id = w and position = 2;
   perform pg_temp.as_user(me);
   return next is(pg_temp.val('select bads from public.zone_progress()'), '1', 'the 3 poses validated: counted');
   perform pg_temp.as_owner();
