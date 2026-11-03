@@ -157,7 +157,9 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     await expect(card("Profil gauche").getByTestId("cutout-state")).toHaveText(
       "À détourer par le Greffe avant validation",
     );
-    await expect(card("Profil gauche").getByRole("button", { name: "Valider" })).toHaveCount(0);
+    await expect(
+      card("Profil gauche").getByRole("button", { name: "Valider", exact: true }),
+    ).toHaveCount(0);
     const before = (await photosOf()).find((p) => p.position === 1)!.pending_path!;
     await cutoutReady(greffe);
     await card("Profil gauche").getByRole("button", { name: "Détourer" }).click();
@@ -172,7 +174,7 @@ test.describe("photo cut-out in the browser (local stack)", () => {
       { timeout: 20_000 },
     );
     for (const pose of ["Profil gauche", "Face"]) {
-      await card(pose).getByRole("button", { name: "Valider" }).click();
+      await card(pose).getByRole("button", { name: "Valider", exact: true }).click();
       await expect(card(pose)).toHaveCount(0);
     }
     expect(

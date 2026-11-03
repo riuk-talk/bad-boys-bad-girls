@@ -284,9 +284,9 @@ test.describe("complete onboardings (real Supabase, writes data)", () => {
         .getByRole("listitem")
         .filter({ hasText: profile!.pseudo! })
         .filter({ has: greffier.locator("p", { hasText: new RegExp(`· ${pose}$`) }) });
-    await card("Face").getByRole("button", { name: "Valider" }).click();
+    await card("Face").getByRole("button", { name: "Valider", exact: true }).click();
     await expect(greffier.getByText("Décision enregistrée.")).toBeVisible();
-    await card("Profil gauche").getByRole("button", { name: "Valider" }).click();
+    await card("Profil gauche").getByRole("button", { name: "Valider", exact: true }).click();
     await expect(card("Profil gauche")).toHaveCount(0);
     await card("Profil droit").getByLabel("Motif du refus").selectOption("sunglasses");
     await card("Profil droit").getByRole("button", { name: "Refuser" }).click();

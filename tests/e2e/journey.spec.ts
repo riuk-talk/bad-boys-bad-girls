@@ -227,7 +227,7 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
       [bad.pseudo, "Profil gauche"],
       [bad.pseudo, "Profil droit"],
     ] as const) {
-      await card(pseudo, pose).getByRole("button", { name: "Valider" }).click();
+      await card(pseudo, pose).getByRole("button", { name: "Valider", exact: true }).click();
       await expect(card(pseudo, pose)).toHaveCount(0);
     }
     await page.context().close();
