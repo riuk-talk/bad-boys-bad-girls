@@ -48,6 +48,7 @@ export const ACTIONS = [
   "unhide_profile",
   "photo_approve",
   "photo_reject",
+  "photo_cutout_waive",
   "text_clear",
   "text_remove",
   "revoke_good_conduct",

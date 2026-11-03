@@ -996,7 +996,8 @@
     "errors": {
       "notPending": "Cette photo a déjà été traitée.",
       "generic": "La décision n'a pas pu être enregistrée. Réessaie.",
-      "needsCutout": "Cette photo doit d'abord être détourée."
+      "needsCutout": "Cette photo doit d'abord être détourée.",
+      "waiveReason": "Choisis un motif ; pour « autre », précise-le."
     },
     "reasons": {
       "face_hidden": "visage pas assez visible",
@@ -1042,6 +1043,19 @@
         "kept": "Ancienne gardée.",
         "error": "Échec de l'enregistrement : l'ancienne reste."
       }
+    },
+    "waive": {
+      "summary": "Valider sans détourage",
+      "lead": "Seulement si le détourage rate ou ne convient pas à la photo. La pose s'affichera comme un tirage agrafé au mur. Le motif reste au Greffe : le membre apprend seulement que sa photo est validée.",
+      "reasonLabel": "Motif (interne)",
+      "choose": "Choisir un motif",
+      "reasons": {
+        "failed_cutout": "détourage raté",
+        "atypical_photo": "photo atypique",
+        "other": "autre"
+      },
+      "detailLabel": "Précise le motif (obligatoire pour « autre »)",
+      "submit": "Valider sans détourage"
     }
   },
   "Prompter": {
@@ -1755,6 +1769,7 @@
       "unhide_profile": "Fiche de nouveau visible",
       "photo_approve": "Photo validée",
       "photo_reject": "Photo refusée",
+      "photo_cutout_waive": "Photo validée sans détourage",
       "text_clear": "Texte : rien à signaler",
       "text_remove": "Texte retiré",
       "revoke_good_conduct": "Bonne conduite retirée"
@@ -2012,6 +2027,7 @@
       "unhide_profile": "Fiche de nouveau visible",
       "photo_approve": "Photo validée",
       "photo_reject": "Photo refusée",
+      "photo_cutout_waive": "Photo validée sans détourage",
       "text_clear": "Texte : rien à signaler",
       "text_remove": "Texte retiré par le Greffe",
       "revoke_good_conduct": "Bonne conduite retirée"

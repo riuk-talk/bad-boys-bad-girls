@@ -20,13 +20,20 @@ const REASONS = [
   "other",
 ] as const;
 
+/** « Valider sans détourage » (9k): the internal motives; « other » needs a short text. */
+const WAIVER_REASONS = ["failed_cutout", "atypical_photo", "other"] as const;
+
 const decisionSchema = z.object({
   photoId: z.uuid(),
-  decision: z.enum(["approve", "reject"]),
+  decision: z.enum(["approve", "reject", "approve_waived"]),
   reason: z.optional(z.enum(REASONS)),
+  waiveReason: z.optional(z.enum(WAIVER_REASONS)),
+  waiveDetail: z.optional(z.string().check(z.trim(), z.maxLength(200))),
 });
 
-async function back(error?: "notPending" | "needsCutout" | "generic"): Promise<never> {
+async function back(
+  error?: "notPending" | "needsCutout" | "waiveReason" | "generic",
+): Promise<never> {
   revalidatePath("/[locale]/admin/greffe", "page");
   return redirect({
     href: error ? `/admin/greffe?error=${error}` : "/admin/greffe?done=1",
@@ -47,9 +54,20 @@ export async function decidePhotoAction(form: FormData): Promise<void> {
     photoId: form.get("photoId"),
     decision: form.get("decision"),
     reason: form.get("reason") || undefined,
+    waiveReason: form.get("waiveReason") || undefined,
+    waiveDetail: form.get("waiveDetail") || undefined,
   });
-  if (!parsed.success) return back("generic");
-  const { photoId, decision, reason } = parsed.data;
+  if (!parsed.success) {
+    return back(form.get("decision") === "approve_waived" ? "waiveReason" : "generic");
+  }
+  const { photoId, decision, reason, waiveReason, waiveDetail } = parsed.data;
+  // Without cut-out: a motive, and its text for « other » (checked again by SQL).
+  if (
+    decision === "approve_waived" &&
+    (!waiveReason || (waiveReason === "other" && !waiveDetail))
+  ) {
+    return back("waiveReason");
+  }
   const member = await requireMember();
   const { data: isAdmin } = await member.supabase.rpc("is_admin");
   if (isAdmin !== true) return back("generic");
@@ -95,17 +113,30 @@ export async function decidePhotoAction(form: FormData): Promise<void> {
     await admin.storage.from("photos").remove(published);
     return back("generic");
   }
-  const { error } = await member.supabase.rpc("admin_decide_photo", {
-    p_photo: photoId,
-    p_approve: true,
-    p_public_large: published[0],
-    p_public_small: published[1],
-  });
+  // « Valider sans détourage » (9k): the waiver (admin only, logged) and the validation in one
+  // SQL transaction; otherwise the usual validation.
+  const { error } =
+    decision === "approve_waived"
+      ? await member.supabase.rpc("admin_approve_without_cutout", {
+          p_photo: photoId,
+          p_reason: waiveReason!,
+          p_detail: waiveDetail ?? "",
+          p_public_large: published[0]!,
+          p_public_small: published[1]!,
+        })
+      : await member.supabase.rpc("admin_decide_photo", {
+          p_photo: photoId,
+          p_approve: true,
+          p_public_large: published[0],
+          p_public_small: published[1],
+        });
   if (error) {
     await admin.storage.from("photos").remove(published);
-    // photos_cutout_before_approval: a photo waiting for its cut-out is never validated as it is.
+    if (error.message.includes("photo_not_pending")) return back("notPending");
+    if (error.message.includes("invalid_reason")) return back("waiveReason");
+    // photos_cutout_or_waived: a pose neither cut out nor waived is never validated as it is.
     if (error.code === "23514") return back("needsCutout");
-    return back(error.message.includes("photo_not_pending") ? "notPending" : "generic");
+    return back("generic");
   }
   await admin.storage.from("photos-pending").remove(pending);
   return back();

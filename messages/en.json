@@ -996,7 +996,8 @@
     "errors": {
       "notPending": "This photo has already been handled.",
       "generic": "The decision could not be recorded. Try again.",
-      "needsCutout": "This photo must be cut out first."
+      "needsCutout": "This photo must be cut out first.",
+      "waiveReason": "Choose a motive; for “other”, explain it."
     },
     "reasons": {
       "face_hidden": "face not visible enough",
@@ -1042,6 +1043,19 @@
         "kept": "Old one kept.",
         "error": "Saving failed: the old one stays."
       }
+    },
+    "waive": {
+      "summary": "Approve without cut-out",
+      "lead": "Only when the cut-out fails or does not suit the photo. The pose will show as a print stapled to the wall. The motive stays with the Greffe: the member only learns that the photo is approved.",
+      "reasonLabel": "Motive (internal)",
+      "choose": "Choose a motive",
+      "reasons": {
+        "failed_cutout": "failed cut-out",
+        "atypical_photo": "unusual photo",
+        "other": "other"
+      },
+      "detailLabel": "Explain the motive (required for “other”)",
+      "submit": "Approve without cut-out"
     }
   },
   "Prompter": {
@@ -1755,6 +1769,7 @@
       "unhide_profile": "Fiche visible again",
       "photo_approve": "Photo validated",
       "photo_reject": "Photo refused",
+      "photo_cutout_waive": "Photo approved without cut-out",
       "text_clear": "Text: nothing wrong",
       "text_remove": "Text removed",
       "revoke_good_conduct": "Bonne conduite withdrawn"
@@ -2012,6 +2027,7 @@
       "unhide_profile": "Fiche visible again",
       "photo_approve": "Photo validated",
       "photo_reject": "Photo refused",
+      "photo_cutout_waive": "Photo approved without cut-out",
       "text_clear": "Text: nothing wrong",
       "text_remove": "Text removed by the Greffe",
       "revoke_good_conduct": "Bonne conduite withdrawn"

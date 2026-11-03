@@ -31,6 +31,8 @@ const REASONS = [
   "not_adult",
   "other",
 ] as const;
+/** « Valider sans détourage » (9k): internal motives, never shown to the member. */
+const WAIVER_REASONS = ["failed_cutout", "atypical_photo", "other"] as const;
 const POSITION_KEYS: Record<number, "face" | "left" | "right"> = {
   0: "face",
   1: "left",
@@ -86,7 +88,10 @@ export default async function GreffePage({ searchParams }: Props) {
             </Link>
           </p>
         ) : null}
-        {error === "notPending" || error === "needsCutout" || error === "generic" ? (
+        {error === "notPending" ||
+        error === "needsCutout" ||
+        error === "waiveReason" ||
+        error === "generic" ? (
           <p role="alert" className="text-red-bright font-medium">
             {t(`errors.${error}`)}
           </p>
@@ -155,6 +160,56 @@ export default async function GreffePage({ searchParams }: Props) {
                   </Button>
                 </form>
               )}
+              {/* A pose not cut out: cutting it out stays the default; the waiver is a choice
+                  folded away next to it, with an internal motive (9k). */}
+              {key && !cut.has(row.photo_id) ? (
+                <details className="border-line rounded-lg border px-3 py-2">
+                  <summary className="min-h-11 cursor-pointer content-center text-sm font-semibold">
+                    {t("waive.summary")}
+                  </summary>
+                  <form action={decidePhotoAction} className="space-y-2 pt-2">
+                    <input type="hidden" name="photoId" value={row.photo_id} />
+                    <p className="text-cream/85 text-sm">{t("waive.lead")}</p>
+                    <label className="block text-sm" htmlFor={`waive-${row.photo_id}`}>
+                      {t("waive.reasonLabel")}
+                    </label>
+                    <select
+                      id={`waive-${row.photo_id}`}
+                      name="waiveReason"
+                      required
+                      defaultValue=""
+                      className="border-line bg-ink-2 min-h-11 w-full rounded-lg border px-3"
+                    >
+                      <option value="" disabled>
+                        {t("waive.choose")}
+                      </option>
+                      {WAIVER_REASONS.map((reason) => (
+                        <option key={reason} value={reason}>
+                          {t(`waive.reasons.${reason}`)}
+                        </option>
+                      ))}
+                    </select>
+                    <label className="block text-sm" htmlFor={`waive-detail-${row.photo_id}`}>
+                      {t("waive.detailLabel")}
+                    </label>
+                    <input
+                      id={`waive-detail-${row.photo_id}`}
+                      name="waiveDetail"
+                      maxLength={200}
+                      className="border-line bg-ink-2 min-h-11 w-full rounded-lg border px-3"
+                    />
+                    <Button
+                      type="submit"
+                      name="decision"
+                      value="approve_waived"
+                      variant="secondary"
+                      className="w-full"
+                    >
+                      {t("waive.submit")}
+                    </Button>
+                  </form>
+                </details>
+              ) : null}
               <form action={decidePhotoAction} className="space-y-2">
                 <input type="hidden" name="photoId" value={row.photo_id} />
                 <label className="block text-sm" htmlFor={`reason-${row.photo_id}`}>
