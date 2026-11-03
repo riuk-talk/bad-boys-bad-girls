@@ -25,10 +25,12 @@ export async function FicheScreen({ id, dossier = false }: { id: string; dossier
   if (!fiche) notFound();
   const isSelf = userId === fiche.id;
 
-  const photoUrls: Record<number, { url: string; cutout: boolean } | null> = {};
+  const photoUrls: Record<number, { url: string; cutout: boolean; waived: boolean } | null> = {};
   for (const photo of fiche.photos) {
     const url = publicPhotoUrl(supabase, photo.large);
-    photoUrls[photo.position] = url ? { url, cutout: photo.cutout === true } : null;
+    photoUrls[photo.position] = url
+      ? { url, cutout: photo.cutout === true, waived: photo.waived === true }
+      : null;
   }
 
   const pageT = await getTranslations("Relations.fichePage");

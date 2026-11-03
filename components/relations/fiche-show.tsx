@@ -10,7 +10,7 @@ import type { PrompterInput } from "@/lib/prompter";
 import type { FicheAction } from "@/lib/relations/fiche-action";
 import { agreeLabel, type FicheView, localize, tribeText } from "@/lib/relations/types";
 
-type Photo = { url: string; cutout: boolean };
+type Photo = { url: string; cutout: boolean; waived?: boolean };
 type PhotoUrls = Record<number, Photo | null>;
 
 /** The 3 poses in the order of the wall at rest: left profile, face, right profile. */
@@ -78,11 +78,43 @@ function useSubject(photo: Photo | null): { top: number; cx: number } | null {
 }
 
 /**
+ * A pose validated by the Greffe without its cut-out (9k): a print stapled to the wall, white
+ * border and a light shadow, the size of the other poses. Never bare on the wall.
+ */
+function PosePrint({ url }: { url: string }) {
+  return (
+    <div
+      className="absolute inset-x-[2%] top-[2%] bottom-0 border-[6px] border-b-[14px] border-[#fbf8f1] bg-[#fbf8f1] shadow-[0_6px_14px_rgb(0_0_0/0.45)]"
+      data-testid="pose-print"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- pre-optimised WebP from the photos bucket */}
+      <img
+        src={url}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 size-full object-cover object-top select-none"
+      />
+      {/* Two staples at the top corners. */}
+      <span
+        aria-hidden="true"
+        className="absolute -top-[5px] left-[10%] h-[4px] w-[22px] -rotate-6 rounded-[1px] bg-gradient-to-b from-[#d9d9de] to-[#8e8e94] shadow-[0_1px_1px_rgb(0_0_0/0.5)]"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute -top-[5px] right-[10%] h-[4px] w-[22px] rotate-6 rounded-[1px] bg-gradient-to-b from-[#d9d9de] to-[#8e8e94] shadow-[0_1px_1px_rgb(0_0_0/0.5)]"
+      />
+    </div>
+  );
+}
+
+/**
  * One photo in a frame. A cut-out fills the frame: anchored at the bottom, the head near the top,
- * centred on the subject. Decorative here (the frame carries the name of the pose).
+ * centred on the subject. A pose waived by the Greffe is a stapled print. Decorative here (the
+ * frame carries the name of the pose).
  */
 function PoseImage({ photo }: { photo: Photo | null }) {
   const subject = useSubject(photo);
+  if (photo?.waived) return <PosePrint url={photo.url} />;
   if (!photo)
     return (
       <UserRound
