@@ -139,7 +139,7 @@ begin
     (select coalesce(array_agg(p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')' order by p.proname, pg_get_function_identity_arguments(p.oid)), '{}')
      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
      where n.nspname = 'private' and has_function_privilege('authenticated', p.oid, 'execute')),
-    array['can_read_conversation(p_conversation uuid)', 'is_database_owner_session()',
+    array['can_read_conversation(p_conversation uuid)', 'can_use_typing_channel(p_topic text)', 'is_database_owner_session()',
       'is_super_admin_email_hash(p_hash bytea)', 'is_super_admin_id(p_user uuid)'],
     'members execute only the reviewed helpers of private');
 end $$;
