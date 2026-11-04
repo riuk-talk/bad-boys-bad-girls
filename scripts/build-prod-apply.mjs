@@ -8,6 +8,7 @@
 //
 // The .tsv comes from a local base built from the files (`supabase db reset`), see the README of
 // the folder. Run it again whenever a migration changes.
+// Used on 2026-11-04 (phases 6 to 9 in production): kept as a record, not to be run again.
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

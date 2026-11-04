@@ -1,5 +1,11 @@
 # Passage en production des phases 6 à 9 (bad-boys-prod)
 
+> **Utilisés, devenus inutiles (2026-11-04).** Les phases 6 à 9 sont en production : le conseiller a appliqué les
+> 22 migrations sur `bad-boys-prod` (texte exact des fichiers, historique aux versions des fichiers) et vérifié
+> 201 fonctions et 27 politiques identiques à la preview. **Ne pas relancer ces scripts** (leur garde le refuserait,
+> l'historique étant déjà là). Ils restent dans le dépôt comme trace. Pour une prochaine phase, préparer un nouveau
+> lot à partir des migrations de cette phase, et non à partir de ces fichiers.
+
 **À lancer seulement après le contrôle du conseiller.** Par le porteur, dans le SQL Editor de
 `bad-boys-prod` (`hmmobtyherwuhrhymfbk`). Aucun connecteur d'IA n'écrit sur la prod.
 

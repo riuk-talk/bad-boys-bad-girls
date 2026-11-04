@@ -1,3 +1,4 @@
+-- UTILISÉ LE 2026-11-04, DEVENU INUTILE : phases 6 à 9 déjà en production. Ne pas relancer (voir README.md).
 -- bad-boys-prod (hmmobtyherwuhrhymfbk). Script 2 sur 9, à lancer dans l'ordre, dans le SQL Editor.
 -- Généré par scripts/build-prod-apply.mjs (ne pas modifier à la main). Une seule transaction :
 -- en cas d'erreur, rien n'est appliqué ; relancer le même script après correction.

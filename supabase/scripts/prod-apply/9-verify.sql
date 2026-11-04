@@ -1,3 +1,4 @@
+-- UTILISÉ LE 2026-11-04, DEVENU INUTILE : phases 6 à 9 déjà en production. Ne pas relancer (voir README.md).
 -- bad-boys-prod (hmmobtyherwuhrhymfbk). Script 9 sur 9 : contrôle, lecture seule (aucune écriture).
 -- Généré par scripts/build-prod-apply.mjs. Référence : une base locale construite avec les fichiers.
 -- Comparaison sans les blancs (règle du conseiller du 2026-10-22). La colonne « sans_commentaires »
