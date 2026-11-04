@@ -8,7 +8,7 @@ import { Stamp } from "@/components/brand/stamp";
 import { Chat } from "@/components/parloir/chat";
 import { CloseAfterAbsence } from "@/components/relations/close-after-absence";
 import { Hygiaphone } from "@/components/parloir/plate";
-import { SafetyActions } from "@/components/relations/safety-actions";
+import { PlateMenu } from "@/components/parloir/plate-menu";
 import { buttonClasses } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { accentForGender, type Accent } from "@/lib/accent";
@@ -21,6 +21,7 @@ import {
   type Message,
   type Visit,
 } from "@/lib/parloir";
+import type { ReadState } from "@/lib/parloir-thread";
 
 const IDLE: ActionState = { status: "idle" };
 /** The state of the visit (presence of the other, end, absence) is read every 5 s (SCHEMA visits). */
@@ -29,7 +30,7 @@ const VISIT_POLL_MS = 5000;
 type Props = {
   initial: Visit;
   messages: Message[];
-  otherReadId: number;
+  readState: ReadState;
   me: { pseudo: string; accent: Accent };
   tz: string;
 };
@@ -39,7 +40,7 @@ type Props = {
  * 30 minutes with their countdown, then the secret end choice and its outcome. Opening the screen
  * marks the member present (join_visit); the database clock decides every step.
  */
-export function VisitRoom({ initial, messages, otherReadId, me, tz }: Props) {
+export function VisitRoom({ initial, messages, readState, me, tz }: Props) {
   const t = useTranslations("Relations.parloir");
   const locale = useLocale();
   const [visit, setVisit] = useState(initial);
@@ -105,15 +106,8 @@ export function VisitRoom({ initial, messages, otherReadId, me, tz }: Props) {
           <h1 className="font-display text-center text-lg tracking-wide uppercase">
             {t("plate", { cabin: cabinLabel(visit.cabin) })}
           </h1>
-          <Hygiaphone />
+          <PlateMenu memberId={visit.other.id} pseudo={other.pseudo} requestId={visit.request_id} />
         </div>
-        <SafetyActions
-          memberId={visit.other.id}
-          pseudo={other.pseudo}
-          reportType="visit_request"
-          reportTarget={visit.request_id}
-          afterBlock="/visites"
-        />
       </header>
 
       {phase === "before" ? (
@@ -158,7 +152,8 @@ export function VisitRoom({ initial, messages, otherReadId, me, tz }: Props) {
           <Chat
             conversationId={visit.conversation_id}
             initial={messages}
-            initialOtherReadId={otherReadId}
+            readState={readState}
+            tz={tz}
             canWrite={now < endsAt}
             me={me}
             other={other}

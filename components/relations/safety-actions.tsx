@@ -24,9 +24,7 @@ type Props = {
 /** Signaler and Bloquer, in simple words (SPEC §10), from a Fiche, a Permis or a request. */
 export function SafetyActions({ memberId, pseudo, reportType, reportTarget, afterBlock }: Props) {
   const t = useTranslations("Relations.safety");
-  const errorT = useTranslations("Relations.errors");
   const [dialog, setDialog] = useState<"report" | "block" | null>(null);
-  const [blockState, block, blocking] = useActionState(blockAction, IDLE);
 
   const linkClass = "text-grey hover:text-cream inline-flex min-h-11 items-center gap-1.5 text-sm";
   return (
@@ -47,29 +45,52 @@ export function SafetyActions({ memberId, pseudo, reportType, reportTarget, afte
         reportType={reportType}
         reportTarget={reportTarget}
       />
-
-      <Modal
+      <BlockDialog
         open={dialog === "block"}
         onClose={() => setDialog(null)}
-        title={t("blockTitle", { pseudo })}
-      >
-        <form action={block} className="flex flex-col gap-4">
-          <input type="hidden" name="target" value={memberId} />
-          <input type="hidden" name="next" value={afterBlock} />
-          <p>{t("blockBody", { pseudo })}</p>
-          <div className="flex flex-wrap gap-3">
-            <button type="submit" disabled={blocking} className={buttonClasses("danger", "md")}>
-              {t("blockSubmit")}
-            </button>
-            <Button variant="ghost" onClick={() => setDialog(null)}>
-              {t("cancel")}
-            </Button>
-          </div>
-          <p role="alert" className="text-red-bright min-h-5 text-sm">
-            {blockState.status === "error" ? errorT(blockState.message as "generic") : null}
-          </p>
-        </form>
-      </Modal>
+        memberId={memberId}
+        pseudo={pseudo}
+        afterBlock={afterBlock}
+      />
     </div>
+  );
+}
+
+/** Bloquer: the confirmation, then the member goes where that person no longer appears. */
+export function BlockDialog({
+  open,
+  onClose,
+  memberId,
+  pseudo,
+  afterBlock,
+}: {
+  open: boolean;
+  onClose: () => void;
+  memberId: string;
+  pseudo: string;
+  afterBlock: Props["afterBlock"];
+}) {
+  const t = useTranslations("Relations.safety");
+  const errorT = useTranslations("Relations.errors");
+  const [blockState, block, blocking] = useActionState(blockAction, IDLE);
+  return (
+    <Modal open={open} onClose={onClose} title={t("blockTitle", { pseudo })}>
+      <form action={block} className="flex flex-col gap-4">
+        <input type="hidden" name="target" value={memberId} />
+        <input type="hidden" name="next" value={afterBlock} />
+        <p>{t("blockBody", { pseudo })}</p>
+        <div className="flex flex-wrap gap-3">
+          <button type="submit" disabled={blocking} className={buttonClasses("danger", "md")}>
+            {t("blockSubmit")}
+          </button>
+          <Button variant="ghost" onClick={onClose}>
+            {t("cancel")}
+          </Button>
+        </div>
+        <p role="alert" className="text-red-bright min-h-5 text-sm">
+          {blockState.status === "error" ? errorT(blockState.message as "generic") : null}
+        </p>
+      </form>
+    </Modal>
   );
 }
