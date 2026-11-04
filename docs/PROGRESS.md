@@ -194,6 +194,7 @@ Vérification du conseiller : CI n° 94 verte, migration du canal « … écrit 
   - désactiver « Allow public access » dans les réglages Realtime casserait le canal des messages `parloir:<id>`, rejoint aujourd'hui en public (`postgres_changes`, déjà filtré par la RLS de `public.messages`) ;
   - il faudrait donc : le rejoindre avec `private: true` ; ajouter une politique de lecture sur `realtime.messages` pour le sujet `parloir:<uuid>` (même fonction, élargie aux deux préfixes) ; étendre le pgTAP 9l et le test Realtime. Puis seulement couper l'accès public, sur la preview d'abord, la prod au passage en production.
   - Ce sont les deux seuls canaux du site (`parloir:` et `parloir-typing:`).
+- **CI** : **n° 98 (`3a6011a`) verte, aucun test instable, aucune relance** : le test Realtime passe dans la CI (Pixel 7, 12,8 s) ; Pixel 7 43 réussis, 2 ignorés ; iPhone 14 34 réussis, 11 ignorés (le test Realtime ne tourne qu'une fois, sur Chromium).
 - **Point 3 (pancarte iPhone)** : pas de nouvel échec. CI n° 94 et n° 96 vertes sur iPhone, test de la pancarte compris, sans relance.
 
 ### 9l-ter — Carte Cavale repliable (oubli du conseiller dans le message 9l, 2026-11-04)
