@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, TriangleAlert } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, TriangleAlert } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useActionState, useId, useState } from "react";
 import {
@@ -9,6 +9,7 @@ import {
   respondDateAction,
 } from "@/app/[locale]/(app)/cavale-actions";
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
+import { useFoldedOnReopen } from "@/components/parloir/folding-note";
 import { Modal } from "@/components/ui/modal";
 import { buttonClasses } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -22,6 +23,7 @@ import {
   type Proposal,
 } from "@/lib/cavale";
 import { startFrom, zonedParts } from "@/lib/hours";
+import { timeLabel } from "@/lib/parloir-thread";
 
 const IDLE: ActionState = { status: "idle" };
 
@@ -68,13 +70,17 @@ function useWhen(tz: string) {
 /**
  * The pinned card of the Cavale (maquette Permanent.dc.html): the accepted one with its safety
  * reminder and a one-gesture cancellation, or the waiting one with Accepter / Autre chose / Pas
- * encore. Coloured like the person who proposed it.
+ * encore. Coloured like the person who proposed it. The accepted one folds into one line from the
+ * next opening of the Parloir, like the notes (9l-ter); a waiting one never folds, so it is not
+ * missed; once its date has passed, the line stays without emphasis.
  */
 export function CavaleCard({
   dates,
   me,
   other,
   tz,
+  conversationId,
+  openedAt,
   onChange,
   onCounter,
 }: {
@@ -82,11 +88,24 @@ export function CavaleCard({
   me: Person;
   other: Person;
   tz: string;
+  conversationId: string;
+  /** When this opening of the Parloir started: what was read before it is folded. */
+  openedAt: number;
   onChange: () => void;
   onCounter: (proposal: Proposal) => void;
 }) {
   const t = useTranslations("Relations.cavale");
+  const locale = useLocale();
   const when = useWhen(tz);
+  const id = useId();
+  const [now] = useState(() => Date.now());
+  // Remembered per accepted Cavale: another one, later, shows in full the first time.
+  const [folded, setFolded] = useFoldedOnReopen(
+    conversationId,
+    `cavale:${dates.accepted?.id ?? ""}`,
+    openedAt,
+    dates.accepted !== null,
+  );
   const card = dates.accepted ?? dates.pending;
   if (!card) {
     return dates.wait_until ? (
@@ -97,6 +116,41 @@ export function CavaleCard({
   }
   const accepted = dates.accepted !== null;
   const author = card.mine ? me : other;
+  if (accepted && folded) {
+    const past = Date.parse(card.starts_at) < now;
+    const day = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "fr-FR", {
+      timeZone: tz,
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(new Date(card.starts_at));
+    return (
+      <section
+        aria-label={t("accepted")}
+        data-accent={author.accent}
+        data-testid="cavale-folded"
+        data-past={past}
+        className={
+          past
+            ? "rounded-lg border border-[#2a2a2e]"
+            : "border-accent rounded-lg border-2 bg-[#120f08]"
+        }
+      >
+        <button
+          type="button"
+          aria-expanded={false}
+          onClick={() => setFolded(false)}
+          className={`flex min-h-11 w-full items-center gap-2 px-3 py-1.5 text-left text-sm ${past ? "text-grey" : "text-cream"}`}
+        >
+          <MapPin aria-hidden="true" className={`size-4 shrink-0 ${past ? "" : "text-accent"}`} />
+          <span className="flex-1 truncate">
+            {t("line", { day, time: timeLabel(card.starts_at, tz), place: card.venue_name })}
+          </span>
+          <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
+        </button>
+      </section>
+    );
+  }
   const kicker = accepted
     ? t("accepted")
     : card.mine
@@ -106,11 +160,28 @@ export function CavaleCard({
         : t("proposedBy", { pseudo: other.pseudo.toUpperCase() });
   return (
     <section
+      id={`${id}-cavale`}
       aria-label={kicker}
       data-accent={author.accent}
       className="border-accent flex flex-col gap-2 rounded-lg border-2 bg-[#120f08] p-3"
     >
-      <p className="font-stamp text-accent text-xs tracking-[0.15em]">{kicker}</p>
+      {accepted ? (
+        <div className="-mt-1.5 -mr-1.5 flex items-center justify-between gap-2">
+          <p className="font-stamp text-accent text-xs tracking-[0.15em]">{kicker}</p>
+          <button
+            type="button"
+            aria-expanded={true}
+            aria-controls={`${id}-cavale`}
+            aria-label={t("fold")}
+            onClick={() => setFolded(true)}
+            className="text-cream hover:text-accent flex size-11 shrink-0 items-center justify-center rounded-md"
+          >
+            <ChevronUp aria-hidden="true" className="size-5" />
+          </button>
+        </div>
+      ) : (
+        <p className="font-stamp text-accent text-xs tracking-[0.15em]">{kicker}</p>
+      )}
       <p className="font-display flex items-center gap-1.5 text-xl uppercase">
         <MapPin aria-hidden="true" className="text-accent size-4 shrink-0" />
         {t(`types.${card.venue_type}`)} · {card.venue_name}

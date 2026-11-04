@@ -129,6 +129,8 @@ export function OpenParloir({
           me={me}
           other={other}
           tz={tz}
+          conversationId={conversation.id}
+          openedAt={openedAt}
           onChange={onCavaleDone}
           onCounter={(counter) => setForm({ counter })}
         />
