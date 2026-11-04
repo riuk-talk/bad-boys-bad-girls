@@ -6,6 +6,9 @@ import type { Message } from "@/lib/parloir";
  * the messages shown before the server confirms them, and the pace of the « … écrit » signal.
  */
 
+/** How far each member had read when the conversation was opened (get_read_state). */
+export type ReadState = { myReadId: number; otherReadId: number };
+
 /** « … écrit » is sent at most every 2 s while typing, and goes after 5 s without a keystroke. */
 export const TYPING_SEND_MS = 2000;
 export const TYPING_SHOWN_MS = 5000;

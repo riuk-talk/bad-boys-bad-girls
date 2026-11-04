@@ -8,7 +8,7 @@ import { datesSchema } from "@/lib/cavale";
 import {
   loadConversation,
   loadMessages,
-  loadOtherReadId,
+  loadReadState,
   markRendered,
   myPseudo,
 } from "@/lib/relations/parloir";
@@ -34,9 +34,9 @@ export default async function OpenParloirPage({ params }: Props) {
   if (!conversation) notFound();
   // A conversation still in its visit is read from the visit screen.
   if (conversation.status === "visiting") return redirect({ href: "/visites", locale });
-  const [messages, otherReadId, pseudo, tz, { data: dates }] = await Promise.all([
+  const [messages, readState, pseudo, tz, { data: dates }] = await Promise.all([
     loadMessages(supabase, id),
-    loadOtherReadId(supabase, id),
+    loadReadState(supabase, id),
     myPseudo(supabase, userId),
     memberTimezone(supabase, userId),
     supabase.rpc("get_dates", { p_conversation: id }),
@@ -56,7 +56,7 @@ export default async function OpenParloirPage({ params }: Props) {
     <OpenParloir
       conversation={conversation}
       messages={messages}
-      otherReadId={otherReadId}
+      readState={readState}
       dates={parsedDates.success ? parsedDates.data : null}
       tz={tz}
       me={{ pseudo, accent: accentForGender(profile.gender) }}

@@ -81,19 +81,24 @@ const messageInput = z.object({
   body: z.string().check(z.minLength(1), z.maxLength(MESSAGE_MAX)),
 });
 
-export async function sendMessageAction(_state: ActionState, form: FormData): Promise<ActionState> {
-  const parsed = messageInput.safeParse({
-    conversation: form.get("conversation"),
-    body: String(form.get("body") ?? "").trim(),
-  });
-  if (!parsed.success) return { status: "error", message: "message_empty" };
+export type PostResult = { ok: true; id: number } | { ok: false; error: string };
+
+/**
+ * A message of the Parloir. The screen shows it at once and waits for this answer (9l): the id
+ * of the stored message, so its copy from the server replaces it, or the error for « Réessayer ».
+ */
+export async function postMessageAction(conversation: string, body: string): Promise<PostResult> {
+  const parsed = messageInput.safeParse({ conversation, body: body.trim() });
+  if (!parsed.success) return { ok: false, error: "message_empty" };
   const member = await requireMember();
-  const { error } = await member.supabase.rpc("send_message", {
+  const { data, error } = await member.supabase.rpc("send_message", {
     p_conversation: parsed.data.conversation,
     p_body: parsed.data.body,
   });
-  if (error) return { status: "error", message: requestErrorKey(error.message) };
-  return { status: "done" };
+  if (error || typeof data !== "number") {
+    return { ok: false, error: error ? requestErrorKey(error.message) : "generic" };
+  }
+  return { ok: true, id: data };
 }
 
 const endInput = z.object({ visit: uuid, choice: z.enum(["prolong", "close"]) });

@@ -6,7 +6,7 @@ import { accentForGender } from "@/lib/accent";
 import {
   joinVisit,
   loadMessages,
-  loadOtherReadId,
+  loadReadState,
   markRendered,
   myPseudo,
 } from "@/lib/relations/parloir";
@@ -30,9 +30,11 @@ export default async function VisitPage({ params }: Props) {
   const { supabase, userId, profile } = await requireRole();
   const visit = await joinVisit(supabase, id);
   if (!visit) notFound();
-  const [messages, otherReadId, tz, pseudo] = await Promise.all([
+  const [messages, readState, tz, pseudo] = await Promise.all([
     visit.conversation_id ? loadMessages(supabase, visit.conversation_id) : Promise.resolve([]),
-    visit.conversation_id ? loadOtherReadId(supabase, visit.conversation_id) : Promise.resolve(0),
+    visit.conversation_id
+      ? loadReadState(supabase, visit.conversation_id)
+      : Promise.resolve({ myReadId: 0, otherReadId: 0 }),
     memberTimezone(supabase, userId),
     myPseudo(supabase, userId),
     supabase.rpc("mark_notifications_read", {
@@ -50,7 +52,7 @@ export default async function VisitPage({ params }: Props) {
     <VisitRoom
       initial={visit}
       messages={messages}
-      otherReadId={otherReadId}
+      readState={readState}
       me={{ pseudo, accent: accentForGender(profile.gender) }}
       tz={tz}
     />

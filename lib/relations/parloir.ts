@@ -56,11 +56,19 @@ export async function markRendered(
   await supabase.rpc("mark_conversation_read", { p_conversation: conversationId, p_up_to: last });
 }
 
-/** How far the other has read the conversation (« Lu », Phase 6a); 0 when unknown. */
-export async function loadOtherReadId(supabase: Client, conversationId: string): Promise<number> {
+/**
+ * How far each one has read the conversation (Phase 6a), 0 when unknown: the other's mark gives
+ * « Lu »; mine, read before the opening marks it, places « Nouveaux messages » (9l).
+ */
+export async function loadReadState(
+  supabase: Client,
+  conversationId: string,
+): Promise<{ myReadId: number; otherReadId: number }> {
   const { data } = await supabase.rpc("get_read_state", { p_conversation: conversationId });
   const parsed = readStateSchema.safeParse(data);
-  return parsed.success ? parsed.data.other_read_id : 0;
+  return parsed.success
+    ? { myReadId: parsed.data.my_read_id, otherReadId: parsed.data.other_read_id }
+    : { myReadId: 0, otherReadId: 0 };
 }
 
 /** The member's own pseudo (their profile row, RLS: owner only). */
