@@ -1,6 +1,6 @@
 "use client";
 
-import { HandCoins, ShieldCheck } from "lucide-react";
+import { HandCoins, Hourglass, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useCallback, useEffect, useState } from "react";
 import { loadDatesAction } from "@/app/[locale]/(app)/cavale-actions";
@@ -8,14 +8,16 @@ import { ackNudgeAction, closeConversationAction } from "@/app/[locale]/(app)/pa
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
 import { CavaleCard, CavaleForm } from "@/components/parloir/cavale";
 import { Chat } from "@/components/parloir/chat";
+import { FoldingNote } from "@/components/parloir/folding-note";
 import { Hygiaphone } from "@/components/parloir/plate";
-import { SafetyActions } from "@/components/relations/safety-actions";
+import { PlateMenu } from "@/components/parloir/plate-menu";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Link, useRouter } from "@/i18n/navigation";
 import { accentForGender, type Accent } from "@/lib/accent";
 import type { Dates, Proposal } from "@/lib/cavale";
 import type { Conversation, Message } from "@/lib/parloir";
+import type { ReadState } from "@/lib/parloir-thread";
 
 const IDLE: ActionState = { status: "idle" };
 
@@ -24,20 +26,21 @@ const DATES_POLL_MS = 15_000;
 
 /**
  * Le Parloir sans horaire (maquette Permanent.dc.html, SPEC §13): the same conversation as the
- * visit, open without a schedule. The field stays visible; « Affaire classée » and « Proposer une
- * Cavale » sit above it, the Cavale card is pinned at the top (Phase 6).
+ * visit, open without a schedule. The field stays visible; « Proposer une Cavale » sits above it,
+ * the Cavale card is pinned at the top (Phase 6). « Affaire classée », Signaler and Bloquer are in
+ * the « ⋯ » of the plate; the notes fold into one line once read (9l).
  */
 export function OpenParloir({
   conversation,
   messages,
-  otherReadId,
+  readState,
   dates: initialDates,
   tz,
   me,
 }: {
   conversation: Conversation;
   messages: Message[];
-  otherReadId: number;
+  readState: ReadState;
   dates: Dates | null;
   tz: string;
   me: { pseudo: string; accent: Accent };
@@ -56,6 +59,8 @@ export function OpenParloir({
   const open = conversation.status === "open" && state.status !== "done";
   const [dates, setDates] = useState(initialDates);
   const [form, setForm] = useState<{ counter: Proposal | null } | null>(null);
+  // This opening of the Parloir: the notes read before it are folded (9l).
+  const [openedAt] = useState(() => Date.now());
 
   useEffect(() => {
     if (state.status === "done") router.refresh();
@@ -102,20 +107,20 @@ export function OpenParloir({
           <h1 className="font-display text-center text-lg tracking-wide uppercase">
             {t("plateOpen")}
           </h1>
-          <Hygiaphone />
+          {conversation.other.id && conversation.request_id ? (
+            <PlateMenu
+              memberId={conversation.other.id}
+              pseudo={other.pseudo}
+              requestId={conversation.request_id}
+              onCloseCase={open ? () => setConfirming(true) : undefined}
+            />
+          ) : (
+            <Hygiaphone />
+          )}
         </div>
         <p className="font-stamp text-grey text-center text-[11px] tracking-[0.15em]">
           {t("withPermanent", { pseudo: other.pseudo.toUpperCase() })}
         </p>
-        {conversation.other.id && conversation.request_id ? (
-          <SafetyActions
-            memberId={conversation.other.id}
-            pseudo={other.pseudo}
-            reportType="visit_request"
-            reportTarget={conversation.request_id}
-            afterBlock="/visites"
-          />
-        ) : null}
       </header>
 
       {dates && open ? (
@@ -130,33 +135,52 @@ export function OpenParloir({
       ) : null}
 
       {nudge && !dates?.pending && !dates?.accepted ? (
-        <p
-          role="note"
+        <FoldingNote
+          conversationId={conversation.id}
+          note="nudge"
+          openedAt={openedAt}
+          icon={<Hourglass aria-hidden="true" className="size-4 shrink-0" />}
+          summary={t("nudgeShort")}
           className="border-line text-cream rounded-md border px-3 py-2 text-center text-sm"
         >
           {t("nudge")}
-        </p>
+        </FoldingNote>
       ) : null}
 
       {conversation.unmasked && open ? (
-        <p role="note" className="text-cream flex items-center justify-center gap-2 text-[13px]">
+        <FoldingNote
+          conversationId={conversation.id}
+          note="money"
+          openedAt={openedAt}
+          icon={<HandCoins aria-hidden="true" className="text-accent size-4 shrink-0" />}
+          summary={t("moneyShort")}
+          className="text-cream flex items-center justify-center gap-2 text-[13px]"
+        >
           <HandCoins aria-hidden="true" className="text-accent size-4" />
           {t("moneyNotice")}
-        </p>
+        </FoldingNote>
       ) : null}
 
-      <p className="text-grey flex items-center justify-center gap-2 text-[13px]">
+      <FoldingNote
+        conversationId={conversation.id}
+        note="safety"
+        openedAt={openedAt}
+        icon={<ShieldCheck aria-hidden="true" className="size-4 shrink-0" />}
+        summary={t("safetyShort")}
+        className="text-grey flex flex-wrap items-center justify-center gap-x-2 text-[13px]"
+      >
         <ShieldCheck aria-hidden="true" className="size-4" />
         {t("safetyNote")}
         <Link href="/conseils-securite" className="text-cream underline underline-offset-4">
           {t("safetyLink")}
         </Link>
-      </p>
+      </FoldingNote>
 
       <Chat
         conversationId={conversation.id}
         initial={messages}
-        initialOtherReadId={otherReadId}
+        readState={readState}
+        tz={tz}
         canWrite={open}
         me={me}
         other={other}
@@ -164,26 +188,16 @@ export function OpenParloir({
         iAmVisitor={!conversation.i_am_bad}
         canReport={!deleted}
         actions={
-          open ? (
+          open && dates?.can_propose ? (
             <div className="mt-3 flex gap-2">
               <button
                 type="button"
-                onClick={() => setConfirming(true)}
-                className="text-cream hover:border-cream flex min-h-13 flex-1 flex-col items-center justify-center rounded-[6px] border-2 border-[#4a4a50] px-2"
+                onClick={() => setForm({ counter: null })}
+                className="bg-accent text-ink flex min-h-13 flex-1 flex-col items-center justify-center rounded-[6px] px-2"
               >
-                <span className="font-display uppercase">{t("closeCase")}</span>
-                <span className="text-grey text-[11px]">{t("closeCaseHint")}</span>
+                <span className="font-display uppercase">{tc("propose")}</span>
+                <span className="text-[11px]">{tc("proposeHint")}</span>
               </button>
-              {dates?.can_propose ? (
-                <button
-                  type="button"
-                  onClick={() => setForm({ counter: null })}
-                  className="bg-accent text-ink flex min-h-13 flex-1 flex-col items-center justify-center rounded-[6px] px-2"
-                >
-                  <span className="font-display uppercase">{tc("propose")}</span>
-                  <span className="text-[11px]">{tc("proposeHint")}</span>
-                </button>
-              ) : null}
             </div>
           ) : null
         }
