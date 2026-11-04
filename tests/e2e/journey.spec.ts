@@ -740,6 +740,16 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await expect(
       visitorPage.getByRole("region", { name: "TA CAVALE · EN ATTENTE DE RÉPONSE" }),
     ).toContainText("Le Repaire, Nice");
+    // A Cavale waiting for an answer never folds (9l-ter), even on later openings.
+    for (const page of [visitorPage, badPage]) {
+      for (let opening = 0; opening < 2; opening += 1) {
+        await page.reload();
+        await expect(page.getByTestId("cavale-folded")).toHaveCount(0);
+      }
+    }
+    await expect(
+      visitorPage.getByRole("region", { name: "TA CAVALE · EN ATTENTE DE RÉPONSE" }),
+    ).toBeVisible();
 
     // The Bad accepts: the card is pinned, with the safety reminder; contacts pass from now on.
     await badPage.reload();
@@ -755,6 +765,40 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await badPage.getByRole("button", { name: "Envoyer" }).click();
     await expect(badPage.getByText("Mon numéro : 06 12 34 56 78")).toBeVisible();
     expect(await axeViolations(badPage)).toEqual([]);
+    // The accepted Cavale folds into one line from the next opening (9l-ter), and unfolds with
+    // all its actions; folded again with its own button.
+    await badPage.reload();
+    const line = badPage.getByTestId("cavale-folded").getByRole("button");
+    await expect(line).toHaveText(
+      /^Cavale · [a-zéû]+ \d{1,2} [a-zéû]+ · 21:00 · Le Repaire, Nice$/,
+    );
+    await expect(line).toHaveAttribute("aria-expanded", "false");
+    expect((await line.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await expect(badPage.getByRole("button", { name: "Annuler la Cavale" })).toHaveCount(0);
+    expect(await axeViolations(badPage)).toEqual([]);
+    await line.click();
+    const unfolded = badPage.getByRole("region", { name: "CAVALE ACCEPTÉE" });
+    await expect(unfolded).toContainText("Concert · Le Repaire, Nice");
+    await expect(unfolded.getByRole("button", { name: "Annuler la Cavale" })).toBeVisible();
+    await expect(unfolded.getByRole("link", { name: "Conseils sécurité" })).toBeVisible();
+    const fold = unfolded.getByRole("button", { name: "Replier la Cavale" });
+    await expect(fold).toHaveAttribute("aria-expanded", "true");
+    expect((await fold.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    expect(await axeViolations(badPage)).toEqual([]);
+    await fold.click();
+    await expect(badPage.getByTestId("cavale-folded")).toBeVisible();
+    await expect(badPage.getByTestId("cavale-folded")).toHaveAttribute("data-past", "false");
+    // Once its time has passed, the line stays without emphasis until the end of that day (an
+    // accepted Cavale leaves get_dates the next day): moved to a few seconds ago, then put back.
+    const accepted = `(select d.id from public.date_proposals d join public.conversations c on c.id = d.conversation_id
+       where c.visitor_id = '${visitor.id}' and d.status = 'accepted')`;
+    const startsAt = asOwner(`select starts_at from public.date_proposals where id = ${accepted}`);
+    asOwner(
+      `update public.date_proposals set starts_at = now() - interval '5 seconds' where id = ${accepted}`,
+    );
+    await badPage.reload();
+    await expect(badPage.getByTestId("cavale-folded")).toHaveAttribute("data-past", "true");
+    asOwner(`update public.date_proposals set starts_at = '${startsAt}' where id = ${accepted}`);
     await badPage.context().close();
 
     await visitorPage.reload();
