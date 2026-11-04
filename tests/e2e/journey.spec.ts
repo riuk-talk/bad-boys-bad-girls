@@ -386,16 +386,63 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await expect(visitorPage.getByRole("timer").first()).toHaveText(/^\d\d:\d\d$/);
     expect(await axeViolations(visitorPage)).toEqual([]);
 
-    await visitorPage
-      .getByPlaceholder("Ton message")
-      .fill("Ta meilleure balade de nuit ? Mon 06 12 34 56 78");
+    // « … écrit » (9l): the Bad sees the Visitor typing, through the private Broadcast channel of
+    // the conversation (nothing written in the database), announced once to screen readers.
+    const field = visitorPage.getByPlaceholder("Ton message");
+    await field.click();
+    await field.pressSequentially("Ta meilleure balade de nuit ?", { delay: 40 });
+    await badPage.bringToFront();
+    const typing = badPage.getByTestId("typing");
+    await expect(typing).toHaveText(`${visitor.pseudo} écrit…`, { timeout: 15_000 });
+    await expect(typing).toHaveAttribute("aria-live", "polite");
+    await field.pressSequentially(" Mon 06 12 34 56 78");
+    // Sent at once on the Visitor's screen (« Envoi… » until the server answers), then once only.
+    await visitorPage.bringToFront();
     await visitorPage.getByRole("button", { name: "Envoyer" }).click();
+    await expect(field).toHaveValue("");
+    const sent = visitorPage
+      .getByRole("list", { name: "Conversation" })
+      .getByText(/^Ta meilleure balade de nuit \? Mon/);
+    await expect(sent).toHaveCount(1);
+    await expect(visitorPage.locator("[data-pending]")).toHaveCount(0, { timeout: 15_000 });
+    await expect(sent).toHaveCount(1);
+    await expect(sent).toHaveText("Ta meilleure balade de nuit ? Mon [•••]");
+    // The sending ends « … écrit » at once on the Bad's screen.
     await badPage.bringToFront();
     await expect(badPage.getByText("Ta meilleure balade de nuit ? Mon [•••]")).toBeVisible({
       timeout: 15_000,
     });
+    await expect(typing).toHaveText("", { timeout: 6_000 });
+    // The hour under each message (HH:mm, the member's time zone) and the day.
+    const received = badPage
+      .locator("[data-message-id]")
+      .filter({ hasText: "Ta meilleure balade de nuit ?" });
+    await expect(received.getByText(/^\d\d:\d\d$/)).toBeVisible();
+    await expect(
+      badPage.getByTestId("day-separator").filter({ hasText: "Aujourd'hui" }),
+    ).toBeVisible();
+    expect(await axeViolations(badPage)).toEqual([]);
+
+    // A failed sending stays on screen with « Réessayer »; retried, it arrives once.
+    await badPage.route("**/visites/**", async (route) => {
+      if (route.request().method() === "POST" && route.request().headers()["next-action"]) {
+        await route.abort();
+      } else {
+        await route.continue();
+      }
+    });
     await badPage.getByPlaceholder("Ton message").fill("Le long de la mer, jusqu'au phare.");
     await badPage.getByRole("button", { name: "Envoyer" }).click();
+    const failed = badPage.locator('[data-pending="failed"]');
+    await expect(failed).toContainText("Non envoyé", { timeout: 15_000 });
+    await badPage.unroute("**/visites/**");
+    await failed.getByRole("button", { name: "Réessayer" }).click();
+    await expect(badPage.locator("[data-pending]")).toHaveCount(0, { timeout: 15_000 });
+    await expect(
+      badPage
+        .getByRole("list", { name: "Conversation" })
+        .getByText("Le long de la mer, jusqu'au phare."),
+    ).toHaveCount(1);
     await visitorPage.bringToFront();
     await expect(visitorPage.getByText("Le long de la mer, jusqu'au phare.")).toBeVisible({
       timeout: 15_000,
@@ -474,8 +521,31 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await badPage.getByPlaceholder("Ton message").fill("On se refait ça quand tu veux.");
     await badPage.getByRole("button", { name: "Envoyer" }).click();
     await expect(badPage.getByText("On se refait ça quand tu veux.")).toBeVisible();
-    await expect(badPage.getByRole("button", { name: "Affaire classée" })).toBeVisible();
     await expect(badPage.getByRole("link", { name: "Conseils sécurité" })).toBeVisible();
+    // « Affaire classée » is no longer between the messages and the field (9l): it is in the
+    // « ⋯ » of the plate, with Signaler and Bloquer, and keeps its confirmation.
+    await expect(badPage.getByRole("button", { name: /Affaire classée/ })).toHaveCount(0);
+    const plate = badPage.getByRole("button", {
+      name: `Actions du Parloir avec ${visitor.pseudo}`,
+    });
+    await expect(plate).toHaveAttribute("aria-expanded", "false");
+    await plate.click();
+    await expect(plate).toHaveAttribute("aria-expanded", "true");
+    await expect(badPage.getByRole("button", { name: "Signaler", exact: true })).toBeVisible();
+    await expect(badPage.getByRole("button", { name: "Bloquer", exact: true })).toBeVisible();
+    expect(await axeViolations(badPage)).toEqual([]);
+    await badPage.getByRole("button", { name: /Affaire classée/ }).click();
+    const confirm = badPage.getByRole("dialog", {
+      name: `Classer l'affaire avec ${visitor.pseudo} ?`,
+    });
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole("button", { name: "Annuler" }).click();
+    await expect(confirm).toHaveCount(0);
+    // Escape closes the menu and gives the focus back to its button.
+    await plate.click();
+    await badPage.keyboard.press("Escape");
+    await expect(plate).toHaveAttribute("aria-expanded", "false");
+    await expect(plate).toBeFocused();
     expect(await axeViolations(badPage)).toEqual([]);
     // Not read yet: no « Lu » under the Bad's message.
     await expect(badPage.getByText("Lu", { exact: true })).toHaveCount(0);
@@ -487,8 +557,64 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await expect(tabs.getByRole("link", { name: /Visites.*1 message non lu/ })).toBeVisible();
     const parloir = visitorPage.getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` });
     await expect(parloir).toContainText("1 non lu");
+    // The messages of the visit, moved back two days: one separator per day (9l).
+    asOwner(
+      `update public.messages set created_at = created_at - interval '2 days'
+       where conversation_id = (select id from public.conversations where visitor_id = '${visitor.id}')
+         and body is distinct from 'On se refait ça quand tu veux.'`,
+    );
     await parloir.click();
     await expect(visitorPage.getByText("On se refait ça quand tu veux.")).toBeVisible();
+    // « Nouveaux messages » right above the one not read yet.
+    const marker = visitorPage.getByTestId("new-messages");
+    await expect(marker).toHaveText("Nouveaux messages");
+    const unread = visitorPage
+      .locator("[data-message-id]")
+      .filter({ hasText: "On se refait ça quand tu veux." });
+    expect(await marker.evaluate((el) => el.nextElementSibling?.textContent ?? "")).toContain(
+      "On se refait ça quand tu veux.",
+    );
+    await expect(unread.getByText(/^\d\d:\d\d$/)).toBeVisible();
+    const days = visitorPage.getByTestId("day-separator");
+    await expect(days).toHaveCount(2);
+    await expect(days.first()).toHaveText(
+      /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) \d{1,2} [a-zéû]+$/,
+    );
+    await expect(days.last()).toHaveText("Aujourd'hui");
+    // The safety note in full the first time.
+    await expect(
+      visitorPage.getByText("Premier rendez-vous : lieu public, préviens un proche."),
+    ).toBeVisible();
+
+    // Signaler a message (9l): no link under each message any more; a long press on the bubble
+    // (touch screen) or its « ⋯ » button (keyboard) opens the same report.
+    await expect(visitorPage.getByRole("button", { name: "Signaler", exact: true })).toHaveCount(0);
+    const bubble = unread.getByTestId("reportable-message");
+    const box = (await bubble.boundingBox())!;
+    const at = { clientX: box.x + box.width / 2, clientY: box.y + box.height / 2 };
+    await bubble.dispatchEvent("pointerdown", { pointerType: "touch", isPrimary: true, ...at });
+    await visitorPage.waitForTimeout(700);
+    await bubble.dispatchEvent("pointerup", { pointerType: "touch", isPrimary: true, ...at });
+    const report = visitorPage.getByRole("dialog", {
+      name: `Signaler un message de ${bad.pseudo}`,
+    });
+    await expect(report).toBeVisible();
+    await visitorPage.keyboard.press("Escape");
+    await expect(report).toHaveCount(0);
+    // A short touch does nothing.
+    await bubble.dispatchEvent("pointerdown", { pointerType: "touch", isPrimary: true, ...at });
+    await bubble.dispatchEvent("pointerup", { pointerType: "touch", isPrimary: true, ...at });
+    await visitorPage.waitForTimeout(700);
+    await expect(report).toHaveCount(0);
+    const dots = unread.getByRole("button", { name: `Signaler ce message de ${bad.pseudo}` });
+    await dots.focus();
+    await visitorPage.keyboard.press("Enter");
+    await expect(report).toBeVisible();
+    expect(await axeViolations(visitorPage)).toEqual([]);
+    // Not sent here: an open report between them would keep the contacts masked after the
+    // Cavale (step 9). It is sent in step 11, before Bloquer.
+    await visitorPage.keyboard.press("Escape");
+    await expect(report).toHaveCount(0);
     // Read: the counter goes, and « Lu » appears under the Bad's message.
     // Opening the Parloir reads it, on the server, up to the Bad's new message (it was read up to
     // the visit before: the check is on that message, not on « something read »).
@@ -511,6 +637,19 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await visitorPage.waitForURL(/\/visites$/);
     await expect(parloir).not.toContainText("non lu");
     await expect(tabs.getByRole("link", { name: /non lu/ })).toHaveCount(0);
+    // Opened again: everything read, no « Nouveaux messages »; the safety note is folded into one
+    // line (remembered for this conversation), and opens again on a touch.
+    await parloir.click();
+    await expect(visitorPage.getByText("On se refait ça quand tu veux.")).toBeVisible();
+    await expect(visitorPage.getByTestId("new-messages")).toHaveCount(0);
+    const folded = visitorPage.getByRole("button", { name: /Sécurité : lieu public/ });
+    await expect(folded).toBeVisible();
+    await expect(folded).toHaveAttribute("aria-expanded", "false");
+    expect((await folded.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await folded.click();
+    await expect(
+      visitorPage.getByText("Premier rendez-vous : lieu public, préviens un proche."),
+    ).toBeVisible();
     await visitorPage.context().close();
 
     await badPage.reload();
@@ -831,7 +970,30 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await visitorPage.getByRole("link", { name: `Permis permanent avec ${bad.pseudo}` }).click();
     await visitorPage.waitForURL(/\/visites\/parloir\/(?<id>[0-9a-f-]+)$/);
     const conversationUrl = visitorPage.url();
-    await visitorPage.getByRole("button", { name: "Bloquer" }).click();
+    // Signaler a message of the Bad through its « ⋯ » (9l), then Bloquer from the plate.
+    const message = visitorPage
+      .locator("[data-message-id]")
+      .filter({ hasText: "On se refait ça quand tu veux." });
+    await message.getByRole("button", { name: `Signaler ce message de ${bad.pseudo}` }).focus();
+    await visitorPage.keyboard.press("Enter");
+    const report = visitorPage.getByRole("dialog", {
+      name: `Signaler un message de ${bad.pseudo}`,
+    });
+    await report.getByLabel("Arnaque").check();
+    await report.getByRole("button", { name: "Envoyer le signalement" }).click();
+    await expect(report.getByText(/Merci. Le Greffe va regarder./)).toBeVisible();
+    await report.getByRole("button", { name: "Fermer" }).last().click();
+    await expect(report).toHaveCount(0);
+    const { data: reported } = await admin
+      .from("reports")
+      .select("target_type, category")
+      .eq("reporter_id", visitor.id)
+      .eq("target_type", "message");
+    expect(reported).toEqual([{ target_type: "message", category: "scam" }]);
+    await visitorPage
+      .getByRole("button", { name: `Actions du Parloir avec ${bad.pseudo}` })
+      .click();
+    await visitorPage.getByRole("button", { name: "Bloquer", exact: true }).click();
     await visitorPage
       .getByRole("dialog", { name: /Bloquer/ })
       .getByRole("button", { name: "Bloquer" })
