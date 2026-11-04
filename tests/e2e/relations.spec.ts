@@ -493,13 +493,24 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     // above 67 %), on a small and a large phone.
     for (const width of [360, 390]) {
       await page.setViewportSize({ width, height: 900 });
-      const wallBox = (await fiche.getByTestId("fiche-wall").boundingBox())!;
-      const placardBox = (await small.boundingBox())!;
-      const centerBox = (await fiche.getByTestId("pose-center").boundingBox())!;
-      const gap = wallBox.y + wallBox.height - (placardBox.y + placardBox.height);
-      expect(gap).toBeGreaterThanOrEqual(6);
-      expect(gap).toBeLessThanOrEqual(14);
-      expect(placardBox.y).toBeGreaterThanOrEqual(centerBox.y + centerBox.height * 0.67);
+      // The new width applied first (WebKit may resize after the call returns), then the wall,
+      // the placard and the middle pose measured in one layout pass, never across a resize.
+      await expect.poll(() => page.evaluate(() => window.innerWidth)).toBe(width);
+      const box = await page.evaluate(() => {
+        const rect = (id: string) =>
+          document.querySelector(`[data-testid=${id}]`)!.getBoundingClientRect();
+        const wall = rect("fiche-wall");
+        const placard = rect("placard-small");
+        const center = rect("pose-center");
+        return {
+          gap: wall.bottom - placard.bottom,
+          placardTop: placard.top,
+          clearLine: center.top + center.height * 0.67,
+        };
+      });
+      expect(box.gap).toBeGreaterThanOrEqual(6);
+      expect(box.gap).toBeLessThanOrEqual(14);
+      expect(box.placardTop).toBeGreaterThanOrEqual(box.clearLine);
     }
     // Never the birth date, a real name or a height (SPEC §5).
     await expect(fiche.getByText(/1996|02\/03|cm\b|CONFIDENTIEL/)).toHaveCount(0);
