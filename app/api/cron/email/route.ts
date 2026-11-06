@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { brevoConfig, sendWithBrevo } from "@/lib/email/brevo";
+import { resendConfig, sendWithResend } from "@/lib/email/resend";
 import { composeEmail, EMAIL_KINDS, isUnsubscribable, type EmailKind } from "@/lib/email/compose";
 import { SITE_URL } from "@/lib/env";
 import { isAuthorizedCron } from "@/lib/push/dispatch";
@@ -17,13 +17,13 @@ const isKind = (kind: string): kind is EmailKind => EMAIL_KINDS.some((value) => 
 /**
  * Sends the queued e-mails (SPEC §16). Called every 10 minutes by the database (pg_cron →
  * email_dispatch → pg_net) only when something is due and the day's quota allows it, with the
- * cron secret. The database claims within the quota and drops what is no longer wanted.
+ * cron secret, through Resend. The database claims within the quota and drops what is no longer wanted.
  */
 export async function POST(request: NextRequest) {
   if (!isAuthorizedCron(request.headers.get("authorization"), process.env.PUSH_CRON_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
-  const config = brevoConfig();
+  const config = resendConfig();
   if (!config) return NextResponse.json({ error: "email_not_configured" }, { status: 503 });
 
   const admin = createAdminClient();
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           detail,
           unsubscribeUrl: unsubscribe?.url,
         });
-        ok = await sendWithBrevo(config, job.recipient, email, unsubscribe);
+        ok = await sendWithResend(config, job.email_id, job.recipient, email, unsubscribe);
       }
       await admin.rpc("email_report", { p_email: job.email_id, p_sent: ok });
       if (ok) sent += 1;

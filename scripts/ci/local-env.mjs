@@ -79,9 +79,9 @@ const values = {
   // web-push accepts only https: or mailto: (production: the https URL of the site).
   VAPID_SUBJECT: `https://localhost:${port}`,
   PUSH_CRON_SECRET: pushSecret,
-  // E-mails go to the fake Brevo service of tests/e2e/email-route.spec.ts, never to Brevo.
-  BREVO_API_KEY: randomBytes(24).toString("base64url"),
-  BREVO_API_URL: "http://127.0.0.1:3199/v3/smtp/email",
+  // E-mails go to the fake Resend service of tests/e2e/email-route.spec.ts, never to Resend.
+  RESEND_API_KEY: `re_${randomBytes(24).toString("base64url")}`,
+  RESEND_API_URL: "http://127.0.0.1:3199/emails",
   EMAIL_FROM: "greffe@localhost",
   PUSH_TEST_TLS_CERT: cert,
   PUSH_TEST_TLS_KEY: key,
@@ -92,7 +92,7 @@ const values = {
   E2E_LOCAL_STACK: "true",
 };
 
-const masked = ["SUPABASE_SECRET_KEY", "VAPID_PRIVATE_KEY", "PUSH_CRON_SECRET", "BREVO_API_KEY"];
+const masked = ["SUPABASE_SECRET_KEY", "VAPID_PRIVATE_KEY", "PUSH_CRON_SECRET", "RESEND_API_KEY"];
 if (process.env.GITHUB_ACTIONS === "true") {
   for (const name of masked) process.stdout.write(`::add-mask::${values[name]}\n`);
 }
