@@ -565,6 +565,35 @@ export type Database = {
           },
         ]
       }
+      greffe_fiche_views: {
+        Row: {
+          admin_id: string
+          bad_id: string
+          id: number
+          viewed_at: string
+        }
+        Insert: {
+          admin_id: string
+          bad_id: string
+          id?: never
+          viewed_at?: string
+        }
+        Update: {
+          admin_id?: string
+          bad_id?: string
+          id?: never
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "greffe_fiche_views_bad_id_fkey"
+            columns: ["bad_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       launch_zones: {
         Row: {
           auto_open: boolean
@@ -1984,6 +2013,40 @@ export type Database = {
           slug: string
           sort: number
           tribe_id: number
+        }[]
+      }
+      admin_view_discover: {
+        Args: {
+          p_cursor_created?: string
+          p_cursor_id?: string
+          p_limit?: number
+        }
+        Returns: {
+          age: number
+          city: string
+          created_at: string
+          gender: Database["public"]["Enums"]["gender"]
+          good_conduct: boolean
+          id: string
+          photo_small: string
+          pseudo: string
+          requests_open: boolean
+          zone_name: string
+        }[]
+      }
+      admin_view_fiche: { Args: { p_bad: string }; Returns: Json }
+      admin_view_promenade: {
+        Args: { p_date?: string; p_zone: number }
+        Returns: {
+          age: number
+          best_rank: number
+          city: string
+          gender: Database["public"]["Enums"]["gender"]
+          good_conduct: boolean
+          id: string
+          photo_small: string
+          pseudo: string
+          visitors: number
         }[]
       }
       admin_waive_cutout: {

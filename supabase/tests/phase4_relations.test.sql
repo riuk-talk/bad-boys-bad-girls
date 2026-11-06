@@ -316,13 +316,14 @@ begin
     values (pg_temp.new_user('forced@test.local'), 'forced_ecrou', date '1990-01-01', 'woman', '{man}', 'visitor', '123456');
   return next is((select ecrou from public.profiles where pseudo = 'forced_ecrou'), null,
     'a value given at creation is ignored (Visitor: none)');
-  -- No function takes it as an input; only these three mention it.
+  -- No function takes it as an input; only these four mention it.
   return next is((select count(*)::integer from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and exists (select 1 from unnest(p.proargnames) a where a ~* 'ecrou')
         and p.proname <> 'new_ecrou'), 0, 'no function has a parameter or output named ecrou');
   return next is((select array_agg(p.proname::text order by p.proname) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and p.prosrc ~* 'ecrou'),
-    array['get_fiche', 'new_ecrou', 'profiles_before_write'], 'only get_fiche shows it, nothing searches by it');
+    array['admin_view_fiche', 'get_fiche', 'new_ecrou', 'profiles_before_write'],
+    'only get_fiche and the Greffe view (10a) show it, nothing searches by it');
 end $$;
 
 ----------------------------------------------------------------------------------------------
