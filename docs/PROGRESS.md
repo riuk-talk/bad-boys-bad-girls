@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; CI : voir la section 10b.
+**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; **CI n° 113 (`883cf0d`) verte**.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -100,7 +100,7 @@ Demande du conseiller : passer le cron d'e-mails (`/api/cron/email`) de l'API Br
 - **Pour le porteur** :
   - poser `RESEND_API_KEY` (Sensitive) et `EMAIL_FROM=ne-pas-repondre@bad-boys8bad-girls.fr` sur Vercel **Production** uniquement (en Preview, la route continuerait d'envoyer de vrais e-mails aux comptes de test) ; retirer `BREVO_API_KEY` et `BREVO_API_URL` s'ils existent ;
   - les migrations `20261107120000` et `20261107130000` devront aussi passer en production (le quota de 300 y est encore) avant de poser la clé.
-- **CI** : en cours.
+- **CI** : **n° 113 (`883cf0d`) verte** (2e passage : le 1er a été annulé avant tout test par la relance de la CI n° 112 sur la même branche, pas un échec) : vérifications et pgTAP, Pixel 7 (44 réussis, 2 ignorés) et iPhone 14 (35 réussis, 11 ignorés : tests réservés à Chromium), 0 test instable.
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 9, SPEC §0 (priorités), §3 (parrainage), §5 (badges), §6 (Casier), §13 (Parloir sans horaire), §14 (badges de confiance).
