@@ -103,6 +103,8 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     id: "",
     pseudo: `Nox${randomBytes(2).toString("hex")}`,
   };
+  /** The admin of the Greffe (second factor), shared by the 9k waiver and the 10a Greffe view. */
+  const greffier = { email: "", password: "", id: "", totpSecret: "" };
 
   async function account() {
     const email = `e2e-${randomBytes(4).toString("hex")}@example.com`;
@@ -300,7 +302,7 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
   test("Greffe: a pose validated without cut-out, the motive kept internal (9k)", async ({
     browser,
   }) => {
-    const greffier = { ...(await account()), totpSecret: "" };
+    Object.assign(greffier, await account());
     await admin.from("admin_users").insert({ user_id: greffier.id, note: "e2e waiver" });
     const greffe = await (await browser.newContext()).newPage();
     greffier.totpSecret = await openGreffe(greffe, greffier);
@@ -878,5 +880,102 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       .eq("blocker_id", visitor.id);
     expect(blocks?.[0]?.unblocked_at).not.toBeNull();
     await page.context().close();
+  });
+
+  test("Greffe view (10a): the Découverte and a Fiche as a Visitor, read only, logged", async ({
+    browser,
+  }) => {
+    test.skip(!greffier.totpSecret, "needs the Greffe account of the first test");
+    // What may never change when the Greffe looks: the relations and traces of the Bad.
+    const traces = async () => {
+      const count = async (table: string, column: string, value: string) =>
+        (await admin.from(table).select("*", { count: "exact", head: true }).eq(column, value))
+          .count;
+      const { data: seen } = await admin
+        .from("promenade_picks")
+        .select("seen_at")
+        .eq("bad_id", bad.id);
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("last_seen_at")
+        .eq("id", bad.id)
+        .single();
+      return {
+        requests: await count("visit_requests", "bad_id", bad.id),
+        notifications: await count("notifications", "user_id", bad.id),
+        conversations: await count("conversations", "bad_id", bad.id),
+        reports: await count("reports", "target_user_id", bad.id),
+        seen: (seen ?? []).map((row) => row.seen_at),
+        lastSeen: profile?.last_seen_at,
+      };
+    };
+    const before = await traces();
+
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await openGreffe(page, greffier);
+    await page.goto("/admin");
+    await page
+      .getByRole("navigation", { name: "Administration" })
+      .getByRole("link", { name: "Voir comme un Visiteur" })
+      .click();
+    await page.waitForURL(/\/admin\/vue$/);
+    const banner = page.getByRole("note", { name: "Vue Greffe : lecture seule" });
+    await expect(banner).toBeVisible();
+    // The Découverte: every visible Bad, no criteria (the Visitor's filters are not there).
+    const folder = page.getByRole("link", {
+      name: new RegExp(`^Ouvrir le dossier de ${bad.pseudo},`),
+    });
+    await expect(folder).toBeVisible();
+    await expect(page.getByText("Filtres")).toHaveCount(0);
+    expect(await axeViolations(page)).toEqual([]);
+
+    // The Promenade of the day of the quartier (the pick of the first test): once, without who.
+    await page.getByRole("link", { name: "Promenade du jour" }).click();
+    await page.waitForURL(/\/admin\/vue\/promenade/);
+    await page.getByLabel("Quartier").selectOption({ label: "Port-Test" });
+    await page.getByRole("button", { name: "Afficher" }).click();
+    await expect(
+      page.getByRole("link", { name: new RegExp(`^Ouvrir le dossier de ${bad.pseudo},`) }),
+    ).toBeVisible();
+    await expect(page.getByText("Rang 1 · tiré pour 1 Visiteur")).toBeVisible();
+    await expect(page.getByText(visitor.pseudo)).toHaveCount(0);
+    await expect(banner).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+
+    // A Fiche in full: the 3 poses, the placard, its back with the Casier; no bet, no request.
+    await page.getByRole("link", { name: "Découverte", exact: true }).click();
+    await page.waitForURL(/\/admin\/vue$/);
+    await page
+      .getByRole("link", { name: new RegExp(`^Ouvrir le dossier de ${bad.pseudo},`) })
+      .click();
+    await page.waitForURL(new RegExp(`/admin/vue/fiche/${bad.id}$`));
+    await expect(banner).toBeVisible();
+    const fiche = page.getByTestId("fiche");
+    await expect(fiche.getByTestId("pose-center")).toBeVisible();
+    await expect(fiche.getByTestId("pose-left")).toBeVisible();
+    await expect(fiche.getByTestId("pose-right")).toBeVisible();
+    await expect(fiche.getByTestId("placard-small")).toContainText(bad.pseudo);
+    await fiche.getByTestId("placard-small").click();
+    const zoom = page.getByRole("region", { name: /agrandie$/ });
+    await zoom.getByRole("button", { name: "Retourner : chefs d'accusation" }).click();
+    await expect(zoom.getByRole("listitem")).toHaveText(CHARGES.map((c, i) => `${i + 1}. ${c}`));
+    // The true charge is never marked, not even here (règle 14).
+    await expect(zoom.getByRole("radio")).toHaveCount(0);
+    // Not in the data sent to the page either (the i18n texts of the page do say « vrai »).
+    expect(await page.content()).not.toContain("true_index");
+    await expect(page.getByRole("button", { name: /^Demander une visite/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Signaler ou bloquer" })).toHaveCount(0);
+    await expect(page.getByText(/^Vue Greffe : lecture seule\. Le vrai chef/)).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await context.close();
+
+    // Read only: nothing written about the Bad; the opening is in the Greffe's log only.
+    expect(await traces()).toEqual(before);
+    const { data: log } = await admin
+      .from("greffe_fiche_views")
+      .select("admin_id, viewed_at")
+      .eq("bad_id", bad.id);
+    expect(log?.map((row) => row.admin_id)).toEqual([greffier.id]);
   });
 });
