@@ -2,6 +2,7 @@
 
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
+import { captchaTokenFrom } from "@/lib/auth/captcha";
 import { authErrorKey, type AuthMessageKey } from "@/lib/auth/errors";
 import { confirmUrl } from "@/lib/auth/redirects";
 import { parseRole } from "@/lib/onboarding/config";
@@ -21,13 +22,6 @@ export type AuthState =
   | { status: "idle" }
   | { status: "error"; fields?: Partial<Record<string, AuthErrorKey>>; message?: AuthMessageKey }
   | { status: "sent"; kind: "signup" | "magic" | "reset" };
-
-const CAPTCHA_FIELD = "cf-turnstile-response";
-
-function captchaToken(form: FormData): string | undefined {
-  const token = form.get(CAPTCHA_FIELD);
-  return typeof token === "string" && token.length > 0 ? token : undefined;
-}
 
 function invalid(error: z.core.$ZodError): AuthState {
   return { status: "error", fields: fieldErrors(error) };
@@ -51,7 +45,7 @@ export async function signUpAction(_state: AuthState, form: FormData): Promise<A
     ...parsed.data,
     options: {
       emailRedirectTo: confirmUrl("/onboarding"),
-      captchaToken: captchaToken(form),
+      captchaToken: captchaTokenFrom(form),
       // Referral code (SPEC §3) claimed by the database at onboarding step 1; the door chosen on
       // the landing (SPEC v7 §2 bis) only preselects step 3, where the database records the role.
       data: { ...(/^[A-Z2-9]{8}$/.test(ref) ? { ref } : {}), ...(role ? { role } : {}) },
@@ -72,7 +66,7 @@ export async function signInAction(_state: AuthState, form: FormData): Promise<A
       email: parsed.data.email,
       options: {
         emailRedirectTo: confirmUrl("/onboarding"),
-        captchaToken: captchaToken(form),
+        captchaToken: captchaTokenFrom(form),
         // A magic link creates an account for an unknown address: not while sign-ups are closed.
         shouldCreateUser: signupsOpen(),
       },
@@ -92,7 +86,7 @@ export async function signInAction(_state: AuthState, form: FormData): Promise<A
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
     ...parsed.data,
-    options: { captchaToken: captchaToken(form) },
+    options: { captchaToken: captchaTokenFrom(form) },
   });
   if (error) return { status: "error", message: authErrorKey(error) };
   return goTo("/onboarding");
@@ -104,7 +98,7 @@ export async function sendResetAction(_state: AuthState, form: FormData): Promis
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: confirmUrl("/nouveau-mot-de-passe"),
-    captchaToken: captchaToken(form),
+    captchaToken: captchaTokenFrom(form),
   });
   if (error && error.status === 429) return { status: "error", message: "rateLimited" };
   return { status: "sent", kind: "reset" };

@@ -163,6 +163,9 @@
     "adultNotice": "For people aged 18 and over only. Your date of birth will be checked at the next step.",
     "termsNotice": "By creating an account, you accept the <terms>Terms of use</terms> and the <charter>Charter</charter>, and confirm you have read the <privacy>Privacy policy</privacy>.",
     "captchaLabel": "Anti-bot check",
+    "captchaChecking": "Anti-bot check in progress…",
+    "captchaUnavailable": "The anti-bot check could not load. Turn off the ad blocker or the browser shield for this site, then reload the page.",
+    "captchaRetry": "Try again",
     "captchaPending": "The anti-bot check will be enabled when sign-ups open.",
     "errors": {
       "emailInvalid": "This email doesn't look valid.",
@@ -2094,6 +2097,7 @@
     "delete": "Delete my account for good",
     "errors": {
       "wrongPassword": "Wrong password.",
+      "captchaFailed": "The anti-bot check failed. Try again.",
       "deleteConfirmRequired": "Give your password and tick the confirmation.",
       "generic": "The deletion could not be done. Try again; if it keeps failing, write to the contact point in the legal notice."
     }
