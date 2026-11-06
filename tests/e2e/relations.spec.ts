@@ -793,6 +793,9 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await expect(page.getByRole("img", { name: /visite acceptée/i })).toBeVisible();
     await page.getByRole("button", { name: /^Demain soir/ }).click();
     await page.getByRole("button", { name: "+ Choisir un autre jour et une autre heure" }).click();
+    // Two days ahead: the first possible half hour of today is valid only until the next half
+    // hour, so the default choice could be refused (slot_too_soon) when the clock passes it.
+    await page.getByLabel("Jour").selectOption({ index: 2 });
     await page.getByRole("button", { name: "Ajouter ce créneau" }).click();
     await expect(page.getByText("Tes créneaux (2 sur 3)")).toBeVisible();
     expect(await axeViolations(page)).toEqual([]);

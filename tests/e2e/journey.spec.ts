@@ -291,6 +291,9 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     await expect(page.getByRole("heading", { name: "Tes Heures de visite" })).toBeVisible();
     await page.getByRole("button", { name: /^Demain soir/ }).click();
     await page.getByRole("button", { name: "+ Choisir un autre jour et une autre heure" }).click();
+    // Two days ahead: the first possible half hour of today is valid only until the next half
+    // hour, so the default choice could be refused (slot_too_soon) when the clock passes it.
+    await page.getByLabel("Jour").selectOption({ index: 2 });
     await page.getByRole("button", { name: "Ajouter ce créneau" }).click();
     await expect(page.getByText("Tes créneaux (2 sur 3)")).toBeVisible();
     await page.getByRole("button", { name: "Envoyer mes Heures de visite" }).click();
