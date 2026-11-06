@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** faite, décisions 10-1 à 10-4 à valider ; **CI n° 109 (`7017ba0`) verte**, aucun test passé à la relance.
+**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; CI : voir la section 10b.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -73,11 +73,34 @@ Une migration (`20261106120000_greffe_view.sql`), appliquée à la preview par l
   - étape 4 (et le test Bad de `relations.spec.ts`) : le créneau libre proposé par défaut (« Choisir un autre jour ») n'est valable que jusqu'à la demi-heure suivante ; page affichée avant 16 h 30, envoyée après → `slot_too_soon`, refus correct de la base. Les tests choisissent désormais un jour à J+2.
   - « 9 ter » sur `/mon-casier` : WebKit fait apparaître le curseur d'un textarea après nos corrections, sans tenir compte de `scroll-padding`, et le remet sous la barre d'onglets. `components/app/tab-bar-links.tsx` corrige aussi tout défilement dans les 600 ms qui suivent la prise de focus. Les 3 pages de la vue Greffe sont ajoutées au balayage axe et clavier du « 9 ter ».
   - **Résultat : CI n° 109 (`7017ba0`) verte** : vérifications, Pixel 7 (44 réussis, 2 ignorés) et iPhone 14 (35 réussis, 11 ignorés : tests réservés à Chromium), 0 test instable.
-- **Décisions à valider (10a)** :
+- **Décisions (10a)**, vérifiées par le conseiller le 2026-11-06 (CI n° 109 verte, migration relue : fonctions réservées à `is_admin()`, rien d'écrit chez les Bads, `true_index` absent) : 10-1, 10-2 et 10-4 **validées** ; 10-3 **validée avec une conservation de 12 mois** (purge dans le nettoyage quotidien, faite en 10b ; durée à confirmer par l'avocat comme les autres).
   - **10-1** « Bad visible » = la règle de la Découverte sans la condition de quartier. Un Bad masqué, en pause, banni ou incomplet n'apparaît pas et sa Fiche répond « introuvable » dans cette vue (la fiche membre de l'admin existe déjà pour ces cas).
   - **10-2** Promenade « par quartier » = les Bads tirés aujourd'hui pour les Visiteurs du quartier, regroupés. On ne montre jamais quel Visiteur a tiré quel Bad.
   - **10-3** Seules les **ouvertures de Fiche** sont journalisées, pas l'affichage des listes. Le journal n'a pas encore d'écran (lisible en SQL par le propriétaire de la base) et pas de durée de conservation autre que la suppression du compte du Bad : faut-il une purge (par ex. 1 an) et un écran pour le super admin ?
   - **10-4** La Fiche du Greffe ne montre ni distance, ni complicité, ni points communs (ils dépendent d'un Visiteur réel).
+
+### 10b — E-mails de l'app par Resend (2026-11-06)
+Demande du conseiller : passer le cron d'e-mails (`/api/cron/email`) de l'API Brevo à Resend (domaine `bad-boys8bad-girls.fr` vérifié, région `eu-west-1`), sans rien envoyer avant que les tests passent.
+- **Envoi** : `lib/email/resend.ts` remplace `lib/email/brevo.ts` (supprimé). Appel HTTP direct, sans SDK, à `https://api.resend.com/emails` : l'URL de l'API est la même pour toutes les régions, la région ne concerne que le domaine d'envoi.
+  - Clé dans `RESEND_API_KEY` (serveur ; Vercel « Sensitive », posée par le porteur, jamais dans le dépôt ni dans le chat) ; expéditeur `EMAIL_FROM` = l'adresse seule, le nom « Bad Boys & Bad Girls » est ajouté (une forme « Nom <adresse> » est gardée telle quelle).
+  - En-têtes `User-Agent` (exigé par Resend) et `Idempotency-Key` = `email-outbox-<id>` : si la route s'arrête après l'acceptation par Resend mais avant le compte rendu à la base, l'e-mail repris n'est pas envoyé deux fois (clé gardée 24 h par Resend).
+  - Désinscription en un clic (`List-Unsubscribe`, `List-Unsubscribe-Post`) inchangée. Tout refus (401, 422, 429, 5xx) ou toute panne réseau = échec : l'e-mail retourne en file (3 tentatives) et rend sa place dans le quota.
+  - Sans `RESEND_API_KEY` ou `EMAIL_FROM`, la route répond 503 `email_not_configured` et n'envoie rien : c'est l'état de la preview et de la production tant que la clé n'est pas posée.
+- **Quota** (migration `20261107130000_email_resend_quota`) : l'offre gratuite de Resend permet **100 e-mails par jour pour tout le compte (e-mails d'Auth compris), par jour UTC**, et 3 000 par mois (documentation Resend, « Account quotas and limits », lue le 2026-11-06). L'ancien réglage (300 par jour, jour de Paris) venait de Brevo et aurait dépassé la limite. Désormais : quota de 100 dont **50 réservés aux e-mails d'Auth** (décision 10-5), compté par **jour UTC** (`private.email_quota_day()`). La date « pas avant » d'un e-mail reste un jour de Paris (règle produit). 100 par jour sur 30 jours = les 3 000 du mois.
+- **Conservation du journal de la vue Greffe** (décision 10-3, migration `20261107120000_greffe_views_retention`) : `cleanup_rows()` efface les lignes de `greffe_fiche_views` de plus de 12 mois, chaque nuit (job `cleanup` existant).
+- **Tests** :
+  - pgTAP `phase10b_email_resend` (quota de 100 dont 50 pour l'Auth, jour UTC, les envois de la veille UTC ne comptent pas, jamais plus de 50 réclamés par jour, la route n'est plus appelée ensuite, droits) ; `phase10a_greffe_view` : conservation de 12 mois ; `phase7e_email` : jour UTC, et le compteur du jour remis à zéro en début de test (il dépendait de ce qu'un passage e2e avait laissé dans la base locale).
+  - Vitest `resend.test.ts` : configuration, requête exacte (clé, expéditeur, destinataire, idempotence, désinscription), refus et panne réseau = échec.
+  - e2e `email-route.spec.ts` contre un **faux service Resend** (127.0.0.1:3199, jamais Resend) : un e-mail mis en file par la base part par la route, neutre (pas de pseudo), avec la clé, l'expéditeur, l'idempotence ; statut `sent` ; désinscription en un clic.
+  - Local (Pixel 7) : suite complète verte (44 réussis, 2 ignorés), pgTAP 28 fichiers, Vitest 258.
+- **Documentation** : README (variables, limites de l'offre gratuite, checklist) et `.env.example` passés à Resend.
+- **Preview** : les deux migrations ne sont **pas encore appliquées** : le connecteur Supabase a demandé une confirmation (la fonction de nettoyage contient des `DELETE`), restée sans réponse ; non contournée.
+- **Décision à valider (10b)** :
+  - **10-5** Partage du quota Resend : 50 par jour pour l'Auth, 50 pour l'app. Au lancement, les confirmations d'inscription passent avant les e-mails de l'app ; ce qui dépasse attend le lendemain (rappels de visite abandonnés une fois la visite commencée, comme avant).
+- **Pour le porteur** :
+  - poser `RESEND_API_KEY` (Sensitive) et `EMAIL_FROM=ne-pas-repondre@bad-boys8bad-girls.fr` sur Vercel **Production** uniquement (en Preview, la route continuerait d'envoyer de vrais e-mails aux comptes de test) ; retirer `BREVO_API_KEY` et `BREVO_API_URL` s'ils existent ;
+  - les migrations `20261107120000` et `20261107130000` devront aussi passer en production (le quota de 300 y est encore) avant de poser la clé.
+- **CI** : en cours.
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 9, SPEC §0 (priorités), §3 (parrainage), §5 (badges), §6 (Casier), §13 (Parloir sans horaire), §14 (badges de confiance).
@@ -872,7 +895,7 @@ Réponses du porteur : N° d'écrou 6 chiffres aléatoires, uniques, Bads seulem
   - 2026-11-06 : fait. Migrations des phases 6 à 9 (2026-11-04), Turnstile, SMTP (Resend) et domaine branché sur Vercel Production (voir « Lancement »).
 - [x] `SIGNUPS_OPEN=true` sur Vercel Production (2026-11-06 ; avant : `false` : « Inscriptions bientôt ouvertes » ; `true` en Preview et en local).
 - [ ] Interdire aussi les inscriptions directes par l'API Auth tant que la production n'est pas prête : `SIGNUPS_OPEN` ne protège que le site (Supabase Auth → « Allow new users to sign up » sur la future base de production).
-  - 2026-11-06 : sans objet depuis l'ouverture des inscriptions. Le réglage doit maintenant être **activé** sur la prod pour que les inscriptions passent (non confirmé dans le compte rendu du lancement : à vérifier).
+  - 2026-11-06 : sans objet depuis l'ouverture des inscriptions (`SIGNUPS_OPEN=true` posé et vérifié en production par le conseiller le 2026-11-06).
 - [x] Relecture des contenus `docs/content/` et de la liste de départ des mots-clés (chargée).
 - [ ] Remplir la catégorie `harassment` depuis l'admin (Phase 7).
 - [ ] **Notifications de la prod : leurs propres clés, jamais celles de la preview** (décision du porteur, 2026-10-18). Au lancement seulement : nouvelle paire VAPID et nouveau secret de route pour la Production Vercel (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `PUSH_CRON_SECRET`), et dans le coffre de `bad-boys-prod` : `push_cron_secret` (même valeur que `PUSH_CRON_SECRET` de Production) et `push_endpoint_url` = `https://<domaine de production>/api/cron/push`, sans `vercel_protection_bypass`. Rien n'est posé d'ici là (coffre de prod et variables Vercel non touchés).

@@ -9,7 +9,7 @@ Site de rencontre « Bad, pas toxique. » Coupables de charme…
 
 ## Stack
 
-Next.js 16 (App Router, TypeScript strict, React Server Components), Tailwind CSS, next-intl (français, anglais préparé), Zod, Supabase (Auth, Postgres + RLS, Realtime, Storage, pg_cron, pg_net, Vault), Vercel (plan Hobby), Web Push (VAPID), Brevo (e-mails), Cloudflare Turnstile. Tests : Vitest, pgTAP (`supabase test db`), Playwright. Versions exactes figées dans `package.json` ; Node ≥ 20.9, pnpm 10.28.
+Next.js 16 (App Router, TypeScript strict, React Server Components), Tailwind CSS, next-intl (français, anglais préparé), Zod, Supabase (Auth, Postgres + RLS, Realtime, Storage, pg_cron, pg_net, Vault), Vercel (plan Hobby), Web Push (VAPID), Resend (e-mails), Cloudflare Turnstile. Tests : Vitest, pgTAP (`supabase test db`), Playwright. Versions exactes figées dans `package.json` ; Node ≥ 20.9, pnpm 10.28.
 
 ## Installation (développement local)
 
@@ -47,7 +47,7 @@ Modèle complet : `.env.example`. Sur Vercel, chaque environnement (Preview, Pro
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | public | anti-bot ; la clé secrète Turnstile va dans Supabase Auth → Captcha |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | public / **serveur** / serveur | Web Push (`npx web-push generate-vapid-keys`) ; la clé privée en type « sensitive » |
 | `PUSH_CRON_SECRET` | **serveur** | secret des routes `/api/cron/push`, `/api/cron/email`, `/api/cron/cleanup` (32 caractères au moins) ; la même valeur dans le coffre Supabase (`push_cron_secret`) |
-| `BREVO_API_KEY`, `EMAIL_FROM` | **serveur** | e-mails de l'application (API Brevo) ; le SMTP des e-mails d'Auth se règle dans Supabase Auth → SMTP |
+| `RESEND_API_KEY` (Sensitive), `EMAIL_FROM` | **serveur** | e-mails de l'application (API Resend) ; `EMAIL_FROM` = `ne-pas-repondre@bad-boys8bad-girls.fr` en Production. Le SMTP des e-mails d'Auth (Resend aussi) se règle dans Supabase Auth → SMTP |
 | `APP_ENV` | serveur | `development`, `preview` ou `production` (`production` masque `/design`) |
 | `SIGNUPS_OPEN` | serveur | `true` pour ouvrir les inscriptions sur le site ; toute autre valeur les ferme |
 | `ALLOW_DEV_SEED` | serveur | garde du seed de développement, jamais en production |
@@ -85,9 +85,9 @@ Vérifiées le 2026-10-20 ; **à revérifier au moment du lancement**.
 
 - **Vercel Hobby** : usage **non commercial** uniquement ; passer en Pro avant toute monétisation.
 - **Supabase Free** : base, stockage et bande passante limités ; **Realtime : 200 connexions simultanées, 100 messages/s, 100 connexions de canal/s** (soit 100 visites au Parloir en même temps) ; au-delà, le Parloir passe sur un relevé toutes les 3 s. Un projet gratuit inactif se met en pause au bout de 7 jours. La protection contre les mots de passe divulgués est réservée au plan Pro (le minimum de 12 caractères reste réglable : Auth → Email).
-- **Brevo gratuit** : quota quotidien d'e-mails ; l'application garde une réserve pour les e-mails d'Auth et reporte le reste au lendemain. Il faut un domaine authentifié (SPF, DKIM, DMARC) : un expéditeur d'une messagerie grand public est refusé ou classé en spam.
+- **Resend gratuit** : 100 e-mails par jour (jour UTC) et 3 000 par mois pour tout le compte, e-mails d'Auth compris ; l'application en garde 50 pour l'Auth et reporte le reste au lendemain. Domaine `bad-boys8bad-girls.fr` vérifié chez Resend (SPF, DKIM).
 - **Web Push** : gratuit, sans quota de notre côté ; dépend des services de push des navigateurs.
 
 ## Checklist avant ouverture des inscriptions
 
-La liste à jour, cochée au fil de l'eau, est dans `docs/PROGRESS.md` (section « Checklist avant lancement »). En résumé : migrations de la prod à jour et vérifiées, premier admin et super admin, Turnstile (site et Supabase Auth), nom de domaine puis domaine authentifié chez Brevo puis `BREVO_API_KEY` et `EMAIL_FROM` en Production, clés de notification propres à la prod, minimum de 12 caractères dans Supabase Auth, test sur vrais téléphones (Web Push, lecteur d'écran), vérification juridique de la conservation des données d'identification, retrait des droits d'écriture du connecteur d'IA sur la prod, `SIGNUPS_OPEN=true` en Production en dernier.
+La liste à jour, cochée au fil de l'eau, est dans `docs/PROGRESS.md` (section « Checklist avant lancement »). En résumé : migrations de la prod à jour et vérifiées, premier admin et super admin, Turnstile (site et Supabase Auth), nom de domaine puis domaine vérifié chez Resend puis `RESEND_API_KEY` et `EMAIL_FROM` en Production, clés de notification propres à la prod, minimum de 12 caractères dans Supabase Auth, test sur vrais téléphones (Web Push, lecteur d'écran), vérification juridique de la conservation des données d'identification, retrait des droits d'écriture du connecteur d'IA sur la prod, `SIGNUPS_OPEN=true` en Production en dernier.
