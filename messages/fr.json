@@ -42,7 +42,7 @@
     "terms": "Conditions d'utilisation",
     "privacy": "Confidentialité",
     "notice": "Mentions légales",
-    "contact": "Contact : [À COMPLÉTER : adresse e-mail de contact]",
+    "contact": "Contact : bad-boys-web@proton.me",
     "adultsOnly": "Réservé aux personnes majeures (18 ans et plus).",
     "copyright": "© {year} Bad Boys & Bad Girls"
   },
@@ -387,7 +387,7 @@
         {
           "title": "1. Objet",
           "paragraphs": [
-            "Les présentes conditions encadrent l'utilisation du service Bad Boys & Bad Girls, site de rencontre entre adultes, édité par [À COMPLÉTER : identité de l'éditeur]."
+            "Les présentes conditions encadrent l'utilisation du service Bad Boys & Bad Girls, site de rencontre entre adultes, édité à titre non professionnel par un particulier (voir les mentions légales)."
           ]
         },
         {
@@ -402,7 +402,7 @@
           "paragraphs": [
             "Tu t'engages à fournir des informations exactes, à utiliser des photos de toi, et à ne créer qu'un seul compte.",
             "Ta photo principale doit montrer ton visage. Les photos sont vérifiées par un humain avant d'être visibles.",
-            "[À COMPLÉTER : Ta photo est détourée automatiquement et placée sur le fond du site.]"
+            "Ta photo est détourée automatiquement et placée sur le fond du site."
           ]
         },
         {
@@ -417,7 +417,7 @@
           "paragraphs": [
             "Chaque membre peut signaler une Fiche, un Permis de visite, une photo, un Casier, une demande de visite ou un message. Les signalements sont traités par un humain.",
             "Selon la gravité : avertissement, suspension ou bannissement. Toute décision est motivée et communiquée à la personne concernée et à la personne qui a signalé.",
-            "[À COMPLÉTER : voies de recours contre une décision de modération]"
+            "Tu peux contester une décision de modération en écrivant à bad-boys-web@proton.me dans les 6 mois, en expliquant pourquoi. La décision est réexaminée et tu reçois une réponse motivée sous 30 jours. Tu gardes la possibilité de saisir les juridictions compétentes."
           ]
         },
         {
@@ -429,12 +429,12 @@
         {
           "title": "7. Responsabilité",
           "paragraphs": [
-            "[À COMPLÉTER : limites de responsabilité de l'éditeur, notamment pour les rencontres réelles entre membres]"
+            "Le site met des adultes en relation. L'éditeur ne vérifie pas l'identité réelle des membres et ne garantit ni leur sincérité ni leur comportement. Chaque membre reste seul responsable de ses propos et de ses actes, en ligne comme lors d'une rencontre réelle. Suis les Conseils sécurité, privilégie un lieu public pour une première rencontre et signale tout comportement suspect. L'éditeur retire promptement tout contenu illicite qui lui est signalé."
           ]
         },
         {
           "title": "8. Droit applicable",
-          "paragraphs": ["[À COMPLÉTER : droit applicable et juridiction compétente]"]
+          "paragraphs": ["Les présentes conditions sont soumises au droit français. En cas de litige, une solution amiable est recherchée en priorité en écrivant à bad-boys-web@proton.me. À défaut, les tribunaux français sont compétents ; si tu es consommateur, tu peux aussi saisir le tribunal de ton domicile."]
         }
       ]
     },
@@ -444,8 +444,8 @@
         {
           "title": "1. Responsable du traitement",
           "paragraphs": [
-            "[À COMPLÉTER : identité et coordonnées du responsable du traitement]",
-            "[À COMPLÉTER : coordonnées du délégué à la protection des données, le cas échéant]"
+            "Le responsable du traitement est l'éditeur du site, un particulier agissant à titre non professionnel (voir les mentions légales), joignable à bad-boys-web@proton.me.",
+            "Aucun délégué à la protection des données n'a été désigné. Pour toute question sur tes données : bad-boys-web@proton.me."
           ]
         },
         {
@@ -460,7 +460,7 @@
           "paragraphs": [
             "Les métadonnées de tes photos (dont la position GPS) sont supprimées avant l'envoi et contrôlées sur nos serveurs.",
             "Une fois validées, tes photos sont servies par une adresse web longue et impossible à deviner. Cette adresse est renouvelée quand tu supprimes une photo, après 30 jours de pause et en cas de bannissement ; tout est effacé quand tu supprimes ton compte.",
-            "[À COMPLÉTER : Ta photo est détourée automatiquement et placée sur le fond du site.]"
+            "Ta photo est détourée automatiquement et placée sur le fond du site."
           ]
         },
         {
@@ -475,21 +475,21 @@
           "title": "5. Durées de conservation",
           "paragraphs": [
             "Tes données sont conservées tant que ton compte existe. Un compte dont l'inscription n'est pas terminée est supprimé après 30 jours.",
-            "Après un bannissement, seule une empreinte chiffrée de l'e-mail est conservée pendant [À COMPLÉTER : durée, 12 mois proposés] pour empêcher la réinscription."
+            "Après un bannissement, seule une empreinte chiffrée de l'e-mail est conservée pendant 12 mois pour empêcher la réinscription."
           ]
         },
         {
           "title": "6. Hébergement et sous-traitants",
           "paragraphs": [
             "Base de données et fichiers : Supabase, région Union européenne. Application : Vercel. E-mails : Brevo. Protection anti-robot : Cloudflare Turnstile.",
-            "[À COMPLÉTER : garanties encadrant les transferts hors de l'Union européenne]"
+            "La base de données et les fichiers sont hébergés dans l'Union européenne. L'application est servie par Vercel Inc. (États-Unis) : les transferts éventuels sont encadrés par les clauses contractuelles types de la Commission européenne prévues dans les accords de traitement de nos prestataires."
           ]
         },
         {
           "title": "7. Tes droits",
           "paragraphs": [
             "Tu peux exporter tes données (format JSON) et supprimer ton compte depuis tes paramètres. Tu disposes aussi des droits d'accès, de rectification, d'opposition et de limitation, et du droit d'introduire une réclamation auprès de la CNIL.",
-            "[À COMPLÉTER : adresse de contact pour exercer tes droits]"
+            "Écris à bad-boys-web@proton.me. Tu peux aussi introduire une réclamation auprès de la CNIL (www.cnil.fr)."
           ]
         }
       ]
@@ -500,21 +500,21 @@
         {
           "title": "Éditeur",
           "paragraphs": [
-            "[À COMPLÉTER : nom ou raison sociale, forme juridique, adresse, numéro d'immatriculation]",
-            "Directeur ou directrice de la publication : [À COMPLÉTER]"
+            "Ce site est édité à titre non professionnel par un particulier. Conformément à l'article 6, III, 2 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, son identité a été communiquée à l'hébergeur, Vercel Inc., qui la tient à la disposition des autorités.",
+            "Directeur de la publication : l'éditeur du site (particulier, voir ci-dessus)."
           ]
         },
         {
           "title": "Point de contact (DSA)",
           "paragraphs": [
-            "[À COMPLÉTER : adresse e-mail du point de contact unique pour les autorités et les utilisateurs]"
+            "bad-boys-web@proton.me"
           ]
         },
         {
           "title": "Hébergeurs",
           "paragraphs": [
-            "Application : Vercel Inc. [À COMPLÉTER : adresse à vérifier]",
-            "Base de données et fichiers : Supabase Inc., données hébergées dans l'Union européenne. [À COMPLÉTER : adresse à vérifier]"
+            "Application : Vercel Inc., 440 North Barranca Avenue, Suite 4133, Covina, Californie 91723, États-Unis.",
+            "Base de données et fichiers : Supabase Pte. Ltd., 65 Chulia Street #38-02/03, OCBC Centre, Singapour 049513 ; données hébergées dans l'Union européenne (Paris, France)."
           ]
         },
         {
