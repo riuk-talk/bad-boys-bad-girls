@@ -1,11 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 import { randomBytes } from "node:crypto";
+import { captcha } from "./helpers/captcha";
 
 // Sign-up as a real person does it, LOCAL STACK ONLY (scripts/ci/local-env.mjs): the Visitor door
 // of the landing, the form, the confirmation e-mail (read in Mailpit, the local mailbox of
-// `supabase start`), the link, then steps 1 and 2 of the onboarding. Turnstile is not loaded
-// (no site key locally): the captcha is checked by Supabase Auth in production, not by the app.
+// `supabase start`), the link, then steps 1 and 2 of the onboarding. In CI the captcha is on, with
+// Cloudflare's test keys (the widget gives a dummy token the test secret accepts); locally there
+// is no site key and the form works without it.
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const secret = process.env.SUPABASE_SECRET_KEY ?? "";
 const mailpit = process.env.MAILPIT_URL ?? "";
@@ -98,6 +100,7 @@ test.describe("sign-up: landing door, e-mail confirmation, first steps (local st
     const { error } = await anon.auth.signUp({
       email: `e2e-weak-${randomBytes(4).toString("hex")}@example.com`,
       password: "Pw-12345678",
+      options: captcha,
     });
     expect(error?.code).toBe("weak_password");
   });

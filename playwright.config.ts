@@ -15,7 +15,7 @@ const chromium = executablePath
 // Critical journeys, run on the two phone profiles (CI: local Supabase stack, see
 // scripts/ci/local-env.mjs): sign-up, onboarding, Demande de parloir and Courrier, the push route.
 const CRITICAL =
-  /(signup|password-recovery|onboarding-complete|relations|push-route|email-route|moderation-rgpd|web-vitals|photo-cutout|super-admin|journey|realtime-channels)\.spec\.ts$/;
+  /(signup|password-recovery|onboarding-complete|relations|push-route|email-route|moderation-rgpd|web-vitals|photo-cutout|super-admin|journey|realtime-channels|captcha)\.spec\.ts$/;
 // Only in CI or on demand: WebKit is not installed everywhere.
 const DEVICES = process.env.CI === "true" || process.env.E2E_DEVICES === "true";
 

@@ -3,6 +3,7 @@ import { expect, test, type Browser } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { totp } from "./helpers/admin";
+import { captcha } from "./helpers/captcha";
 
 // Password recovery as a person does it, LOCAL STACK ONLY (scripts/ci/local-env.mjs): « Mot de
 // passe oublié », the e-mail read in Mailpit, the link, the new password, then a sign-in with it.
@@ -71,7 +72,7 @@ async function openRecovery(browser: Browser, email: string) {
 
 async function signsInWith(email: string, password: string): Promise<boolean> {
   const client = createClient(url, publishable, { auth: { persistSession: false } });
-  const { error } = await client.auth.signInWithPassword({ email, password });
+  const { error } = await client.auth.signInWithPassword({ email, password, options: captcha });
   return !error;
 }
 
@@ -124,7 +125,11 @@ test.describe("password recovery: a member, the super admin (local stack)", () =
     asOwner(`insert into public.super_admins (user_id, note) values ('${data.user.id}', 'e2e')`);
     // The second factor, enrolled as on /acces-admin.
     const member = createClient(url, publishable, { auth: { persistSession: false } });
-    await member.auth.signInWithPassword({ email: account.email, password: account.password });
+    await member.auth.signInWithPassword({
+      email: account.email,
+      password: account.password,
+      options: captcha,
+    });
     const enrolled = await member.auth.mfa.enroll({ factorType: "totp" });
     if (enrolled.error) throw enrolled.error;
     const factorSecret = enrolled.data.totp.secret;

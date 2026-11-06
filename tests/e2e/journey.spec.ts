@@ -8,6 +8,7 @@ import { FakePushService } from "./helpers/fake-push-service";
 import { auditSignedIn, LIGHTHOUSE_CATEGORIES } from "./helpers/lighthouse";
 import { cutoutReady, onboardBad, onboardVisitor, signUp } from "./helpers/onboarding";
 import { settled } from "./helpers/settle";
+import { captcha } from "./helpers/captcha";
 
 // THE end-to-end journey, LOCAL STACK ONLY (scripts/ci/local-env.mjs). Owner's rule (2026-10-07):
 // every later phase extends it (visit, Parloir, Permis permanent, Cavale) before it is done.
@@ -127,6 +128,7 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     const signedIn = await client.auth.signInWithPassword({
       email: target.email,
       password: target.password,
+      options: captcha,
     });
     if (signedIn.error) throw signedIn.error;
     const browser = push.newBrowser();
