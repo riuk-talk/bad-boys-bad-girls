@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 import * as z from "zod/mini";
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
 import { redirect } from "@/i18n/navigation";
+import { captchaTokenFrom } from "@/lib/auth/captcha";
 import { requireMember } from "@/lib/auth/user";
 import { removeMemberFiles } from "@/lib/cleanup/files";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -31,7 +32,8 @@ export async function deleteAccountAction(
   const email = user.user?.email;
   if (!email || user.user?.id !== member.userId) return { status: "error", message: "generic" };
 
-  // The password is checked with a throw-away client: the current session is left as it is.
+  // The password is checked with a throw-away client: the current session is left as it is. It
+  // is a sign-in, so Supabase Auth asks for the anti-robot token when the captcha is on.
   const { url, publishableKey } = supabaseConfig();
   const checker = createSupabaseClient(url, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
@@ -39,8 +41,14 @@ export async function deleteAccountAction(
   const { error: wrong } = await checker.auth.signInWithPassword({
     email,
     password: parsed.data.password,
+    options: { captchaToken: captchaTokenFrom(form) },
   });
-  if (wrong) return { status: "error", message: "wrongPassword" };
+  if (wrong) {
+    return {
+      status: "error",
+      message: wrong.code === "captcha_failed" ? "captchaFailed" : "wrongPassword",
+    };
+  }
 
   const { data: files, error } = await member.supabase.rpc("prepare_my_account_deletion");
   const row = files?.[0];
