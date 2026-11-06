@@ -196,4 +196,25 @@ begin
 end $$;
 
 ----------------------------------------------------------------------------------------------
+-- Decision 10-3: the log is kept 12 months, then erased by the daily clean-up (cleanup_rows).
+create function pg_temp.test_log_kept_12_months() returns setof text language plpgsql as $$
+declare
+  adm uuid := pg_temp.new_admin();
+  b uuid := pg_temp.visible_bad();
+  r jsonb;
+begin
+  insert into public.greffe_fiche_views (admin_id, bad_id, viewed_at) values
+    (adm, b, now() - interval '12 months' - interval '1 day'),
+    (adm, b, now() - interval '12 months' + interval '1 day'),
+    (adm, b, now());
+  r := public.cleanup_rows();
+  return next is((r ->> 'greffe_fiche_views')::integer, 1, 'the clean-up counts what it erased');
+  return next is((select count(*)::integer from public.greffe_fiche_views where bad_id = b), 2,
+    'kept 12 months, then erased');
+  return next ok(not exists (select 1 from public.greffe_fiche_views
+                             where bad_id = b and viewed_at < now() - interval '12 months'),
+    'nothing older than 12 months is left');
+end $$;
+
+----------------------------------------------------------------------------------------------
 select * from runtests(pg_my_temp_schema()::regnamespace::name, '^test_');
