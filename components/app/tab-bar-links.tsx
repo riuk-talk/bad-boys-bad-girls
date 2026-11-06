@@ -67,7 +67,10 @@ export function TabBarLinks({ tabs, initial }: { tabs: readonly TabLink[]; initi
   // WCAG 2.4.11: what takes the focus under the sticky bar is brought above it, by exactly the
   // part it hides. Once at once, and once more at the next frame: WebKit runs its own focus scroll
   // after the event and may put the element back under the bar (CI n° 63 and 65, /mon-casier).
+  // For a textarea, WebKit reveals the caret later still, ignoring scroll-padding (CI n° 107): any
+  // scroll in the moment after the focus is corrected too, before the next frame is painted.
   useEffect(() => {
+    let focused: { target: HTMLElement; at: number } | null = null;
     const lift = (target: HTMLElement) => {
       const bar = document.querySelector("[data-tab-bar]");
       if (!bar || bar.contains(target) || !target.isConnected) return;
@@ -77,11 +80,20 @@ export function TabBarLinks({ tabs, initial }: { tabs: readonly TabLink[]; initi
     const onFocus = (event: FocusEvent) => {
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
+      focused = { target, at: performance.now() };
       lift(target);
       requestAnimationFrame(() => lift(target));
     };
+    const onScroll = () => {
+      if (!focused || performance.now() - focused.at > 600) return;
+      if (document.activeElement === focused.target) lift(focused.target);
+    };
     document.addEventListener("focusin", onFocus);
-    return () => document.removeEventListener("focusin", onFocus);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      document.removeEventListener("focusin", onFocus);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const types = new Set<string>(state.types);
