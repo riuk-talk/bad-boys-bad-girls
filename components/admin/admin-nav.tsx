@@ -12,6 +12,7 @@ const SECTIONS = [
   "mots-cles",
   "questions",
   "performance",
+  "vue",
 ] as const;
 
 /** /admin sections (SPEC §15): the Greffe first (photos), then moderation. */

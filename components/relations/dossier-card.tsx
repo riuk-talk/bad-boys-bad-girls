@@ -15,9 +15,13 @@ import { tiltOf } from "@/lib/relations/dossier";
 export async function DossierCard({
   bad,
   priority = false,
+  href,
 }: {
   bad: BadCardData;
   priority?: boolean;
+  /** Elsewhere than the member's Fiche (the Greffe view, 10a): not prefetched, so a Fiche is only
+   * opened, and logged, when it is really opened. */
+  href?: string;
 }) {
   const t = await getTranslations("Relations.card");
   const place = bad.distanceKm !== null ? t("distance", { km: bad.distanceKm }) : null;
@@ -27,8 +31,9 @@ export async function DossierCard({
   const full = [short, place].filter(Boolean).join(" · ");
   return (
     <LocalizedLink
-      href={`/fiche/${bad.id}`}
+      href={href ?? `/fiche/${bad.id}`}
       scroll={false}
+      prefetch={href ? false : undefined}
       aria-label={t("openDossier", { pseudo: bad.pseudo, line: full })}
       data-accent={accentForGender(bad.gender)}
       className="kraft relative block h-[232px] overflow-hidden rounded shadow-[0_10px_18px_rgb(0_0_0/0.55)] transition-transform duration-200 [contain-intrinsic-size:auto_232px] [content-visibility:auto] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#e8b84a] active:scale-[0.97] motion-reduce:transition-none"

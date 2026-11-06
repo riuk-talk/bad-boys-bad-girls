@@ -1705,7 +1705,8 @@
       "signes": "Signes",
       "keywords": "Mots-clés",
       "questions": "Questions",
-      "performance": "Performance"
+      "performance": "Performance",
+      "vue": "Voir comme un Visiteur"
     },
     "done": "Décision enregistrée.",
     "decide": "Enregistrer la décision",
@@ -2158,5 +2159,27 @@
       "visit_reminder": "les rappels de visite",
       "permit_granted": "le Permis délivré"
     }
+  },
+  "GreffeView": {
+    "banner": "Vue Greffe : lecture seule",
+    "bannerHint": "Tu vois le site comme un Visiteur. Rien n'est enregistré chez les Bads : aucune demande, aucun pari, aucune trace dans leurs vues ni leurs statistiques. Seule l'ouverture d'une Fiche est notée dans le journal du Greffe.",
+    "tabsLabel": "Vue Greffe",
+    "discover": "Découverte",
+    "promenade": "Promenade du jour",
+    "discoverTitle": "La Découverte, vue du Greffe",
+    "discoverLead": "Tous les Bads visibles, sans filtre de critères ni de quartier, du plus récent au plus ancien.",
+    "discoverEmpty": "Aucun Bad visible pour l'instant.",
+    "noZone": "Hors quartier",
+    "more": "Dossiers suivants",
+    "promenadeTitle": "La Promenade du jour, vue du Greffe",
+    "promenadeLead": "Chaque Visiteur a sa propre Promenade. Voici les Bads tirés aujourd'hui dans le quartier, une fois chacun, avec leur meilleur rang et le nombre de Visiteurs qui les ont tirés. Jamais qui sont ces Visiteurs.",
+    "zoneLabel": "Quartier",
+    "show": "Afficher",
+    "noZones": "Aucun quartier.",
+    "promenadeEmpty": "Aucune Promenade tirée aujourd'hui dans ce quartier.",
+    "picked": "Rang {rank} · {count, plural, one {tiré pour # Visiteur} other {tiré pour # Visiteurs}}",
+    "ficheTitle": "Fiche, vue du Greffe",
+    "ficheStatus": "Vue Greffe : lecture seule. Le vrai chef d'accusation n'est jamais montré, même au Greffe.",
+    "back": "Découverte du Greffe"
   }
 }

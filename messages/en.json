@@ -1705,7 +1705,8 @@
       "signes": "Signs",
       "keywords": "Keywords",
       "questions": "Questions",
-      "performance": "Performance"
+      "performance": "Performance",
+      "vue": "See as a Visitor"
     },
     "done": "Decision saved.",
     "decide": "Save the decision",
@@ -2158,5 +2159,27 @@
       "visit_reminder": "visit reminders",
       "permit_granted": "the permit granted"
     }
+  },
+  "GreffeView": {
+    "banner": "Greffe view: read only",
+    "bannerHint": "You see the site as a Visitor. Nothing is recorded for the Bads: no request, no bet, no trace in their views or statistics. Only opening a Fiche is noted in the Greffe's log.",
+    "tabsLabel": "Greffe view",
+    "discover": "Découverte",
+    "promenade": "Today's Promenade",
+    "discoverTitle": "The Découverte, seen from the Greffe",
+    "discoverLead": "Every visible Bad, with no criteria or quartier filter, newest first.",
+    "discoverEmpty": "No visible Bad yet.",
+    "noZone": "No quartier",
+    "more": "Next files",
+    "promenadeTitle": "Today's Promenade, seen from the Greffe",
+    "promenadeLead": "Each Visitor has their own Promenade. Here are the Bads drawn today in the quartier, once each, with their best rank and how many Visitors drew them. Never who those Visitors are.",
+    "zoneLabel": "Quartier",
+    "show": "Show",
+    "noZones": "No quartier.",
+    "promenadeEmpty": "No Promenade drawn today in this quartier.",
+    "picked": "Rank {rank} · {count, plural, one {drawn for # Visitor} other {drawn for # Visitors}}",
+    "ficheTitle": "Fiche, seen from the Greffe",
+    "ficheStatus": "Greffe view: read only. The true charge is never shown, not even to the Greffe.",
+    "back": "Greffe Découverte"
   }
 }
