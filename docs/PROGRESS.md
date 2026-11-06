@@ -11,7 +11,7 @@
 - les scripts `supabase/scripts/prod-apply/` ont servi et sont devenus inutiles (voir leur README) ;
 - reste ouverte : la décision 9-43 (bouton « ⋯ » des messages sur un vrai téléphone, test du porteur).
 
-**Prochaine phase** : branche `phase-10`, créée à partir de `main` (`ef970c0`). Rien n'y est commencé.
+**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** faite, décisions 10-1 à 10-4 à valider ; CI : voir la section 10a.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -37,6 +37,31 @@
   - **Vérifié** contre la base locale construite avec les 36 migrations de `phase-5` (empreinte MD5 par catégorie, `push_route_config` exclue) : fonctions (122), colonnes (290), politiques (25), déclencheurs (34), types énumérés (23), droits des tables (230) et des fonctions (181), RLS (31 tables), tâches pg_cron (5), publication Realtime : **identiques**. **0 table sans RLS.** Audit Supabase identique à la preview (16 tables sans politique, 46 fonctions membres, « Leaked password protection » désactivée).
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
 - **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
+
+## Phase 10 (branche `phase-10`)
+
+**Branche** : `phase-10`, créée le 2026-11-04 à partir de `main` (`ef970c0`). `main` a avancé depuis (textes légaux remplis, `dc9a957` et `185fd79`) : fusionné dans `phase-10` le 2026-11-06 (commit de fusion, historique non réécrit). Rien sur `main` ni sur la prod.
+
+### 10a — Vue « Greffe » du site (demande du porteur, 2026-11-06)
+Une migration (`20261106120000_greffe_view.sql`), appliquée à la preview par le connecteur (historique remis à la version du fichier) ; types régénérés depuis la preview (seuls les ajouts de la 10a).
+- **Accès** : menu de l'admin, « Voir comme un Visiteur » (`/admin/vue`). La mise en page de l'admin exige déjà un admin avec double authentification ; chaque fonction le revérifie (`is_admin()`). L'admin n'a besoin d'aucun profil de membre.
+- **Découverte** (`/admin/vue`) : tous les Bads visibles, sans filtre de critères ni de quartier, du plus récent au plus ancien, par pages de 48 (`admin_view_discover`). « Visible » = la règle `is_bad_visible` sans sa condition de quartier ouvert : actif, pas en pause, vu dans les 90 jours, 3 poses validées, un Casier.
+- **Promenade du jour par quartier** (`/admin/vue/promenade`, choix du quartier) : la Promenade est tirée pour chaque Visiteur. La vue montre les Bads tirés aujourd'hui (jour de Paris) dans le quartier, une fois chacun, avec leur meilleur rang et le nombre de Visiteurs qui les ont tirés, **jamais qui sont ces Visiteurs** (`admin_view_promenade`).
+- **Fiche complète** (`/admin/vue/fiche/[id]`) : les 3 poses, la pancarte recto/verso, le Casier en liste (l'affichage « Voir ma Fiche ») ; ni pari, ni bouton de demande, ni Signaler/Bloquer, ni complicité, distance ou points communs (rien qui dépende d'un spectateur) (`admin_view_fiche`).
+- **Lecture seule stricte** : les trois fonctions sont `security definer`, réservées à `is_admin()`. Elles n'écrivent rien chez les Bads : aucune demande, aucun pari, aucun `mark_promenade_seen`, aucune notification, aucun `last_seen_at`. La page n'appelle aucune autre fonction.
+- **Journal** : chaque ouverture de Fiche écrit une ligne dans `greffe_fiche_views` (quel admin, quelle Fiche, quand). La table a la RLS, aucun droit pour `anon` ni `authenticated` (personne ne la lit par l'API), une ligne ne peut pas être modifiée (déclencheur), et elle est supprimée avec le compte du Bad. Les liens de la vue ne sont pas préchargés (`prefetch={false}`) : une Fiche n'est journalisée que si elle est vraiment ouverte.
+- **Règle 14** : le vrai chef d'accusation n'est jamais renvoyé, même à l'admin (`true_index` n'est pas dans les données) ; le verso montre les 3 chefs d'accusation sans marque.
+- **Bandeau permanent** « Vue Greffe : lecture seule » (collé en haut, `role="note"`) sur toutes les pages de la vue, avec son explication ; rappel aussi dans le pied de la Fiche.
+- **i18n** fr/en (espace `GreffeView`, entrée de menu `Admin.nav.vue`). **Contraste** : bandeau noir sur crème (≈ 15,9:1) ; axe sans violation sur les trois pages.
+- **Tests** :
+  - pgTAP `phase10a_greffe_view` (27 vérifications) : un Visiteur, un Bad, un anonyme et un admin sans double authentification sont refusés sur les trois fonctions, et rien n'est journalisé pour un refus ; la Découverte liste un Bad d'un quartier fermé mais pas un Bad en pause ; la Promenade regroupe par Bad (meilleur rang, nombre de Visiteurs) ; la Fiche contient le Casier dans l'ordre et jamais `true_index`, rien qui dépende d'un spectateur, et refuse un Bad masqué ; aucune trace chez les Bads (demandes, « vu » de la Promenade, notifications, conversations, blocages, signalements, `last_seen_at`) ; la consultation est journalisée ; le journal ne se modifie pas et ne se lit ni par un membre ni par un admin via l'API. `phase8a` et `phase4` (garde du N° d'écrou) mis à jour pour les nouvelles fonctions.
+  - e2e (`relations.spec.ts`, Pixel 7 et iPhone 14) : l'admin (double authentification) ouvre « Voir comme un Visiteur », la Découverte (sans les filtres du Visiteur), la Promenade du quartier (rang et nombre de Visiteurs, pas le pseudo du Visiteur), puis une Fiche (3 poses, pancarte, verso avec les 3 chefs d'accusation, sans radio ni demande) ; bandeau présent partout ; axe sans violation ; **aucune ligne écrite** chez le Bad (demandes, notifications, conversations, signalements, « vu », `last_seen_at`) ; une seule ligne au journal, à son nom.
+  - Local (Pixel 7) : suite complète verte (44 réussis, 2 ignorés) ; pgTAP 160 ; Vitest 254.
+- **Décisions à valider (10a)** :
+  - **10-1** « Bad visible » = la règle de la Découverte sans la condition de quartier. Un Bad masqué, en pause, banni ou incomplet n'apparaît pas et sa Fiche répond « introuvable » dans cette vue (la fiche membre de l'admin existe déjà pour ces cas).
+  - **10-2** Promenade « par quartier » = les Bads tirés aujourd'hui pour les Visiteurs du quartier, regroupés. On ne montre jamais quel Visiteur a tiré quel Bad.
+  - **10-3** Seules les **ouvertures de Fiche** sont journalisées, pas l'affichage des listes. Le journal n'a pas encore d'écran (lisible en SQL par le propriétaire de la base) et pas de durée de conservation autre que la suppression du compte du Bad : faut-il une purge (par ex. 1 an) et un écran pour le super admin ?
+  - **10-4** La Fiche du Greffe ne montre ni distance, ni complicité, ni points communs (ils dépendent d'un Visiteur réel).
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 9, SPEC §0 (priorités), §3 (parrainage), §5 (badges), §6 (Casier), §13 (Parloir sans horaire), §14 (badges de confiance).
