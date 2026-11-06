@@ -434,7 +434,9 @@
         },
         {
           "title": "8. Droit applicable",
-          "paragraphs": ["Les présentes conditions sont soumises au droit français. En cas de litige, une solution amiable est recherchée en priorité en écrivant à bad-boys-web@proton.me. À défaut, les tribunaux français sont compétents ; si tu es consommateur, tu peux aussi saisir le tribunal de ton domicile."]
+          "paragraphs": [
+            "Les présentes conditions sont soumises au droit français. En cas de litige, une solution amiable est recherchée en priorité en écrivant à bad-boys-web@proton.me. À défaut, les tribunaux français sont compétents ; si tu es consommateur, tu peux aussi saisir le tribunal de ton domicile."
+          ]
         }
       ]
     },
@@ -506,9 +508,7 @@
         },
         {
           "title": "Point de contact (DSA)",
-          "paragraphs": [
-            "bad-boys-web@proton.me"
-          ]
+          "paragraphs": ["bad-boys-web@proton.me"]
         },
         {
           "title": "Hébergeurs",

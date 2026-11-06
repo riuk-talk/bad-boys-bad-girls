@@ -434,7 +434,9 @@
         },
         {
           "title": "8. Governing law",
-          "paragraphs": ["These terms are governed by French law. In case of dispute, an amicable solution is sought first by writing to bad-boys-web@proton.me. Failing that, the French courts have jurisdiction; as a consumer, you may also bring the case before the court where you live."]
+          "paragraphs": [
+            "These terms are governed by French law. In case of dispute, an amicable solution is sought first by writing to bad-boys-web@proton.me. Failing that, the French courts have jurisdiction; as a consumer, you may also bring the case before the court where you live."
+          ]
         }
       ]
     },
@@ -506,9 +508,7 @@
         },
         {
           "title": "Point of contact (DSA)",
-          "paragraphs": [
-            "bad-boys-web@proton.me"
-          ]
+          "paragraphs": ["bad-boys-web@proton.me"]
         },
         {
           "title": "Hosting providers",
