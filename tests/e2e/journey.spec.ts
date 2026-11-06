@@ -973,6 +973,9 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
         "/admin/mots-cles",
         "/admin/questions",
         "/admin/performance",
+        "/admin/vue",
+        "/admin/vue/promenade",
+        `/admin/vue/fiche/${bad.id}`,
       ])),
     );
     await greffe.context().close();
