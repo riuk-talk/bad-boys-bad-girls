@@ -11,7 +11,7 @@
 - les scripts `supabase/scripts/prod-apply/` ont servi et sont devenus inutiles (voir leur README) ;
 - reste ouverte : la décision 9-43 (bouton « ⋯ » des messages sur un vrai téléphone, test du porteur).
 
-**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** faite, décisions 10-1 à 10-4 à valider ; CI : voir la section 10a.
+**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** faite, décisions 10-1 à 10-4 à valider ; **CI n° 109 (`7017ba0`) verte**, aucun test passé à la relance.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -57,6 +57,10 @@ Une migration (`20261106120000_greffe_view.sql`), appliquée à la preview par l
   - pgTAP `phase10a_greffe_view` (27 vérifications) : un Visiteur, un Bad, un anonyme et un admin sans double authentification sont refusés sur les trois fonctions, et rien n'est journalisé pour un refus ; la Découverte liste un Bad d'un quartier fermé mais pas un Bad en pause ; la Promenade regroupe par Bad (meilleur rang, nombre de Visiteurs) ; la Fiche contient le Casier dans l'ordre et jamais `true_index`, rien qui dépende d'un spectateur, et refuse un Bad masqué ; aucune trace chez les Bads (demandes, « vu » de la Promenade, notifications, conversations, blocages, signalements, `last_seen_at`) ; la consultation est journalisée ; le journal ne se modifie pas et ne se lit ni par un membre ni par un admin via l'API. `phase8a` et `phase4` (garde du N° d'écrou) mis à jour pour les nouvelles fonctions.
   - e2e (`relations.spec.ts`, Pixel 7 et iPhone 14) : l'admin (double authentification) ouvre « Voir comme un Visiteur », la Découverte (sans les filtres du Visiteur), la Promenade du quartier (rang et nombre de Visiteurs, pas le pseudo du Visiteur), puis une Fiche (3 poses, pancarte, verso avec les 3 chefs d'accusation, sans radio ni demande) ; bandeau présent partout ; axe sans violation ; **aucune ligne écrite** chez le Bad (demandes, notifications, conversations, signalements, « vu », `last_seen_at`) ; une seule ligne au journal, à son nom.
   - Local (Pixel 7) : suite complète verte (44 réussis, 2 ignorés) ; pgTAP 160 ; Vitest 254.
+- **CI** : n° 107 (`be83fe3`) rouge sur iPhone 14, deux causes trouvées et corrigées (pas de relance comptée comme verte) :
+  - étape 4 (et le test Bad de `relations.spec.ts`) : le créneau libre proposé par défaut (« Choisir un autre jour ») n'est valable que jusqu'à la demi-heure suivante ; page affichée avant 16 h 30, envoyée après → `slot_too_soon`, refus correct de la base. Les tests choisissent désormais un jour à J+2.
+  - « 9 ter » sur `/mon-casier` : WebKit fait apparaître le curseur d'un textarea après nos corrections, sans tenir compte de `scroll-padding`, et le remet sous la barre d'onglets. `components/app/tab-bar-links.tsx` corrige aussi tout défilement dans les 600 ms qui suivent la prise de focus. Les 3 pages de la vue Greffe sont ajoutées au balayage axe et clavier du « 9 ter ».
+  - **Résultat : CI n° 109 (`7017ba0`) verte** : vérifications, Pixel 7 (44 réussis, 2 ignorés) et iPhone 14 (35 réussis, 11 ignorés : tests réservés à Chromium), 0 test instable.
 - **Décisions à valider (10a)** :
   - **10-1** « Bad visible » = la règle de la Découverte sans la condition de quartier. Un Bad masqué, en pause, banni ou incomplet n'apparaît pas et sa Fiche répond « introuvable » dans cette vue (la fiche membre de l'admin existe déjà pour ces cas).
   - **10-2** Promenade « par quartier » = les Bads tirés aujourd'hui pour les Visiteurs du quartier, regroupés. On ne montre jamais quel Visiteur a tiré quel Bad.
