@@ -286,6 +286,8 @@ begin
   a := pg_temp.visitor('a@test.local', pl);
   b := pg_temp.visitor('b@test.local', pl);
   c := pg_temp.visitor('c@test.local', pl);
+  -- Today's count starts from zero, whatever an earlier run left in the database.
+  delete from public.email_quota_days;
   update public.app_settings set email_daily_quota = 102, email_auth_reserve = 100 where id;
   insert into public.email_outbox (user_id, kind, priority, payload) values
     (a, 'onboarding_reminder', 90, '{}'),
@@ -301,7 +303,7 @@ begin
   return next ok((select status = 'skipped' from public.email_outbox where user_id = c), 'a reminder after the visit start is dropped');
   return next is((select count(*)::integer from public.email_claim(10)), 0, 'nothing more today');
   perform public.email_report(first.email_id, false);
-  return next is((select sent from public.email_quota_days where day = (now() at time zone 'Europe/Paris')::date), 1,
+  return next is((select sent from public.email_quota_days where day = (now() at time zone 'UTC')::date), 1,
     'a failure gives its place back');
   perform public.email_report((select id from public.email_outbox where user_id = a), true);
   return next ok((select status = 'sent' and sent_at is not null from public.email_outbox where user_id = a), 'sent');
