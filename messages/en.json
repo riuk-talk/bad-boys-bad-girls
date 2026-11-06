@@ -42,7 +42,7 @@
     "terms": "Terms of use",
     "privacy": "Privacy",
     "notice": "Legal notice",
-    "contact": "Contact: [TO COMPLETE: contact email address]",
+    "contact": "Contact: bad-boys-web@proton.me",
     "adultsOnly": "Adults only (18 and over).",
     "copyright": "© {year} Bad Boys & Bad Girls"
   },
@@ -387,7 +387,7 @@
         {
           "title": "1. Purpose",
           "paragraphs": [
-            "These terms govern the use of Bad Boys & Bad Girls, a dating site for adults, published by [TO COMPLETE: publisher identity]."
+            "These terms govern the use of Bad Boys & Bad Girls, a dating site for adults, published on a non-professional basis by a private individual (see the legal notice)."
           ]
         },
         {
@@ -402,7 +402,7 @@
           "paragraphs": [
             "You agree to provide accurate information, use photos of yourself, and create only one account.",
             "Your main photo must show your face. Photos are checked by a human before becoming visible.",
-            "[TO COMPLETE: Your photo is cut out automatically and placed on the background of the site.]"
+            "Your photo is cut out automatically and placed on the background of the site."
           ]
         },
         {
@@ -417,7 +417,7 @@
           "paragraphs": [
             "Every member can report a File, a Visiting Permit, a photo, a Record, a visit request or a message. Reports are handled by a human.",
             "Depending on severity: warning, suspension or ban. Every decision is reasoned and sent to the person concerned and to the reporter.",
-            "[TO COMPLETE: appeal process against a moderation decision]"
+            "You can appeal a moderation decision by writing to bad-boys-web@proton.me within 6 months, explaining why. The decision is reviewed and you get a reasoned answer within 30 days. You may still bring the matter before the competent courts."
           ]
         },
         {
@@ -429,12 +429,14 @@
         {
           "title": "7. Liability",
           "paragraphs": [
-            "[TO COMPLETE: publisher liability limits, especially for real-life meetings between members]"
+            "The site connects adults. The publisher does not verify members' real identity and does not guarantee their sincerity or behaviour. Each member is solely responsible for what they say and do, online and during a real-life meeting. Follow the Safety tips, choose a public place for a first meeting and report any suspicious behaviour. The publisher promptly removes any illegal content reported to it."
           ]
         },
         {
           "title": "8. Governing law",
-          "paragraphs": ["[TO COMPLETE: governing law and competent court]"]
+          "paragraphs": [
+            "These terms are governed by French law. In case of dispute, an amicable solution is sought first by writing to bad-boys-web@proton.me. Failing that, the French courts have jurisdiction; as a consumer, you may also bring the case before the court where you live."
+          ]
         }
       ]
     },
@@ -444,8 +446,8 @@
         {
           "title": "1. Data controller",
           "paragraphs": [
-            "[TO COMPLETE: identity and contact details of the data controller]",
-            "[TO COMPLETE: data protection officer contact, if any]"
+            "The data controller is the publisher of the site, a private individual acting on a non-professional basis (see the legal notice), reachable at bad-boys-web@proton.me.",
+            "No data protection officer has been appointed. For any question about your data: bad-boys-web@proton.me."
           ]
         },
         {
@@ -460,7 +462,7 @@
           "paragraphs": [
             "Photo metadata (including GPS location) is removed before upload and checked on our servers.",
             "Once approved, your photos are served from a long, unguessable web address. That address is renewed when you delete a photo, after 30 days on pause and in case of a ban; everything is erased when you delete your account.",
-            "[TO COMPLETE: Your photo is cut out automatically and placed on the background of the site.]"
+            "Your photo is cut out automatically and placed on the background of the site."
           ]
         },
         {
@@ -475,21 +477,21 @@
           "title": "5. Retention",
           "paragraphs": [
             "Your data is kept as long as your account exists. An account whose sign-up isn't completed is deleted after 30 days.",
-            "After a ban, only an encrypted fingerprint of the email is kept for [TO COMPLETE: duration, 12 months proposed] to prevent re-registration."
+            "After a ban, only an encrypted fingerprint of the email is kept for 12 months to prevent re-registration."
           ]
         },
         {
           "title": "6. Hosting and processors",
           "paragraphs": [
             "Database and files: Supabase, European Union region. Application: Vercel. Emails: Brevo. Anti-bot protection: Cloudflare Turnstile.",
-            "[TO COMPLETE: safeguards for transfers outside the European Union]"
+            "The database and files are hosted in the European Union. The application is served by Vercel Inc. (United States): any transfers are covered by the European Commission's standard contractual clauses included in our providers' data processing agreements."
           ]
         },
         {
           "title": "7. Your rights",
           "paragraphs": [
             "You can export your data (JSON) and delete your account from your settings. You also have the rights of access, rectification, objection and restriction, and may lodge a complaint with the CNIL.",
-            "[TO COMPLETE: contact address to exercise your rights]"
+            "Write to bad-boys-web@proton.me. You may also lodge a complaint with the CNIL (www.cnil.fr)."
           ]
         }
       ]
@@ -500,21 +502,19 @@
         {
           "title": "Publisher",
           "paragraphs": [
-            "[TO COMPLETE: name or company name, legal form, address, registration number]",
-            "Publication director: [TO COMPLETE]"
+            "This site is published on a non-professional basis by a private individual. In accordance with article 6, III, 2 of French law no. 2004-575 of 21 June 2004 on confidence in the digital economy, their identity has been provided to the host, Vercel Inc., which keeps it available to the authorities.",
+            "Publication director: the publisher of the site (private individual, see above)."
           ]
         },
         {
           "title": "Point of contact (DSA)",
-          "paragraphs": [
-            "[TO COMPLETE: email of the single point of contact for authorities and users]"
-          ]
+          "paragraphs": ["bad-boys-web@proton.me"]
         },
         {
           "title": "Hosting providers",
           "paragraphs": [
-            "Application: Vercel Inc. [TO COMPLETE: address to verify]",
-            "Database and files: Supabase Inc., data hosted in the European Union. [TO COMPLETE: address to verify]"
+            "Application: Vercel Inc., 440 North Barranca Avenue, Suite 4133, Covina, California 91723, United States.",
+            "Database and files: Supabase Pte. Ltd., 65 Chulia Street #38-02/03, OCBC Centre, Singapore 049513; data hosted in the European Union (Paris, France)."
           ]
         },
         {
