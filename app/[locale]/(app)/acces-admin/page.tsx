@@ -18,7 +18,7 @@ export default async function AdminAccessPage() {
   const member = await requireMember();
   const { data: role } = await member.supabase.rpc("my_admin_role");
   if (role !== "admin" && role !== "super_admin") notFound();
-  if (member.aal === "aal2") return redirect({ href: "/admin/greffe", locale: await getLocale() });
+  if (member.aal === "aal2") return redirect({ href: "/admin", locale: await getLocale() });
   const t = await getTranslations("AdminAccess");
   return (
     <div className="mx-auto max-w-xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">

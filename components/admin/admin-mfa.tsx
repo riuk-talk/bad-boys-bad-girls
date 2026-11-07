@@ -51,9 +51,9 @@ export function AdminMfa() {
       setCode("");
       return;
     }
-    // One navigation: the admin pages are dynamic, so the server renders them again with the new
-    // level (aal2). A refresh on top raced it to the same page (iPhone, 10c).
-    router.replace("/admin/greffe");
+    // The dashboard (decision 10-9). One navigation: the admin pages are dynamic, so the server
+    // renders them again with the new level (aal2). A refresh on top raced it (iPhone, 10c).
+    router.replace("/admin");
   }
 
   if (state.step === "loading") return <p className="text-grey">{t("loading")}</p>;
