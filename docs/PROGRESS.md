@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; **CI n° 113 (`883cf0d`) verte**. **10c (navigation de /admin, tableau de bord, recherche de membre)** : faite, tests locaux verts ; migrations de la 10b et de la 10c appliquées à la preview par le conseiller, types régénérés depuis la preview ; voir la section 10c.
+**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; **CI n° 113 (`883cf0d`) verte**. **10c (navigation de /admin, tableau de bord, recherche de membre)** : validée par le porteur et en production (`730efa2`), décisions 10-6 à 10-9 tranchées ; suite de la 10-9 (arrivée sur le tableau de bord) sur `phase-10` ; migrations de la 10b et de la 10c appliquées à la preview par le conseiller, types régénérés depuis la preview ; voir la section 10c.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -188,13 +188,19 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
     - `places.name_search`, colonne générée (`generated always … stored`) : `string | null` en insertion et mise à jour côté preview, `never` côté CLI locale (plus exact : on ne peut pas l'écrire) ;
     - la CLI locale ajoute à `profiles.Row` les « champs calculés » de PostgREST, c'est-à-dire les fonctions qui prennent une ligne `profiles` (`counts_for_zone`, `is_member_active`, `is_bad_visible`). C'est pour cela que ces fonctions et `criteria_match` / `distance_km` paraissaient différentes ;
     - en-tête : schéma `graphql_public` côté local, version de PostgREST (`14.18`) côté preview ; le reste est de la mise en forme.
-- **Décisions à valider (10c)** :
-  - **10-6** « Visibles » = la règle de la Découverte (`is_bad_visible` : actif, pas en pause, vu dans les 90 jours, 3 poses validées, un Casier, quartier ouvert).
-  - **10-7** « E-mails envoyés aujourd'hui / quota » = les e-mails de l'app, sur le jour UTC du quota de Resend, face à la part de l'app (quota moins la réserve des e-mails d'Auth). Les e-mails d'Auth ne sont pas comptés par l'app et n'y figurent pas. Sans envoi ce jour-là, le chiffre est « — » (pas de ligne).
-  - **10-8** La recherche ne renvoie pas le N° d'écrou, même quand on cherche par lui : la page Membres ne l'affiche pas aujourd'hui.
-  - **10-9** Après la double authentification, l'admin arrive toujours sur le Greffe (comme avant) ; seul le lien de l'en-tête mène au tableau de bord. Faut-il aussi arriver sur le tableau de bord ?
+- **Décisions (10c)**, validées par le porteur le 2026-11-07 (10c en production, `main` = `730efa2`) :
+  - **10-6** (validée) « Visibles » = la règle de la Découverte (`is_bad_visible` : actif, pas en pause, vu dans les 90 jours, 3 poses validées, un Casier, quartier ouvert).
+  - **10-7** (validée) « E-mails envoyés aujourd'hui / quota » = les e-mails de l'app, sur le jour UTC du quota de Resend, face à la part de l'app (quota moins la réserve des e-mails d'Auth). Les e-mails d'Auth ne sont pas comptés par l'app et n'y figurent pas. Sans envoi ce jour-là, le chiffre est « — » (pas de ligne).
+  - **10-8** (validée) La recherche ne renvoie pas le N° d'écrou, même quand on cherche par lui : la page Membres ne l'affiche pas aujourd'hui.
+  - **10-9** (tranchée) Après la double authentification, l'admin arrive sur le **tableau de bord** (`/admin`), plus sur le Greffe : fait, voir ci-dessous.
 - **CI** : **n° 125 (`b350a56`) verte sur les 3 jobs, aucun test instable** : vérifications et pgTAP ; Pixel 7, 50 réussis, 2 ignorés ; iPhone 14, 41 réussis, 11 ignorés (tests réservés à Chromium). Le test 10c (tableau de bord, tiroir, compteurs, recherche, menu latéral) a tourné sur les deux appareils. Puis types régénérés depuis la preview : CI ci-dessous.
-- **CI après les types de la preview** : **n° 127 (`730efa2`) verte sur les 3 jobs, aucun test instable** : vérifications et pgTAP ; Pixel 7, 50 réussis, 2 ignorés ; iPhone 14, 41 réussis, 11 ignorés (tests réservés à Chromium). 10c terminée, en attente de la validation du conseiller.
+- **CI après les types de la preview** : **n° 127 (`730efa2`) verte sur les 3 jobs, aucun test instable** : vérifications et pgTAP ; Pixel 7, 50 réussis, 2 ignorés ; iPhone 14, 41 réussis, 11 ignorés (tests réservés à Chromium). 10c validée et en production.
+- **Suite de la 10-9** (branche `phase-10`, partie de `main` `730efa2`) :
+  - après la double authentification, `components/admin/admin-mfa.tsx` mène à `/admin` (une seule navigation, comme avant) ; `/acces-admin`, ouvert alors que la double authentification est déjà faite, renvoie aussi vers `/admin` ;
+  - e2e : l'utilitaire `openGreffe` (`tests/e2e/helpers/admin.ts`) vérifie maintenant, à chaque connexion admin, l'arrivée exacte sur `/admin` avec le titre « Tableau de bord », puis ouvre le Greffe pour les tests qui en ont besoin. Le contrôle est plus strict, pas assoupli ; `super-admin.spec.ts` vérifie toujours que le super admin arrive sur `/admin` depuis `/onboarding/1` ;
+  - le lien du courriel « photos en attente » mène toujours au Greffe (`/admin/greffe`), puisqu'il désigne cette file ;
+  - local : Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : `super-admin`, `relations`, `moderation-rgpd`, `onboarding-complete`, `photo-cutout` et le parcours complet verts (32 réussis) ;
+  - CI : en cours.
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 9, SPEC §0 (priorités), §3 (parrainage), §5 (badges), §6 (Casier), §13 (Parloir sans horaire), §14 (badges de confiance).
