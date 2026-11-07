@@ -2186,5 +2186,75 @@
     "ficheTitle": "Fiche, vue du Greffe",
     "ficheStatus": "Vue Greffe : lecture seule. Le vrai chef d'accusation n'est jamais montré, même au Greffe.",
     "back": "Découverte du Greffe"
+  },
+  "AdminShell": {
+    "label": "Administration",
+    "openMenu": "Menu admin",
+    "menuTitle": "Menu admin",
+    "closeMenu": "Fermer le menu",
+    "search": "Rechercher un membre",
+    "shortcut": "Ctrl K",
+    "searchLabel": "Pseudo, N° d'écrou ou e-mail exact",
+    "searchHint": "Une partie du pseudo ou du N° d'écrou suffit ; l'e-mail doit être complet.",
+    "searchFailed": "La recherche n'a pas abouti. Réessaie.",
+    "noResults": "Aucun membre trouvé.",
+    "results": "{count, plural, one {# membre trouvé} other {# membres trouvés}}",
+    "waiting": "{count, plural, one {# en attente} other {# en attente}}",
+    "groups": {
+      "accounts": "Comptes",
+      "moderation": "Modération",
+      "reports": "Signalements",
+      "content": "Contenu",
+      "tools": "Outils"
+    },
+    "items": {
+      "dashboard": "Tableau de bord",
+      "members": "Membres",
+      "history": "Historique",
+      "greffe": "Greffe (photos)",
+      "flags": "Textes signalés",
+      "keywords": "Mots-clés",
+      "reports": "Signalements",
+      "questions": "Questions (Interrogatoire)",
+      "tribes": "Signes distinctifs",
+      "zones": "Quartiers",
+      "view": "Voir comme un Visiteur",
+      "performance": "Performance"
+    }
+  },
+  "AdminDashboard": {
+    "title": "Tableau de bord",
+    "lead": "Les chiffres réels de la base, sans profils de démonstration. Une donnée absente s'affiche « — ».",
+    "figures": "Chiffres",
+    "none": "—",
+    "cards": {
+      "bads": "Bads",
+      "visitors": "Visiteurs",
+      "photos": "Photos au Greffe",
+      "reports": "Signalements",
+      "flags": "Textes signalés",
+      "zones": "Quartiers",
+      "emails": "E-mails de l'app",
+      "push": "Notifications"
+    },
+    "registered": "inscrits",
+    "ficheComplete": "Fiche terminée",
+    "visible": "visibles",
+    "permitComplete": "Permis terminé",
+    "waiting": "en attente",
+    "open": "ouverts",
+    "zonesOpen": "ouverts",
+    "zonesWaitlist": "en liste d'attente",
+    "sentToday": "envoyés aujourd'hui",
+    "appQuota": "quota du jour",
+    "queued": "en file",
+    "todo": "À traiter",
+    "todoEmpty": "Rien n'attend.",
+    "since": "depuis le {date}",
+    "kinds": {
+      "photo": "Photo au Greffe",
+      "report": "Signalement",
+      "flag": "Texte signalé"
+    }
   }
 }

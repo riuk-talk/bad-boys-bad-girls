@@ -17,17 +17,24 @@ vi.mock("@/lib/auth/user", () => ({
     aal: member.aal,
     userId: "u",
     metadata: {},
-    supabase: { rpc: async () => ({ data: member.role, error: null }) },
+    supabase: {
+      rpc: async (name: string) =>
+        name === "admin_counts"
+          ? { data: [{ photos_pending: 2, reports_open: 1, flags_open: 0 }], error: null }
+          : { data: member.role, error: null },
+    },
   }),
 }));
 
-vi.mock("@/components/admin/admin-nav", () => ({ AdminNav: () => null }));
+vi.mock("@/components/admin/admin-shell", () => ({ AdminShell: () => null }));
 
-// The page itself, inside the admin navigation.
+// The page itself, inside the admin shell (10c), with the counters of the menu.
 async function render() {
   const { default: AdminLayout } = await import("@/app/[locale]/(app)/admin/layout");
   const element = await AdminLayout({ children: "the Greffe" });
-  return (element.props as { children: unknown[] }).children.at(-1);
+  const props = element.props as { children: unknown; initialCounts: unknown };
+  expect(props.initialCounts).toEqual({ photos_pending: 2, reports_open: 1, flags_open: 0 });
+  return props.children;
 }
 
 describe("/admin layout", () => {

@@ -2186,5 +2186,75 @@
     "ficheTitle": "Fiche, seen from the Greffe",
     "ficheStatus": "Greffe view: read only. The true charge is never shown, not even to the Greffe.",
     "back": "Greffe Découverte"
+  },
+  "AdminShell": {
+    "label": "Administration",
+    "openMenu": "Admin menu",
+    "menuTitle": "Admin menu",
+    "closeMenu": "Close the menu",
+    "search": "Search for a member",
+    "shortcut": "Ctrl K",
+    "searchLabel": "Pseudonym, booking number or exact e-mail",
+    "searchHint": "Part of the pseudonym or booking number is enough; the e-mail must be complete.",
+    "searchFailed": "The search did not go through. Try again.",
+    "noResults": "No member found.",
+    "results": "{count, plural, one {# member found} other {# members found}}",
+    "waiting": "{count, plural, one {# waiting} other {# waiting}}",
+    "groups": {
+      "accounts": "Accounts",
+      "moderation": "Moderation",
+      "reports": "Reports",
+      "content": "Content",
+      "tools": "Tools"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "members": "Members",
+      "history": "History",
+      "greffe": "Registry (photos)",
+      "flags": "Flagged texts",
+      "keywords": "Keywords",
+      "reports": "Reports",
+      "questions": "Questions (Interrogation)",
+      "tribes": "Distinguishing signs",
+      "zones": "Quartiers",
+      "view": "See as a Visitor",
+      "performance": "Performance"
+    }
+  },
+  "AdminDashboard": {
+    "title": "Dashboard",
+    "lead": "The real figures of the database, without demo profiles. Missing data shows « — ».",
+    "figures": "Figures",
+    "none": "—",
+    "cards": {
+      "bads": "Bads",
+      "visitors": "Visitors",
+      "photos": "Photos at the Registry",
+      "reports": "Reports",
+      "flags": "Flagged texts",
+      "zones": "Quartiers",
+      "emails": "App e-mails",
+      "push": "Notifications"
+    },
+    "registered": "registered",
+    "ficheComplete": "Fiche complete",
+    "visible": "visible",
+    "permitComplete": "Permit complete",
+    "waiting": "waiting",
+    "open": "open",
+    "zonesOpen": "open",
+    "zonesWaitlist": "on the waiting list",
+    "sentToday": "sent today",
+    "appQuota": "daily quota",
+    "queued": "queued",
+    "todo": "To deal with",
+    "todoEmpty": "Nothing is waiting.",
+    "since": "since {date}",
+    "kinds": {
+      "photo": "Photo at the Registry",
+      "report": "Report",
+      "flag": "Flagged text"
+    }
   }
 }

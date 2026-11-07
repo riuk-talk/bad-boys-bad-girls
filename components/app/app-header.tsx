@@ -51,7 +51,7 @@ export async function AppHeader({ onboardingDone, role, isAdmin = false }: Props
             </>
           ) : null}
           {isAdmin ? (
-            <LocalizedLink href="/admin/greffe" className={linkClass}>
+            <LocalizedLink href="/admin" className={linkClass}>
               {t("Greffe.title")}
             </LocalizedLink>
           ) : null}
