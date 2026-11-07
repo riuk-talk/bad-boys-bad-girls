@@ -8,6 +8,7 @@ import { FakePushService } from "./helpers/fake-push-service";
 import { auditSignedIn, LIGHTHOUSE_CATEGORIES } from "./helpers/lighthouse";
 import { cutoutReady, onboardBad, onboardVisitor, signUp } from "./helpers/onboarding";
 import { settled } from "./helpers/settle";
+import { captcha } from "./helpers/captcha";
 
 // THE end-to-end journey, LOCAL STACK ONLY (scripts/ci/local-env.mjs). Owner's rule (2026-10-07):
 // every later phase extends it (visit, Parloir, Permis permanent, Cavale) before it is done.
@@ -127,6 +128,7 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     const signedIn = await client.auth.signInWithPassword({
       email: target.email,
       password: target.password,
+      options: captcha,
     });
     if (signedIn.error) throw signedIn.error;
     const browser = push.newBrowser();
@@ -896,6 +898,14 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
         const response = await page.goto(path);
         expect(response?.status(), path).toBe(200);
         await expect(page.locator("h1"), path).toHaveCount(1);
+        // A page with the anti-robot widget (CI: captcha on) is swept once the widget is there
+        // and has its token, so that Tab also goes through it (its iframe), as a person would.
+        if ((await page.locator("[data-captcha-widget]").count()) > 0) {
+          await expect(page.locator('input[name="cf-turnstile-response"]'), path).not.toHaveValue(
+            "",
+            { timeout: 20_000 },
+          );
+        }
         found.push(
           ...(await hiddenByTabBar(page)).map((name) => `${path} focus under the tab bar: ${name}`),
         );
@@ -954,6 +964,23 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
         "/ma-fiche",
       ])),
     );
+    // Before hydration too (CI n° 117): with the scripts of the page held back, as on a slow
+    // phone, Tab never leaves the focus under the bar (public/focus-lift.js is already there).
+    const chunks = /\/_next\/static\/chunks\//;
+    await badPage.route(chunks, async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
+    for (const path of ["/mon-casier", "/ma-fiche/donnees"]) {
+      await badPage.goto(path);
+      await expect(badPage.locator("h1"), path).toHaveCount(1);
+      violations.push(
+        ...(await hiddenByTabBar(badPage)).map(
+          (name) => `${path} (scripts held back) focus under the tab bar: ${name}`,
+        ),
+      );
+    }
+    await badPage.unroute(chunks);
     await badPage.context().close();
 
     const greffe = await (await browser.newContext()).newPage();

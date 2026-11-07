@@ -1,20 +1,36 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState } from "react";
+import { startTransition, useActionState, type FormEvent } from "react";
 import { deleteAccountAction } from "@/app/[locale]/(app)/ma-fiche/donnees/actions";
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
+import { Turnstile, useCaptcha } from "@/components/auth/turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const IDLE: ActionState = { status: "idle" };
 
-/** Supprimer mon compte (SPEC §10): password and an explicit confirmation, nothing else. */
+/**
+ * Supprimer mon compte (SPEC §10): password and an explicit confirmation, nothing else. The
+ * password is checked by Supabase Auth, which asks for the anti-robot token when the captcha is on:
+ * the button waits for it, like the sign-in form.
+ */
 export function DeleteAccount() {
   const t = useTranslations("MyData");
   const [state, submit, pending] = useActionState(deleteAccountAction, IDLE);
+  const captcha = useCaptcha();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (captcha.gate.blocked) return;
+    const data = new FormData(event.currentTarget);
+    startTransition(() => submit(data));
+    // A token serves once: after a wrong password, the widget starts again.
+    captcha.reset();
+  }
+
   return (
-    <form action={submit} className="flex flex-col gap-4">
+    <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <Input
         id="delete-password"
         name="password"
@@ -33,13 +49,14 @@ export function DeleteAccount() {
         />
         <span>{t("confirm")}</span>
       </label>
-      <Button type="submit" variant="danger" disabled={pending}>
+      <Turnstile captcha={captcha} />
+      <Button type="submit" variant="danger" disabled={pending || captcha.gate.blocked}>
         {t("delete")}
       </Button>
       <p role="alert" className="text-red-bright min-h-5 text-sm">
         {state.status === "error"
           ? t(
-              `errors.${state.message === "wrongPassword" || state.message === "deleteConfirmRequired" ? state.message : "generic"}`,
+              `errors.${state.message === "wrongPassword" || state.message === "deleteConfirmRequired" || state.message === "captchaFailed" ? state.message : "generic"}`,
             )
           : null}
       </p>

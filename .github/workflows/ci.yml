@@ -136,6 +136,15 @@ jobs:
             sudo cp "$HOME"/apt-cache/*.deb /var/cache/apt/archives/
           fi
 
+      # The captcha of Supabase Auth is on in production (Turnstile): the end-to-end tests run with
+      # it on too, with Cloudflare's official test secret (always passes, accepts only the dummy
+      # token of the test site key). Only in this job's copy of the configuration.
+      - name: Captcha on in the local stack (Cloudflare test keys)
+        run: |
+          printf '%s\n' '' '[auth.captcha]' 'enabled = true' 'provider = "turnstile"' \
+            'secret = "1x0000000000000000000000000000000AA"' >> supabase/config.toml
+          echo "E2E_CAPTCHA=true" >> "$GITHUB_ENV"
+
       # The two slow downloads (Docker images, the browser) run in the background while the
       # application builds; each one writes its exit code to a file that a later step waits for.
       - name: Start local Supabase and install the browser (background)

@@ -6,6 +6,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { openGreffe } from "./helpers/admin";
 import { cutoutReady } from "./helpers/onboarding";
+import { captcha, captchaOn } from "./helpers/captcha";
 
 // Phase 7 end to end, LOCAL STACK ONLY: a Visitor reports a Bad, the Greffe (an admin, second
 // factor) upholds it with a warning and two motives, each one reads their exposé des motifs; the
@@ -228,6 +229,8 @@ test.describe("Phase 7: moderation and RGPD (local stack)", () => {
     await expect(target.getByText(visitor.pseudo)).toHaveCount(0);
   });
 
+  // With the captcha on (CI), the sign-in goes through the widget; the export itself only needs
+  // the session (no captcha on that route).
   test("the export holds my data and nothing of the other person", async ({ browser }) => {
     const page = await login(browser, bad.email, bad.password);
     const response = await page.request.get("/api/me/export");
@@ -247,6 +250,11 @@ test.describe("Phase 7: moderation and RGPD (local stack)", () => {
   test("the Visitor deletes their account, for real", async ({ browser }) => {
     const page = await login(browser, visitor.email, visitor.password);
     await page.goto("/ma-fiche/donnees");
+    // The password is checked by a sign-in: with the captcha on (CI), the form carries the widget,
+    // its button waits for the token and the token reaches Supabase Auth (bug of 2026-11-06).
+    if (captchaOn) {
+      await expect(page.getByRole("group", { name: "Vérification anti-robot" })).toBeVisible();
+    }
     await page.getByLabel("Ton mot de passe").fill("not-the-password");
     await page.getByLabel("Je comprends que la suppression est définitive.").check();
     await page.getByRole("button", { name: "Supprimer définitivement mon compte" }).click();
@@ -283,11 +291,13 @@ test.describe("Phase 7: moderation and RGPD (local stack)", () => {
     const again = await anon.auth.signUp({
       email: bad.email,
       password: `Pw-${randomBytes(12).toString("base64url")}`,
+      options: captcha,
     });
     expect(again.error, "the same e-mail is refused").not.toBeNull();
     const other = await anon.auth.signUp({
       email: `e2e-${randomBytes(4).toString("hex")}@example.com`,
       password: `Pw-${randomBytes(12).toString("base64url")}`,
+      options: captcha,
     });
     expect(other.error, "another e-mail signs up").toBeNull();
     if (other.data.user) accounts.push(other.data.user.id);

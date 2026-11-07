@@ -92,6 +92,12 @@
   html:has([data-tab-bar]) {
     scroll-padding-bottom: calc(3.5rem + 1px + env(safe-area-inset-bottom));
   }
+  /* The same margin on the element itself, for the browsers that reveal it without the page's
+     scroll-padding (WebKit: a textarea's caret, the iframe of the anti-robot widget). */
+  html:has([data-tab-bar]) [data-captcha-widget],
+  html:has([data-tab-bar]) textarea {
+    scroll-margin-bottom: calc(3.5rem + 1px + env(safe-area-inset-bottom) + 0.5rem);
+  }
   body {
     background-color: var(--color-ink);
     color: var(--color-cream);

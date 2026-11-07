@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import { randomBytes, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { FakePushService } from "./helpers/fake-push-service";
+import { captcha } from "./helpers/captcha";
 
 // /api/cron/push end to end, LOCAL STACK ONLY (scripts/ci/local-env.mjs): a member's browser is
 // subscribed to a fake push service, a notification is queued by the database (notify(), the
@@ -88,7 +89,7 @@ test.describe("Web Push: /api/cron/push against a fake push service (local stack
 
     // The member subscribes this "browser", through the same function as the app.
     const member = createClient(url, publishable, { auth: { persistSession: false } });
-    const signedIn = await member.auth.signInWithPassword({ email, password });
+    const signedIn = await member.auth.signInWithPassword({ email, password, options: captcha });
     if (signedIn.error) throw signedIn.error;
     const browser = push.newBrowser();
     endpoint = browser.endpoint;

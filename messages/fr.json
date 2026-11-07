@@ -163,6 +163,9 @@
     "adultNotice": "Réservé aux personnes de 18 ans et plus. Ta date de naissance sera vérifiée à l'étape suivante.",
     "termsNotice": "En créant un compte, tu acceptes les <terms>Conditions d'utilisation</terms> et la <charter>Charte</charter>, et tu reconnais avoir lu la <privacy>Politique de confidentialité</privacy>.",
     "captchaLabel": "Vérification anti-robot",
+    "captchaChecking": "Vérification anti-robot en cours…",
+    "captchaUnavailable": "La vérification anti-robot n'a pas pu se charger. Désactive le bloqueur de publicités ou le bouclier du navigateur pour ce site, puis recharge la page.",
+    "captchaRetry": "Réessayer",
     "captchaPending": "La vérification anti-robot sera active à l'ouverture des inscriptions.",
     "errors": {
       "emailInvalid": "Cet e-mail ne semble pas valide.",
@@ -182,6 +185,7 @@
     },
     "checkEmailTitle": "Vérifie ta boîte mail",
     "checkEmailBody": "Si l'adresse est valide, tu vas recevoir un lien. Pense à regarder dans les indésirables.",
+    "checkEmailExisting": "Si tu as déjà un compte avec cette adresse, <login>connecte-toi</login> ou <reset>réinitialise ton mot de passe</reset>.",
     "resetSentBody": "Si un compte existe avec cette adresse, tu vas recevoir un lien pour choisir un nouveau mot de passe.",
     "newPasswordTitle": "Nouveau mot de passe",
     "newPasswordLead": "Choisis un mot de passe d'au moins 12 caractères.",
@@ -2094,6 +2098,7 @@
     "delete": "Supprimer définitivement mon compte",
     "errors": {
       "wrongPassword": "Mot de passe incorrect.",
+      "captchaFailed": "La vérification anti-robot a échoué. Réessaie.",
       "deleteConfirmRequired": "Indique ton mot de passe et coche la confirmation.",
       "generic": "La suppression n'a pas pu se faire. Réessaie ; si ça continue, écris au point de contact des mentions légales."
     }

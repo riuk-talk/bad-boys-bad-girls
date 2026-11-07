@@ -90,6 +90,16 @@ const values = {
   SIGNUPS_OPEN: "true",
   E2E_ALLOW_WRITE: "true",
   E2E_LOCAL_STACK: "true",
+  // The captcha (Supabase Auth + Turnstile) with Cloudflare's official test keys, only where
+  // the CI turned it on in the stack (E2E_CAPTCHA=true, .github/workflows/ci.yml): the widget
+  // always passes and gives the dummy token, the only one the test secret accepts.
+  ...(process.env.E2E_CAPTCHA === "true"
+    ? {
+        E2E_CAPTCHA: "true",
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
+        E2E_CAPTCHA_TOKEN: "XXXX.DUMMY.TOKEN.XXXX",
+      }
+    : {}),
 };
 
 const masked = ["SUPABASE_SECRET_KEY", "VAPID_PRIVATE_KEY", "PUSH_CRON_SECRET", "RESEND_API_KEY"];

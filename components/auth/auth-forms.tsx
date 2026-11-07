@@ -32,7 +32,7 @@ import {
   type AuthErrorKey,
 } from "@/lib/validation/auth";
 import { PasswordInput } from "./password-input";
-import { Turnstile } from "./turnstile";
+import { Turnstile, useCaptcha } from "./turnstile";
 
 type Errors = Partial<Record<string, AuthErrorKey>>;
 type Action = (state: AuthState, form: FormData) => Promise<AuthState>;
@@ -42,12 +42,22 @@ const IDLE: AuthState = { status: "idle" };
  * Client validation for instant feedback, then the server action validates again (Zod) and talks
  * to Supabase Auth. Field errors focus the first invalid field.
  */
-function useAuthForm(action: Action, schema: () => z.ZodMiniType) {
+function useAuthForm(
+  action: Action,
+  schema: () => z.ZodMiniType,
+  { captcha: withCaptcha = true }: { captcha?: boolean } = {},
+) {
   const [state, formAction, pending] = useActionState(action, IDLE);
   const [clientErrors, setClientErrors] = useState<Errors | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const captcha = useCaptcha(withCaptcha);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
+    // No token from the anti-robot check yet: Supabase Auth would refuse the request.
+    if (captcha.gate.blocked) {
+      event.preventDefault();
+      return;
+    }
     const parsed = schema().safeParse(Object.fromEntries(new FormData(event.currentTarget)));
     if (!parsed.success) {
       event.preventDefault();
@@ -64,11 +74,13 @@ function useAuthForm(action: Action, schema: () => z.ZodMiniType) {
     // No <form action>: React 19 would reset the fields after an error answer.
     const data = new FormData(event.currentTarget);
     startTransition(() => formAction(data));
+    // A token serves once: the widget starts again and the button waits for a new one.
+    captcha.reset();
   }
 
   const errors: Errors = clientErrors ?? (state.status === "error" ? (state.fields ?? {}) : {});
   const message = state.status === "error" ? state.message : undefined;
-  return { state, formAction, pending, onSubmit, errors, message, attempt };
+  return { state, formAction, pending, onSubmit, errors, message, attempt, captcha };
 }
 
 function FormMessage({ message }: { message?: AuthMessageKey }) {
@@ -80,7 +92,7 @@ function FormMessage({ message }: { message?: AuthMessageKey }) {
   );
 }
 
-function SentPanel({ body }: { body: string }) {
+function SentPanel({ body, extra }: { body: string; extra?: ReactNode }) {
   const t = useTranslations("Auth");
   return (
     <div
@@ -90,14 +102,30 @@ function SentPanel({ body }: { body: string }) {
       <MailCheck aria-hidden="true" className="text-gold size-10" />
       <h2 className="font-display text-2xl tracking-wide uppercase">{t("checkEmailTitle")}</h2>
       <p>{body}</p>
+      {extra ? <p className="text-sm">{extra}</p> : null}
     </div>
   );
 }
 
-function SubmitButton({ pending, children }: { pending: boolean; children: ReactNode }) {
+function SubmitButton({
+  pending,
+  blocked = false,
+  children,
+}: {
+  pending: boolean;
+  /** No token from the anti-robot check yet (lib/auth/captcha.ts). */
+  blocked?: boolean;
+  children: ReactNode;
+}) {
   const t = useTranslations("Auth");
   return (
-    <Button type="submit" size="lg" className="w-full" disabled={pending} aria-busy={pending}>
+    <Button
+      type="submit"
+      size="lg"
+      className="w-full"
+      disabled={pending || blocked}
+      aria-busy={pending}
+    >
       {pending ? t("submitting") : children}
     </Button>
   );
@@ -116,6 +144,8 @@ export function LoginForm({ initialMessage }: { initialMessage?: AuthMessageKey 
   const error = (key?: AuthErrorKey) => (key ? t(`errors.${key}`) : undefined);
 
   if (form.state.status === "sent") return <SentPanel body={t("checkEmailBody")} />;
+  const shownMessage = form.message ?? (form.attempt === 0 ? initialMessage : undefined);
+  const wrongPassword = shownMessage === "invalidCredentials";
 
   return (
     <form noValidate onSubmit={form.onSubmit} className="space-y-5">
@@ -160,15 +190,21 @@ export function LoginForm({ initialMessage }: { initialMessage?: AuthMessageKey 
       ) : (
         <p className="text-grey text-sm">{t("magicLinkHint")}</p>
       )}
-      <Turnstile key={form.attempt} />
-      <SubmitButton pending={form.pending}>
+      <Turnstile captcha={form.captcha} />
+      <SubmitButton pending={form.pending} blocked={form.captcha.gate.blocked}>
         {mode === "password" ? t("submitLogin") : t("submitMagicLink")}
       </SubmitButton>
-      <FormMessage message={form.message ?? (form.attempt === 0 ? initialMessage : undefined)} />
-      <p className="text-center">
+      <FormMessage message={shownMessage} />
+      {/* A wrong password: the way out is right under the message, the only « Mot de passe
+          oublié ? » link of the form then (no second one at the bottom). */}
+      <p className={wrongPassword ? "-mt-3 text-center" : "text-center"}>
         <Link
           href="/mot-de-passe-oublie"
-          className="inline-flex min-h-11 items-center underline underline-offset-4"
+          className={
+            wrongPassword
+              ? "text-gold inline-flex min-h-11 items-center text-lg font-bold underline underline-offset-4"
+              : "inline-flex min-h-11 items-center underline underline-offset-4"
+          }
         >
           {t("forgotLink")}
         </Link>
@@ -198,7 +234,19 @@ export function SignupForm({ referralCode, role }: { referralCode?: string; role
   const form = useAuthForm(signUpAction, () => signupSchema);
   const error = (key?: AuthErrorKey) => (key ? t(`errors.${key}`) : undefined);
 
-  if (form.state.status === "sent") return <SentPanel body={t("checkEmailBody")} />;
+  // The same answer for an address already registered (no account enumeration), with the way
+  // in for whoever already has an account.
+  if (form.state.status === "sent") {
+    return (
+      <SentPanel
+        body={t("checkEmailBody")}
+        extra={t.rich("checkEmailExisting", {
+          login: richLink("/connexion"),
+          reset: richLink("/mot-de-passe-oublie"),
+        })}
+      />
+    );
+  }
 
   return (
     <form noValidate onSubmit={form.onSubmit} className="space-y-5">
@@ -224,7 +272,7 @@ export function SignupForm({ referralCode, role }: { referralCode?: string; role
         error={error(form.errors.password)}
       />
       <p className="text-grey text-sm">{t("adultNotice")}</p>
-      <Turnstile key={form.attempt} />
+      <Turnstile captcha={form.captcha} />
       <p className="text-sm">
         {t.rich("termsNotice", {
           terms: richLink("/cgu"),
@@ -232,7 +280,9 @@ export function SignupForm({ referralCode, role }: { referralCode?: string; role
           privacy: richLink("/confidentialite"),
         })}
       </p>
-      <SubmitButton pending={form.pending}>{t("submitSignup")}</SubmitButton>
+      <SubmitButton pending={form.pending} blocked={form.captcha.gate.blocked}>
+        {t("submitSignup")}
+      </SubmitButton>
       <FormMessage message={form.message} />
       <p className="text-grey text-center">
         {t("hasAccount")}{" "}
@@ -262,8 +312,10 @@ export function ForgotPasswordForm() {
         label={t("email")}
         error={form.errors.email ? t(`errors.${form.errors.email}`) : undefined}
       />
-      <Turnstile key={form.attempt} />
-      <SubmitButton pending={form.pending}>{t("submitForgot")}</SubmitButton>
+      <Turnstile captcha={form.captcha} />
+      <SubmitButton pending={form.pending} blocked={form.captcha.gate.blocked}>
+        {t("submitForgot")}
+      </SubmitButton>
       <FormMessage message={form.message} />
     </form>
   );
@@ -272,7 +324,8 @@ export function ForgotPasswordForm() {
 export function NewPasswordForm() {
   const t = useTranslations("Auth");
   const id = useId();
-  const form = useAuthForm(updatePasswordAction, () => passwordOnly);
+  // Changing the password (updateUser) is not protected by the captcha: no widget here.
+  const form = useAuthForm(updatePasswordAction, () => passwordOnly, { captcha: false });
 
   return (
     <form noValidate onSubmit={form.onSubmit} className="space-y-5">
@@ -285,7 +338,9 @@ export function NewPasswordForm() {
         hint={t("passwordHint")}
         error={form.errors.password ? t(`errors.${form.errors.password}`) : undefined}
       />
-      <SubmitButton pending={form.pending}>{t("submitNewPassword")}</SubmitButton>
+      <SubmitButton pending={form.pending} blocked={form.captcha.gate.blocked}>
+        {t("submitNewPassword")}
+      </SubmitButton>
       <FormMessage message={form.message} />
     </form>
   );

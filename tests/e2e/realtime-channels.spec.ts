@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { captcha } from "./helpers/captcha";
 
 // The Realtime channel of « … écrit » (9l), LOCAL STACK ONLY, against the real Realtime server:
 // only the two members of the conversation join its private channel; a stranger and an
@@ -70,7 +71,7 @@ test.describe("Realtime: the « … écrit » channel, members only (local stack
   /** A signed-in session (a new client: one channel per topic and per client). */
   async function session(email: string, password: string) {
     const client = createClient(url, publishable, { auth: { persistSession: false } });
-    const { error } = await client.auth.signInWithPassword({ email, password });
+    const { error } = await client.auth.signInWithPassword({ email, password, options: captcha });
     if (error) throw error;
     await client.realtime.setAuth();
     clients.push(client);

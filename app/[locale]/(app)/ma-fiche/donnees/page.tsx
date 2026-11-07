@@ -17,7 +17,7 @@ export default async function MyDataPage() {
   await requireMember();
   const t = await getTranslations("MyData");
   return (
-    <div className="mx-auto max-w-2xl space-y-10 px-4 py-8 sm:px-6 sm:py-12">
+    <div className="mx-auto max-w-2xl space-y-10 px-4 pt-8 pb-16 sm:px-6 sm:pt-12 sm:pb-20">
       <h1 className="font-display text-4xl tracking-wide uppercase">{t("title")}</h1>
       <section aria-labelledby="export-title" className="space-y-3">
         <h2 id="export-title" className="font-display text-2xl tracking-wide uppercase">
