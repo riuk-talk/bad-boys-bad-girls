@@ -32,7 +32,8 @@ async function freshCode(secret: string): Promise<string> {
 }
 
 /**
- * An admin opens /admin/greffe: sign-in, then the second factor (Phase 5a-ter). The first time,
+ * An admin opens /admin/greffe: sign-in, then the second factor (Phase 5a-ter), which lands on the
+ * dashboard (/admin, decision 10-9), then the Greffe. The first time,
  * the page shows the key to enrol; it is returned so later sessions can type a code from it.
  */
 export async function openGreffe(
@@ -61,7 +62,10 @@ export async function openGreffe(
   }
   await page.getByLabel("Code à 6 chiffres").fill(await freshCode(secret));
   await page.getByRole("button", { name: "Vérifier" }).click();
-  await page.waitForURL(/\/admin\/greffe/);
+  // After the second factor: the dashboard (decision 10-9), then the Greffe for the callers.
+  await page.waitForURL((url) => url.pathname === "/admin");
+  await expect(page.getByRole("heading", { name: "Tableau de bord", level: 1 })).toBeVisible();
+  await page.goto("/admin/greffe");
   await expect(page.getByRole("heading", { name: "Le Greffe" })).toBeVisible();
   return secret;
 }
