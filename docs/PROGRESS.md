@@ -187,7 +187,7 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
   - **10-7** « E-mails envoyés aujourd'hui / quota » = les e-mails de l'app, sur le jour UTC du quota de Resend, face à la part de l'app (quota moins la réserve des e-mails d'Auth). Les e-mails d'Auth ne sont pas comptés par l'app et n'y figurent pas. Sans envoi ce jour-là, le chiffre est « — » (pas de ligne).
   - **10-8** La recherche ne renvoie pas le N° d'écrou, même quand on cherche par lui : la page Membres ne l'affiche pas aujourd'hui.
   - **10-9** Après la double authentification, l'admin arrive toujours sur le Greffe (comme avant) ; seul le lien de l'en-tête mène au tableau de bord. Faut-il aussi arriver sur le tableau de bord ?
-- **CI** : en cours.
+- **CI** : **n° 125 (`b350a56`) verte sur les 3 jobs, aucun test instable** : vérifications et pgTAP ; Pixel 7, 50 réussis, 2 ignorés ; iPhone 14, 41 réussis, 11 ignorés (tests réservés à Chromium). Le test 10c (tableau de bord, tiroir, compteurs, recherche, menu latéral) a tourné sur les deux appareils. Reste : les migrations sur la preview, puis les types régénérés depuis la preview.
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 9, SPEC §0 (priorités), §3 (parrainage), §5 (badges), §6 (Casier), §13 (Parloir sans horaire), §14 (badges de confiance).
