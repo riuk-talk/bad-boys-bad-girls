@@ -64,55 +64,8 @@ export function TabBarLinks({ tabs, initial }: { tabs: readonly TabLink[]; initi
     };
   }, [pathname]);
 
-  // WCAG 2.4.11: what takes the focus under the sticky bar is brought above it, by exactly the
-  // part it hides. WebKit runs its own focus scroll after the event, at a moment that varies (a
-  // textarea's caret is revealed later still, ignoring scroll-padding: CI n° 63, 65, 107), so the
-  // focused element is checked at every frame for 600 ms, before the frame is painted. Focus that
-  // goes into an iframe (the Turnstile widget, CI n° 116) may give the page no focusin: the window
-  // loses the focus instead, and the element holding the iframe is checked the same way.
-  useEffect(() => {
-    let watched: HTMLElement | null = null;
-    let until = 0;
-    let frame = 0;
-    const lift = (target: HTMLElement) => {
-      const bar = document.querySelector("[data-tab-bar]");
-      if (!bar || bar.contains(target) || !target.isConnected) return;
-      const hidden = target.getBoundingClientRect().bottom - bar.getBoundingClientRect().top;
-      if (hidden > 0) window.scrollBy(0, hidden + 8);
-    };
-    const tick = () => {
-      frame = 0;
-      if (!watched || document.activeElement !== watched || performance.now() > until) return;
-      lift(watched);
-      frame = requestAnimationFrame(tick);
-    };
-    const watch = (target: HTMLElement) => {
-      watched = target;
-      until = performance.now() + 600;
-      lift(target);
-      if (!frame) frame = requestAnimationFrame(tick);
-    };
-    const onFocus = (event: FocusEvent) => {
-      if (event.target instanceof HTMLElement) watch(event.target);
-    };
-    const onWindowBlur = () => {
-      // Only when the focus went into an iframe of the page (the Turnstile widget holds its own,
-      // in a closed shadow root): leaving the window for another one changes nothing here.
-      requestAnimationFrame(() => {
-        const active = document.activeElement;
-        if (!(active instanceof HTMLElement)) return;
-        if (active.tagName === "IFRAME" || active.closest("[data-captcha-widget]")) watch(active);
-      });
-    };
-    document.addEventListener("focusin", onFocus);
-    window.addEventListener("blur", onWindowBlur);
-    return () => {
-      document.removeEventListener("focusin", onFocus);
-      window.removeEventListener("blur", onWindowBlur);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, []);
-
+  // Keeping the focused element above this bar (WCAG 2.4.11) is done by public/focus-lift.js,
+  // loaded by the root layout before hydration.
   const types = new Set<string>(state.types);
   return (
     <ul className="mx-auto flex max-w-3xl">

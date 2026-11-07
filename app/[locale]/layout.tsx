@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { ErrorStrings } from "@/components/errors/error-strings";
 import { WebVitals } from "@/components/web-vitals";
@@ -46,10 +47,15 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   const t = await getTranslations("Common");
+  // The nonce of this request (proxy.ts), for the one script loaded outside React.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html lang={locale} className={fontVariables}>
       <body>
+        {/* Keeps the focused element above the tab bar from the first moment of the page,
+            before hydration (public/focus-lift.js). */}
+        <script src="/focus-lift.js" nonce={nonce} async />
         <a
           href="#main"
           className="bg-gold text-ink sr-only z-50 rounded-md px-4 py-2 font-semibold focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
