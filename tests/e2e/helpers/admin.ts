@@ -65,3 +65,20 @@ export async function openGreffe(
   await expect(page.getByRole("heading", { name: "Le Greffe" })).toBeVisible();
   return secret;
 }
+
+/**
+ * Follows an entry of the admin menu (10c): in the side menu from lg up, in the « Menu admin »
+ * drawer on a phone.
+ */
+export async function adminMenu(page: Page, name: string | RegExp): Promise<void> {
+  const button = page.getByRole("button", { name: "Menu admin" });
+  if (await button.isVisible()) {
+    await button.click();
+    await page.getByRole("dialog", { name: "Menu admin" }).getByRole("link", { name }).click();
+    return;
+  }
+  await page
+    .getByRole("navigation", { name: "Administration" })
+    .getByRole("link", { name })
+    .click();
+}

@@ -76,7 +76,9 @@ test.describe("super admin (local stack)", () => {
   test("at sign-in: /admin through the second factor, never the onboarding", async ({ page }) => {
     await openGreffe(page, account);
     await page.goto("/onboarding/1");
-    await page.waitForURL(/\/admin\/greffe/);
+    // /admin is the dashboard since 10c (it used to send on to the Greffe).
+    await page.waitForURL(/\/admin$/);
+    await expect(page.getByRole("heading", { name: "Tableau de bord", level: 1 })).toBeVisible();
     const { data } = await admin.from("profiles").select("id").eq("id", account.id);
     expect(data).toEqual([]);
   });

@@ -988,6 +988,7 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
     const zone = asOwner("select id from public.launch_zones where slug = 'toulon'");
     violations.push(
       ...(await sweep(greffe, [
+        "/admin",
         "/admin/greffe",
         "/admin/signalements",
         "/admin/textes",

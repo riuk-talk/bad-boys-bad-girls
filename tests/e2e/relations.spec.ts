@@ -4,7 +4,7 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { randomBytes, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { settled } from "./helpers/settle";
-import { openGreffe } from "./helpers/admin";
+import { adminMenu, openGreffe } from "./helpers/admin";
 import { cutoutReady } from "./helpers/onboarding";
 
 // Phase 4 end to end against a Supabase project (the local stack in CI, or the DEV project): a Visitor finds a Bad, files a Demande de
@@ -918,10 +918,7 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     const page = await context.newPage();
     await openGreffe(page, greffier);
     await page.goto("/admin");
-    await page
-      .getByRole("navigation", { name: "Administration" })
-      .getByRole("link", { name: "Voir comme un Visiteur" })
-      .click();
+    await adminMenu(page, /Voir comme un Visiteur/);
     await page.waitForURL(/\/admin\/vue$/);
     const banner = page.getByRole("note", { name: "Vue Greffe : lecture seule" });
     await expect(banner).toBeVisible();
@@ -980,5 +977,119 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       .select("admin_id, viewed_at")
       .eq("bad_id", bad.id);
     expect(log?.map((row) => row.admin_id)).toEqual([greffier.id]);
+  });
+  test("Admin shell (10c): the dashboard, the menu and its counters, the member search", async ({
+    browser,
+  }) => {
+    test.skip(!greffier.totpSecret, "needs the Greffe account of the first test");
+    const page = await (await browser.newContext()).newPage();
+    await openGreffe(page, greffier);
+
+    // « Le Greffe » of the header leads to the dashboard.
+    await page.goto("/admin/greffe");
+    await page.getByRole("banner").getByRole("link", { name: "Le Greffe" }).click();
+    await page.waitForURL(/\/admin$/);
+    await expect(page.getByRole("heading", { name: "Tableau de bord", level: 1 })).toBeVisible();
+
+    // Real figures: the photos waiting are those the Greffe lists; « — » never stands for 0 here.
+    const { data: pending } = await admin
+      .from("photos")
+      .select("owner_id")
+      .eq("status", "pending")
+      .not("pending_path", "is", null);
+    const owners = [...new Set((pending ?? []).map((photo) => photo.owner_id))];
+    const { data: banned } = await admin
+      .from("profiles")
+      .select("id")
+      .in("id", owners.length ? owners : ["00000000-0000-0000-0000-000000000000"])
+      .not("banned_at", "is", null);
+    const out = new Set((banned ?? []).map((profile) => profile.id));
+    const waiting = (pending ?? []).filter((photo) => !out.has(photo.owner_id)).length;
+    const photos = page
+      .getByRole("listitem")
+      .filter({ has: page.getByRole("heading", { name: "Photos au Greffe" }) });
+    await expect(photos.getByRole("definition")).toHaveText(String(waiting));
+    expect(await axeViolations(page)).toEqual([]);
+
+    // The menu: on a phone, the drawer (focus kept inside, Escape closes, focus back to the button).
+    const menuButton = page.getByRole("button", { name: "Menu admin" });
+    const mobile = await menuButton.isVisible();
+    if (mobile) {
+      await menuButton.click();
+      const drawer = page.getByRole("dialog", { name: "Menu admin" });
+      await expect(drawer).toBeVisible();
+      await expect(drawer.getByRole("link", { name: "Tableau de bord" })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+      expect(await axeViolations(page)).toEqual([]);
+      for (let step = 0; step < 20; step++) {
+        await page.keyboard.press("Tab");
+        const inside = await page.evaluate(
+          () => document.activeElement?.closest("dialog[open]") !== null,
+        );
+        expect(inside, `Tab ${step + 1} stays in the drawer`).toBe(true);
+      }
+      await page.keyboard.press("Escape");
+      await expect(drawer).toBeHidden();
+      await expect(menuButton).toBeFocused();
+    }
+    // The counter of the Greffe is the same number, and its page becomes the current entry.
+    await adminMenu(page, /^Greffe \(photos\)/);
+    await page.waitForURL(/\/admin\/greffe$/);
+    if (mobile) {
+      await expect(page.getByRole("dialog", { name: "Menu admin" })).toBeHidden();
+      await expect(menuButton).toBeFocused();
+      await menuButton.click();
+    }
+    const scope = mobile
+      ? page.getByRole("dialog", { name: "Menu admin" })
+      : page.getByRole("navigation", { name: "Administration" });
+    const entry = scope.getByRole("link", { name: /^Greffe \(photos\)/ });
+    await expect(entry).toHaveAttribute("aria-current", "page");
+    if (waiting > 0) await expect(entry).toContainText(waiting > 99 ? "99+" : String(waiting));
+    if (mobile) await page.keyboard.press("Escape");
+
+    // « Rechercher un membre » (Ctrl/⌘K): pseudo or N° d'écrou by part, the e-mail exact only.
+    await page.keyboard.press("Control+k");
+    const search = page.getByRole("dialog", { name: "Rechercher un membre" });
+    await expect(search).toBeVisible();
+    const field = search.getByLabel("Pseudo, N° d'écrou ou e-mail exact");
+    await expect(field).toBeFocused();
+    await field.fill(visitor.email.slice(0, -4));
+    await expect(search.getByText("Aucun membre trouvé.")).toBeVisible();
+    await field.fill(visitor.email);
+    await expect(search.getByRole("link", { name: new RegExp(visitor.pseudo) })).toBeVisible();
+    const { data: row } = await admin.from("profiles").select("ecrou").eq("id", bad.id).single();
+    await field.fill(String(row?.ecrou ?? "").slice(1, 5));
+    await expect(search.getByRole("link", { name: new RegExp(bad.pseudo) })).toBeVisible();
+    await field.fill(bad.pseudo.slice(1));
+    expect(await axeViolations(page)).toEqual([]);
+    await search.getByRole("link", { name: new RegExp(bad.pseudo) }).click();
+    await page.waitForURL(new RegExp(`/admin/membres/${bad.id}$`));
+    await expect(search).toBeHidden();
+    // The result shows nothing the Membres page does not: no N° d'écrou, no e-mail.
+    await page.keyboard.press("Control+k");
+    await field.fill(bad.pseudo);
+    const hit = search.getByRole("listitem").filter({ hasText: bad.pseudo });
+    await expect(hit).toBeVisible();
+    await expect(hit).not.toContainText(String(row?.ecrou ?? "------"));
+    await expect(hit).not.toContainText("@");
+    await page.keyboard.press("Escape");
+
+    // From lg up: the fixed side menu with its groups, no drawer button.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const side = page.getByRole("navigation", { name: "Administration" });
+    await expect(side).toBeVisible();
+    await expect(page.getByRole("button", { name: "Menu admin" })).toBeHidden();
+    for (const group of ["Comptes", "Modération", "Signalements", "Contenu", "Outils"]) {
+      await expect(side.locator("p").getByText(group, { exact: true })).toBeVisible();
+    }
+    await expect(side.getByRole("link", { name: "Membres" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(await axeViolations(page)).toEqual([]);
+    await page.context().close();
   });
 });
