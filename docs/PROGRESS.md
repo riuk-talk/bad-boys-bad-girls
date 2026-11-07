@@ -29,7 +29,7 @@ Demande du conseiller, suite du correctif anti-robot.
   - adresse déjà inscrite : même panneau, la phrase et ses deux liens ;
   - mauvais mot de passe : le message, un seul lien « Mot de passe oublié ? », placé juste après le message et qui mène à la bonne page.
   - Local : Pixel 7 complet vert (46 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; `signup.spec.ts` vert aussi sur iPhone 14 (WebKit) ; Vitest 269.
-- **Repris de `hotfix/captcha`** : `main` a été fusionné à `dc53486`, avant le dernier correctif de test de cette branche (`settled()` attend le titre de la page avant axe ; cause : CI n° 118, « document-title » sur `/admin/vue` après une navigation côté client). Il est repris ici, à l'identique, pour que la CI de cette branche n'y retombe pas.
+- **Repris de `hotfix/captcha`** : `main` a été fusionné à `dc53486`, avant le dernier correctif de test de cette branche (`settled()` attend le titre de la page avant axe ; cause : CI n° 118, « document-title » sur `/admin/vue` après une navigation côté client). Il est repris ici, à l'identique, pour que la CI de cette branche n'y retombe pas. Validé par la **CI n° 120 de `hotfix/captcha` (`c75b6c6`) : verte sur les 3 jobs, aucun test instable** (Pixel 7 : 47 réussis ; iPhone 14 : 38 réussis, 11 ignorés car réservés à Chromium).
 - **CI** : en cours.
 
 ## Correctif urgent : anti-robot (branche `hotfix/captcha`, depuis `main`, 2026-11-06)
