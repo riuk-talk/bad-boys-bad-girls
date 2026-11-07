@@ -52,6 +52,10 @@ Diagnostic du conseiller (journal Supabase Auth de la prod) : 6 inscriptions ref
   - **Le widget** : nos conteneurs n'ont aucun `tabindex` ; la zone porte le libellé « Vérification anti-robot » (`role="group"`). Le « div «  » » du contrôle n'est pas l'un des nôtres : c'est l'hôte que Cloudflare crée dans notre conteneur, que le navigateur présente comme élément actif quand le focus est dans l'iframe du widget.
   - **Test** : rien d'assoupli, iPhone et ces pages restent contrôlés. Le « 9 ter » ajoute un contrôle plus strict : `/mon-casier` et `/ma-fiche/donnees` repassés au clavier avec les scripts de la page retardés de 1,5 s.
   - **Résultat local** : parcours complet sur iPhone 14 (WebKit, widget de test chargé), 14 sur 14, 3 fois de suite, sans relance.
+- **CI n° 118 (`dc53486`)** : vérifications vertes ; iPhone 14 vert **sans aucun test instable** (le « 9 ter » passe du premier coup, contrôle avec scripts retardés compris) ; Pixel 7 « vert » mais avec **1 test instable**, donc pas vert : le test de la vue Greffe (10a) relevait « document-title » sur `/admin/vue` au premier essai.
+  - **Cause** : on arrive sur `/admin/vue` par un lien, donc par une navigation côté client. Next.js pose le `<title>` de la nouvelle page (tiré de `generateMetadata`) un instant après son contenu. axe passait dans cet intervalle. Ce n'est pas un défaut de la page : le titre est présent une fois la page complète. La course existait déjà ; elle n'était jamais tombée.
+  - **Correctif du test** : avant de mesurer, `settled()` (utilisé par tous les contrôles axe) attend que la page ait son titre, 5 s au plus. Une page qui n'en aurait jamais reste signalée par axe : rien n'est assoupli.
+  - Local : Pixel 7 complet vert (44 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI).
 - **CI** : en cours.
 
 ## Lancement (2026-11-06, par le conseiller)
