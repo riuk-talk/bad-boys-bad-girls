@@ -92,7 +92,7 @@ function FormMessage({ message }: { message?: AuthMessageKey }) {
   );
 }
 
-function SentPanel({ body }: { body: string }) {
+function SentPanel({ body, extra }: { body: string; extra?: ReactNode }) {
   const t = useTranslations("Auth");
   return (
     <div
@@ -102,6 +102,7 @@ function SentPanel({ body }: { body: string }) {
       <MailCheck aria-hidden="true" className="text-gold size-10" />
       <h2 className="font-display text-2xl tracking-wide uppercase">{t("checkEmailTitle")}</h2>
       <p>{body}</p>
+      {extra ? <p className="text-sm">{extra}</p> : null}
     </div>
   );
 }
@@ -143,6 +144,8 @@ export function LoginForm({ initialMessage }: { initialMessage?: AuthMessageKey 
   const error = (key?: AuthErrorKey) => (key ? t(`errors.${key}`) : undefined);
 
   if (form.state.status === "sent") return <SentPanel body={t("checkEmailBody")} />;
+  const shownMessage = form.message ?? (form.attempt === 0 ? initialMessage : undefined);
+  const wrongPassword = shownMessage === "invalidCredentials";
 
   return (
     <form noValidate onSubmit={form.onSubmit} className="space-y-5">
@@ -191,11 +194,17 @@ export function LoginForm({ initialMessage }: { initialMessage?: AuthMessageKey 
       <SubmitButton pending={form.pending} blocked={form.captcha.gate.blocked}>
         {mode === "password" ? t("submitLogin") : t("submitMagicLink")}
       </SubmitButton>
-      <FormMessage message={form.message ?? (form.attempt === 0 ? initialMessage : undefined)} />
-      <p className="text-center">
+      <FormMessage message={shownMessage} />
+      {/* A wrong password: the way out is right under the message, the only « Mot de passe
+          oublié ? » link of the form then (no second one at the bottom). */}
+      <p className={wrongPassword ? "-mt-3 text-center" : "text-center"}>
         <Link
           href="/mot-de-passe-oublie"
-          className="inline-flex min-h-11 items-center underline underline-offset-4"
+          className={
+            wrongPassword
+              ? "text-gold inline-flex min-h-11 items-center text-lg font-bold underline underline-offset-4"
+              : "inline-flex min-h-11 items-center underline underline-offset-4"
+          }
         >
           {t("forgotLink")}
         </Link>
@@ -225,7 +234,19 @@ export function SignupForm({ referralCode, role }: { referralCode?: string; role
   const form = useAuthForm(signUpAction, () => signupSchema);
   const error = (key?: AuthErrorKey) => (key ? t(`errors.${key}`) : undefined);
 
-  if (form.state.status === "sent") return <SentPanel body={t("checkEmailBody")} />;
+  // The same answer for an address already registered (no account enumeration), with the way
+  // in for whoever already has an account.
+  if (form.state.status === "sent") {
+    return (
+      <SentPanel
+        body={t("checkEmailBody")}
+        extra={t.rich("checkEmailExisting", {
+          login: richLink("/connexion"),
+          reset: richLink("/mot-de-passe-oublie"),
+        })}
+      />
+    );
+  }
 
   return (
     <form noValidate onSubmit={form.onSubmit} className="space-y-5">

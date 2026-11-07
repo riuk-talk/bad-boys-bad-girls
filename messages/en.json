@@ -185,6 +185,7 @@
     },
     "checkEmailTitle": "Check your inbox",
     "checkEmailBody": "If the address is valid, you'll receive a link. Remember to check your spam folder.",
+    "checkEmailExisting": "If you already have an account with this address, <login>sign in</login> or <reset>reset your password</reset>.",
     "resetSentBody": "If an account exists with this address, you'll receive a link to choose a new password.",
     "newPasswordTitle": "New password",
     "newPasswordLead": "Choose a password of at least 12 characters.",

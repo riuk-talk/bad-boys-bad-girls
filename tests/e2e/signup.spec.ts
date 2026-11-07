@@ -91,6 +91,74 @@ test.describe("sign-up: landing door, e-mail confirmation, first steps (local st
     await expect(page.getByRole("radio", { name: /Je viens visiter/ })).toBeChecked();
   });
 
+  // An address already registered gets the same answer as a new one (no account enumeration),
+  // and the panel shows the way in for whoever already has an account.
+  test("an address already registered: the same answer, and the way in", async ({ page }) => {
+    const known = `e2e-known-${randomBytes(4).toString("hex")}@example.com`;
+    const created = await admin.auth.admin.createUser({
+      email: known,
+      password: `Pw-${randomBytes(12).toString("base64url")}`,
+      email_confirm: true,
+    });
+    if (created.error) throw created.error;
+    try {
+      await page.goto("/inscription");
+      await page.getByLabel("E-mail").fill(known);
+      await page
+        .getByLabel("Mot de passe", { exact: true })
+        .fill(`Pw-${randomBytes(12).toString("base64url")}`);
+      await page.getByRole("button", { name: "Créer mon compte" }).click();
+      const panel = page.getByRole("status").filter({ hasText: "Vérifie ta boîte mail" });
+      await expect(panel.getByRole("heading", { name: "Vérifie ta boîte mail" })).toBeVisible();
+      await expect(panel).toContainText(
+        "Si tu as déjà un compte avec cette adresse, connecte-toi ou réinitialise ton mot de passe.",
+      );
+      await expect(panel.getByRole("link", { name: "connecte-toi" })).toHaveAttribute(
+        "href",
+        /\/connexion$/,
+      );
+      await panel.getByRole("link", { name: "réinitialise ton mot de passe" }).click();
+      await expect(page).toHaveURL(/\/mot-de-passe-oublie$/);
+    } finally {
+      await admin.auth.admin.deleteUser(created.data.user.id);
+    }
+  });
+
+  test("a wrong password: the message, and « Mot de passe oublié ? » right under it", async ({
+    page,
+  }) => {
+    const known = `e2e-wrong-${randomBytes(4).toString("hex")}@example.com`;
+    const created = await admin.auth.admin.createUser({
+      email: known,
+      password: `Pw-${randomBytes(12).toString("base64url")}`,
+      email_confirm: true,
+    });
+    if (created.error) throw created.error;
+    try {
+      await page.goto("/connexion");
+      await page.getByLabel("E-mail").fill(known);
+      await page.getByLabel("Mot de passe", { exact: true }).fill("not-the-password-1");
+      await page.getByRole("button", { name: "Se connecter" }).click();
+      const alert = page
+        .getByRole("alert")
+        .filter({ hasText: "E-mail ou mot de passe incorrect." });
+      await expect(alert).toBeVisible();
+      const forgot = page.getByRole("link", { name: "Mot de passe oublié ?" });
+      await expect(forgot).toHaveCount(1);
+      await expect(forgot).toBeVisible();
+      // Right under the message: the next thing in the form.
+      const follows = await alert.evaluate((node) => {
+        const next = node.nextElementSibling;
+        return Boolean(next?.querySelector('a[href$="/mot-de-passe-oublie"]'));
+      });
+      expect(follows).toBe(true);
+      await forgot.click();
+      await expect(page).toHaveURL(/\/mot-de-passe-oublie$/);
+    } finally {
+      await admin.auth.admin.deleteUser(created.data.user.id);
+    }
+  });
+
   // Phase 8a: Supabase Auth itself refuses what the form refuses (a direct call with the
   // publishable key cannot go below 12 characters).
   test("Auth refuses a password shorter than 12 characters", async () => {

@@ -185,6 +185,7 @@
     },
     "checkEmailTitle": "Vérifie ta boîte mail",
     "checkEmailBody": "Si l'adresse est valide, tu vas recevoir un lien. Pense à regarder dans les indésirables.",
+    "checkEmailExisting": "Si tu as déjà un compte avec cette adresse, <login>connecte-toi</login> ou <reset>réinitialise ton mot de passe</reset>.",
     "resetSentBody": "Si un compte existe avec cette adresse, tu vas recevoir un lien pour choisir un nouveau mot de passe.",
     "newPasswordTitle": "Nouveau mot de passe",
     "newPasswordLead": "Choisis un mot de passe d'au moins 12 caractères.",
