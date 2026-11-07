@@ -964,6 +964,23 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
         "/ma-fiche",
       ])),
     );
+    // Before hydration too (CI n° 117): with the scripts of the page held back, as on a slow
+    // phone, Tab never leaves the focus under the bar (public/focus-lift.js is already there).
+    const chunks = /\/_next\/static\/chunks\//;
+    await badPage.route(chunks, async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await route.continue();
+    });
+    for (const path of ["/mon-casier", "/ma-fiche/donnees"]) {
+      await badPage.goto(path);
+      await expect(badPage.locator("h1"), path).toHaveCount(1);
+      violations.push(
+        ...(await hiddenByTabBar(badPage)).map(
+          (name) => `${path} (scripts held back) focus under the tab bar: ${name}`,
+        ),
+      );
+    }
+    await badPage.unroute(chunks);
     await badPage.context().close();
 
     const greffe = await (await browser.newContext()).newPage();
