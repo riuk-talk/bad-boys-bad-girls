@@ -322,8 +322,8 @@ begin
         and p.proname <> 'new_ecrou'), 0, 'no function has a parameter or output named ecrou');
   return next is((select array_agg(p.proname::text order by p.proname) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and p.prosrc ~* 'ecrou'),
-    array['admin_view_fiche', 'get_fiche', 'new_ecrou', 'profiles_before_write'],
-    'only get_fiche and the Greffe view (10a) show it, nothing searches by it');
+    array['admin_search_members', 'admin_view_fiche', 'get_fiche', 'new_ecrou', 'profiles_before_write'],
+    'only get_fiche and the Greffe view (10a) show it; only the admin search (10c, owner''s request) searches by it, without returning it');
 end $$;
 
 ----------------------------------------------------------------------------------------------
