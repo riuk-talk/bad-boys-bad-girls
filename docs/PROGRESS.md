@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; **CI n° 113 (`883cf0d`) verte**. **10c (navigation de /admin, tableau de bord, recherche de membre)** : faite, tests locaux verts ; migrations de la 10b et de la 10c pas encore sur la preview (confirmation du connecteur demandée au porteur), donc types et CI en attente ; voir la section 10c.
+**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; **CI n° 113 (`883cf0d`) verte**. **10c (navigation de /admin, tableau de bord, recherche de membre)** : faite, tests locaux verts ; migrations de la 10b et de la 10c pas encore sur la preview (confirmation du connecteur demandée au porteur) ; types générés depuis la base locale en attendant ; voir la section 10c.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -181,13 +181,13 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
   - **Local** : pgTAP 29 fichiers ; Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : parcours complet 14 sur 14, `relations`, `super-admin`, `password-recovery` et `moderation-rgpd` verts.
 - **Bloqué, en attente du porteur** :
   - le connecteur Supabase a demandé une confirmation pour appliquer à la preview la migration `20261107120000_greffe_views_retention` (10b ; la fonction de nettoyage contient des `DELETE`), et personne n'a répondu ; non contourné. La preview n'a donc ni les deux migrations de la 10b, ni celle de la 10c, qui s'appuie sur la 10b (`private.email_quota_day()`) ;
-  - sans elles, les types de la base ne peuvent pas être régénérés depuis la preview (`lib/supabase/database.types.ts`), et la branche n'est pas poussée : la CI ne passerait pas le typecheck.
+  - en attendant, `lib/supabase/database.types.ts` vient de `supabase gen types` sur la base locale (mêmes migrations que le dépôt), comme en phase 7 ; il sera régénéré depuis la preview une fois les migrations appliquées.
 - **Décisions à valider (10c)** :
   - **10-6** « Visibles » = la règle de la Découverte (`is_bad_visible` : actif, pas en pause, vu dans les 90 jours, 3 poses validées, un Casier, quartier ouvert).
   - **10-7** « E-mails envoyés aujourd'hui / quota » = les e-mails de l'app, sur le jour UTC du quota de Resend, face à la part de l'app (quota moins la réserve des e-mails d'Auth). Les e-mails d'Auth ne sont pas comptés par l'app et n'y figurent pas. Sans envoi ce jour-là, le chiffre est « — » (pas de ligne).
   - **10-8** La recherche ne renvoie pas le N° d'écrou, même quand on cherche par lui : la page Membres ne l'affiche pas aujourd'hui.
   - **10-9** Après la double authentification, l'admin arrive toujours sur le Greffe (comme avant) ; seul le lien de l'en-tête mène au tableau de bord. Faut-il aussi arriver sur le tableau de bord ?
-- **CI** : en attente (branche pas encore poussée).
+- **CI** : en cours.
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 9, SPEC §0 (priorités), §3 (parrainage), §5 (badges), §6 (Casier), §13 (Parloir sans horaire), §14 (badges de confiance).
