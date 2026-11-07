@@ -200,7 +200,7 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
   - e2e : l'utilitaire `openGreffe` (`tests/e2e/helpers/admin.ts`) vérifie maintenant, à chaque connexion admin, l'arrivée exacte sur `/admin` avec le titre « Tableau de bord », puis ouvre le Greffe pour les tests qui en ont besoin. Le contrôle est plus strict, pas assoupli ; `super-admin.spec.ts` vérifie toujours que le super admin arrive sur `/admin` depuis `/onboarding/1` ;
   - le lien du courriel « photos en attente » mène toujours au Greffe (`/admin/greffe`), puisqu'il désigne cette file ;
   - local : Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : `super-admin`, `relations`, `moderation-rgpd`, `onboarding-complete`, `photo-cutout` et le parcours complet verts (32 réussis) ;
-  - CI : en cours.
+  - CI : verte, run 130 (`df8d43f`) : checks, e2e Pixel 7 (50 réussis, 2 ignorés), e2e iPhone 14 (41 réussis, 11 ignorés), aucun test instable (flaky).
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 9, SPEC §0 (priorités), §3 (parrainage), §5 (badges), §6 (Casier), §13 (Parloir sans horaire), §14 (badges de confiance).
