@@ -898,6 +898,14 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
         const response = await page.goto(path);
         expect(response?.status(), path).toBe(200);
         await expect(page.locator("h1"), path).toHaveCount(1);
+        // A page with the anti-robot widget (CI: captcha on) is swept once the widget is there
+        // and has its token, so that Tab also goes through it (its iframe), as a person would.
+        if ((await page.locator("[data-captcha-widget]").count()) > 0) {
+          await expect(page.locator('input[name="cf-turnstile-response"]'), path).not.toHaveValue(
+            "",
+            { timeout: 20_000 },
+          );
+        }
         found.push(
           ...(await hiddenByTabBar(page)).map((name) => `${path} focus under the tab bar: ${name}`),
         );

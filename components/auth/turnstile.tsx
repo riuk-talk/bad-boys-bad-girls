@@ -155,5 +155,13 @@ function Widget({ siteKey, onEvent }: { siteKey: string; onEvent: Dispatch<Captc
     };
   }, [siteKey, locale, onEvent]);
 
-  return <div ref={container} role="group" aria-label={t("captchaLabel")} className="min-h-16" />;
+  return (
+    <div
+      ref={container}
+      role="group"
+      aria-label={t("captchaLabel")}
+      data-captcha-widget
+      className="min-h-16"
+    />
+  );
 }
