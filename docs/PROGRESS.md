@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; **CI n° 113 (`883cf0d`) verte**.
+**Phase 10** (branche `phase-10`) : **10a (vue « Greffe » du site)** vérifiée par le conseiller (2026-11-06), décisions 10-1 à 10-4 validées (10-3 avec une conservation de 12 mois, faite en 10b) ; CI n° 109 verte. **10b (e-mails de l'app par Resend)** : code fait, tests locaux verts ; migrations pas encore sur la preview (confirmation du connecteur restée sans réponse) ; **CI n° 113 (`883cf0d`) verte**. **10c (navigation de /admin, tableau de bord, recherche de membre)** : faite, tests locaux verts ; migrations de la 10b et de la 10c pas encore sur la preview (confirmation du connecteur demandée au porteur), donc types et CI en attente ; voir la section 10c.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -149,6 +149,45 @@ Demande du conseiller : passer le cron d'e-mails (`/api/cron/email`) de l'API Br
   - poser `RESEND_API_KEY` (Sensitive) et `EMAIL_FROM=ne-pas-repondre@bad-boys8bad-girls.fr` sur Vercel **Production** uniquement (en Preview, la route continuerait d'envoyer de vrais e-mails aux comptes de test) ; retirer `BREVO_API_KEY` et `BREVO_API_URL` s'ils existent ;
   - les migrations `20261107120000` et `20261107130000` devront aussi passer en production (le quota de 300 y est encore) avant de poser la clé.
 - **CI** : **n° 113 (`883cf0d`) verte** (2e passage : le 1er a été annulé avant tout test par la relance de la CI n° 112 sur la même branche, pas un échec) : vérifications et pgTAP, Pixel 7 (44 réussis, 2 ignorés) et iPhone 14 (35 réussis, 11 ignorés : tests réservés à Chromium), 0 test instable.
+
+### 10c — Navigation de /admin, tableau de bord, recherche de membre (2026-11-07)
+Demande du porteur : refonte de la navigation de `/admin` sur le modèle du panel Admin de TeaseYou. Relu : SPEC §15. Branche `phase-10`, partie de `main` (`406cf19`). Aucune page existante ne change de contenu, seulement la navigation (et `/admin`, qui devient le tableau de bord).
+- **Coquille** (`components/admin/admin-shell.tsx`, menu dans `lib/admin/nav.ts`, composants maison, `lucide-react`) :
+  - à partir de `lg` : menu latéral fixe à gauche, en groupes avec intitulé. Tableau de bord ; Comptes (Membres, Historique) ; Modération (Greffe (photos), Textes signalés, Mots-clés) ; Signalements ; Contenu (Questions (Interrogatoire), Signes distinctifs, Quartiers) ; Outils (Voir comme un Visiteur, mis en évidence par un cadre et une icône ; Performance) ;
+  - sur téléphone : bouton « Menu admin » en haut, qui ouvre le même menu en tiroir. `<dialog>` modal (page inerte, Échap ferme). Le focus tourne dans le tiroir (Tab et Maj+Tab : le `<dialog>` seul laissait le focus sortir vers les commandes du navigateur sous Chromium, relevé par le test). Le tiroir se ferme au choix d'une entrée ; le focus revient au bouton ;
+  - entrée active : `aria-current="page"`, y compris sur les pages en dessous (`/admin/greffe/lot`, `/admin/membres/<id>`…) ; le tableau de bord n'est actif que sur `/admin` ;
+  - l'ancienne barre d'onglets (`components/admin/admin-nav.tsx`) est supprimée ; les onglets propres à la vue Greffe (10a) restent.
+- **Compteurs en direct** : photos en attente au Greffe, signalements ouverts, textes signalés en attente, sur leurs entrées. Une seule fonction, `admin_counts()` (`security definer`, `is_admin()` donc aal2, nombres seuls), lue au premier rendu puis toutes les 30 s, **seulement quand l'onglet est visible**, et au retour sur l'onglet. Compté exactement comme les pages qui les listent. Un compteur illisible ou refusé n'affiche rien (jamais un 0 inventé) ; 0 n'affiche pas de pastille ; au-delà de 99, « 99+ » ; texte pour les lecteurs d'écran (« 3 en attente »).
+- **Tableau de bord** (`/admin`, qui ne redirige plus vers le Greffe) : `admin_dashboard()` (`security definer`, `is_admin()`). Cartes :
+  - Bads : inscrits, Fiche terminée, visibles (la règle de la Découverte, `is_bad_visible`) ;
+  - Visiteurs : inscrits, Permis terminé ;
+  - photos en attente, signalements ouverts, textes signalés ;
+  - quartiers ouverts et en liste d'attente ;
+  - e-mails de l'app envoyés aujourd'hui (jour UTC du quota, 10b) et quota du jour de l'app (quota moins la réserve des e-mails d'Auth) ;
+  - notifications en file.
+  Profils de démonstration (`is_seed`) exclus. Une donnée absente ou mal formée s'affiche « — » (`lib/admin/dashboard.ts`). Puis « À traiter » : les 10 éléments en attente les plus anciens (photos, signalements, textes signalés), avec le pseudo, la pose, la catégorie ou la source, la date, et un lien vers la page dédiée.
+- **Recherche de compte** : « Rechercher un membre » dans le menu latéral, bouton visible en haut sur téléphone, raccourci Ctrl/⌘K. `admin_search_members(q)` (`security definer`, `is_admin()`) : pseudo ou N° d'écrou **par partie**, e-mail **exact uniquement** (une requête avec « @ » ne cherche que l'e-mail entier, sans tenir compte de la casse ; aucune recherche partielle sur l'e-mail), de 2 à 254 caractères, 20 résultats au plus. Elle renvoie ce que la liste de la page Membres montre déjà (pseudo, rôle, état, date d'inscription) : **jamais le N° d'écrou**, l'e-mail ou `true_index`. Les libellés sont faits côté serveur ; un résultat ouvre `/admin/membres/<id>`.
+- **En-tête** : le lien « Le Greffe » mène à `/admin` (tableau de bord).
+- **Correctif trouvé en route** : après la double authentification, `admin-mfa.tsx` lançait deux navigations vers `/admin/greffe` (`router.replace` puis `router.refresh`). Un test qui ouvrait la page aussitôt était interrompu sous WebKit (« Navigation … interrupted by another navigation »). La mise en page admin, qui lit maintenant les compteurs, rendait ce chevauchement plus probable. Une seule navigation suffit : les pages admin sont dynamiques et se rendent à nouveau avec le niveau aal2.
+- **Sécurité, tests** :
+  - pgTAP `phase10c_admin_dashboard` : les 3 fonctions refusent un Visiteur, un Bad, un anonyme et un admin sans double authentification ; elles n'écrivent rien ; les compteurs suivent une photo, un signalement et un texte signalé ajoutés ; un profil de démonstration n'est pas compté ; « À traiter » est trié du plus ancien au plus récent, sans aucun e-mail ni `true_index`. Pour la recherche : partie de pseudo, partie de N° d'écrou, e-mail exact quelle que soit la casse ; une partie d'e-mail, le domaine seul ou la partie avant le « @ » ne trouvent rien ; les jokers sont pris comme du texte ; 20 au plus ; les colonnes de sortie ne contiennent ni écrou ni e-mail. `phase8a` : les 3 fonctions ajoutées à la liste revue. `phase4` (garde du N° d'écrou) : `admin_search_members` est désormais la seule fonction qui cherche par N° d'écrou, à la demande du porteur, sans le renvoyer.
+  - Vitest `admin-nav.test.ts` (groupes, entrée active, compteurs, longueur de recherche, chiffres absents affichés « — », 10 éléments au plus) ; `admin-guard.test.ts` mis à jour (la coquille reçoit les compteurs).
+  - e2e `relations.spec.ts` (Pixel 7 et iPhone 14) :
+    - le lien de l'en-tête mène au tableau de bord ; le nombre de photos en attente est celui de la base ; axe sans violation ;
+    - le tiroir : entrée active, axe sans violation tiroir ouvert, 20 Tab sans sortir, Échap ferme et rend le focus au bouton ; le choix d'une entrée ferme le tiroir, rend le focus et marque l'entrée active, avec son compteur ;
+    - la recherche par Ctrl+K : focus dans le champ, une partie d'e-mail ne trouve rien, l'e-mail exact trouve, une partie du N° d'écrou trouve, le résultat ouvre la page du membre et ne montre ni écrou ni e-mail ; axe sans violation ;
+    - en largeur `lg` : le menu latéral et ses groupes, sans bouton de tiroir, axe sans violation ;
+    - le « 9 ter » (balayage clavier et axe) inclut `/admin` ; le test 10a passe par le menu (tiroir sur téléphone) ; `super-admin.spec.ts` attend désormais le tableau de bord après `/onboarding/1` (le super admin arrive sur `/admin`, qui ne redirige plus).
+  - **Local** : pgTAP 29 fichiers ; Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : parcours complet 14 sur 14, `relations`, `super-admin`, `password-recovery` et `moderation-rgpd` verts.
+- **Bloqué, en attente du porteur** :
+  - le connecteur Supabase a demandé une confirmation pour appliquer à la preview la migration `20261107120000_greffe_views_retention` (10b ; la fonction de nettoyage contient des `DELETE`), et personne n'a répondu ; non contourné. La preview n'a donc ni les deux migrations de la 10b, ni celle de la 10c, qui s'appuie sur la 10b (`private.email_quota_day()`) ;
+  - sans elles, les types de la base ne peuvent pas être régénérés depuis la preview (`lib/supabase/database.types.ts`), et la branche n'est pas poussée : la CI ne passerait pas le typecheck.
+- **Décisions à valider (10c)** :
+  - **10-6** « Visibles » = la règle de la Découverte (`is_bad_visible` : actif, pas en pause, vu dans les 90 jours, 3 poses validées, un Casier, quartier ouvert).
+  - **10-7** « E-mails envoyés aujourd'hui / quota » = les e-mails de l'app, sur le jour UTC du quota de Resend, face à la part de l'app (quota moins la réserve des e-mails d'Auth). Les e-mails d'Auth ne sont pas comptés par l'app et n'y figurent pas. Sans envoi ce jour-là, le chiffre est « — » (pas de ligne).
+  - **10-8** La recherche ne renvoie pas le N° d'écrou, même quand on cherche par lui : la page Membres ne l'affiche pas aujourd'hui.
+  - **10-9** Après la double authentification, l'admin arrive toujours sur le Greffe (comme avant) ; seul le lien de l'en-tête mène au tableau de bord. Faut-il aussi arriver sur le tableau de bord ?
+- **CI** : en attente (branche pas encore poussée).
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
 Relu : PROMPT Phase 9, SPEC §0 (priorités), §3 (parrainage), §5 (badges), §6 (Casier), §13 (Parloir sans horaire), §14 (badges de confiance).
