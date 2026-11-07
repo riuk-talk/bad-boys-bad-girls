@@ -1,6 +1,7 @@
 import createIntlMiddleware from "next-intl/middleware";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
+import { canonicalRedirect } from "@/lib/canonical-host";
 import { isIndexable } from "@/lib/seo";
 import { refreshSession } from "@/lib/supabase/session";
 import { buildCsp, generateNonce, needsWasm } from "@/lib/security/csp";
@@ -8,6 +9,15 @@ import { buildCsp, generateNonce, needsWasm } from "@/lib/security/csp";
 const intl = createIntlMiddleware(routing);
 
 export default async function proxy(request: NextRequest) {
+  // Production on another host than bad-boys8bad-girls.fr (or www): 308 to the same path there,
+  // where Turnstile is allowed (lib/canonical-host.ts). Previews are left alone.
+  const canonical = canonicalRedirect(
+    request.nextUrl,
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host"),
+    process.env.VERCEL_ENV,
+  );
+  if (canonical) return NextResponse.redirect(canonical, 308);
+
   const nonce = generateNonce();
   const csp = buildCsp(nonce, {
     isDev: process.env.NODE_ENV === "development",
