@@ -840,6 +840,34 @@
       "framing": "Visage et épaules dans le cadre",
       "placard": "Pancarte",
       "placardTitle": "Dossier judiciaire"
+    },
+    "dossier": {
+      "title": "Ton dossier",
+      "kicker_bad": "Le Dossier",
+      "kicker_visitor": "Le Permis de visite",
+      "lead": "Ton dossier n'est pas terminé : ta Fiche n'est visible de personne tant qu'il manque quelque chose.",
+      "leadDone": "Tout est là. Il ne reste qu'à terminer ton dossier.",
+      "missingTitle": "Il te manque :",
+      "stepLink": "Étape {step}",
+      "afterRole": "après le choix de ton rôle",
+      "afterPrevious": "après les étapes précédentes",
+      "resume": "Reprendre à l'étape {step}",
+      "nothingMissing": "Plus rien ne manque.",
+      "finish": "Terminer mon dossier",
+      "saved": "Chaque étape est enregistrée : tu peux t'arrêter et reprendre plus tard.",
+      "items": {
+        "birthdate": "Ta date de naissance",
+        "consents": "Les conditions d'utilisation et l'attestation de majorité",
+        "identity": "Ton pseudo, ton genre et ta ville",
+        "role": "Ton rôle : Bad ou Visiteur",
+        "seeking": "Qui tu cherches (genres et âges)",
+        "consent_art9": "Ton accord pour l'usage de tes critères de recherche",
+        "photos": "Tes 3 poses : face, profil gauche, profil droit",
+        "photo": "Ta photo",
+        "casier": "Ton Casier : tes 3 chefs d'accusation",
+        "visit_motive": "Ton Motif de visite",
+        "core_answers": "Les 10 questions de l'Interrogatoire"
+      }
     }
   },
   "MyFiche": {
@@ -906,7 +934,8 @@
       "approved": "{photo} : validée.",
       "rejected": "{photo} : refusée ({reason}). Remplace-la.",
       "photoNumber": "Photo n° {number}",
-      "dismiss": "Compris"
+      "dismiss": "Compris",
+      "ficheOnline": "Le Greffe a validé tes 3 poses et ton dossier est complet : ta Fiche est en ligne."
     },
     "seeAsVisitors": "Voir ma Fiche",
     "accountTitle": "Mon compte",
@@ -2146,6 +2175,14 @@
     "admin_photos_pending": {
       "subject": "Photos en attente au Greffe",
       "body": "Des photos attendent une décision du Greffe."
+    },
+    "fiche_online": {
+      "subject": "Ta Fiche est en ligne",
+      "body": "Le Greffe a validé tes 3 poses et ton dossier est complet : ta Fiche est en ligne. Les Visiteurs la trouvent dès que ton quartier est ouvert."
+    },
+    "dossier_incomplete": {
+      "subject": "Tes poses sont validées",
+      "body": "Le Greffe a validé tes 3 poses. Il manque encore à ton dossier : {detail}.\n\nTant qu'il n'est pas terminé, ta Fiche n'est visible de personne."
     }
   },
   "Unsubscribe": {

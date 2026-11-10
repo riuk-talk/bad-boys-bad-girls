@@ -840,6 +840,34 @@
       "framing": "Face and shoulders in the frame",
       "placard": "Placard",
       "placardTitle": "Case file"
+    },
+    "dossier": {
+      "title": "Your case file",
+      "kicker_bad": "The Case File",
+      "kicker_visitor": "The Visiting Permit",
+      "lead": "Your case file is not finished: nobody can see your profile while something is missing.",
+      "leadDone": "Everything is there. All that is left is to finish your case file.",
+      "missingTitle": "You still need:",
+      "stepLink": "Step {step}",
+      "afterRole": "once you have chosen your role",
+      "afterPrevious": "after the previous steps",
+      "resume": "Resume at step {step}",
+      "nothingMissing": "Nothing is missing any more.",
+      "finish": "Finish my case file",
+      "saved": "Each step is saved: you can stop and come back later.",
+      "items": {
+        "birthdate": "Your date of birth",
+        "consents": "The terms of use and the age attestation",
+        "identity": "Your nickname, your gender and your town",
+        "role": "Your role: Bad or Visitor",
+        "seeking": "Who you are looking for (genders and ages)",
+        "consent_art9": "Your consent to the use of your search criteria",
+        "photos": "Your 3 poses: front, left profile, right profile",
+        "photo": "Your photo",
+        "casier": "Your Record: your 3 charges",
+        "visit_motive": "Your reason for visiting",
+        "core_answers": "The 10 questions of the Interrogation"
+      }
     }
   },
   "MyFiche": {
@@ -906,7 +934,8 @@
       "approved": "{photo}: approved.",
       "rejected": "{photo}: refused ({reason}). Replace it.",
       "photoNumber": "Photo no. {number}",
-      "dismiss": "Got it"
+      "dismiss": "Got it",
+      "ficheOnline": "The Registry validated your 3 poses and your case file is complete: your profile is online."
     },
     "seeAsVisitors": "See my File",
     "accountTitle": "My account",
@@ -2146,6 +2175,14 @@
     "admin_photos_pending": {
       "subject": "Photos waiting at the Greffe",
       "body": "Photos are waiting for a decision of the Greffe."
+    },
+    "fiche_online": {
+      "subject": "Your profile is online",
+      "body": "The Registry validated your 3 poses and your case file is complete: your profile is online. Visitors find it as soon as your quartier opens."
+    },
+    "dossier_incomplete": {
+      "subject": "Your poses are validated",
+      "body": "The Registry validated your 3 poses. Your case file still needs: {detail}.\n\nUntil it is finished, nobody can see your profile."
     }
   },
   "Unsubscribe": {

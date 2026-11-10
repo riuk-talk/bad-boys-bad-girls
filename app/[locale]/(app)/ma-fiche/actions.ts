@@ -81,7 +81,7 @@ export async function updateFicheAction(_state: FicheState, form: FormData): Pro
 export async function markNoticesReadAction(): Promise<void> {
   const member = await requireMember();
   await member.supabase.rpc("mark_notifications_read", {
-    p_types: ["moderation_decision", "permit_granted"],
+    p_types: ["moderation_decision", "permit_granted", "fiche_online"],
   });
   revalidatePath("/[locale]/ma-fiche", "page");
 }

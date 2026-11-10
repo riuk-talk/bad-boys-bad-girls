@@ -86,6 +86,11 @@ async function finishOnboarding(member: Member): Promise<StepState> {
   return goTo(await destinationAfterOnboarding(member));
 }
 
+/** « Terminer mon dossier » (10d): the screen of an unfinished dossier, once nothing is missing. */
+export async function finishDossierAction(): Promise<StepState> {
+  return finishOnboarding(await requireMember());
+}
+
 export async function saveAgeStep(_state: StepState, form: FormData): Promise<StepState> {
   const parsed = ageStepSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) return fail(firstErrors(parsed.error));

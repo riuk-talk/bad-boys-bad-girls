@@ -1,6 +1,7 @@
 import { createTranslator } from "next-intl";
 import en from "@/messages/en.json";
 import fr from "@/messages/fr.json";
+import { parseMissing } from "@/lib/onboarding/missing";
 
 /** The e-mails (SPEC §16): neutral texts (no pseudo, no message), one link into the site. */
 
@@ -11,6 +12,8 @@ export const EMAIL_KINDS = [
   "profile_dormant",
   "visit_reminder",
   "permit_granted",
+  "fiche_online",
+  "dossier_incomplete",
   "onboarding_reminder",
   "moderation_decision",
   "admin_zone_ready",
@@ -40,11 +43,28 @@ const PATHS: Record<EmailKind, string | null> = {
   profile_dormant: "/connexion",
   visit_reminder: "/visites",
   permit_granted: "/ma-fiche",
+  fiche_online: "/ma-fiche",
+  dossier_incomplete: "/onboarding",
   onboarding_reminder: "/onboarding",
   moderation_decision: null,
   admin_zone_ready: "/admin/quartiers",
   admin_photos_pending: "/admin/greffe",
 };
+
+/**
+ * What a dossier still lacks, in words (« dossier_incomplete », 10d): the keys of
+ * onboarding_missing() travel in the payload; anything else is left out.
+ */
+export function missingDetail(value: unknown, locale: "fr" | "en"): string | undefined {
+  const keys = parseMissing(value);
+  if (!keys || keys.length === 0) return undefined;
+  const t = createTranslator({
+    locale,
+    messages: locale === "en" ? en : fr,
+    namespace: "Onboarding.dossier.items",
+  });
+  return keys.map((key) => t(key)).join(" ; ");
+}
 
 export type Composed = { subject: string; text: string; html: string };
 

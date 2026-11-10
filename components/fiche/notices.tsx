@@ -35,6 +35,9 @@ export async function Notices({ notices }: { notices: Notice[] }) {
               </li>
             );
           }
+          if (notice.type === "fiche_online") {
+            return <li key={notice.id}>{t("ficheOnline")}</li>;
+          }
           const position = notice.payload.photo_position ?? 0;
           const photo =
             position in POSE_KEYS

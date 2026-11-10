@@ -82,7 +82,7 @@ export default async function MyFichePage() {
     supabase
       .from("notifications")
       .select("id, type, payload, created_at")
-      .in("type", ["moderation_decision", "permit_granted"])
+      .in("type", ["moderation_decision", "permit_granted", "fiche_online"])
       .is("read_at", null)
       .order("created_at", { ascending: false })
       .limit(10),

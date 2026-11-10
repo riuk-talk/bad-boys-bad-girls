@@ -23,6 +23,8 @@ const TEXTS = /* TEXTS */ {
     "promenade_open": ["La Promenade est ouverte", "Ta sélection du soir t'attend."],
     "permit_granted": ["Ton Permis est délivré", "Tu peux envoyer tes premières demandes."],
     "moderation_decision": ["Le Greffe a statué", "Va voir ta Fiche."],
+    "fiche_online": ["Ta Fiche est en ligne", "Le Greffe a validé tes 3 poses : ton dossier est complet."],
+    "dossier_incomplete": ["Tes poses sont validées", "Il manque encore quelque chose à ton dossier : regarde quoi."],
     "default": ["Du nouveau", "Quelque chose t'attend."]
   },
   "en": {
@@ -43,6 +45,8 @@ const TEXTS = /* TEXTS */ {
     "promenade_open": ["The Yard is open", "Tonight's selection is waiting for you."],
     "permit_granted": ["Your Permit is issued", "You can send your first requests."],
     "moderation_decision": ["The Registry has decided", "Have a look at your File."],
+    "fiche_online": ["Your profile is online", "The Registry validated your 3 poses: your case file is complete."],
+    "dossier_incomplete": ["Your poses are validated", "Something is still missing from your case file: see what."],
     "default": ["Something new", "Something is waiting for you."]
   }
 } /* /TEXTS */;

@@ -1,6 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resendConfig, sendWithResend } from "@/lib/email/resend";
-import { composeEmail, EMAIL_KINDS, isUnsubscribable, type EmailKind } from "@/lib/email/compose";
+import {
+  composeEmail,
+  EMAIL_KINDS,
+  isUnsubscribable,
+  missingDetail,
+  type EmailKind,
+} from "@/lib/email/compose";
 import { SITE_URL } from "@/lib/env";
 import { isAuthorizedCron } from "@/lib/push/dispatch";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -55,6 +61,8 @@ export async function POST(request: NextRequest) {
             .eq("id", payload.zone_id)
             .maybeSingle();
           detail = data?.name ?? undefined;
+        } else if (job.kind === "dossier_incomplete") {
+          detail = missingDetail(payload.missing, locale);
         }
         const unsubscribe =
           isUnsubscribable(job.kind) && job.unsubscribe_token

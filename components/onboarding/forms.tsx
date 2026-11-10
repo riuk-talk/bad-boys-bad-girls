@@ -4,6 +4,7 @@ import { Check, ImagePlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
+  finishDossierAction,
   saveAgeStep,
   saveIdentityStep,
   saveMotiveStep,
@@ -562,6 +563,18 @@ export function PracticeStepForm() {
       >
         {t("cta")}
       </Button>
+      <Alert message={step.message} />
+    </form>
+  );
+}
+
+/** « Terminer mon dossier » (10d): complete_onboarding() checks everything again in SQL. */
+export function FinishDossierForm() {
+  const t = useTranslations("Onboarding");
+  const step = useStep(finishDossierAction, "finish-dossier");
+  return (
+    <form id="finish-dossier" action={step.formAction} className="space-y-3">
+      <Submit pending={step.pending}>{t("dossier.finish")}</Submit>
       <Alert message={step.message} />
     </form>
   );
