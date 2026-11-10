@@ -34,19 +34,25 @@ export default async function AdminDashboardPage() {
     {
       key: "bads",
       values: [
-        { label: t("registered"), value: d.bads_registered },
-        { label: t("ficheComplete"), value: d.bads_complete },
-        { label: t("visible"), value: d.bads_visible },
+        { label: t("badsRegistered"), value: d.bads_registered },
+        { label: t("badsComplete"), value: d.bads_complete },
+        { label: t("badsThreePhotos"), value: d.bads_three_photos },
+        { label: t("badsVisible"), value: d.bads_visible },
       ],
-      href: "/admin/membres",
+      href: "/admin/membres?role=bad",
     },
     {
       key: "visitors",
       values: [
-        { label: t("registered"), value: d.visitors_registered },
-        { label: t("permitComplete"), value: d.visitors_complete },
+        { label: t("visitorsRegistered"), value: d.visitors_registered },
+        { label: t("visitorsComplete"), value: d.visitors_complete },
       ],
-      href: "/admin/membres",
+      href: "/admin/membres?role=visitor",
+    },
+    {
+      key: "blocked",
+      values: [{ label: t("blockedLabel"), value: d.dossiers_blocked }],
+      href: "/admin/membres?bloques=1",
     },
     {
       key: "photos",

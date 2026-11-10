@@ -1767,7 +1767,8 @@
       "suspended": "Suspended",
       "hidden": "Fiche hidden",
       "onboarding": "Signing up",
-      "active": "Active"
+      "active": "Active",
+      "not_started": "Not started yet"
     },
     "categories": {
       "fake_profile": "Fake profile",
@@ -1848,11 +1849,32 @@
     },
     "members": {
       "title": "Members",
-      "lead": "Search by the start of the pseudo or by the exact e-mail (the e-mail is never shown).",
+      "lead": "Every account, newest first, 50 a page. The search finds by the start of the nickname or the exact e-mail (the e-mail is never shown).",
       "search": "Pseudo or e-mail",
       "submit": "Search",
       "none": "No member found.",
-      "since": "signed up on {date}"
+      "since": "signed up on {date}",
+      "allMembers": "All members",
+      "filters": "Filters",
+      "role": "Role",
+      "state": "State",
+      "dossier": "Case file",
+      "any": "All",
+      "complete": "Finished",
+      "incomplete": "Unfinished",
+      "blockedOnly": "Blocked case files only",
+      "apply": "Filter",
+      "count": "{count, plural, =0 {No account} one {# account} other {# accounts}}",
+      "blocked": "blocked case file",
+      "pages": "Pages",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page} of {pages}",
+      "unconfirmedTitle": "Unconfirmed accounts",
+      "unconfirmedLead": "Signed up more than 48 hours ago without confirming their e-mail: the date and the domain of the address only. A mistyped domain (gmail.comj, hotmial.com…) often explains it.",
+      "unconfirmedNone": "None.",
+      "createdOn": "Signed up on",
+      "domain": "Domain"
     },
     "member": {
       "title": "Member record",
@@ -1870,7 +1892,8 @@
       "received": "Reports received",
       "noReports": "No report.",
       "flags": "Flagged texts",
-      "noFlags": "No flagged text."
+      "noFlags": "No flagged text.",
+      "logged": "Each opening of this record is logged (which admin, when)."
     },
     "log": {
       "title": "History of decisions",
@@ -2046,6 +2069,66 @@
         "courrier": "Mail",
         "parloir": "Parloir",
         "other": "Other pages"
+      }
+    },
+    "dossier": {
+      "title": "Case file",
+      "none": "—",
+      "notStarted": "Account confirmed, case file not started yet.",
+      "readyToFinish": "Nothing is missing: the member has not finished the case file yet.",
+      "complete": "Case file finished.",
+      "missing": "Case file unfinished. Missing:",
+      "blocked": "Blocked case file: the photos are validated, but the case file is not finished.",
+      "visibleYes": "Visible in the Discovery: yes.",
+      "visibleNo": "Visible in the Discovery: no. Why:",
+      "visibleVisitor": "Visitor: not in the Discovery (it only shows Bads).",
+      "hidden": {
+        "not_bad": "not a Bad",
+        "dossier_incomplete": "the case file is not finished",
+        "banned": "the account is banned",
+        "hidden": "the profile is hidden by moderation",
+        "suspended": "the account is suspended",
+        "paused": "the Bad paused the profile",
+        "dormant": "no sign-in for 90 days",
+        "poses_not_validated": "the 3 poses are not all validated by the Registry",
+        "no_casier": "the Record is not written",
+        "zone_closed": "the quartier is not open"
+      },
+      "identity": "Identity",
+      "gender": "Gender",
+      "age": "Age",
+      "place": "Town and quartier",
+      "seeking": "Search criteria",
+      "seekingValue": "{genders} · {min} to {max} years old",
+      "motive": "Reason for visiting",
+      "bio": "Introduction",
+      "tribes": "Distinctive marks",
+      "casier": "Charges",
+      "casierSecret": "Which one is true is never shown, not even to the Registry.",
+      "answers": "Answers to the Interrogation",
+      "created": "Account created",
+      "confirmed": "E-mail confirmed",
+      "lastSignIn": "Last sign-in",
+      "lastSeen": "Last visit to the site",
+      "photos": "Photos",
+      "noPhotos": "No photo.",
+      "noFile": "File deleted",
+      "photoAlt": "Photo: {pose}",
+      "waived": "validated without cut-out",
+      "photoStatus": {
+        "pending": "Waiting at the Registry",
+        "approved": "Validated",
+        "rejected": "Refused"
+      },
+      "consents": "Consents",
+      "noConsents": "No consent recorded.",
+      "granted": "given",
+      "withdrawn": "withdrawn",
+      "consentTypes": {
+        "terms": "Terms of use",
+        "privacy": "Privacy policy",
+        "age_18": "Age attestation",
+        "art9_seeking": "Search criteria (art. 9)"
       }
     }
   },
@@ -2268,12 +2351,9 @@
       "flags": "Flagged texts",
       "zones": "Quartiers",
       "emails": "App e-mails",
-      "push": "Notifications"
+      "push": "Notifications",
+      "blocked": "Blocked case files"
     },
-    "registered": "registered",
-    "ficheComplete": "Fiche complete",
-    "visible": "visible",
-    "permitComplete": "Permit complete",
     "waiting": "waiting",
     "open": "open",
     "zonesOpen": "open",
@@ -2288,7 +2368,14 @@
       "photo": "Photo at the Registry",
       "report": "Report",
       "flag": "Flagged text"
-    }
+    },
+    "badsRegistered": "Bads registered",
+    "badsComplete": "Bads with a finished case file",
+    "badsThreePhotos": "Bads with their 3 photos validated",
+    "badsVisible": "Bads visible in the Discovery",
+    "visitorsRegistered": "Visitors registered",
+    "visitorsComplete": "Visitors with a finished permit",
+    "blockedLabel": "photos validated, case file unfinished"
   },
   "Criteria": {
     "title": "My criteria",

@@ -16,9 +16,11 @@ export type TodoItem = {
 export type Dashboard = {
   bads_registered: Figure;
   bads_complete: Figure;
+  bads_three_photos: Figure;
   bads_visible: Figure;
   visitors_registered: Figure;
   visitors_complete: Figure;
+  dossiers_blocked: Figure;
   photos_pending: Figure;
   reports_open: Figure;
   flags_open: Figure;
@@ -33,9 +35,11 @@ export type Dashboard = {
 const FIGURES = [
   "bads_registered",
   "bads_complete",
+  "bads_three_photos",
   "bads_visible",
   "visitors_registered",
   "visitors_complete",
+  "dossiers_blocked",
   "photos_pending",
   "reports_open",
   "flags_open",

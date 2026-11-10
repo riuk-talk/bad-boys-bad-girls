@@ -1767,7 +1767,8 @@
       "suspended": "Suspendu·e",
       "hidden": "Fiche masquée",
       "onboarding": "Inscription en cours",
-      "active": "Actif·ve"
+      "active": "Actif·ve",
+      "not_started": "Pas encore commencé"
     },
     "categories": {
       "fake_profile": "Faux profil",
@@ -1848,11 +1849,32 @@
     },
     "members": {
       "title": "Membres",
-      "lead": "Recherche par début de pseudo ou par e-mail exact (l'e-mail n'est jamais affiché).",
+      "lead": "Tous les comptes, du plus récent au plus ancien, 50 par page. La recherche trouve par début de pseudo ou par e-mail exact (l'e-mail n'est jamais affiché).",
       "search": "Pseudo ou e-mail",
       "submit": "Chercher",
       "none": "Aucun membre trouvé.",
-      "since": "inscrit·e le {date}"
+      "since": "inscrit·e le {date}",
+      "allMembers": "Tous les membres",
+      "filters": "Filtres",
+      "role": "Rôle",
+      "state": "État",
+      "dossier": "Dossier",
+      "any": "Tous",
+      "complete": "Terminé",
+      "incomplete": "Inachevé",
+      "blockedOnly": "Dossiers bloqués seulement",
+      "apply": "Filtrer",
+      "count": "{count, plural, =0 {Aucun compte} one {# compte} other {# comptes}}",
+      "blocked": "dossier bloqué",
+      "pages": "Pages",
+      "previous": "Page précédente",
+      "next": "Page suivante",
+      "page": "Page {page} sur {pages}",
+      "unconfirmedTitle": "Comptes non confirmés",
+      "unconfirmedLead": "Inscrits depuis plus de 48 h sans avoir confirmé leur e-mail : la date et le domaine de l'adresse seulement. Un domaine mal tapé (gmail.comj, hotmial.com…) explique souvent le blocage.",
+      "unconfirmedNone": "Aucun.",
+      "createdOn": "Inscrit le",
+      "domain": "Domaine"
     },
     "member": {
       "title": "Fiche du membre",
@@ -1870,7 +1892,8 @@
       "received": "Signalements reçus",
       "noReports": "Aucun signalement.",
       "flags": "Textes signalés",
-      "noFlags": "Aucun texte signalé."
+      "noFlags": "Aucun texte signalé.",
+      "logged": "Chaque ouverture de cette fiche est journalisée (quel admin, quand)."
     },
     "log": {
       "title": "Historique des décisions",
@@ -2046,6 +2069,66 @@
         "courrier": "Courrier",
         "parloir": "Parloir",
         "other": "Autres pages"
+      }
+    },
+    "dossier": {
+      "title": "Dossier",
+      "none": "—",
+      "notStarted": "Compte confirmé, dossier pas encore commencé.",
+      "readyToFinish": "Plus rien ne manque : le membre n'a pas encore terminé son dossier.",
+      "complete": "Dossier terminé.",
+      "missing": "Dossier inachevé. Il manque :",
+      "blocked": "Dossier bloqué : les photos sont validées, mais le dossier n'est pas terminé.",
+      "visibleYes": "Visible dans la Découverte : oui.",
+      "visibleNo": "Visible dans la Découverte : non. Pourquoi :",
+      "visibleVisitor": "Visiteur : il n'apparaît pas dans la Découverte (elle ne montre que des Bads).",
+      "hidden": {
+        "not_bad": "ce n'est pas un Bad",
+        "dossier_incomplete": "le dossier n'est pas terminé",
+        "banned": "le compte est banni",
+        "hidden": "la Fiche est masquée par la modération",
+        "suspended": "le compte est suspendu",
+        "paused": "le Bad a mis sa Fiche en pause",
+        "dormant": "aucune connexion depuis 90 jours",
+        "poses_not_validated": "les 3 poses ne sont pas toutes validées par le Greffe",
+        "no_casier": "le Casier n'est pas écrit",
+        "zone_closed": "le quartier n'est pas ouvert"
+      },
+      "identity": "Identité",
+      "gender": "Genre",
+      "age": "Âge",
+      "place": "Ville et quartier",
+      "seeking": "Critères recherchés",
+      "seekingValue": "{genders} · {min} à {max} ans",
+      "motive": "Motif de visite",
+      "bio": "Présentation",
+      "tribes": "Signes distinctifs",
+      "casier": "Chefs d'accusation",
+      "casierSecret": "Lequel est vrai n'est jamais montré, même au Greffe.",
+      "answers": "Réponses à l'Interrogatoire",
+      "created": "Compte créé",
+      "confirmed": "E-mail confirmé",
+      "lastSignIn": "Dernière connexion",
+      "lastSeen": "Dernier passage sur le site",
+      "photos": "Photos",
+      "noPhotos": "Aucune photo.",
+      "noFile": "Fichier supprimé",
+      "photoAlt": "Photo : {pose}",
+      "waived": "validée sans détourage",
+      "photoStatus": {
+        "pending": "En attente au Greffe",
+        "approved": "Validée",
+        "rejected": "Refusée"
+      },
+      "consents": "Consentements",
+      "noConsents": "Aucun consentement enregistré.",
+      "granted": "donné",
+      "withdrawn": "retiré",
+      "consentTypes": {
+        "terms": "Conditions d'utilisation",
+        "privacy": "Politique de confidentialité",
+        "age_18": "Attestation de majorité",
+        "art9_seeking": "Critères de recherche (art. 9)"
       }
     }
   },
@@ -2268,12 +2351,9 @@
       "flags": "Textes signalés",
       "zones": "Quartiers",
       "emails": "E-mails de l'app",
-      "push": "Notifications"
+      "push": "Notifications",
+      "blocked": "Dossiers bloqués"
     },
-    "registered": "inscrits",
-    "ficheComplete": "Fiche terminée",
-    "visible": "visibles",
-    "permitComplete": "Permis terminé",
     "waiting": "en attente",
     "open": "ouverts",
     "zonesOpen": "ouverts",
@@ -2288,7 +2368,14 @@
       "photo": "Photo au Greffe",
       "report": "Signalement",
       "flag": "Texte signalé"
-    }
+    },
+    "badsRegistered": "Bads inscrits",
+    "badsComplete": "Bads au dossier terminé",
+    "badsThreePhotos": "Bads aux 3 photos validées",
+    "badsVisible": "Bads visibles dans la Découverte",
+    "visitorsRegistered": "Visiteurs inscrits",
+    "visitorsComplete": "Visiteurs au Permis terminé",
+    "blockedLabel": "photos validées, dossier inachevé"
   },
   "Criteria": {
     "title": "Mes critères",

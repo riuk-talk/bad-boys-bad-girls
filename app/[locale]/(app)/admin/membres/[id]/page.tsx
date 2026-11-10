@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import * as z from "zod/mini";
+import { MemberDossier } from "@/components/admin/member-dossier";
 import { Outcome } from "@/components/admin/outcome";
 import { Button } from "@/components/ui/button";
+import { parseMemberDetail } from "@/lib/admin/members";
 import { requireMember } from "@/lib/auth/user";
+import { publicPhotoUrl } from "@/lib/relations/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   MEMBER_SANCTIONS,
   MOTIVE_MAX,
@@ -26,6 +30,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const field = "border-line bg-ink-2 w-full rounded-lg border px-3 py-2";
+const SIGNED_URL_SECONDS = 600;
+
+/**
+ * The thumbnails of the record: the public small file of a validated photo; a short-lived signed
+ * URL (secret key) of the small pending file otherwise; nothing for a refused one (deleted).
+ */
+async function photoThumbnails(
+  supabase: Awaited<ReturnType<typeof requireMember>>["supabase"],
+  detail: NonNullable<ReturnType<typeof parseMemberDetail>>,
+): Promise<Record<number, string>> {
+  const thumbnails: Record<number, string> = {};
+  const pending = detail.photos.filter((photo) => photo.status === "pending" && photo.pending_path);
+  const { data: signed } = pending.length
+    ? await createAdminClient()
+        .storage.from("photos-pending")
+        .createSignedUrls(
+          pending.map((photo) => photo.pending_path!.replace(/\.webp$/, "-s.webp")),
+          SIGNED_URL_SECONDS,
+        )
+    : { data: [] };
+  pending.forEach((photo, index) => {
+    const url = signed?.[index]?.signedUrl;
+    if (url) thumbnails[photo.position] = url;
+  });
+  for (const photo of detail.photos) {
+    const url = photo.status === "approved" ? publicPhotoUrl(supabase, photo.public_small) : null;
+    if (url) thumbnails[photo.position] = url;
+  }
+  return thumbnails;
+}
 
 /**
  * Fiche d'un membre côté Greffe (SPEC §15): state, reports received, flagged texts, every decision
@@ -40,6 +74,23 @@ export default async function MemberRecordPage({ params, searchParams }: Props) 
   const t = await getTranslations("Admin");
   const format = await getFormatter();
   const { error, done } = await searchParams;
+  // The full record (10d), logged in greffe_fiche_views; then the moderation record, which only
+  // exists once the member has a profile.
+  const { data: detailData, error: detailError } = await member.supabase.rpc(
+    "admin_member_detail",
+    { p_user: id },
+  );
+  const detail = detailError ? null : parseMemberDetail(detailData);
+  if (!detail) notFound();
+  const thumbnails = await photoThumbnails(member.supabase, detail);
+  if (!detail.has_profile) {
+    return (
+      <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 sm:py-12">
+        <h1 className="font-display text-4xl tracking-wide uppercase">{t("noPseudo")}</h1>
+        <MemberDossier detail={detail} thumbnails={thumbnails} />
+      </div>
+    );
+  }
   const { data } = await member.supabase.rpc("admin_member", { p_user: id });
   const parsed = memberRecordSchema.safeParse(data);
   if (!parsed.success) notFound();
@@ -70,6 +121,8 @@ export default async function MemberRecordPage({ params, searchParams }: Props) 
         </p>
         <Outcome error={error} done={done} />
       </div>
+
+      <MemberDossier detail={detail} thumbnails={thumbnails} />
 
       <section
         aria-labelledby="sanction-title"
