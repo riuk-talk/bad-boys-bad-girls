@@ -271,6 +271,8 @@ test.describe("photo cut-out in the browser (local stack)", () => {
     await page.getByLabel("E-mail").fill(bad.email);
     await page.getByLabel("Mot de passe", { exact: true }).fill(bad.password);
     await page.getByRole("button", { name: "Se connecter" }).click();
+    // The screen of the unfinished dossier (10d), then the step of the poses.
+    await page.getByRole("link", { name: "Reprendre à l'étape 5" }).click();
     await page.waitForURL(/onboarding\/5/);
 
     const timings: string[] = [];

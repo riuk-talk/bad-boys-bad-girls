@@ -44,10 +44,14 @@ export async function openGreffe(
   await page.getByLabel("E-mail").fill(account.email);
   await page.getByLabel("Mot de passe", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Se connecter" }).click();
-  // The login goes to /onboarding, which redirects once or twice more (an admin: the first
-  // onboarding step; the super admin: /admin, then /acces-admin). Wait for the final page, or the
-  // next navigation is interrupted (WebKit).
-  await page.waitForURL((url) => /^\/(onboarding\/\d+|acces-admin)$/.test(url.pathname));
+  // The login goes to /onboarding, which redirects once or twice more (an admin without a
+  // profile: the first onboarding step; the super admin: /admin, then /acces-admin) or shows the
+  // screen of an unfinished dossier (an admin with a profile, 10d). Wait for the final page, or
+  // the next navigation is interrupted (WebKit).
+  await page.waitForURL((url) => /^\/(onboarding(\/\d+)?|acces-admin)$/.test(url.pathname));
+  if (new URL(page.url()).pathname === "/onboarding") {
+    await expect(page.getByRole("heading", { name: "Ton dossier", level: 1 })).toBeVisible();
+  }
   if (!page.url().includes("/acces-admin")) {
     await page.goto("/admin/greffe");
     await page.waitForURL(/\/acces-admin/);
