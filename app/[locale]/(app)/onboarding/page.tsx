@@ -28,15 +28,16 @@ export default async function OnboardingEntry() {
   // The super admin has no profile and no onboarding (Phase 5a-ter): straight to /admin.
   const { data: adminRole } = await member.supabase.rpc("my_admin_role");
   if (adminRole === "super_admin") return redirect({ href: "/admin", locale });
-  const [{ data: profile }, { data: missingData }] = await Promise.all([
-    member.supabase
-      .from("profiles")
-      .select("onboarding_step, onboarding_completed_at, role")
-      .eq("id", member.userId)
-      .maybeSingle(),
-    member.supabase.rpc("onboarding_missing"),
-  ]);
+  const { data: profile } = await member.supabase
+    .from("profiles")
+    .select("onboarding_step, onboarding_completed_at, role")
+    .eq("id", member.userId)
+    .maybeSingle();
+  // A finished dossier goes on at once (the sign-in of every member passes here).
   if (profile?.onboarding_completed_at) return redirect({ href: "/ma-fiche", locale });
+  const { data: missingData } = profile
+    ? await member.supabase.rpc("onboarding_missing")
+    : { data: null };
   const role = parseRole(profile?.role);
   const reachable = role ? lastStep(role) : ROLE_STEP;
   const next = Math.min((profile?.onboarding_step ?? 0) + 1, reachable);

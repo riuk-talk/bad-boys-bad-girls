@@ -79,6 +79,9 @@ async function login(browser: Browser, email: string, password: string): Promise
   await page.getByLabel("Mot de passe", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Se connecter" }).click();
   await page.waitForURL((target) => !/^\/(connexion|onboarding)$/.test(target.pathname));
+  // The URL changes before the client router has rendered the page: a navigation started now
+  // would interrupt it (WebKit: « internal error »). Every landing page has its heading.
+  await expect(page.locator("main h1").first()).toBeVisible();
   // Landing on a photo page (Ma Fiche) by a client-side navigation: it may load itself again once
   // (components/onboarding/cutout-choice.tsx); wait for it before going anywhere else.
   if ((await page.locator("[data-cutout-engine]").count()) > 0) await cutoutReady(page);
