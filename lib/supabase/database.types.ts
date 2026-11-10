@@ -569,18 +569,21 @@ export type Database = {
         Row: {
           admin_id: string
           bad_id: string
+          context: string
           id: number
           viewed_at: string
         }
         Insert: {
           admin_id: string
           bad_id: string
+          context?: string
           id?: never
           viewed_at?: string
         }
         Update: {
           admin_id?: string
           bad_id?: string
+          context?: string
           id?: never
           viewed_at?: string
         }
@@ -1855,7 +1858,28 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["launch_mode"]
       }
+      admin_list_members: {
+        Args: {
+          p_blocked?: boolean
+          p_complete?: boolean
+          p_page?: number
+          p_role?: Database["public"]["Enums"]["member_role"]
+          p_state?: string
+        }
+        Returns: {
+          blocked: boolean
+          complete: boolean
+          created_at: string
+          last_seen_at: string
+          pseudo: string
+          role: Database["public"]["Enums"]["member_role"]
+          state: string
+          total: number
+          user_id: string
+        }[]
+      }
       admin_member: { Args: { p_user: string }; Returns: Json }
+      admin_member_detail: { Args: { p_user: string }; Returns: Json }
       admin_moderation_log: {
         Args: { p_limit?: number }
         Returns: {
@@ -2032,6 +2056,13 @@ export type Database = {
           slug: string
           sort: number
           tribe_id: number
+        }[]
+      }
+      admin_unconfirmed_accounts: {
+        Args: never
+        Returns: {
+          created_at: string
+          domain: string
         }[]
       }
       admin_view_discover: {
@@ -2489,6 +2520,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      onboarding_missing: { Args: never; Returns: string[] }
       open_conversation_for: {
         Args: { p_conversation: string; p_member: string }
         Returns: {
@@ -2602,6 +2634,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_empty_reason: { Args: never; Returns: string }
       search_places: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
@@ -2700,6 +2733,8 @@ export type Database = {
         | "visit_reminder"
         | "permit_granted"
         | "admin_zone_ready"
+        | "fiche_online"
+        | "dossier_incomplete"
       flag_source:
         | "pseudo"
         | "bio"
@@ -2753,6 +2788,8 @@ export type Database = {
         | "date_cancelled"
         | "report_decided"
         | "sanction"
+        | "fiche_online"
+        | "dossier_incomplete"
       question_phase: "core" | "extra"
       report_category:
         | "fake_profile"
@@ -2955,6 +2992,8 @@ export const Constants = {
         "visit_reminder",
         "permit_granted",
         "admin_zone_ready",
+        "fiche_online",
+        "dossier_incomplete",
       ],
       flag_source: [
         "pseudo",
@@ -3011,6 +3050,8 @@ export const Constants = {
         "date_cancelled",
         "report_decided",
         "sanction",
+        "fiche_online",
+        "dossier_incomplete",
       ],
       question_phase: ["core", "extra"],
       report_category: [
