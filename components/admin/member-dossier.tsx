@@ -85,9 +85,7 @@ export async function MemberDossier({ detail, thumbnails }: Props) {
           {t("identity")}
         </h2>
         <dl className="divide-line divide-y">
-          <Row label={t("gender")}>
-            {detail.gender ? genders(detail.gender as "man") : none}
-          </Row>
+          <Row label={t("gender")}>{detail.gender ? genders(detail.gender as "man") : none}</Row>
           <Row label={t("age")}>{detail.age ?? none}</Row>
           <Row label={t("place")}>
             {[detail.city, detail.zone].filter(Boolean).join(" · ") || none}
