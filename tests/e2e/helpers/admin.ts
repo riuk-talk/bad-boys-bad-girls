@@ -48,9 +48,23 @@ export async function openGreffe(
   // profile: the first onboarding step; the super admin: /admin, then /acces-admin) or shows the
   // screen of an unfinished dossier (an admin with a profile, 10d). Wait for the final page, or
   // the next navigation is interrupted (WebKit).
-  await page.waitForURL((url) => /^\/(onboarding(\/\d+)?|acces-admin)$/.test(url.pathname));
-  if (new URL(page.url()).pathname === "/onboarding") {
-    await expect(page.getByRole("heading", { name: "Ton dossier", level: 1 })).toBeVisible();
+  // /onboarding shows for a moment before a redirection (WebKit): it is final only once the
+  // dossier screen is there.
+  const redirected = /^\/(onboarding\/\d+|acces-admin)$/;
+  const dossier = page.getByRole("heading", { name: "Ton dossier", level: 1 });
+  await expect
+    .poll(
+      async () => {
+        const path = new URL(page.url()).pathname;
+        if (redirected.test(path)) return "redirected";
+        if (path === "/onboarding" && (await dossier.isVisible())) return "dossier";
+        return "pending";
+      },
+      { message: "the page after sign-in", timeout: 20_000 },
+    )
+    .not.toBe("pending");
+  if (redirected.test(new URL(page.url()).pathname)) {
+    await page.waitForURL((url) => redirected.test(url.pathname));
   }
   if (!page.url().includes("/acces-admin")) {
     await page.goto("/admin/greffe");
