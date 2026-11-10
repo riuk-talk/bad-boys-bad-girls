@@ -2134,7 +2134,8 @@
         "privacy": "Politique de confidentialité",
         "age_18": "Attestation de majorité",
         "art9_seeking": "Critères de recherche (art. 9)"
-      }
+      },
+      "completeButMissing": "Dossier terminé, mais les règles d'aujourd'hui demandent encore :"
     }
   },
   "Decisions": {

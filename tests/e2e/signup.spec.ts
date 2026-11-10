@@ -1,7 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { randomBytes } from "node:crypto";
+import AxeBuilder from "@axe-core/playwright";
 import { captcha } from "./helpers/captcha";
+import { settled } from "./helpers/settle";
 
 // Sign-up as a real person does it, LOCAL STACK ONLY (scripts/ci/local-env.mjs): the Visitor door
 // of the landing, the form, the confirmation e-mail (read in Mailpit, the local mailbox of
@@ -16,6 +18,16 @@ const enabled =
   /^http:\/\/(127\.0\.0\.1|localhost):/.test(url) &&
   secret !== "" &&
   mailpit !== "";
+
+const WCAG = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"];
+
+async function axeViolations(page: Page) {
+  await settled(page);
+  const result = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  return result.violations.map(
+    (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
+  );
+}
 
 type MailpitSearch = { messages: { ID: string }[] };
 type MailpitMessage = { Text: string };
@@ -47,11 +59,15 @@ test.describe("sign-up: landing door, e-mail confirmation, first steps (local st
 
   const admin = createClient(url, secret, { auth: { persistSession: false } });
   const email = `e2e-signup-${randomBytes(4).toString("hex")}@example.com`;
+  const typo: string[] = [];
 
   test.afterAll(async () => {
     const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
-    const user = data?.users.find((u) => u.email === email);
-    if (user) await admin.auth.admin.deleteUser(user.id);
+    for (const user of data?.users ?? []) {
+      if (user.email === email || typo.includes(user.email ?? "")) {
+        await admin.auth.admin.deleteUser(user.id);
+      }
+    }
   });
 
   test("a Visitor signs up, confirms the e-mail and reaches the role step", async ({ page }) => {
@@ -89,6 +105,48 @@ test.describe("sign-up: landing door, e-mail confirmation, first steps (local st
 
     // The door chosen on the landing preselects the role (SPEC v7 §2 bis).
     await expect(page.getByRole("radio", { name: /Je viens visiter/ })).toBeChecked();
+
+    // Coming back to an unfinished dossier (10d): what is missing, a link to each step that can
+    // be reached, and the way to resume.
+    await page.goto("/onboarding");
+    await expect(page.getByRole("heading", { name: "Ton dossier", level: 1 })).toBeVisible();
+    const missing = page.getByRole("region", { name: "Il te manque :" });
+    await expect(missing.getByRole("link", { name: /Ton rôle : Bad ou Visiteur/ })).toHaveAttribute(
+      "href",
+      /\/onboarding\/3$/,
+    );
+    await expect(missing).toContainText("Les 10 questions de l'Interrogatoire");
+    await expect(missing).not.toContainText("Ta date de naissance");
+    expect(await axeViolations(page)).toEqual([]);
+    await missing.getByRole("link", { name: "Reprendre à l'étape 3" }).click();
+    await page.waitForURL(/onboarding\/3$/, { waitUntil: "commit" });
+  });
+
+  // A mistyped domain (10d, a real case: « …@gmail.comj »): a suggestion, never a refusal; the
+  // panel shows the address and « Corriger » brings it back in the form.
+  test("a mistyped address: the suggestion, the address shown, « Corriger »", async ({ page }) => {
+    const local = `e2e-typo-${randomBytes(4).toString("hex")}`;
+    typo.push(`${local}@gmail.com`);
+    await page.goto("/inscription");
+    const field = page.getByLabel("E-mail");
+    await field.fill(`${local}@gmail.comj`);
+    await page.getByLabel("Mot de passe", { exact: true }).focus();
+    const hint = page.getByRole("status").filter({ hasText: "Tu voulais dire" });
+    await expect(hint).toHaveText(`Tu voulais dire ${local}@gmail.com ?`);
+    expect(await axeViolations(page)).toEqual([]);
+    await hint.getByRole("button", { name: `${local}@gmail.com` }).click();
+    await expect(field).toHaveValue(`${local}@gmail.com`);
+    await expect(hint).toHaveCount(0);
+
+    await page
+      .getByLabel("Mot de passe", { exact: true })
+      .fill(`Pw-${randomBytes(12).toString("base64url")}`);
+    await page.getByRole("button", { name: "Créer mon compte" }).click();
+    const panel = page.getByRole("status").filter({ hasText: "Vérifie ta boîte mail" });
+    await expect(panel).toContainText(`Le lien part à ${local}@gmail.com.`);
+    await panel.getByRole("button", { name: "Corriger" }).click();
+    await expect(page.getByLabel("E-mail")).toHaveValue(`${local}@gmail.com`);
+    await expect(page.getByLabel("E-mail")).toBeFocused();
   });
 
   // An address already registered gets the same answer as a new one (no account enumeration),

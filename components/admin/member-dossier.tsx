@@ -47,11 +47,13 @@ export async function MemberDossier({ detail, thumbnails }: Props) {
           <p className="font-semibold">
             {detail.state === "not_started"
               ? t("notStarted")
-              : missing.length === 0
-                ? detail.state === "onboarding"
+              : detail.state === "onboarding"
+                ? missing.length === 0
                   ? t("readyToFinish")
-                  : t("complete")
-                : t("missing")}
+                  : t("missing")
+                : missing.length === 0
+                  ? t("complete")
+                  : t("completeButMissing")}
           </p>
           {missing.length > 0 && detail.state !== "not_started" ? (
             <ul className="mt-2 list-disc space-y-1 pl-5">

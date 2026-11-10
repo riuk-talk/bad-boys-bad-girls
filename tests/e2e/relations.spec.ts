@@ -1092,4 +1092,135 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     expect(await axeViolations(page)).toEqual([]);
     await page.context().close();
   });
+  test("Visitor: « Tu cherches », « Mes critères » and the reason of an empty Découverte (10d)", async ({
+    browser,
+  }) => {
+    const page = await login(browser, visitor.email, visitor.password);
+    await page.goto("/decouverte");
+    const bar = page.getByText(/^Tu cherches : femmes · 25 à 45 ans/);
+    await expect(bar).toBeVisible();
+    await expect(page.getByRole("link", { name: bad.pseudo }).first()).toBeVisible();
+    await bar.getByRole("link", { name: "Modifier" }).click();
+    await page.waitForURL(/\/ma-fiche\/criteres$/);
+    await expect(page.getByRole("heading", { name: "Mes critères", level: 1 })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: "Femme" })).toBeChecked();
+    expect(await axeViolations(page)).toEqual([]);
+
+    // The same rules as the onboarding: the art. 9 consent again, never pre-checked.
+    await page.getByLabel("Âge minimum").fill("18");
+    await page.getByLabel("Âge maximum").fill("19");
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await expect(
+      page.getByText("Sans ce consentement, nous ne pouvons pas te proposer de Fiches."),
+    ).toBeVisible();
+    await page.locator("#consent").check();
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await page.waitForURL(/\/ma-fiche\/criteres\?saved=1$/);
+    await expect(
+      page.getByRole("status").filter({ hasText: "Tes critères sont enregistrés." }),
+    ).toBeVisible();
+
+    // No Bad of the quartier is 18 or 19: the empty Découverte says why, without naming anyone.
+    await page.goto("/decouverte");
+    await expect(page.getByText(/^Tu cherches : femmes · 18 à 19 ans/)).toBeVisible();
+    await expect(
+      page.getByText("Aucun Bad de ton quartier ne correspond à tes critères pour le moment.", {
+        exact: false,
+      }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: bad.pseudo })).toHaveCount(0);
+    expect(await axeViolations(page)).toEqual([]);
+
+    // The Bad's own criteria leave the Visitor out: the other reason, still no Bad named.
+    await page.goto("/ma-fiche/criteres");
+    await page.getByLabel("Âge minimum").fill("25");
+    await page.getByLabel("Âge maximum").fill("45");
+    await page.locator("#consent").check();
+    await page.getByRole("button", { name: "Enregistrer" }).click();
+    await page.waitForURL(/saved=1$/);
+    await admin.from("profiles").update({ seek_age_min: 18, seek_age_max: 20 }).eq("id", bad.id);
+    try {
+      await page.goto("/decouverte");
+      await expect(
+        page.getByText(/tu ne corresponds aux critères d'aucun d'entre eux/),
+      ).toBeVisible();
+    } finally {
+      await admin.from("profiles").update({ seek_age_min: 25, seek_age_max: 45 }).eq("id", bad.id);
+    }
+    await page.goto("/decouverte");
+    await expect(page.getByRole("link", { name: bad.pseudo }).first()).toBeVisible();
+    await page.context().close();
+  });
+
+  test("Admin Membres (10d): every member in pages, the full record, logged, never the true charge", async ({
+    browser,
+  }) => {
+    test.skip(!greffier.totpSecret, "needs the Greffe account of the first test");
+    const page = await (await browser.newContext()).newPage();
+    await openGreffe(page, greffier);
+
+    // The dashboard: unambiguous figures, and the blocked dossiers lead to the filtered list.
+    await page.goto("/admin");
+    for (const label of [
+      "Bads au dossier terminé",
+      "Bads aux 3 photos validées",
+      "Bads visibles dans la Découverte",
+    ]) {
+      await expect(page.getByText(label, { exact: true })).toBeVisible();
+    }
+    await page.getByRole("link", { name: "Dossiers bloqués" }).click();
+    await page.waitForURL(/\/admin\/membres\?bloques=1$/);
+    await expect(page.getByLabel("Dossiers bloqués seulement")).toBeChecked();
+
+    // No search needed: the list, then the filters.
+    await page.goto("/admin/membres");
+    await expect(page.getByRole("link", { name: bad.pseudo })).toBeVisible();
+    await expect(page.getByRole("link", { name: visitor.pseudo })).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    await page.getByLabel("Rôle").selectOption("bad");
+    await page.getByRole("button", { name: "Filtrer" }).click();
+    await page.waitForURL(/role=bad/);
+    await expect(page.getByRole("link", { name: bad.pseudo })).toBeVisible();
+    await expect(page.getByRole("link", { name: visitor.pseudo })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Comptes non confirmés" })).toBeVisible();
+
+    // The full record of the Bad: the dossier, the Découverte, the Casier without the true charge.
+    const { count: before } = await admin
+      .from("greffe_fiche_views")
+      .select("id", { count: "exact", head: true })
+      .eq("bad_id", bad.id)
+      .eq("context", "member");
+    await page.getByRole("link", { name: bad.pseudo }).click();
+    await page.waitForURL(new RegExp(`/admin/membres/${bad.id}$`));
+    await expect(page.getByRole("heading", { name: bad.pseudo, level: 1 })).toBeVisible();
+    // Finished (by the test setup, without the consents a real onboarding records): « terminé »,
+    // and what the rules of today would still ask.
+    await expect(page.getByText(/^Dossier terminé/)).toBeVisible();
+    await expect(
+      page.getByText(/^Visible dans la Découverte : (oui\.|non\. Pourquoi :)$/),
+    ).toBeVisible();
+    const { data: charges } = await admin
+      .from("casier_charges")
+      .select("charge_1, charge_2, charge_3")
+      .eq("profile_id", bad.id)
+      .single();
+    const lines = [charges?.charge_1, charges?.charge_2, charges?.charge_3].map(String);
+    const casier = page.getByRole("definition").filter({ hasText: lines[0] });
+    await expect(casier.getByRole("listitem")).toHaveText(lines);
+    await expect(
+      page.getByText("Lequel est vrai n'est jamais montré, même au Greffe."),
+    ).toBeVisible();
+    expect(await page.content()).not.toContain("true_index");
+    await expect(page.getByRole("heading", { name: "Photos" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Consentements" })).toBeVisible();
+    expect(await axeViolations(page)).toEqual([]);
+    const { data: views } = await admin
+      .from("greffe_fiche_views")
+      .select("admin_id")
+      .eq("bad_id", bad.id)
+      .eq("context", "member");
+    expect(views?.length).toBe((before ?? 0) + 1);
+    expect(views?.every((row) => row.admin_id === greffier.id)).toBe(true);
+    await page.context().close();
+  });
 });

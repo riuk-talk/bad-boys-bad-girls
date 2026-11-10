@@ -2134,7 +2134,8 @@
         "privacy": "Privacy policy",
         "age_18": "Age attestation",
         "art9_seeking": "Search criteria (art. 9)"
-      }
+      },
+      "completeButMissing": "Case file finished, but today's rules still ask for:"
     }
   },
   "Decisions": {
