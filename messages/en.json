@@ -959,7 +959,58 @@
       "hint": "E-mails never contain a pseudo or a message. Each e-mail also has an unsubscribe link.",
       "save": "Save my e-mails"
     },
-    "criteriaLink": "My criteria"
+    "criteriaLink": "My criteria",
+    "identityLink": "My identity",
+    "identity": {
+      "title": "My identity",
+      "lead": "What you gave when you signed up. Each field is saved on its own.",
+      "save": "Save",
+      "back": "Back to my profile",
+      "pseudoTitle": "Nickname",
+      "pseudo": "Nickname",
+      "pseudoHint": "3 to 20 characters. You can change it once every 30 days.",
+      "pseudoNext": "You can change it again on {date}.",
+      "pseudoDone": "Nickname saved.",
+      "genderTitle": "Gender",
+      "genderHint": "The colour of the site follows your gender; other members' criteria apply to the new one.",
+      "genderDone": "Gender saved.",
+      "placeTitle": "Town",
+      "zoneClosed": "Your new town is in the {zone} quartier, which is not open yet: while it is closed you will see neither the Yard nor the Discovery, and your profile will not be shown.",
+      "zoneNone": "Your new town is in no open quartier for now: until it is, you will see neither the Yard nor the Discovery, and your profile will not be shown.",
+      "saveAnyway": "Save anyway",
+      "placeDone": "Town saved. Your quartier has been worked out again.",
+      "birthdateTitle": "Date of birth",
+      "birthdateValue": "Born on {date}.",
+      "birthdateLocked": "You cannot change it yourself: the Registry can correct it.",
+      "askCorrection": "Ask for a correction",
+      "rightBirthdate": "The right date of birth",
+      "reason": "Reason",
+      "reasonHint": "A short explanation, {max} characters at most.",
+      "sendCorrection": "Send to the Registry",
+      "correctionDone": "Request sent to the Registry.",
+      "correctionWaiting": "Your correction request is waiting for the Registry's decision.",
+      "correction": {
+        "pending": "Request waiting: {date}.",
+        "accepted": "Correction accepted: {date}.",
+        "refused": "Correction refused ({date}).",
+        "motive": "The Registry's reason: {reason}"
+      },
+      "errors": {
+        "pseudoInvalid": "3 to 20 characters: letters, digits, space, dot, hyphen or underscore.",
+        "pseudoTaken": "This nickname is already taken.",
+        "pseudoTooSoon": "You changed your nickname less than 30 days ago: next change possible on {date}.",
+        "pseudoContacts": "No contact details in the nickname.",
+        "genderRequired": "Choose a gender.",
+        "cityRequired": "Choose a town from the list.",
+        "invalidDate": "This date does not look valid.",
+        "underage": "The site is for people aged 18 and over.",
+        "same_birthdate": "That is already your date of birth.",
+        "reasonInvalid": "Give a reason of 3 to 200 characters.",
+        "invalid_reason": "Give a reason of 3 to 200 characters.",
+        "correction_pending": "A request is already waiting for the Registry's decision.",
+        "generic": "Something went wrong. Try again."
+      }
+    }
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
@@ -1767,7 +1818,9 @@
       "admin_protected": "Only the super admin can sanction an admin.",
       "super_admin_only": "Only the super admin can lift a ban.",
       "not_found": "Not found.",
-      "generic": "The decision could not be saved. Try again."
+      "generic": "The decision could not be saved. Try again.",
+      "underage": "Refused: the date asked for gives under 18.",
+      "invalid_reason": "The reason must be 3 to 300 characters long."
     },
     "roles": {
       "bad": "Bad",
@@ -2141,7 +2194,27 @@
         "age_18": "Age attestation",
         "art9_seeking": "Search criteria (art. 9)"
       },
-      "completeButMissing": "Case file finished, but today's rules still ask for:"
+      "completeButMissing": "Case file finished, but today's rules still ask for:",
+      "pseudoHistory": "Previous nicknames",
+      "pseudoChange": "{old} → {new}, on {date}",
+      "corrections": "Date of birth corrections",
+      "correctionRow": "{status} · asked on {date} · {age} years old asked for"
+    },
+    "corrections": {
+      "title": "Age corrections",
+      "lead": "Members' requests to correct their date of birth. An accepted date must always give 18 or more; each decision is kept (who, when, why) and the member is told.",
+      "none": "No request.",
+      "change": "From {from} ({fromAge} years old) to {to} ({toAge} years old).",
+      "motive": "The member's reason: {reason}",
+      "reason": "Reason for the decision",
+      "reasonHint": "Required to refuse (3 to 300 characters), sent to the member.",
+      "accept": "Accept the correction",
+      "refuse": "Refuse",
+      "status": {
+        "accepted": "Accepted",
+        "refused": "Refused",
+        "pending": "Waiting"
+      }
     }
   },
   "Decisions": {
@@ -2347,7 +2420,8 @@
       "tribes": "Distinguishing signs",
       "zones": "Quartiers",
       "view": "See as a Visitor",
-      "performance": "Performance"
+      "performance": "Performance",
+      "corrections": "Age corrections"
     }
   },
   "AdminDashboard": {

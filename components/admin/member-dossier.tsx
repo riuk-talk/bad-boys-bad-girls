@@ -135,6 +135,42 @@ export async function MemberDossier({ detail, thumbnails }: Props) {
         </dl>
       </section>
 
+      {detail.pseudo_history.length > 0 || detail.birthdate_corrections.length > 0 ? (
+        <section aria-labelledby="identity-history-title" className="space-y-3">
+          <h2 id="identity-history-title" className="font-display text-2xl uppercase">
+            {t("pseudoHistory")}
+          </h2>
+          {detail.pseudo_history.length === 0 ? <p className="text-grey">{none}</p> : null}
+          <ul className="space-y-1 text-sm">
+            {detail.pseudo_history.map((change) => (
+              <li key={change.changed_at}>
+                {t("pseudoChange", {
+                  old: change.old_pseudo,
+                  new: change.new_pseudo,
+                  date: when(change.changed_at),
+                })}
+              </li>
+            ))}
+          </ul>
+          {detail.birthdate_corrections.length > 0 ? (
+            <>
+              <h3 className="font-semibold">{t("corrections")}</h3>
+              <ul className="space-y-1 text-sm">
+                {detail.birthdate_corrections.map((c) => (
+                  <li key={c.id}>
+                    {t("correctionRow", {
+                      status: admin(`corrections.status.${c.status}`),
+                      date: when(c.created_at),
+                      age: c.requested_age ?? "—",
+                    })}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+        </section>
+      ) : null}
+
       <section aria-labelledby="photos-title" className="space-y-3">
         <h2 id="photos-title" className="font-display text-2xl uppercase">
           {t("photos")}

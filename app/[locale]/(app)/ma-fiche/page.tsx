@@ -175,6 +175,9 @@ export default async function MyFichePage() {
             {t("seeAsVisitors")}
           </ButtonLink>
         )}
+        <ButtonLink href="/ma-fiche/identite" variant="secondary">
+          {t("identityLink")}
+        </ButtonLink>
         <ButtonLink href="/ma-fiche/criteres" variant="secondary">
           {t("criteriaLink")}
         </ButtonLink>

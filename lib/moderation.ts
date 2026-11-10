@@ -176,6 +176,8 @@ const ERROR_KEYS = [
   "admin_protected",
   "super_admin_only",
   "not_found",
+  "underage",
+  "invalid_reason",
 ] as const;
 export type ModerationError = (typeof ERROR_KEYS)[number] | "generic";
 

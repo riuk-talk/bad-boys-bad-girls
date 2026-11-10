@@ -959,7 +959,58 @@
       "hint": "Les e-mails ne contiennent jamais de pseudo ni de message. Chaque e-mail a aussi un lien de désinscription.",
       "save": "Enregistrer mes e-mails"
     },
-    "criteriaLink": "Mes critères"
+    "criteriaLink": "Mes critères",
+    "identityLink": "Mon identité",
+    "identity": {
+      "title": "Mon identité",
+      "lead": "Ce que tu as donné à l'inscription. Chaque champ s'enregistre à part.",
+      "save": "Enregistrer",
+      "back": "Retour à ma Fiche",
+      "pseudoTitle": "Pseudo",
+      "pseudo": "Pseudo",
+      "pseudoHint": "3 à 20 caractères. Tu peux le changer une fois tous les 30 jours.",
+      "pseudoNext": "Tu pourras le changer de nouveau le {date}.",
+      "pseudoDone": "Pseudo enregistré.",
+      "genderTitle": "Genre",
+      "genderHint": "La couleur du site suit ton genre ; les critères des autres membres s'appliquent au nouveau.",
+      "genderDone": "Genre enregistré.",
+      "placeTitle": "Ville",
+      "zoneClosed": "Ta nouvelle ville est dans le quartier {zone}, qui n'est pas encore ouvert : tant qu'il est fermé, tu ne verras ni Promenade ni Découverte, et ta Fiche ne sera pas proposée.",
+      "zoneNone": "Ta nouvelle ville n'est dans aucun quartier ouvert pour l'instant : tant que c'est le cas, tu ne verras ni Promenade ni Découverte, et ta Fiche ne sera pas proposée.",
+      "saveAnyway": "Enregistrer quand même",
+      "placeDone": "Ville enregistrée. Ton quartier a été recalculé.",
+      "birthdateTitle": "Date de naissance",
+      "birthdateValue": "Née ou né le {date}.",
+      "birthdateLocked": "Elle ne se modifie pas toi-même : le Greffe peut la corriger.",
+      "askCorrection": "Demander une correction",
+      "rightBirthdate": "La bonne date de naissance",
+      "reason": "Motif",
+      "reasonHint": "Une courte explication, {max} caractères au plus.",
+      "sendCorrection": "Envoyer au Greffe",
+      "correctionDone": "Demande envoyée au Greffe.",
+      "correctionWaiting": "Ta demande de correction attend la décision du Greffe.",
+      "correction": {
+        "pending": "Demande en attente : {date}.",
+        "accepted": "Correction acceptée : {date}.",
+        "refused": "Correction refusée ({date}).",
+        "motive": "Motif du Greffe : {reason}"
+      },
+      "errors": {
+        "pseudoInvalid": "3 à 20 caractères : lettres, chiffres, espace, point, tiret ou tiret bas.",
+        "pseudoTaken": "Ce pseudo est déjà pris.",
+        "pseudoTooSoon": "Tu as déjà changé de pseudo il y a moins de 30 jours : prochain changement possible le {date}.",
+        "pseudoContacts": "Pas de coordonnées dans le pseudo.",
+        "genderRequired": "Choisis un genre.",
+        "cityRequired": "Choisis une ville dans la liste.",
+        "invalidDate": "Cette date ne semble pas valide.",
+        "underage": "Le site est réservé aux personnes de 18 ans et plus.",
+        "same_birthdate": "C'est déjà ta date de naissance.",
+        "reasonInvalid": "Donne un motif de 3 à 200 caractères.",
+        "invalid_reason": "Donne un motif de 3 à 200 caractères.",
+        "correction_pending": "Une demande attend déjà la décision du Greffe.",
+        "generic": "Une erreur est survenue. Réessaie."
+      }
+    }
   },
   "Quarter": {
     "referralTitle": "Fais entrer tes complices",
@@ -1767,7 +1818,9 @@
       "admin_protected": "Seul le super admin peut sanctionner un admin.",
       "super_admin_only": "Seul le super admin peut lever un bannissement.",
       "not_found": "Introuvable.",
-      "generic": "La décision n'a pas pu être enregistrée. Réessaie."
+      "generic": "La décision n'a pas pu être enregistrée. Réessaie.",
+      "underage": "Refusé : la date demandée donne moins de 18 ans.",
+      "invalid_reason": "Le motif doit faire de 3 à 300 caractères."
     },
     "roles": {
       "bad": "Bad",
@@ -2141,7 +2194,27 @@
         "age_18": "Attestation de majorité",
         "art9_seeking": "Critères de recherche (art. 9)"
       },
-      "completeButMissing": "Dossier terminé, mais les règles d'aujourd'hui demandent encore :"
+      "completeButMissing": "Dossier terminé, mais les règles d'aujourd'hui demandent encore :",
+      "pseudoHistory": "Pseudos précédents",
+      "pseudoChange": "{old} → {new}, le {date}",
+      "corrections": "Corrections de date de naissance",
+      "correctionRow": "{status} · demandée le {date} · {age} ans demandés"
+    },
+    "corrections": {
+      "title": "Corrections d'âge",
+      "lead": "Les demandes de correction de date de naissance des membres. Une date acceptée doit toujours donner 18 ans ou plus ; chaque décision est gardée (qui, quand, pourquoi) et le membre est prévenu.",
+      "none": "Aucune demande.",
+      "change": "Du {from} ({fromAge} ans) au {to} ({toAge} ans).",
+      "motive": "Motif du membre : {reason}",
+      "reason": "Motif de la décision",
+      "reasonHint": "Obligatoire pour refuser (3 à 300 caractères), envoyé au membre.",
+      "accept": "Accepter la correction",
+      "refuse": "Refuser",
+      "status": {
+        "accepted": "Acceptée",
+        "refused": "Refusée",
+        "pending": "En attente"
+      }
     }
   },
   "Decisions": {
@@ -2347,7 +2420,8 @@
       "tribes": "Signes distinctifs",
       "zones": "Quartiers",
       "view": "Voir comme un Visiteur",
-      "performance": "Performance"
+      "performance": "Performance",
+      "corrections": "Corrections d'âge"
     }
   },
   "AdminDashboard": {

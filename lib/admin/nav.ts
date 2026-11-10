@@ -23,6 +23,7 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     items: [
       { key: "members", href: "/admin/membres" },
       { key: "history", href: "/admin/historique" },
+      { key: "corrections", href: "/admin/corrections" },
     ],
   },
   {

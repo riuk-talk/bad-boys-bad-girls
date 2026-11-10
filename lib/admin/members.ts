@@ -124,6 +124,23 @@ const detailSchema = z.object({
   missing: z.array(z.string()),
   blocked: z.boolean(),
   hidden_reasons: z.nullable(z.array(z.enum(HIDDEN_REASONS))),
+  /** 10e: the pseudos it had after the onboarding, its requests about the date of birth. */
+  pseudo_history: z._default(
+    z.array(z.object({ old_pseudo: z.string(), new_pseudo: z.string(), changed_at: z.string() })),
+    [],
+  ),
+  birthdate_corrections: z._default(
+    z.array(
+      z.object({
+        id: z.number(),
+        status: z.enum(["pending", "accepted", "refused"]),
+        created_at: z.string(),
+        requested_age: z.nullable(z.number()),
+        decided_at: nullableString,
+      }),
+    ),
+    [],
+  ),
 });
 
 export type MemberDetail = Omit<z.infer<typeof detailSchema>, "missing"> & {
