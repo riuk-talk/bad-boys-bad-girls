@@ -167,6 +167,53 @@ export type Database = {
         }
         Relationships: []
       }
+      birthdate_corrections: {
+        Row: {
+          created_at: string
+          current_birthdate: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_reason: string | null
+          id: number
+          reason: string
+          requested_birthdate: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_birthdate: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          id?: never
+          reason: string
+          requested_birthdate: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_birthdate?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_reason?: string | null
+          id?: never
+          reason?: string
+          requested_birthdate?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "birthdate_corrections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -1059,6 +1106,7 @@ export type Database = {
           pending_requests_count: number
           place_id: number | null
           pseudo: string | null
+          pseudo_changed_at: string | null
           referral_code: string
           referred_by: string | null
           requests_cap: number
@@ -1099,6 +1147,7 @@ export type Database = {
           pending_requests_count?: number
           place_id?: number | null
           pseudo?: string | null
+          pseudo_changed_at?: string | null
           referral_code?: string
           referred_by?: string | null
           requests_cap?: number
@@ -1139,6 +1188,7 @@ export type Database = {
           pending_requests_count?: number
           place_id?: number | null
           pseudo?: string | null
+          pseudo_changed_at?: string | null
           referral_code?: string
           referred_by?: string | null
           requests_cap?: number
@@ -1235,6 +1285,38 @@ export type Database = {
             columns: ["zone_id"]
             isOneToOne: false
             referencedRelation: "launch_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pseudo_history: {
+        Row: {
+          changed_at: string
+          id: number
+          new_pseudo: string
+          old_pseudo: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          id?: never
+          new_pseudo: string
+          old_pseudo: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          id?: never
+          new_pseudo?: string
+          old_pseudo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pseudo_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1785,6 +1867,21 @@ export type Database = {
         }
         Returns: string
       }
+      admin_birthdate_corrections: {
+        Args: never
+        Returns: {
+          created_at: string
+          current_birthdate: string
+          decided_at: string
+          decision_reason: string
+          id: number
+          pseudo: string
+          reason: string
+          requested_birthdate: string
+          status: string
+          user_id: string
+        }[]
+      }
       admin_counts: {
         Args: never
         Returns: {
@@ -1794,6 +1891,10 @@ export type Database = {
         }[]
       }
       admin_dashboard: { Args: never; Returns: Json }
+      admin_decide_birthdate_correction: {
+        Args: { p_accept: boolean; p_correction: number; p_reason?: string }
+        Returns: undefined
+      }
       admin_decide_flag: {
         Args: { p_decision: string; p_flag: number; p_reason?: string }
         Returns: undefined
@@ -2508,6 +2609,7 @@ export type Database = {
       mark_promenade_seen: { Args: { p_bad: string }; Returns: undefined }
       mask_contacts: { Args: { value: string }; Returns: string }
       my_admin_role: { Args: never; Returns: string }
+      my_identity_history: { Args: never; Returns: Json }
       new_ecrou: { Args: never; Returns: string }
       new_referral_code: { Args: never; Returns: string }
       normalize_text: { Args: { value: string }; Returns: string }
@@ -2553,6 +2655,13 @@ export type Database = {
       photo_cutout_waiver_reasons: { Args: never; Returns: string[] }
       photo_rejection_reasons: { Args: never; Returns: string[] }
       place_name: { Args: { p_place: number }; Returns: string }
+      place_zone: {
+        Args: { p_place: number }
+        Returns: {
+          open: boolean
+          zone_name: string
+        }[]
+      }
       prepare_my_account_deletion: {
         Args: never
         Returns: {
@@ -2574,6 +2683,7 @@ export type Database = {
         Args: { p_request: string; p_slots: string[] }
         Returns: undefined
       }
+      pseudo_next_change: { Args: never; Returns: string }
       public_photos: {
         Args: { p_owner: string; p_positions: number[] }
         Returns: Json
@@ -2609,6 +2719,10 @@ export type Database = {
           p_target_id: string
           p_target_type: Database["public"]["Enums"]["report_target"]
         }
+        Returns: number
+      }
+      request_birthdate_correction: {
+        Args: { p_birthdate: string; p_reason: string }
         Returns: number
       }
       resolve_visit: { Args: { p_visit: string }; Returns: undefined }
@@ -2790,6 +2904,7 @@ export type Database = {
         | "sanction"
         | "fiche_online"
         | "dossier_incomplete"
+        | "birthdate_correction"
       question_phase: "core" | "extra"
       report_category:
         | "fake_profile"
@@ -3052,6 +3167,7 @@ export const Constants = {
         "sanction",
         "fiche_online",
         "dossier_incomplete",
+        "birthdate_correction",
       ],
       question_phase: ["core", "extra"],
       report_category: [
