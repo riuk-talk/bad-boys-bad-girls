@@ -2,6 +2,7 @@ import { Compass, SlidersHorizontal } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import type { BadCardData } from "@/components/relations/bad-card";
+import { CriteriaBar } from "@/components/relations/criteria-bar";
 import { DossierCard } from "@/components/relations/dossier-card";
 import { PermitPending } from "@/components/relations/permit-pending";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -11,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Select } from "@/components/ui/select";
 import type { Locale } from "@/i18n/routing";
 import { localizedPath } from "@/lib/i18n-path";
+import { parseEmptyReason } from "@/lib/relations/empty-reason";
 import { DISTANCES, filtersQuery, PAGE_SIZE, parseDiscoverFilters } from "@/lib/relations/discover";
 import { publicPhotoUrl, requireRole } from "@/lib/relations/server";
 import { localize, type Label } from "@/lib/relations/types";
@@ -33,8 +35,9 @@ const AGES = Array.from({ length: 82 }, (_, index) => String(18 + index));
  * a kraft folder (DecouverteDossiers.dc.html, 2026-10-24) that opens the Fiche over the list.
  */
 export default async function DiscoverPage({ searchParams }: Props) {
-  const { supabase, userId, locale } = await requireRole("visitor");
+  const { supabase, userId, locale, profile } = await requireRole("visitor");
   const t = await getTranslations("Relations.discover");
+  const criteria = await getTranslations("Criteria");
   const filters = parseDiscoverFilters(await searchParams);
   const [{ data: rows }, { data: tribes }, { data: face }] = await Promise.all([
     supabase.rpc("discover_bads", {
@@ -72,6 +75,11 @@ export default async function DiscoverPage({ searchParams }: Props) {
     (filters.goodConductOnly ? 1 : 0) +
     (filters.recentlyActive ? 1 : 0) +
     (filters.ageMin !== 18 || filters.ageMax !== 99 ? 1 : 0);
+  // An empty list without filters says why (10d): quartier closed, or criteria that fit no Bad.
+  const reason =
+    bads.length === 0 && !filters.cursor && activeFilters === 0
+      ? parseEmptyReason((await supabase.rpc("search_empty_reason")).data)
+      : null;
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 px-4 py-6 sm:px-6">
@@ -80,6 +88,12 @@ export default async function DiscoverPage({ searchParams }: Props) {
         <h1 className="font-display text-4xl uppercase">{t("title")}</h1>
         <p className="text-grey text-sm">{t("lead")}</p>
       </header>
+
+      <CriteriaBar
+        genders={profile.seeking_genders}
+        ageMin={profile.seek_age_min}
+        ageMax={profile.seek_age_max}
+      />
 
       {face?.status !== "approved" ? <PermitPending /> : null}
 
@@ -183,7 +197,13 @@ export default async function DiscoverPage({ searchParams }: Props) {
           icon={<Compass className="size-8" />}
           title={filters.cursor ? t("endTitle") : t("emptyTitle")}
           body={
-            filters.cursor ? t("endBody") : activeFilters > 0 ? t("emptyFiltered") : t("emptyBody")
+            filters.cursor
+              ? t("endBody")
+              : activeFilters > 0
+                ? t("emptyFiltered")
+                : reason
+                  ? criteria(`reasons.${reason}`)
+                  : t("emptyBody")
           }
         />
       )}

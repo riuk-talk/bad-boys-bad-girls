@@ -24,7 +24,7 @@ export async function requireRole(expected?: Role) {
   const { data: profile } = await member.supabase
     .from("profiles")
     .select(
-      "role, gender, onboarding_completed_at, consecutive_dismissals, requests_cap, requests_closed_manual, requests_open, pending_requests_count, is_paused, visit_motive, role_changed_at",
+      "role, gender, onboarding_completed_at, consecutive_dismissals, requests_cap, requests_closed_manual, requests_open, pending_requests_count, is_paused, visit_motive, role_changed_at, seeking_genders, seek_age_min, seek_age_max",
     )
     .eq("id", member.userId)
     .maybeSingle();

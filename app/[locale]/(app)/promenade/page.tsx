@@ -3,9 +3,11 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { BadCard, type BadCardData } from "@/components/relations/bad-card";
+import { CriteriaBar } from "@/components/relations/criteria-bar";
 import { PermitPending } from "@/components/relations/permit-pending";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ButtonLink } from "@/components/ui/button-link";
+import { parseEmptyReason } from "@/lib/relations/empty-reason";
 import { publicPhotoUrl, requireRole } from "@/lib/relations/server";
 import { nextPromenadeAt, untilParts } from "@/lib/relations/time";
 
@@ -19,8 +21,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /** La Promenade (SPEC §12, maquette Promenade.dc.html): 5 Bads from 21:00, Visitors only. */
 export default async function PromenadePage() {
-  const { supabase, userId } = await requireRole("visitor");
+  const { supabase, userId, profile } = await requireRole("visitor");
   const t = await getTranslations("Relations.promenade");
+  const criteria = await getTranslations("Criteria");
   const [{ data: picks }, { data: face }] = await Promise.all([
     supabase.rpc("get_my_promenade"),
     supabase.from("photos").select("status").eq("owner_id", userId).eq("position", 0).maybeSingle(),
@@ -41,6 +44,9 @@ export default async function PromenadePage() {
   const now = new Date();
   const next = untilParts(now, nextPromenadeAt(now));
   const [first, ...others] = bads;
+  // An empty Promenade says why when it is the criteria or the quartier (10d).
+  const reason =
+    bads.length === 0 ? parseEmptyReason((await supabase.rpc("search_empty_reason")).data) : null;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-6 sm:px-6">
@@ -56,6 +62,12 @@ export default async function PromenadePage() {
           {bads.length > 0 ? t("lead", { count: bads.length }) : t("titleEmpty")}
         </h1>
       </header>
+
+      <CriteriaBar
+        genders={profile.seeking_genders}
+        ageMin={profile.seek_age_min}
+        ageMax={profile.seek_age_max}
+      />
 
       {face?.status !== "approved" ? <PermitPending /> : null}
 
@@ -76,7 +88,7 @@ export default async function PromenadePage() {
         <EmptyState
           icon={<Sun className="size-8" />}
           title={t("emptyTitle")}
-          body={t("emptyBody")}
+          body={reason ? criteria(`reasons.${reason}`) : t("emptyBody")}
           action={<ButtonLink href="/decouverte">{t("toDiscover")}</ButtonLink>}
         />
       )}

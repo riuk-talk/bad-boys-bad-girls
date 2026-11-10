@@ -201,6 +201,24 @@ export async function saveSeekingStep(_state: StepState, form: FormData): Promis
   const member = await requireMember();
   const { step, role } = await progress(member);
   if (!role) return goTo(stepPath(ROLE_STEP));
+  // « Mes critères » (10d), from Ma fiche: the same rules and the same art. 9 consent, recorded
+  // again with the new criteria; the onboarding step is left as it is.
+  if (form.get("context") === "file") {
+    if (!(await recordConsents(member.userId, ["art9_seeking"]))) {
+      return failMessage("configuration");
+    }
+    const { error } = await member.supabase
+      .from("profiles")
+      .update({
+        seeking_genders: parsed.data.genders,
+        seek_age_min: parsed.data.ageMin,
+        seek_age_max: parsed.data.ageMax,
+      })
+      .eq("id", member.userId);
+    if (error) return failMessage("generic");
+    revalidatePath("/[locale]", "layout");
+    return goTo("/ma-fiche/criteres?saved=1");
+  }
   const seekingStep = stepNumber(role, "seeking");
   if (!(await recordConsents(member.userId, ["art9_seeking"]))) return failMessage("configuration");
   const { error } = await member.supabase

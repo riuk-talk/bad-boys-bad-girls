@@ -868,18 +868,14 @@
         "visit_motive": "Your reason for visiting",
         "core_answers": "The 10 questions of the Interrogation"
       }
-    }
+    },
+    "save": "Save"
   },
   "MyFiche": {
     "previewTitle": "As others will see it",
     "gaugeLabel": "File {percent}% complete",
     "gaugeHint": "The more complete your File, the more Visitors want to ask for a visit.",
-    "criteria": {
-      "mainPhoto": "Approved ID photo",
-      "bio": "A bio of at least 40 characters",
-      "signs": "At least one distinctive mark",
-      "morePhotos": "Three photos or more"
-    },
+    "criteria": "My criteria",
     "bio": "Bio",
     "bioHint": "500 characters max. Emails, phone numbers and links are hidden.",
     "signsTitle": "Distinctive marks",
@@ -2292,6 +2288,27 @@
       "photo": "Photo at the Registry",
       "report": "Report",
       "flag": "Flagged text"
+    }
+  },
+  "Criteria": {
+    "title": "My criteria",
+    "lead_visitor": "Who you want to visit: these criteria choose the profiles of your Discovery and your Yard.",
+    "lead_bad": "Who you are looking for: only the Visitors who fit them see your profile.",
+    "saved": "Your criteria are saved.",
+    "toDiscover": "See the Discovery",
+    "back": "Back to my profile",
+    "bar": "You are looking for: {genders} · {min} to {max} years old",
+    "edit": "Edit",
+    "genders": {
+      "man": "men",
+      "woman": "women",
+      "non_binary": "non-binary people",
+      "other": "others"
+    },
+    "reasons": {
+      "zone_closed": "Your quartier is not open yet: the profiles arrive when it opens.",
+      "no_bad_matches": "No Bad in your quartier fits your criteria for now. You can widen them in My criteria.",
+      "no_bad_accepts": "Some Bads fit your criteria, but you fit the criteria of none of them for now."
     }
   }
 }

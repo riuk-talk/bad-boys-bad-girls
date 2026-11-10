@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { composeEmail, missingDetail } from "@/lib/email/compose";
 import { lastStep } from "@/lib/onboarding/config";
+import { parseEmptyReason } from "@/lib/relations/empty-reason";
 import { MISSING_KEYS, missingStep, parseMissing, shownMissing } from "@/lib/onboarding/missing";
 
 describe("unfinished dossier (10d)", () => {
@@ -64,5 +65,15 @@ describe("unfinished dossier (10d)", () => {
     const online = composeEmail("fiche_online", "en", "https://example.test");
     expect(online.subject).toBe("Your profile is online");
     expect(online.text).toContain("https://example.test/en/ma-fiche");
+  });
+});
+
+describe("empty search reasons (10d)", () => {
+  it("keeps only the reasons the database gives", () => {
+    expect(parseEmptyReason("zone_closed")).toBe("zone_closed");
+    expect(parseEmptyReason("no_bad_matches")).toBe("no_bad_matches");
+    expect(parseEmptyReason("no_bad_accepts")).toBe("no_bad_accepts");
+    expect(parseEmptyReason(null)).toBe(null);
+    expect(parseEmptyReason("blocked")).toBe(null);
   });
 });

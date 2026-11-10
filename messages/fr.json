@@ -868,18 +868,14 @@
         "visit_motive": "Ton Motif de visite",
         "core_answers": "Les 10 questions de l'Interrogatoire"
       }
-    }
+    },
+    "save": "Enregistrer"
   },
   "MyFiche": {
     "previewTitle": "Telle que les autres la verront",
     "gaugeLabel": "Fiche complète à {percent} %",
     "gaugeHint": "Plus ta Fiche est complète, plus les Visiteurs ont envie de demander une visite.",
-    "criteria": {
-      "mainPhoto": "Photo d'identité validée",
-      "bio": "Une présentation d'au moins 40 caractères",
-      "signs": "Au moins un signe distinctif",
-      "morePhotos": "Trois photos ou plus"
-    },
+    "criteria": "Mes critères",
     "bio": "Présentation",
     "bioHint": "500 caractères maximum. Les e-mails, téléphones et liens sont masqués.",
     "signsTitle": "Signes distinctifs",
@@ -2292,6 +2288,27 @@
       "photo": "Photo au Greffe",
       "report": "Signalement",
       "flag": "Texte signalé"
+    }
+  },
+  "Criteria": {
+    "title": "Mes critères",
+    "lead_visitor": "Qui tu viens voir : ces critères choisissent les Fiches de ta Découverte et de ta Promenade.",
+    "lead_bad": "Qui tu cherches : seuls les Visiteurs qui y correspondent voient ta Fiche.",
+    "saved": "Tes critères sont enregistrés.",
+    "toDiscover": "Voir la Découverte",
+    "back": "Retour à ma Fiche",
+    "bar": "Tu cherches : {genders} · {min} à {max} ans",
+    "edit": "Modifier",
+    "genders": {
+      "man": "hommes",
+      "woman": "femmes",
+      "non_binary": "personnes non-binaires",
+      "other": "autres"
+    },
+    "reasons": {
+      "zone_closed": "Ton quartier n'est pas encore ouvert : les Fiches arrivent à son ouverture.",
+      "no_bad_matches": "Aucun Bad de ton quartier ne correspond à tes critères pour le moment. Tu peux les élargir dans Mes critères.",
+      "no_bad_accepts": "Des Bads correspondent à tes critères, mais tu ne corresponds aux critères d'aucun d'entre eux pour le moment."
     }
   }
 }

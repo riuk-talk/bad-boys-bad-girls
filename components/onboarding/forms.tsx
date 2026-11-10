@@ -228,17 +228,21 @@ export function SeekingStepForm({
   genders,
   ageMin,
   ageMax,
+  context = "onboarding",
 }: {
   role: Role;
   genders: Gender[];
   ageMin: number;
   ageMax: number;
+  /** « file »: « Mes critères » in Ma fiche (10d), same fields, same consent. */
+  context?: "onboarding" | "file";
 }) {
   const t = useTranslations("Onboarding");
   const step = useStep(saveSeekingStep, "seeking-form");
   const gendersError = step.error("genders");
   return (
     <form id="seeking-form" onSubmit={step.onSubmit} noValidate className="space-y-5">
+      {context === "file" ? <input type="hidden" name="context" value="file" /> : null}
       <p className="text-cream/85">{t(`seeking.lead_${role}`)}</p>
       <fieldset
         aria-describedby={gendersError ? "genders-error" : "genders-hint"}
@@ -311,7 +315,7 @@ export function SeekingStepForm({
           error={step.error("consent")}
         />
       </section>
-      <Submit pending={step.pending}>{t("next")}</Submit>
+      <Submit pending={step.pending}>{context === "file" ? t("save") : t("next")}</Submit>
       <Alert message={step.message} />
     </form>
   );
