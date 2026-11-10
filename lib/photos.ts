@@ -54,3 +54,47 @@ export async function photoInfos(
   }
   return result;
 }
+
+type OwnPhoto = {
+  id: string;
+  status: Database["public"]["Enums"]["moderation_status"];
+  pending_path: string | null;
+  public_path_large: string | null;
+  public_path_small: string | null;
+};
+
+export type OwnPhotoUrls = { large: string | null; small: string | null };
+
+/**
+ * The URLs of the member's own photos, by photo id (10e): the public files once the Greffe has
+ * validated a photo (its pending files are deleted then), short-lived signed URLs of the private
+ * files while it waits, nothing for a refused one. Large for the preview, small for the lists.
+ */
+export async function ownPhotoUrls(
+  supabase: SupabaseClient<Database>,
+  photos: readonly OwnPhoto[],
+): Promise<Record<string, OwnPhotoUrls>> {
+  const small = (path: string) => path.replace(/\.webp$/, "-s.webp");
+  const pending = photos.filter((photo) => photo.status === "pending" && photo.pending_path);
+  const paths = pending.flatMap((photo) => [photo.pending_path!, small(photo.pending_path!)]);
+  const { data: signed } = paths.length
+    ? await supabase.storage.from("photos-pending").createSignedUrls(paths, SIGNED_URL_SECONDS)
+    : { data: [] };
+  const signedUrl = (path: string) =>
+    signed?.find((entry) => entry.path === path)?.signedUrl ?? null;
+  const publicUrl = (path: string | null) =>
+    path ? supabase.storage.from("photos").getPublicUrl(path).data.publicUrl : null;
+  return Object.fromEntries(
+    photos.map((photo) => {
+      if (photo.status === "approved") {
+        const large = publicUrl(photo.public_path_large);
+        return [photo.id, { large, small: publicUrl(photo.public_path_small) ?? large }];
+      }
+      if (photo.status === "pending" && photo.pending_path) {
+        const large = signedUrl(photo.pending_path);
+        return [photo.id, { large, small: signedUrl(small(photo.pending_path)) ?? large }];
+      }
+      return [photo.id, { large: null, small: null }];
+    }),
+  );
+}

@@ -10,7 +10,7 @@ import { EmailSettings } from "@/components/app/email-settings";
 import { PushSettings } from "@/components/push/push-settings";
 import { AccountSettings } from "@/components/relations/account-settings";
 import { ButtonLink } from "@/components/ui/button-link";
-import { photoInfos } from "@/lib/photos";
+import { ownPhotoUrls, photoInfos } from "@/lib/photos";
 import { redirect } from "@/i18n/navigation";
 import { requireMember } from "@/lib/auth/user";
 import { ageFromBirthdate, completeness } from "@/lib/fiche/completeness";
@@ -25,8 +25,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "MyFiche" });
   return { title: t("titleShort") };
 }
-
-const SIGNED_URL_SECONDS = 600;
 
 export default async function MyFichePage() {
   const member = await requireMember();
@@ -64,7 +62,9 @@ export default async function MyFichePage() {
       .maybeSingle(),
     supabase
       .from("photos")
-      .select("id, position, status, pending_path, rejection_reason, is_cutout")
+      .select(
+        "id, position, status, pending_path, public_path_large, public_path_small, rejection_reason, is_cutout",
+      )
       .eq("owner_id", userId)
       .order("position"),
     supabase.from("tribes").select("id, label").order("sort"),
@@ -97,17 +97,9 @@ export default async function MyFichePage() {
     supabase.rpc("push_device_count"),
   ]);
 
-  // Photos awaiting validation are private: short-lived signed URLs, owner only (storage RLS).
-  const paths = (photos ?? []).flatMap((photo) =>
-    photo.pending_path
-      ? [photo.pending_path, photo.pending_path.replace(/\.webp$/, "-s.webp")]
-      : [],
-  );
-  const { data: signed } = paths.length
-    ? await supabase.storage.from("photos-pending").createSignedUrls(paths, SIGNED_URL_SECONDS)
-    : { data: [] };
-  const urlFor = (path: string | null) =>
-    signed?.find((entry) => entry.path === path)?.signedUrl ?? null;
+  // Validated photos: their public files; waiting ones: short-lived signed URLs, owner only
+  // (storage RLS); refused ones: none (10e: a validated photo used to show nothing here).
+  const urls = await ownPhotoUrls(supabase, photos ?? []);
 
   const labelOf = (label: unknown) =>
     ((label as Label)[locale] ?? (label as Label).fr ?? "") as string;
@@ -116,7 +108,7 @@ export default async function MyFichePage() {
   // A Permis shows one photo; an ex-Bad's other photos stay in reserve (SPEC v7 §5 bis).
   const shownPhotos = (photos ?? []).filter((photo) => !isVisitor || photo.position === 0);
   const main = shownPhotos.find((photo) => photo.position === 0);
-  const mainUrl = urlFor(main?.pending_path ?? null);
+  const mainUrl = main ? (urls[main.id]?.large ?? null) : null;
   const gauge = completeness({
     mainPhoto: main ? main.status : "missing",
     photoCount: photos?.length ?? 0,
@@ -275,10 +267,7 @@ export default async function MyFichePage() {
               id: photo.id,
               position: photo.position,
               status: photo.status,
-              url:
-                urlFor(
-                  photo.pending_path ? photo.pending_path.replace(/\.webp$/, "-s.webp") : null,
-                ) ?? urlFor(photo.pending_path),
+              url: urls[photo.id]?.small ?? null,
             }))}
         />
       </section>
