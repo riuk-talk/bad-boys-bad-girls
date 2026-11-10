@@ -398,7 +398,11 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       visitor_id: visitor.id,
       bad_id: bad.id,
       zone_id: zoneId,
-      promenade_date: new Date().toISOString().slice(0, 10),
+      // The day of the Promenade is the day in Paris (as the database counts it), not in UTC:
+      // between midnight in Paris and midnight UTC the two differ.
+      promenade_date: new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(
+        new Date(),
+      ),
       rank: 1,
       score: 100,
       visible_from: new Date(now - 3600000).toISOString(),
@@ -1225,5 +1229,166 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     expect(views?.length).toBe((before ?? 0) + 1);
     expect(views?.every((row) => row.admin_id === greffier.id)).toBe(true);
     await page.context().close();
+  });
+  test("Ma fiche (10e): a validated photo shows to its owner, Bad and Visitor", async ({
+    browser,
+  }) => {
+    async function loaded(page: Page, name: string | RegExp) {
+      const image = page.getByRole("img", { name }).first();
+      await image.scrollIntoViewIfNeeded();
+      await expect
+        .poll(
+          () => image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0),
+          {
+            message: `${String(name)} is loaded`,
+          },
+        )
+        .toBe(true);
+    }
+    for (const [who, alt] of [
+      [visitor, `Photo de ${visitor.pseudo}`],
+      [bad, `Photo d'identité de ${bad.pseudo}`],
+    ] as const) {
+      const { data: face } = await admin
+        .from("photos")
+        .select("status, pending_path")
+        .eq("owner_id", who.id)
+        .eq("position", 0)
+        .single();
+      // Validated: its pending files are gone, only the public ones remain.
+      expect(face).toEqual({ status: "approved", pending_path: null });
+      const page = await login(browser, who.email, who.password);
+      await page.goto("/ma-fiche");
+      await loaded(page, alt);
+      if (who === visitor) await loaded(page, "Ta photo n° 1");
+      await page.context().close();
+    }
+  });
+
+  test("Mon identité (10e): pseudo, gender, town, a correction of the date of birth by the Greffe", async ({
+    browser,
+  }) => {
+    test.skip(!greffier.totpSecret, "needs the Greffe account of the first test");
+    const iris = {
+      email: "",
+      password: "",
+      id: "",
+      pseudo: `Iris${randomBytes(2).toString("hex")}`,
+    };
+    await member(iris, "visitor", "man");
+    // A quartier of its own, not open: told before saving.
+    const { data: far } = await admin
+      .from("places")
+      .insert({
+        official_code: `E2F${randomBytes(3).toString("hex")}`,
+        name: `Cap-Ferme${randomBytes(2).toString("hex")}`,
+        lat: 47.91,
+        lng: -12.4,
+      })
+      .select("id, name")
+      .single();
+    const { data: farZone } = await admin
+      .from("launch_zones")
+      .insert({
+        slug: `e2e-far-${randomBytes(3).toString("hex")}`,
+        name: "Cap-Fermé",
+        center_place_id: far!.id,
+        radius_km: 5,
+        status: "waitlist",
+      })
+      .select("id")
+      .single();
+    try {
+      const page = await login(browser, iris.email, iris.password);
+      await page.goto("/ma-fiche");
+      await page.getByRole("link", { name: "Mon identité" }).click();
+      await page.waitForURL(/\/ma-fiche\/identite$/);
+      await expect(page.getByRole("heading", { name: "Mon identité", level: 1 })).toBeVisible();
+      expect(await axeViolations(page)).toEqual([]);
+
+      // Pseudo: once, then not before 30 days.
+      const renamed = `Iris${randomBytes(3).toString("hex")}`;
+      const pseudo = page.getByRole("region", { name: "Pseudo" });
+      await pseudo.getByLabel("Pseudo").fill(renamed);
+      await pseudo.getByRole("button", { name: "Enregistrer" }).click();
+      await expect(pseudo.getByRole("status")).toHaveText("Pseudo enregistré.");
+      await page.reload();
+      await expect(page.getByRole("region", { name: "Pseudo" }).getByLabel("Pseudo")).toHaveValue(
+        renamed,
+      );
+      await expect(page.getByText(/^Tu pourras le changer de nouveau le /)).toBeVisible();
+      await expect(
+        page.getByRole("region", { name: "Pseudo" }).getByRole("button", { name: "Enregistrer" }),
+      ).toBeDisabled();
+
+      // Gender: the colour of the interface follows.
+      const gender = page.getByRole("region", { name: "Genre" });
+      await gender.getByLabel("Femme").check();
+      await gender.getByRole("button", { name: "Enregistrer" }).click();
+      await expect(gender.getByRole("status")).toHaveText("Genre enregistré.");
+      await expect(page.locator("[data-accent]").first()).toHaveAttribute("data-accent", "red");
+
+      // Town: a closed quartier is said before saving.
+      const town = page.getByRole("region", { name: "Ville" });
+      await town.getByRole("combobox").fill(far!.name.slice(0, 8));
+      await town.getByRole("option", { name: new RegExp(far!.name) }).click();
+      await town.getByRole("button", { name: "Enregistrer" }).click();
+      await expect(town.getByRole("alert")).toContainText(
+        "Ta nouvelle ville est dans le quartier Cap-Fermé, qui n'est pas encore ouvert",
+      );
+      expect(await axeViolations(page)).toEqual([]);
+      await town.getByRole("button", { name: "Enregistrer quand même" }).click();
+      await expect(town.getByRole("status")).toHaveText(
+        "Ville enregistrée. Ton quartier a été recalculé.",
+      );
+      const { data: moved } = await admin
+        .from("profiles")
+        .select("pseudo, gender, zone_id, birthdate")
+        .eq("id", iris.id)
+        .single();
+      expect(moved).toMatchObject({ pseudo: renamed, gender: "woman", zone_id: farZone!.id });
+
+      // Date of birth: a request to the Greffe, never a change by the member.
+      const birth = page.getByRole("region", { name: "Date de naissance" });
+      await birth.getByText("Demander une correction").click();
+      await birth.getByLabel("La bonne date de naissance").fill("1992-07-14");
+      await birth.getByLabel("Motif").fill("Faute de frappe à l'inscription.");
+      await birth.getByRole("button", { name: "Envoyer au Greffe" }).click();
+      await expect(
+        page.getByText("Ta demande de correction attend la décision du Greffe."),
+      ).toBeVisible();
+
+      const greffe = await (await browser.newContext()).newPage();
+      await openGreffe(greffe, greffier);
+      await greffe.goto("/admin/corrections");
+      await expect(
+        greffe.getByRole("heading", { name: "Corrections d'âge", level: 1 }),
+      ).toBeVisible();
+      const request = greffe.getByRole("listitem").filter({ hasText: renamed });
+      await expect(request).toContainText("Faute de frappe à l'inscription.");
+      expect(await axeViolations(greffe)).toEqual([]);
+      await request.getByRole("button", { name: "Accepter la correction" }).click();
+      await expect(greffe.getByRole("status")).toBeVisible();
+      const { data: corrected } = await admin
+        .from("profiles")
+        .select("birthdate")
+        .eq("id", iris.id)
+        .single();
+      expect(corrected?.birthdate).toBe("1992-07-14");
+      // The record of the member shows the previous pseudo.
+      await greffe.goto(`/admin/membres/${iris.id}`);
+      await expect(greffe.getByText(new RegExp(`${iris.pseudo} → ${renamed}`))).toBeVisible();
+      await greffe.context().close();
+
+      await page.reload();
+      await expect(page.getByText(/^Correction acceptée : /)).toBeVisible();
+      await expect(page.getByText(/^Née ou né le 14 juillet 1992\./)).toBeVisible();
+      await page.context().close();
+    } finally {
+      // Back in the test's quartier, then the closed one and its town go.
+      await admin.from("profiles").update({ place_id: placeId }).eq("id", iris.id);
+      if (farZone) await admin.from("launch_zones").delete().eq("id", farZone.id);
+      if (far) await admin.from("places").delete().eq("id", far.id);
+    }
   });
 });
