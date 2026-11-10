@@ -6,7 +6,9 @@ import type { Role } from "@/lib/onboarding/config";
 import {
   startTransition,
   useActionState,
+  useEffect,
   useId,
+  useRef,
   useState,
   type FormEvent,
   type ReactNode,
@@ -23,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/i18n/navigation";
 import type { AuthMessageKey } from "@/lib/auth/errors";
+import { emailWarning, type EmailWarning } from "@/lib/auth/email-typo";
 import {
   fieldErrors,
   magicLinkSchema,
@@ -92,7 +95,15 @@ function FormMessage({ message }: { message?: AuthMessageKey }) {
   );
 }
 
-function SentPanel({ body, extra }: { body: string; extra?: ReactNode }) {
+function SentPanel({
+  body,
+  extra,
+  children,
+}: {
+  body: string;
+  extra?: ReactNode;
+  children?: ReactNode;
+}) {
   const t = useTranslations("Auth");
   return (
     <div
@@ -103,6 +114,7 @@ function SentPanel({ body, extra }: { body: string; extra?: ReactNode }) {
       <h2 className="font-display text-2xl tracking-wide uppercase">{t("checkEmailTitle")}</h2>
       <p>{body}</p>
       {extra ? <p className="text-sm">{extra}</p> : null}
+      {children}
     </div>
   );
 }
@@ -228,15 +240,57 @@ const richLink = (href: string) =>
     );
   };
 
+/**
+ * A mistyped address (10d): a warning under the field, never a refusal; « Tu voulais dire … ? »
+ * puts the suggestion in the field.
+ */
+function EmailHint({
+  warning,
+  onAccept,
+}: {
+  warning: EmailWarning | null;
+  onAccept: (email: string) => void;
+}) {
+  const t = useTranslations("Auth");
+  return (
+    <p role="status" className="text-gold -mt-3 text-sm">
+      {warning?.kind === "suggestion"
+        ? t.rich("emailSuggestion", {
+            email: () => (
+              <button
+                type="button"
+                onClick={() => onAccept(warning.email)}
+                className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4"
+              >
+                {warning.email}
+              </button>
+            ),
+          })
+        : warning?.kind === "unknown_tld"
+          ? t("emailUnknownTld")
+          : null}
+    </p>
+  );
+}
+
 export function SignupForm({ referralCode, role }: { referralCode?: string; role?: Role }) {
   const t = useTranslations("Auth");
   const id = useId();
   const form = useAuthForm(signUpAction, () => signupSchema);
   const error = (key?: AuthErrorKey) => (key ? t(`errors.${key}`) : undefined);
+  const emailInput = useRef<HTMLInputElement>(null);
+  const [warning, setWarning] = useState<EmailWarning | null>(null);
+  // The address sent (shown on the panel) and « Corriger », back to the form filled in.
+  const [sentTo, setSentTo] = useState("");
+  const [correcting, setCorrecting] = useState(false);
+
+  useEffect(() => {
+    if (correcting) emailInput.current?.focus();
+  }, [correcting]);
 
   // The same answer for an address already registered (no account enumeration), with the way
   // in for whoever already has an account.
-  if (form.state.status === "sent") {
+  if (form.state.status === "sent" && !correcting) {
     return (
       <SentPanel
         body={t("checkEmailBody")}
@@ -244,15 +298,44 @@ export function SignupForm({ referralCode, role }: { referralCode?: string; role
           login: richLink("/connexion"),
           reset: richLink("/mot-de-passe-oublie"),
         })}
-      />
+      >
+        {sentTo ? (
+          <>
+            <p className="break-all">
+              {t.rich("sentTo", {
+                email: () => <strong>{sentTo}</strong>,
+              })}
+            </p>
+            <p className="text-sm">
+              {t("wrongAddress")}{" "}
+              <button
+                type="button"
+                onClick={() => setCorrecting(true)}
+                className="text-gold inline-flex min-h-11 items-center font-semibold underline underline-offset-4"
+              >
+                {t("correct")}
+              </button>
+            </p>
+          </>
+        ) : null}
+      </SentPanel>
     );
   }
 
   return (
-    <form noValidate onSubmit={form.onSubmit} className="space-y-5">
+    <form
+      noValidate
+      onSubmit={(event) => {
+        setSentTo(emailInput.current?.value.trim() ?? "");
+        setCorrecting(false);
+        form.onSubmit(event);
+      }}
+      className="space-y-5"
+    >
       {referralCode ? <input type="hidden" name="ref" value={referralCode} /> : null}
       {role ? <input type="hidden" name="role" value={role} /> : null}
       <Input
+        ref={emailInput}
         id={`${id}-email`}
         name="email"
         type="email"
@@ -260,7 +343,18 @@ export function SignupForm({ referralCode, role }: { referralCode?: string; role
         inputMode="email"
         label={t("email")}
         hint={t("emailHint")}
+        defaultValue={sentTo}
+        onBlur={(event) => setWarning(emailWarning(event.currentTarget.value))}
+        onChange={() => setWarning(null)}
         error={error(form.errors.email)}
+      />
+      <EmailHint
+        warning={warning}
+        onAccept={(email) => {
+          if (emailInput.current) emailInput.current.value = email;
+          setWarning(null);
+          emailInput.current?.focus();
+        }}
       />
       <PasswordInput
         id={`${id}-password`}

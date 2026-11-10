@@ -201,7 +201,12 @@
     "recoveryFactorLead": "Ce compte est protégé par une double authentification. Saisis le code à 6 chiffres de ton application d'authentification avant de choisir un nouveau mot de passe.",
     "recoveryFactorCode": "Code à 6 chiffres",
     "recoveryFactorSubmit": "Vérifier",
-    "recoveryFactorInvalid": "Code incorrect ou expiré. Réessaie avec le code suivant."
+    "recoveryFactorInvalid": "Code incorrect ou expiré. Réessaie avec le code suivant.",
+    "emailSuggestion": "Tu voulais dire <email></email> ?",
+    "emailUnknownTld": "L'extension de cette adresse est inhabituelle : vérifie-la avant de continuer.",
+    "sentTo": "Le lien part à <email></email>.",
+    "wrongAddress": "Ce n'est pas la bonne ?",
+    "correct": "Corriger"
   },
   "Errors": {
     "notFoundStamp": "Affaire classée",

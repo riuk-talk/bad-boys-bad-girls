@@ -201,7 +201,12 @@
     "recoveryFactorLead": "This account is protected by two-factor authentication. Type the 6-digit code from your authenticator app before choosing a new password.",
     "recoveryFactorCode": "6-digit code",
     "recoveryFactorSubmit": "Verify",
-    "recoveryFactorInvalid": "Wrong or expired code. Try again with the next one."
+    "recoveryFactorInvalid": "Wrong or expired code. Try again with the next one.",
+    "emailSuggestion": "Did you mean <email></email>?",
+    "emailUnknownTld": "The extension of this address is unusual: check it before going on.",
+    "sentTo": "The link goes to <email></email>.",
+    "wrongAddress": "Not the right one?",
+    "correct": "Correct it"
   },
   "Errors": {
     "notFoundStamp": "Case dismissed",
