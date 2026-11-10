@@ -17,6 +17,9 @@ const enabled = process.env.E2E_ALLOW_WRITE === "true" && url !== "" && secret !
 const WCAG = ["wcag2a", "wcag2aa", "wcag21aa"];
 const SHOTS = process.env.E2E_SCREENSHOTS ?? "";
 
+/** « Décision enregistrée. », the outcome of an admin decision (Admin.done). */
+const DONE = "Décision enregistrée.";
+
 const CHARGES = [
   "A dormi une nuit entière dans un photomaton.",
   "A donné un nom à sa moto : Josiane.",
@@ -1368,13 +1371,18 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
       await expect(request).toContainText("Faute de frappe à l'inscription.");
       expect(await axeViolations(greffe)).toEqual([]);
       await request.getByRole("button", { name: "Accepter la correction" }).click();
-      await expect(greffe.getByRole("status")).toBeVisible();
-      const { data: corrected } = await admin
-        .from("profiles")
-        .select("birthdate")
-        .eq("id", iris.id)
-        .single();
-      expect(corrected?.birthdate).toBe("1992-07-14");
+      await greffe.waitForURL(/\/admin\/corrections\?done=1$/);
+      await expect(greffe.getByRole("status").filter({ hasText: DONE })).toBeVisible();
+      await expect
+        .poll(async () => {
+          const { data } = await admin
+            .from("profiles")
+            .select("birthdate")
+            .eq("id", iris.id)
+            .single();
+          return data?.birthdate;
+        })
+        .toBe("1992-07-14");
       // The record of the member shows the previous pseudo.
       await greffe.goto(`/admin/membres/${iris.id}`);
       await expect(greffe.getByText(new RegExp(`${iris.pseudo} → ${renamed}`))).toBeVisible();
