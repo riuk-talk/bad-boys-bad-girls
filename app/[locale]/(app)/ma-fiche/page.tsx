@@ -184,7 +184,7 @@ export default async function MyFichePage() {
           </ButtonLink>
         )}
         <ButtonLink href="/ma-fiche/criteres" variant="secondary">
-          {t("criteria")}
+          {t("criteriaLink")}
         </ButtonLink>
         <ButtonLink href="/ma-fiche/donnees" variant="secondary">
           {t("myDataLink")}

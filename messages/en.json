@@ -880,7 +880,12 @@
     "previewTitle": "As others will see it",
     "gaugeLabel": "File {percent}% complete",
     "gaugeHint": "The more complete your File, the more Visitors want to ask for a visit.",
-    "criteria": "My criteria",
+    "criteria": {
+      "mainPhoto": "Approved ID photo",
+      "bio": "A bio of at least 40 characters",
+      "signs": "At least one distinctive mark",
+      "morePhotos": "Three photos or more"
+    },
     "bio": "Bio",
     "bioHint": "500 characters max. Emails, phone numbers and links are hidden.",
     "signsTitle": "Distinctive marks",
@@ -953,7 +958,8 @@
       "permit_granted": "Permit granted",
       "hint": "E-mails never contain a pseudo or a message. Each e-mail also has an unsubscribe link.",
       "save": "Save my e-mails"
-    }
+    },
+    "criteriaLink": "My criteria"
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
