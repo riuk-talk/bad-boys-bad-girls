@@ -155,6 +155,7 @@ export function VisitRoom({ initial, messages, readState, me, tz }: Props) {
             readState={readState}
             tz={tz}
             canWrite={now < endsAt}
+            liveVisit={now < endsAt}
             me={me}
             other={other}
             visitorPseudo={visitorPseudo}

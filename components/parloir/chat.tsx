@@ -40,8 +40,10 @@ import { createClient } from "@/lib/supabase/browser";
 
 /** Without a realtime connection the conversation is read every 3 s (SPEC §13). */
 const FALLBACK_POLL_MS = 3000;
-/** With one, a slow safety read in case an event was missed. */
+/** With one, a slow safety read in case an event was missed (Parloir sans horaire). */
 const SAFETY_POLL_MS = 15000;
+/** During a visit in progress (30 minutes), the safety read comes every 5 s. */
+const VISIT_SAFETY_POLL_MS = 5000;
 /** A press this long on a bubble opens its actions (mobile, 9l). */
 const LONG_PRESS_MS = 500;
 
@@ -63,6 +65,8 @@ type Props = {
   actions?: ReactNode;
   /** A message of the other can be reported (not once their account is deleted). */
   canReport?: boolean;
+  /** A visit in progress: the safety read every 5 s rather than 15 s. */
+  liveVisit?: boolean;
 };
 
 /**
@@ -86,6 +90,7 @@ export function Chat({
   iAmVisitor,
   actions,
   canReport = true,
+  liveVisit = false,
 }: Props) {
   const t = useTranslations("Relations.parloir");
   const errorT = useTranslations("Relations.errors");
@@ -130,48 +135,68 @@ export function Chat({
     });
   }, [conversationId]);
 
+  const safetyMs = liveVisit ? VISIT_SAFETY_POLL_MS : SAFETY_POLL_MS;
   useEffect(() => {
-    void refresh();
     const supabase = createClient();
     let live = false;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-    try {
-      channel = supabase
-        .channel(`parloir:${conversationId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `conversation_id=eq.${conversationId}`,
-          },
-          () => void refresh(),
-        )
-        .subscribe((status) => {
-          live = status === "SUBSCRIBED";
-        });
-    } catch {
-      // WebSocket refused (Safari throws on a blocked socket): the 3 s poll carries the conversation.
-    }
-    let elapsed = 0;
-    const timer = window.setInterval(() => {
-      elapsed += FALLBACK_POLL_MS;
-      if (!live || elapsed >= SAFETY_POLL_MS) {
-        elapsed = 0;
-        void refresh();
+    let cancelled = false;
+    let channel: RealtimeChannel | null = null;
+    let lastRead = 0;
+    const read = () => {
+      lastRead = Date.now();
+      void refresh();
+    };
+    read();
+    void (async () => {
+      // The channel is joined with the member's own token. Joined before the session was read, it
+      // went as anon, who cannot read the messages: Realtime refused the subscription (« invalid
+      // column for filter ») and no insert ever came; only the safety read showed them.
+      await supabase.realtime.setAuth().catch(() => undefined);
+      if (cancelled) return;
+      try {
+        channel = supabase
+          .channel(`parloir:${conversationId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "INSERT",
+              schema: "public",
+              table: "messages",
+              filter: `conversation_id=eq.${conversationId}`,
+            },
+            () => void refresh(),
+          )
+          // Live only once the database confirms the subscription (« Subscribed to PostgreSQL »):
+          // the channel reports SUBSCRIBED even when Realtime refused it, and the conversation
+          // then went on the slow safety read.
+          .on("system", {}, (payload: { extension?: string; status?: string }) => {
+            if (payload.extension !== "postgres_changes") return;
+            const wasLive = live;
+            live = payload.status === "ok";
+            // (Re)opened: what was written while it was not listening.
+            if (live && !wasLive) read();
+          })
+          .subscribe((status) => {
+            if (status !== "SUBSCRIBED") live = false;
+          });
+      } catch {
+        // WebSocket refused (Safari throws on a blocked socket): the 3 s poll carries the conversation.
       }
-    }, FALLBACK_POLL_MS);
+    })();
+    const timer = window.setInterval(() => {
+      if (Date.now() - lastRead >= (live ? safetyMs : FALLBACK_POLL_MS)) read();
+    }, 1000);
     const onVisible = () => {
-      if (document.visibilityState === "visible") void refresh();
+      if (document.visibilityState === "visible") read();
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => {
+      cancelled = true;
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
       if (channel) void supabase.removeChannel(channel);
     };
-  }, [conversationId, refresh]);
+  }, [conversationId, refresh, safetyMs]);
 
   // « … écrit »: a private Broadcast channel of the conversation (Realtime Authorization, the two
   // members only), nothing written in the database. Shown 5 s after the last signal.
