@@ -8,6 +8,7 @@ import { FakePushService } from "./helpers/fake-push-service";
 import { auditSignedIn, LIGHTHOUSE_CATEGORIES } from "./helpers/lighthouse";
 import { cutoutReady, onboardBad, onboardVisitor, signUp } from "./helpers/onboarding";
 import { settled } from "./helpers/settle";
+import { watchRealtimeRefusals } from "./helpers/realtime";
 import { captcha } from "./helpers/captcha";
 
 // THE end-to-end journey, LOCAL STACK ONLY (scripts/ci/local-env.mjs). Owner's rule (2026-10-07):
@@ -67,9 +68,12 @@ function asOwner(sql: string): string {
 
 /** Uncaught exceptions and console errors of the pages of the current step (printed if it fails). */
 const pageErrors: string[] = [];
+/** Realtime subscriptions refused on the pages of the current step (there must be none). */
+const realtimeRefusals: string[] = [];
 
 async function login(browser: Browser, email: string, password: string): Promise<Page> {
   const page = await (await browser.newContext()).newPage();
+  watchRealtimeRefusals(page, realtimeRefusals);
   page.on("pageerror", (error) => pageErrors.push(`pageerror: ${error.stack ?? error.message}`));
   page.on("console", (message) => {
     if (message.type() === "error") pageErrors.push(`console.error: ${message.text()}`);
@@ -97,6 +101,9 @@ test.describe("journey: Greffe → Demande → Heures de visite → Parloir → 
       console.log(`[${testInfo.project.name}] ${testInfo.title}\n${pageErrors.join("\n")}`);
     }
     pageErrors.length = 0;
+    // Every Parloir joins its channel with the member's token: Realtime never refuses it.
+    const refused = realtimeRefusals.splice(0);
+    expect(refused).toEqual([]);
   });
 
   const admin = createClient(url, secret, { auth: { persistSession: false } });
