@@ -69,7 +69,9 @@ export async function decidePhotoAction(form: FormData): Promise<void> {
     return back("waiveReason");
   }
   const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
+  const { data: isAdmin } = await member.supabase.rpc("has_admin_permission", {
+    p_permission: "greffe.decide",
+  });
   if (isAdmin !== true) return back("generic");
 
   const admin = createAdminClient();
@@ -152,7 +154,9 @@ async function cutoutInput(form: FormData) {
   const parsed = cutoutSchema.safeParse({ photoId: form.get("photoId"), photo: form.get("photo") });
   if (!parsed.success || parsed.data.photo.size === 0) return null;
   const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
+  const { data: isAdmin } = await member.supabase.rpc("has_admin_permission", {
+    p_permission: "greffe.decide",
+  });
   if (isAdmin !== true) return null;
   let processed: Awaited<ReturnType<typeof processPhoto>>;
   try {

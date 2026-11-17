@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { Outcome } from "@/components/admin/outcome";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { ageOn } from "@/lib/validation/onboarding";
 import { decideCorrectionAction } from "./actions";
 
@@ -26,9 +25,7 @@ const field = "border-line bg-ink-2 w-full rounded-lg border px-3 py-2";
  * Accept (never under 18, checked again in SQL) or refuse with a motive; the member is notified.
  */
 export default async function CorrectionsPage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("birthdate.decide");
   const t = await getTranslations("Admin");
   const format = await getFormatter();
   const { error, done } = await searchParams;

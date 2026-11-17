@@ -178,6 +178,13 @@ const ERROR_KEYS = [
   "not_found",
   "underage",
   "invalid_reason",
+  "super_admin_protected",
+  "team_manage_reserved",
+  "role_name_taken",
+  "role_in_use",
+  "invalid_name",
+  "invalid_description",
+  "invalid_role",
 ] as const;
 export type ModerationError = (typeof ERROR_KEYS)[number] | "generic";
 

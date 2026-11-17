@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { Outcome } from "@/components/admin/outcome";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { adminCan, requireAdminPermission } from "@/lib/admin/guard";
 import { MOTIVE_MAX } from "@/lib/moderation";
 import { decideFlagAction } from "../moderation-actions";
 
@@ -25,9 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * message), with a motive sent to the member.
  */
 export default async function FlagsPage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("flags.decide");
+  // Erasing a member's text is its own permission (10f).
+  const canErase = await adminCan(member, "texts.edit");
   const t = await getTranslations("Admin");
   const format = await getFormatter();
   const { error, done } = await searchParams;
@@ -101,7 +100,7 @@ export default async function FlagsPage({ searchParams }: Props) {
                 <Button type="submit" name="decision" value="uphold" variant="secondary">
                   {t("flags.uphold")}
                 </Button>
-                {row.removable ? (
+                {row.removable && canErase ? (
                   <Button type="submit" name="decision" value="remove" variant="danger">
                     {t("flags.remove")}
                   </Button>

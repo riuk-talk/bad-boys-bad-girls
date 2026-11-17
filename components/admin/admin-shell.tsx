@@ -13,7 +13,8 @@ import {
 } from "react";
 import { adminCountsAction } from "@/app/[locale]/(app)/admin/shell-actions";
 import { Link, usePathname } from "@/i18n/navigation";
-import { ADMIN_NAV, activeHref, type AdminCounts } from "@/lib/admin/nav";
+import { activeHref, navFor, type AdminCounts } from "@/lib/admin/nav";
+import type { AdminPermission } from "@/lib/admin/permissions";
 import { cn } from "@/lib/cn";
 import { MemberSearch } from "./member-search";
 
@@ -50,17 +51,19 @@ function NavList({
   counts,
   onNavigate,
   idPrefix,
+  permissions,
 }: {
   counts: AdminCounts | null;
   onNavigate?: () => void;
   idPrefix: string;
+  permissions: readonly AdminPermission[];
 }) {
   const t = useTranslations("AdminShell");
   const pathname = usePathname();
   const active = activeHref(pathname);
   return (
     <div className="flex flex-col gap-5">
-      {ADMIN_NAV.map((group) => {
+      {navFor(permissions).map((group) => {
         const headingId = group.key ? `${idPrefix}-${group.key}` : undefined;
         return (
           <div key={group.key ?? "home"} className="flex flex-col gap-1">
@@ -147,11 +150,15 @@ function trapFocus(event: ReactKeyboardEvent<HTMLDialogElement>) {
 
 export function AdminShell({
   initialCounts,
+  permissions,
   children,
 }: {
   initialCounts: AdminCounts | null;
+  /** What the role of the connected admin opens (10f): the menu shows only that. */
+  permissions: readonly AdminPermission[];
   children: ReactNode;
 }) {
+  const canSearch = permissions.includes("members.view");
   const t = useTranslations("AdminShell");
   const counts = useCounts(initialCounts);
   const drawer = useRef<HTMLDialogElement>(null);
@@ -165,7 +172,7 @@ export function AdminShell({
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      if (canSearch && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         closeDrawer();
         setSearching(true);
@@ -173,7 +180,7 @@ export function AdminShell({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [closeDrawer]);
+  }, [closeDrawer, canSearch]);
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col lg:flex-row lg:items-start">
@@ -188,30 +195,34 @@ export function AdminShell({
           <Menu aria-hidden="true" className="size-5" />
           {t("openMenu")}
         </button>
-        <button
-          type="button"
-          onClick={() => setSearching(true)}
-          className="border-line text-cream ml-auto inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold"
-        >
-          <Search aria-hidden="true" className="size-5" />
-          {t("search")}
-        </button>
+        {canSearch ? (
+          <button
+            type="button"
+            onClick={() => setSearching(true)}
+            className="border-line text-cream ml-auto inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold"
+          >
+            <Search aria-hidden="true" className="size-5" />
+            {t("search")}
+          </button>
+        ) : null}
       </div>
 
       <nav
         aria-label={t("label")}
         className="border-line sticky top-0 hidden max-h-dvh w-64 shrink-0 overflow-y-auto border-r px-3 py-6 lg:block"
       >
-        <button
-          type="button"
-          onClick={() => setSearching(true)}
-          className="border-line text-grey hover:text-cream mb-5 flex min-h-11 w-full items-center gap-2 rounded-md border px-3 text-sm"
-        >
-          <Search aria-hidden="true" className="size-4" />
-          <span className="flex-1 text-left">{t("search")}</span>
-          <kbd className="text-xs">{t("shortcut")}</kbd>
-        </button>
-        <NavList counts={counts} idPrefix="side" />
+        {canSearch ? (
+          <button
+            type="button"
+            onClick={() => setSearching(true)}
+            className="border-line text-grey hover:text-cream mb-5 flex min-h-11 w-full items-center gap-2 rounded-md border px-3 text-sm"
+          >
+            <Search aria-hidden="true" className="size-4" />
+            <span className="flex-1 text-left">{t("search")}</span>
+            <kbd className="text-xs">{t("shortcut")}</kbd>
+          </button>
+        ) : null}
+        <NavList counts={counts} idPrefix="side" permissions={permissions} />
       </nav>
 
       <dialog
@@ -239,12 +250,17 @@ export function AdminShell({
             </button>
           </div>
           <div className="overflow-y-auto px-3 py-4">
-            <NavList counts={counts} onNavigate={closeDrawer} idPrefix="drawer" />
+            <NavList
+              counts={counts}
+              onNavigate={closeDrawer}
+              idPrefix="drawer"
+              permissions={permissions}
+            />
           </div>
         </nav>
       </dialog>
 
-      <MemberSearch open={searching} onClose={() => setSearching(false)} />
+      {canSearch ? <MemberSearch open={searching} onClose={() => setSearching(false)} /> : null}
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );

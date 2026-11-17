@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { VITAL_GOOD, VITAL_METRICS, VITAL_PAGES, type VitalMetric } from "@/lib/vitals";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -16,9 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /** Performance réelle (SPEC §18): 75th percentile of the real Core Web Vitals, per page. */
 export default async function PerformancePage() {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("performance.view");
   const t = await getTranslations("Admin.vitals");
   const format = await getFormatter();
   const { data } = await member.supabase.rpc("admin_web_vitals", { p_days: DAYS });

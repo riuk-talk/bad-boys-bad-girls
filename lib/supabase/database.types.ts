@@ -1048,7 +1048,7 @@ isOneToOne: false
 { Args: { "p_active": boolean,"p_label_en": string,"p_label_fr": string,"p_options": Json,"p_question": number }; Returns: undefined
                            },
 "admin_save_role":
-{ Args: { "p_description": string,"p_name": string,"p_permissions": (string)[],"p_role": number }; Returns: number
+{ Args: { "p_description"?: string,"p_name": string,"p_permissions": (string)[],"p_role"?: number }; Returns: number
                            },
 "admin_save_tribe":
 { Args: { "p_active": boolean,"p_label_en": string,"p_label_fr": string,"p_slug": string,"p_sort": number,"p_tribe"?: number }; Returns: number

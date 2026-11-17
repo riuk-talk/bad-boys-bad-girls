@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { PilotageOutcome } from "@/components/admin/pilotage-outcome";
 import { Button } from "@/components/ui/button";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { REPORT_CATEGORIES, type ReportCategory } from "@/lib/moderation";
 import { saveKeywordAction } from "../pilotage-actions";
 
@@ -85,9 +84,7 @@ async function KeywordForm({ keyword, id }: { keyword: Keyword; id: string }) {
 
 /** Mots-clés de modération (SPEC §15): a text that contains one goes to « Textes signalés ». */
 export default async function KeywordsPage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("keywords.edit");
   const t = await getTranslations("Admin.keywords");
   const { error, done } = await searchParams;
   const { data } = await member.supabase.rpc("admin_keywords");

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -14,9 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /** Historique des décisions (SPEC §15): every moderation decision, the newest first. */
 export default async function LogPage() {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("history.view");
   const t = await getTranslations("Admin");
   const format = await getFormatter();
   const { data } = await member.supabase.rpc("admin_moderation_log", { p_limit: 200 });

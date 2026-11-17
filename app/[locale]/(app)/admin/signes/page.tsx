@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { PilotageOutcome } from "@/components/admin/pilotage-outcome";
 import { Button } from "@/components/ui/button";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { saveTribeAction } from "../pilotage-actions";
 
 type Props = {
@@ -61,9 +60,7 @@ async function TribeForm({ tribe, id }: { tribe: Tribe; id: string }) {
 
 /** Signes distinctifs (SPEC §15): labels FR/EN, order, deactivation (never removed). */
 export default async function TribesPage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("signs.edit");
   const t = await getTranslations("Admin.tribes");
   const { error, done } = await searchParams;
   const { data } = await member.supabase.rpc("admin_tribes");

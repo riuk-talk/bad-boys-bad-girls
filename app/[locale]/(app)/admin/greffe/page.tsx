@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { GreffeCutout } from "@/components/admin/greffe-cutout";
 import { Mugshot } from "@/components/brand/mugshot";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { photoBatchAllowed } from "@/lib/photo-batch";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { decidePhotoAction } from "./actions";
@@ -42,9 +41,7 @@ const SIGNED_URL_SECONDS = 300;
 
 /** Le Greffe, minimum (Phase 3): the photo queue, one decision per photo. Admins only. */
 export default async function GreffePage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("greffe.decide");
   const t = await getTranslations("Greffe");
   const { error, done } = await searchParams;
 

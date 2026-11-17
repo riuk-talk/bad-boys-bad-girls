@@ -6,6 +6,7 @@ import { MemberDossier } from "@/components/admin/member-dossier";
 import { Outcome } from "@/components/admin/outcome";
 import { Button } from "@/components/ui/button";
 import { parseMemberDetail } from "@/lib/admin/members";
+import { adminCan, requireAdminPermission } from "@/lib/admin/guard";
 import { requireMember } from "@/lib/auth/user";
 import { publicPhotoUrl } from "@/lib/relations/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -68,9 +69,9 @@ async function photoThumbnails(
 export default async function MemberRecordPage({ params, searchParams }: Props) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("members.detail");
+  // The sanction form only for a role that may sanction (10f).
+  const canSanction = await adminCan(member, "sanctions.apply");
   const t = await getTranslations("Admin");
   const format = await getFormatter();
   const { error, done } = await searchParams;
@@ -124,63 +125,65 @@ export default async function MemberRecordPage({ params, searchParams }: Props) 
 
       <MemberDossier detail={detail} thumbnails={thumbnails} />
 
-      <section
-        aria-labelledby="sanction-title"
-        className="border-line space-y-3 rounded-lg border bg-[#121214] p-4"
-      >
-        <h2 id="sanction-title" className="font-display text-2xl uppercase">
-          {t("member.sanction")}
-        </h2>
-        <form action={sanctionAction} className="grid gap-3 sm:grid-cols-2">
-          <input type="hidden" name="member" value={record.id} />
-          <div className="space-y-1">
-            <label htmlFor="sanction-action" className="text-sm font-semibold">
-              {t("member.action")}
-            </label>
-            <select id="sanction-action" name="action" required className={`${field} min-h-11`}>
-              {MEMBER_SANCTIONS.map((action) => (
-                <option key={action} value={action}>
-                  {t(`actions.${action}`)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="sanction-days" className="text-sm font-semibold">
-              {t("days")}
-            </label>
-            <input
-              id="sanction-days"
-              name="days"
-              type="number"
-              min={1}
-              max={SUSPENSION_DAYS_MAX}
-              defaultValue={7}
-              className={`${field} min-h-11`}
-            />
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <label htmlFor="sanction-reason" className="text-sm font-semibold">
-              {t("member.reason")}
-            </label>
-            <textarea
-              id="sanction-reason"
-              name="reason"
-              required
-              minLength={MOTIVE_MIN}
-              maxLength={MOTIVE_MAX}
-              aria-describedby="sanction-reason-hint"
-              className={`${field} min-h-24`}
-            />
-            <p id="sanction-reason-hint" className="text-grey text-xs">
-              {t("member.reasonHint")}
-            </p>
-          </div>
-          <Button type="submit" variant="danger" className="sm:col-span-2">
-            {t("member.apply")}
-          </Button>
-        </form>
-      </section>
+      {canSanction ? (
+        <section
+          aria-labelledby="sanction-title"
+          className="border-line space-y-3 rounded-lg border bg-[#121214] p-4"
+        >
+          <h2 id="sanction-title" className="font-display text-2xl uppercase">
+            {t("member.sanction")}
+          </h2>
+          <form action={sanctionAction} className="grid gap-3 sm:grid-cols-2">
+            <input type="hidden" name="member" value={record.id} />
+            <div className="space-y-1">
+              <label htmlFor="sanction-action" className="text-sm font-semibold">
+                {t("member.action")}
+              </label>
+              <select id="sanction-action" name="action" required className={`${field} min-h-11`}>
+                {MEMBER_SANCTIONS.map((action) => (
+                  <option key={action} value={action}>
+                    {t(`actions.${action}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="sanction-days" className="text-sm font-semibold">
+                {t("days")}
+              </label>
+              <input
+                id="sanction-days"
+                name="days"
+                type="number"
+                min={1}
+                max={SUSPENSION_DAYS_MAX}
+                defaultValue={7}
+                className={`${field} min-h-11`}
+              />
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <label htmlFor="sanction-reason" className="text-sm font-semibold">
+                {t("member.reason")}
+              </label>
+              <textarea
+                id="sanction-reason"
+                name="reason"
+                required
+                minLength={MOTIVE_MIN}
+                maxLength={MOTIVE_MAX}
+                aria-describedby="sanction-reason-hint"
+                className={`${field} min-h-24`}
+              />
+              <p id="sanction-reason-hint" className="text-grey text-xs">
+                {t("member.reasonHint")}
+              </p>
+            </div>
+            <Button type="submit" variant="danger" className="sm:col-span-2">
+              {t("member.apply")}
+            </Button>
+          </form>
+        </section>
+      ) : null}
 
       <section aria-labelledby="actions-title" className="space-y-3">
         <h2 id="actions-title" className="font-display text-2xl uppercase">

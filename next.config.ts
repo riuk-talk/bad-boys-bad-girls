@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
   experimental: {
     // Photos are compressed in the browser (~1 MB max) then re-encoded on the server.
     serverActions: { bodySizeLimit: "3mb" },
+    // forbidden(): a page of /admin the role does not open answers 403 (10f).
+    authInterrupts: true,
   },
   images: {
     // Vercel Hobby image optimisation quota is limited (SPEC §11): every image is pre-optimised.

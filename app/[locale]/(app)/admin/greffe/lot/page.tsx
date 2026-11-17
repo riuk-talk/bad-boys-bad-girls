@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { PhotoBatch } from "@/components/admin/greffe-cutout";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { photoBatchAllowed } from "@/lib/photo-batch";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -26,9 +26,7 @@ const POSITION_KEYS: Record<number, "face" | "left" | "right"> = {
  */
 export default async function PhotoBatchPage() {
   if (!photoBatchAllowed(process.env.NEXT_PUBLIC_SUPABASE_URL)) notFound();
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("greffe.decide");
   const { data: rows, error } = await member.supabase.rpc("admin_photo_batch", { p_limit: 30 });
   if (error) notFound();
   const t = await getTranslations("Greffe");

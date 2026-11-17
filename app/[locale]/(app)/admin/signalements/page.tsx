@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { Outcome } from "@/components/admin/outcome";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { adminCan, requireAdminPermission } from "@/lib/admin/guard";
 import { MOTIVE_MAX, MOTIVE_MIN, REPORT_SANCTIONS, SUSPENSION_DAYS_MAX } from "@/lib/moderation";
 import { decideReportAction } from "../moderation-actions";
 
@@ -26,9 +25,9 @@ const field = "border-line bg-ink-2 w-full rounded-lg border px-3 py-2";
  * motive for the reporter and, when upheld, a sanction and a motive for the member concerned.
  */
 export default async function ReportsPage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("reports.decide");
+  // Upholding a report sanctions its target: that needs sanctions.apply too (10f).
+  const canSanction = await adminCan(member, "sanctions.apply");
   const t = await getTranslations("Admin");
   const format = await getFormatter();
   const { error, done } = await searchParams;
@@ -122,10 +121,14 @@ export default async function ReportsPage({ searchParams }: Props) {
                     <input type="radio" name="outcome" value="rejected" required />
                     {t("reports.rejected")}
                   </label>
-                  <label className="inline-flex min-h-11 items-center gap-2">
-                    <input type="radio" name="outcome" value="upheld" />
-                    {t("reports.upheld")}
-                  </label>
+                  {canSanction ? (
+                    <label className="inline-flex min-h-11 items-center gap-2">
+                      <input type="radio" name="outcome" value="upheld" />
+                      {t("reports.upheld")}
+                    </label>
+                  ) : (
+                    <p className="text-grey text-sm">{t("reports.noSanctionPermission")}</p>
+                  )}
                 </fieldset>
                 <div className="space-y-1 sm:col-span-2">
                   <label htmlFor={`${id}-reporter`} className="text-sm font-semibold">
@@ -140,47 +143,51 @@ export default async function ReportsPage({ searchParams }: Props) {
                     className={`${field} min-h-20`}
                   />
                 </div>
-                <div className="space-y-1">
-                  <label htmlFor={`${id}-action`} className="text-sm font-semibold">
-                    {t("reports.action")}
-                  </label>
-                  <select id={`${id}-action`} name="action" className={`${field} min-h-11`}>
-                    {REPORT_SANCTIONS.map((action) => (
-                      <option key={action} value={action}>
-                        {t(`actions.${action}`)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label htmlFor={`${id}-days`} className="text-sm font-semibold">
-                    {t("days")}
-                  </label>
-                  <input
-                    id={`${id}-days`}
-                    name="days"
-                    type="number"
-                    min={1}
-                    max={SUSPENSION_DAYS_MAX}
-                    defaultValue={7}
-                    className={`${field} min-h-11`}
-                  />
-                </div>
-                <div className="space-y-1 sm:col-span-2">
-                  <label htmlFor={`${id}-target`} className="text-sm font-semibold">
-                    {t("reports.reasonTarget")}
-                  </label>
-                  <textarea
-                    id={`${id}-target`}
-                    name="reasonTarget"
-                    maxLength={MOTIVE_MAX}
-                    aria-describedby={`${id}-target-hint`}
-                    className={`${field} min-h-20`}
-                  />
-                  <p id={`${id}-target-hint`} className="text-grey text-xs">
-                    {t("reports.reasonTargetHint")}
-                  </p>
-                </div>
+                {canSanction ? (
+                  <>
+                    <div className="space-y-1">
+                      <label htmlFor={`${id}-action`} className="text-sm font-semibold">
+                        {t("reports.action")}
+                      </label>
+                      <select id={`${id}-action`} name="action" className={`${field} min-h-11`}>
+                        {REPORT_SANCTIONS.map((action) => (
+                          <option key={action} value={action}>
+                            {t(`actions.${action}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label htmlFor={`${id}-days`} className="text-sm font-semibold">
+                        {t("days")}
+                      </label>
+                      <input
+                        id={`${id}-days`}
+                        name="days"
+                        type="number"
+                        min={1}
+                        max={SUSPENSION_DAYS_MAX}
+                        defaultValue={7}
+                        className={`${field} min-h-11`}
+                      />
+                    </div>
+                    <div className="space-y-1 sm:col-span-2">
+                      <label htmlFor={`${id}-target`} className="text-sm font-semibold">
+                        {t("reports.reasonTarget")}
+                      </label>
+                      <textarea
+                        id={`${id}-target`}
+                        name="reasonTarget"
+                        maxLength={MOTIVE_MAX}
+                        aria-describedby={`${id}-target-hint`}
+                        className={`${field} min-h-20`}
+                      />
+                      <p id={`${id}-target-hint`} className="text-grey text-xs">
+                        {t("reports.reasonTargetHint")}
+                      </p>
+                    </div>
+                  </>
+                ) : null}
                 <Button type="submit" className="sm:col-span-2">
                   {t("decide")}
                 </Button>

@@ -39,7 +39,7 @@ create function pg_temp.expected_member_functions() returns text[] language sql 
     'admin_sanction(p_user uuid, p_action moderation_action_type, p_reason text, p_days integer)',
     'admin_save_keyword(p_term text, p_lang text, p_category report_category, p_active boolean, p_keyword integer)',
     'admin_save_question(p_question smallint, p_label_fr text, p_label_en text, p_active boolean, p_options jsonb)',
-    'admin_save_role(p_role smallint, p_name text, p_description text, p_permissions text[])',
+    'admin_save_role(p_name text, p_permissions text[], p_role smallint, p_description text)',
     'admin_save_tribe(p_slug text, p_label_fr text, p_label_en text, p_sort smallint, p_active boolean, p_tribe smallint)',
     'admin_save_zone(p_slug text, p_name text, p_center_place bigint, p_radius_km smallint, p_timezone text, p_threshold_bads integer, p_women_pct smallint, p_men_pct smallint, p_auto_open boolean, p_zone smallint)',
     'admin_search_members(p_query text)',

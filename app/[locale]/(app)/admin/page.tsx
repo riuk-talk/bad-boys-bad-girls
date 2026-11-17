@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { getFormatter, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
-import { Link } from "@/i18n/navigation";
+import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { forbidden, notFound } from "next/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { homeFor } from "@/lib/admin/nav";
+import { parsePermissions } from "@/lib/admin/permissions";
 import { parseDashboard, TODO_HREF, type Figure } from "@/lib/admin/dashboard";
 import { requireMember } from "@/lib/auth/user";
 
@@ -16,11 +18,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * Le tableau de bord de /admin (10c): real figures only (admin_dashboard, is_admin()), a figure
+ * Le tableau de bord de /admin (10c): real figures only (admin_dashboard, dashboard.view), a figure
  * the database does not give shows « — »; then the 10 oldest items waiting, with their page.
  */
 export default async function AdminDashboardPage() {
   const member = await requireMember();
+  // Where every admin lands after the second factor (10-9): without the dashboard, the first page
+  // its role opens (10f); none at all, 403.
+  const { data: permissions } = await member.supabase.rpc("my_admin_permissions");
+  const allowed = parsePermissions(permissions);
+  if (!allowed.includes("dashboard.view")) {
+    const home = homeFor(allowed);
+    if (!home) forbidden();
+    return redirect({ href: home, locale: await getLocale() });
+  }
   const t = await getTranslations("AdminDashboard");
   const admin = await getTranslations("Admin");
   const greffe = await getTranslations("Greffe");

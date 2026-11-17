@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { PilotageOutcome } from "@/components/admin/pilotage-outcome";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { gaugeSchema } from "@/lib/pilotage";
 import { saveZoneAction, setLaunchModeAction, setZoneStatusAction } from "../pilotage-actions";
 
@@ -82,9 +81,7 @@ async function ZoneForm({ values, id }: { values: ZoneValues; id: string }) {
  * global mode (super admin only). An open quartier never closes by itself.
  */
 export default async function ZonesPage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("zones.edit");
   const t = await getTranslations("Admin.zones");
   const { error, done } = await searchParams;
   const [{ data }, { data: launchMode }] = await Promise.all([

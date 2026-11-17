@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import { Outcome } from "@/components/admin/outcome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,7 @@ import {
   PAGE_SIZE,
   parseMemberFilters,
 } from "@/lib/admin/members";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -32,9 +31,7 @@ const field = "border-line bg-ink-2 min-h-11 w-full rounded-lg border px-3 py-2"
  * e-mail stays above. Below, the accounts never confirmed after 48 hours (date and domain only).
  */
 export default async function MembersPage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("members.view");
   const t = await getTranslations("Admin");
   const format = await getFormatter();
   const params = await searchParams;

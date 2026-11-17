@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import * as z from "zod/mini";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { healthPeriod, healthSchema, rate } from "@/lib/pilotage";
 
 type Props = {
@@ -36,9 +36,7 @@ export default async function HealthPage({ params, searchParams }: Props) {
   const { id } = await params;
   const zoneId = z.coerce.number().check(z.int(), z.positive(), z.maximum(32767)).safeParse(id);
   if (!zoneId.success) notFound();
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("zones.edit");
   const t = await getTranslations("Admin.health");
   const period = healthPeriod((await searchParams).from, (await searchParams).to, new Date());
   const [{ data }, { data: zones }] = await Promise.all([

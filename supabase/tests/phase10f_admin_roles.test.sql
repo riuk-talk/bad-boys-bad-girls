@@ -230,7 +230,7 @@ declare
     'select * from public.admin_roles_list()', 'select * from public.admin_permission_keys()',
     'select * from public.admin_team()', 'select public.admin_grant_role(''x@y.z'', 1::smallint)',
     'select public.admin_revoke_role(gen_random_uuid())',
-    'select public.admin_save_role(null, ''Nouveau'', null, ''{}'')',
+    'select public.admin_save_role(p_name => ''Nouveau'', p_permissions => ''{}'')',
     'select public.admin_delete_role(99::smallint)'];
   c text;
 begin
@@ -259,14 +259,15 @@ begin
     '^42501 super_admin_protected', 'the super admin cannot be given a role');
   return next matches(pg_temp.err(format('select public.admin_revoke_role(%L)', boss)),
     '^42501 super_admin_protected', 'nor taken out');
-  custom := public.admin_save_role(null, 'Lecteur Greffe', 'Le Greffe seulement', array['greffe.decide', 'dashboard.view']);
+  custom := public.admin_save_role(p_name => 'Lecteur Greffe', p_description => 'Le Greffe seulement',
+    p_permissions => array['greffe.decide', 'dashboard.view']);
   return next is((select permissions from public.admin_roles_list() where id = custom),
     array['dashboard.view', 'greffe.decide'], 'a custom role with its boxes');
-  return next matches(pg_temp.err(format('select public.admin_save_role(%s::smallint, %L, null, %L)', custom, 'Lecteur Greffe', '{team.manage}')),
+  return next matches(pg_temp.err(format('select public.admin_save_role(p_role => %s::smallint, p_name => %L, p_permissions => %L)', custom, 'Lecteur Greffe', '{team.manage}')),
     '^42501 team_manage_reserved', 'team.manage cannot be ticked');
-  return next matches(pg_temp.err('select public.admin_save_role(null, ''Admin'', null, ''{}'')'),
+  return next matches(pg_temp.err('select public.admin_save_role(p_name => ''Admin'', p_permissions => ''{}'')'),
     '^23505 role_name_taken', 'two roles never share a name');
-  perform public.admin_save_role(custom, 'Greffier', null, array['greffe.decide']);
+  perform public.admin_save_role(p_role => custom, p_name => 'Greffier', p_permissions => array['greffe.decide']);
   perform pg_temp.as_owner();
   return next is((select name from public.admin_roles where id = custom), 'Greffier', 'renamed, boxes changed');
   perform pg_temp.as_admin(boss);

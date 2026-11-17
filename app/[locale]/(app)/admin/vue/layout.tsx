@@ -2,13 +2,16 @@ import type { ReactNode } from "react";
 import { Eye } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { requireAdminPermission } from "@/lib/admin/guard";
 
 /**
  * La vue Greffe (10a): the site as a Visitor sees it, from the admin, read only. The admin layout
  * above already requires an admin with the second factor; every function used here checks it
- * again (is_admin()). The banner stays on every page of the view.
+ * again (has_admin_permission, 10f). The banner stays on every page of the view.
  */
 export default async function GreffeViewLayout({ children }: { children: ReactNode }) {
+  // Its own permission (10f): 403 without it.
+  await requireAdminPermission("vue_visiteur.view");
   const t = await getTranslations("GreffeView");
   return (
     <div className="flex flex-col">

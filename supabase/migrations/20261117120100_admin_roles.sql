@@ -331,8 +331,9 @@ begin
 end;
 $$;
 
--- Create a role (p_role null) or change one: name, description, ticked permissions.
-create function public.admin_save_role(p_role smallint, p_name text, p_description text, p_permissions text[])
+-- Create a role (no p_role) or change one: name, description, ticked permissions.
+create function public.admin_save_role(p_name text, p_permissions text[], p_role smallint default null,
+  p_description text default null)
 returns smallint language plpgsql security definer set search_path = '' as $$
 declare
   role_name text := btrim(coalesce(p_name, ''));
@@ -411,7 +412,7 @@ revoke execute on function public.admin_permission_keys() from public, anon, aut
 revoke execute on function public.admin_team() from public, anon, authenticated, service_role;
 revoke execute on function public.admin_grant_role(text, smallint) from public, anon, authenticated, service_role;
 revoke execute on function public.admin_revoke_role(uuid) from public, anon, authenticated, service_role;
-revoke execute on function public.admin_save_role(smallint, text, text, text[]) from public, anon, authenticated, service_role;
+revoke execute on function public.admin_save_role(text, text[], smallint, text) from public, anon, authenticated, service_role;
 revoke execute on function public.admin_delete_role(smallint) from public, anon, authenticated, service_role;
 revoke execute on function public.admin_team_history(integer) from public, anon, authenticated, service_role;
 grant execute on function public.admin_roles_list() to authenticated;
@@ -419,7 +420,7 @@ grant execute on function public.admin_permission_keys() to authenticated;
 grant execute on function public.admin_team() to authenticated;
 grant execute on function public.admin_grant_role(text, smallint) to authenticated;
 grant execute on function public.admin_revoke_role(uuid) to authenticated;
-grant execute on function public.admin_save_role(smallint, text, text, text[]) to authenticated;
+grant execute on function public.admin_save_role(text, text[], smallint, text) to authenticated;
 grant execute on function public.admin_delete_role(smallint) to authenticated;
 grant execute on function public.admin_team_history(integer) to authenticated;
 

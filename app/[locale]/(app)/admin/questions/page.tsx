@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 import * as z from "zod/mini";
 import { PilotageOutcome } from "@/components/admin/pilotage-outcome";
 import { Button } from "@/components/ui/button";
-import { requireMember } from "@/lib/auth/user";
+import { requireAdminPermission } from "@/lib/admin/guard";
 import { saveQuestionAction } from "../pilotage-actions";
 
 type Props = {
@@ -26,9 +25,7 @@ const optionsSchema = z.array(z.object({ id: z.number(), fr: z.string(), en: z.s
  * answers keep their meaning; only an « extra » question can be deactivated.
  */
 export default async function QuestionsPage({ searchParams }: Props) {
-  const member = await requireMember();
-  const { data: isAdmin } = await member.supabase.rpc("is_admin");
-  if (isAdmin !== true) notFound();
+  const member = await requireAdminPermission("questions.edit");
   const t = await getTranslations("Admin.questions");
   const { error, done } = await searchParams;
   const { data } = await member.supabase.rpc("admin_questions");
