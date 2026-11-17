@@ -196,11 +196,11 @@ begin
   for c in select * from pg_temp.calls() loop
     return next unalike(pg_temp.err(c.call), '42501 admin_only%', 'the super admin may: ' || c.call);
   end loop;
-  return next is(cardinality(public.my_admin_permissions()), 17, 'the super admin has the 17 permissions');
+  return next is(cardinality(public.my_admin_permissions()), 18, 'the super admin has the 18 permissions');
   perform pg_temp.as_owner();
   perform pg_temp.as_admin(watcher);
   return next is(public.my_admin_permissions(),
-    array['dashboard.view', 'members.view', 'members.detail', 'vue_visiteur.view', 'history.view'],
+    array['dashboard.view', 'members.view', 'members.detail', 'vue_visiteur.view', 'history.view', 'vue_bad.view'],
     'Observateur: read only');
   perform pg_temp.as_owner();
   perform pg_temp.as_user(watcher);
@@ -208,9 +208,9 @@ begin
   perform pg_temp.as_owner();
   return next is((select array_agg(permission order by permission) from public.admin_role_permissions where role_id = 2),
     array['birthdate.decide', 'dashboard.view', 'flags.decide', 'greffe.decide', 'keywords.edit', 'members.detail',
-          'members.view', 'reports.decide', 'sanctions.apply', 'texts.edit', 'vue_visiteur.view'],
+          'members.view', 'reports.decide', 'sanctions.apply', 'texts.edit', 'vue_bad.view', 'vue_visiteur.view'],
     'Modérateur as asked');
-  return next is((select count(*)::integer from public.admin_role_permissions where role_id = 1), 16,
+  return next is((select count(*)::integer from public.admin_role_permissions where role_id = 1), 17,
     'Admin: everything but team.manage');
   return next matches(pg_temp.err('insert into public.admin_role_permissions (role_id, permission) values (1, ''team.manage'')'),
     '^23514', 'team.manage can never be given to a role');
@@ -226,6 +226,8 @@ declare
   coco_pseudo text;
   boss_mail text := (select email from auth.users where id = boss);
   custom smallint;
+  -- Only the lines this test writes (the log keeps those of earlier runs: it is append-only).
+  log_start bigint := coalesce((select max(id) from public.admin_team_log), 0);
   calls text[] := array[
     'select * from public.admin_roles_list()', 'select * from public.admin_permission_keys()',
     'select * from public.admin_team()', 'select public.admin_grant_role(''x@y.z'', 1::smallint)',
@@ -278,18 +280,18 @@ begin
   perform public.admin_delete_role(custom);
   perform pg_temp.as_owner();
   return next is((select count(*)::integer from public.admin_roles where id = custom), 0, 'an empty role is deleted');
-  return next is((select array_agg(action order by id) from public.admin_team_log),
+  return next is((select array_agg(action order by id) from public.admin_team_log where id > log_start),
     array['grant', 'change_role', 'role_create', 'role_update', 'change_role', 'revoke', 'role_delete'],
     'every change of the team is logged');
-  return next is((select before -> 'permissions' from public.admin_team_log where action = 'role_update'),
+  return next is((select before -> 'permissions' from public.admin_team_log where action = 'role_update' and id > log_start),
     '["dashboard.view", "greffe.decide"]'::jsonb, 'with the state before');
-  return next is((select after ->> 'name' from public.admin_team_log where action = 'role_update'), 'Greffier',
+  return next is((select after ->> 'name' from public.admin_team_log where action = 'role_update' and id > log_start), 'Greffier',
     'and after');
-  return next ok((select bool_and(actor_id = boss) from public.admin_team_log), 'who did it');
+  return next ok((select bool_and(actor_id = boss) from public.admin_team_log where id > log_start), 'who did it');
   return next matches(pg_temp.err('delete from public.admin_team_log'), '^42501', 'the log cannot be erased');
   -- Historique reads it.
   perform pg_temp.as_admin(boss);
-  return next is((select count(*)::integer from public.admin_team_history(50)), 7, 'Historique shows the team log');
+  return next is((select count(*)::integer from public.admin_team_history(500) h where h.id > log_start), 7, 'Historique shows the team log');
   perform pg_temp.as_owner();
 end $$;
 
