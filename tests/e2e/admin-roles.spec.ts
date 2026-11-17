@@ -150,7 +150,10 @@ test.describe("administration roles (10f, local stack)", () => {
     expect(await menuEntries(page)).toContain("Équipe");
     await page.goto("/admin/equipe");
     await expect(page.getByRole("heading", { name: "Équipe", level: 1 })).toBeVisible();
-    await expect(page.getByText("Super admin (intouchable)")).toBeVisible();
+    // Its own row (other test files may have their super admin at the same time).
+    const own = page.getByRole("listitem").filter({ hasText: boss.email });
+    await expect(own).toContainText("Super admin (intouchable)");
+    await expect(own.getByRole("button")).toHaveCount(0);
     expect(await axeViolations(page)).toEqual([]);
 
     const grant = page.getByRole("region", { name: "Donner un rôle" });
