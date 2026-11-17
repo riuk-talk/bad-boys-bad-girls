@@ -32,12 +32,15 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   // The interface takes the colour of the connected member's gender (PARCOURS-DESIGN §1).
   const accent = accentForGender(profile?.gender);
   const role = parseRole(profile?.role);
+  // An account with an administration role has no member area while it holds it (10f).
+  const isAdmin = adminRole === "admin" || adminRole === "super_admin";
+  const memberArea = Boolean(profile?.onboarding_completed_at) && !isAdmin;
   return (
     <div className="flex min-h-dvh flex-col" data-accent={accent === "gold" ? undefined : accent}>
       <AppHeader
-        onboardingDone={Boolean(profile?.onboarding_completed_at)}
+        onboardingDone={memberArea}
         role={role}
-        isAdmin={adminRole === "admin" || adminRole === "super_admin"}
+        isAdmin={isAdmin}
       />
       <ClientIntl>
         <OfflineNotice />
@@ -46,7 +49,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             {sanction ? <SanctionNotice sanction={sanction} /> : children}
           </main>
         </ToastProvider>
-        {profile?.onboarding_completed_at && role && !sanction ? <TabBar role={role} /> : null}
+        {memberArea && role && !sanction ? <TabBar role={role} /> : null}
       </ClientIntl>
     </div>
   );

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CasierCheck } from "@/components/onboarding/casier";
 import { redirect } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireMemberArea } from "@/lib/auth/user";
 import { loadCliches } from "@/lib/casier-server";
 import { caseNumberFromId } from "@/lib/case-number";
 
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function MyCasierPreviewPage() {
-  const member = await requireMember();
+  const member = await requireMemberArea();
   const locale = await getLocale();
   const { data: casier } = await member.supabase
     .from("casier_charges")

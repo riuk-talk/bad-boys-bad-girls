@@ -4,7 +4,7 @@ import { CopyLink } from "@/components/city/copy-link";
 import { ButtonLink } from "@/components/ui/button-link";
 import { redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { requireMember } from "@/lib/auth/user";
+import { requireMemberArea } from "@/lib/auth/user";
 import { SITE_URL } from "@/lib/env";
 import { localizedPath } from "@/lib/i18n-path";
 import { parseRole } from "@/lib/onboarding/config";
@@ -50,7 +50,7 @@ function Gauge({
 // "Ton quartier ouvre bientôt" (SPEC v7 §3, "les Bads d'abord"): the three floors of the zone,
 // the Visitors already waiting (shown to Bads only) and the referral link.
 export default async function QuarterPage() {
-  const member = await requireMember();
+  const member = await requireMemberArea();
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations("Quarter");
   const [{ data: profile }, { data: progress }, { data: recruited }] = await Promise.all([

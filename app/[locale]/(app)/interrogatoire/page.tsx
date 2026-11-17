@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { redirect } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireMemberArea } from "@/lib/auth/user";
 import { loadQuestions } from "@/lib/interrogation-server";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /** L'Interrogatoire after the onboarding: the 10 core answers can be edited, the 10 others added. */
 export default async function InterrogationPage() {
-  const member = await requireMember();
+  const member = await requireMemberArea();
   const locale = await getLocale();
   const { data: profile } = await member.supabase
     .from("profiles")

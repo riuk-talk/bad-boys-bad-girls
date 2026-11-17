@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { QuestionForm } from "@/components/interrogation/question-form";
 import { LocalizedLink } from "@/components/i18n/localized-link";
 import { redirect } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireMemberArea } from "@/lib/auth/user";
 import { loadQuestions } from "@/lib/interrogation-server";
 
 type Props = { params: Promise<{ locale: string; id: string }> };
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function InterrogationQuestionPage({ params }: Props) {
   const id = Number((await params).id);
   if (!Number.isInteger(id) || id < 1) notFound();
-  const member = await requireMember();
+  const member = await requireMemberArea();
   const locale = await getLocale();
   const { data: profile } = await member.supabase
     .from("profiles")

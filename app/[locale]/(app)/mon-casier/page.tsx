@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CasierStepForm } from "@/components/onboarding/casier";
 import { redirect } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireMemberArea } from "@/lib/auth/user";
 import { loadCliches } from "@/lib/casier-server";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /** A Bad edits their Casier after the onboarding (same assistant, then « Teste ton Casier »). */
 export default async function MyCasierPage() {
-  const member = await requireMember();
+  const member = await requireMemberArea();
   const locale = await getLocale();
   const { data: profile } = await member.supabase
     .from("profiles")

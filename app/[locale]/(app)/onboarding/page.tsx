@@ -27,7 +27,7 @@ export default async function OnboardingEntry() {
   const locale = await getLocale();
   // The super admin has no profile and no onboarding (Phase 5a-ter): straight to /admin.
   const { data: adminRole } = await member.supabase.rpc("my_admin_role");
-  if (adminRole === "super_admin") return redirect({ href: "/admin", locale });
+  if (adminRole === "super_admin" || adminRole === "admin") return redirect({ href: "/admin", locale });
   const { data: profile } = await member.supabase
     .from("profiles")
     .select("onboarding_step, onboarding_completed_at, role")

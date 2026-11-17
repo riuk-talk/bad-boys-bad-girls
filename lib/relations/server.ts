@@ -2,7 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireMemberArea } from "@/lib/auth/user";
 import { parseRole, type Role } from "@/lib/onboarding/config";
 import type { Database } from "@/lib/supabase/database.types";
 import { ficheSchema, type FicheView, permitSchema, type PermitView } from "./types";
@@ -19,7 +19,7 @@ export function publicPhotoUrl(supabase: Client, path: string | null | undefined
  * sends the member to their own home (the Promenade for a Visitor, the Courrier for a Bad).
  */
 export async function requireRole(expected?: Role) {
-  const member = await requireMember();
+  const member = await requireMemberArea();
   const locale = await getLocale();
   const { data: profile } = await member.supabase
     .from("profiles")

@@ -12,7 +12,7 @@ import { AccountSettings } from "@/components/relations/account-settings";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ownPhotoUrls, photoInfos } from "@/lib/photos";
 import { redirect } from "@/i18n/navigation";
-import { requireMember } from "@/lib/auth/user";
+import { requireMemberArea } from "@/lib/auth/user";
 import { ageFromBirthdate, completeness } from "@/lib/fiche/completeness";
 import { parseRole } from "@/lib/onboarding/config";
 import { agreeLabel } from "@/lib/relations/types";
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function MyFichePage() {
-  const member = await requireMember();
+  const member = await requireMemberArea();
   const locale = (await getLocale()) as "fr" | "en";
   const t = await getTranslations("MyFiche");
   const { supabase, userId } = member;

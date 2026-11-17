@@ -40,7 +40,9 @@ export default async function OnboardingStep({ params, searchParams }: Props) {
   const member = await requireMember();
   // The super admin has no profile and no onboarding (Phase 5a-ter).
   const { data: adminRole } = await member.supabase.rpc("my_admin_role");
-  if (adminRole === "super_admin") return redirect({ href: "/admin", locale: await getLocale() });
+  if (adminRole === "super_admin" || adminRole === "admin") {
+    return redirect({ href: "/admin", locale: await getLocale() });
+  }
   const { data: profile } = await member.supabase
     .from("profiles")
     .select(

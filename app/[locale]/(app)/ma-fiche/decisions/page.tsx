@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
-import { requireMember } from "@/lib/auth/user";
+import { requireMemberArea } from "@/lib/auth/user";
 import { decisionsSchema } from "@/lib/moderation";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * motive (never who reported).
  */
 export default async function DecisionsPage() {
-  const { supabase } = await requireMember();
+  const { supabase } = await requireMemberArea();
   const t = await getTranslations("Decisions");
   const format = await getFormatter();
   const [{ data }] = await Promise.all([
