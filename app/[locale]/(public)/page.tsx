@@ -179,12 +179,14 @@ export default function LandingPage({ params }: Props) {
             decoding="async"
             className="h-auto w-[17.5rem] md:w-[22rem]"
           />
-          <h1 className="font-display max-w-[21rem] text-[2.875rem] leading-[1.04] tracking-wide uppercase sm:max-w-xl sm:text-6xl">
+          <h1 className="font-display max-w-[21rem] text-[2.875rem] leading-[1.04] tracking-wide text-balance uppercase sm:max-w-xl sm:text-6xl">
             {t.rich("heroTitle", {
-              glow: (chunks) => <span className="neon-gold text-[#f4d27a]">{chunks}</span>,
+              glow: (chunks) => (
+                <span className="neon-gold whitespace-nowrap text-[#f4d27a]">{chunks}</span>
+              ),
             })}
           </h1>
-          <p className="max-w-[20rem] text-base leading-relaxed text-[#e6dcc8] sm:max-w-lg sm:text-lg">
+          <p className="max-w-[20rem] text-base leading-relaxed text-balance text-[#e6dcc8] sm:max-w-lg sm:text-lg">
             {t("heroLead")}
           </p>
           <div className="grid w-full max-w-lg grid-cols-2 gap-3">
