@@ -77,11 +77,13 @@ test.describe("administration roles (10f, local stack)", () => {
     pseudo: `Coco${randomBytes(2).toString("hex")}`,
   };
   const bad = { id: "" };
+  const iris = { id: "", pseudo: `Iris${randomBytes(2).toString("hex")}` };
   const moderator: Account = { email: "", password: "", id: "", totpSecret: "" };
   const full: Account = { email: "", password: "", id: "", totpSecret: "" };
   const custom: Account = { email: "", password: "", id: "", totpSecret: "" };
   const customRole = `Greffe seul ${randomBytes(2).toString("hex")}`;
   let requestId = "";
+  let placeId = 0;
 
   async function account(target: { email: string; password: string; id: string }) {
     target.email = `e2e-roles-${randomBytes(4).toString("hex")}@example.com`;
@@ -103,17 +105,31 @@ test.describe("administration roles (10f, local stack)", () => {
       birthdate: "1991-03-03",
       gender: role === "bad" ? "woman" : "man",
       seeking_genders: [role === "bad" ? "man" : "woman"],
+      place_id: placeId,
       role,
       visit_motive: role === "visitor" ? "Je regarde les profils pour le site." : null,
     });
     if (error) throw error;
-    await admin
+    const { error: doneError } = await admin
       .from("profiles")
       .update({ onboarding_completed_at: new Date().toISOString(), onboarding_step: 8 })
       .eq("id", id);
+    if (doneError) throw doneError;
   }
 
   test.beforeAll(async () => {
+    const { data: place, error: placeError } = await admin
+      .from("places")
+      .insert({
+        official_code: `E2E${randomBytes(3).toString("hex")}`,
+        name: "Port-Greffe",
+        lat: 46.4,
+        lng: -8.6,
+      })
+      .select("id")
+      .single();
+    if (placeError) throw placeError;
+    placeId = place.id;
     for (const target of [boss, coco, moderator, full, custom]) await account(target);
     asOwner(`insert into public.super_admins (user_id, note) values ('${boss.id}', 'e2e 10f')`);
     // Coco: a Visitor with a request waiting at a Bad.
@@ -122,6 +138,20 @@ test.describe("administration roles (10f, local stack)", () => {
     await account(badAccount);
     bad.id = badAccount.id;
     await profile(bad.id, `Rose${randomBytes(2).toString("hex")}`, "bad");
+    // Iris: a Visitor whose Permis is delivered (face photo validated).
+    const irisAccount = { email: "", password: "", id: "" };
+    await account(irisAccount);
+    iris.id = irisAccount.id;
+    await profile(iris.id, iris.pseudo, "visitor");
+    // Inserted pending (a trigger sees to it), then validated by the Greffe, cut out.
+    asOwner(
+      `insert into public.photos (owner_id, position, pending_path) values ('${iris.id}', 0, '${iris.id}/0.webp')`,
+    );
+    asOwner(
+      `update public.photos set status = 'approved', pending_path = null, is_cutout = true,
+         public_path_large = gen_random_uuid() || '.webp', public_path_small = gen_random_uuid() || '-s.webp'
+       where owner_id = '${iris.id}'`,
+    );
     requestId = asOwner(
       `insert into public.visit_requests (visitor_id, bad_id, guessed_index, casier_snapshot, guess_correct)
        values ('${coco.id}', '${bad.id}', 1, '{}', false) returning id`,
@@ -135,6 +165,7 @@ test.describe("administration roles (10f, local stack)", () => {
     );
     asOwner(`delete from public.admin_roles where name = '${customRole}'`);
     for (const id of accounts) asOwner(`delete from auth.users where id = '${id}'`);
+    if (placeId) asOwner(`delete from public.places where id = ${placeId}`);
   });
 
   async function signedIn(browser: Browser, who: Account) {
@@ -210,6 +241,7 @@ test.describe("administration roles (10f, local stack)", () => {
       "Membres",
       "Historique",
       "Voir comme un Visiteur",
+      "Voir comme un Bad",
     ]);
     expect(await axeViolations(page)).toEqual([]);
     await expectForbidden(page, "/admin/greffe");
@@ -220,6 +252,34 @@ test.describe("administration roles (10f, local stack)", () => {
     await expect(page).toHaveURL(/\/admin$/);
     await page.goto("/admin/vue");
     await expect(page.getByRole("note", { name: "Vue Greffe : lecture seule" })).toBeVisible();
+    // The Promenade of the view without zones.edit (10f-bis: it used to need it).
+    expect((await page.goto("/admin/vue/promenade"))?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    // « Voir comme un Bad » (10f-bis): every Permis delivered, as the Courrier shows it.
+    await page.goto("/admin/vue-bad");
+    await expect(page.getByRole("heading", { name: "Voir comme un Bad", level: 1 })).toBeVisible();
+    await expect(page.getByRole("note", { name: "Vue Greffe : lecture seule" })).toBeVisible();
+    const card = page.getByRole("region", { name: new RegExp(`^${iris.pseudo}`) });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("Je regarde les profils pour le site.");
+    await expect(card).not.toContainText(/Tu cherches|recherche/i);
+    expect(await axeViolations(page)).toEqual([]);
+    await page.getByLabel("Genre").selectOption({ label: "Femme" });
+    await page.getByRole("button", { name: "Filtrer" }).click();
+    await page.waitForURL(/genre=woman/);
+    await expect(page.getByRole("region", { name: new RegExp(`^${iris.pseudo}`) })).toHaveCount(0);
+    // Each Permis shown is in the Greffe's log; nothing about Iris otherwise.
+    expect(
+      Number(
+        asOwner(
+          `select count(*) from public.greffe_fiche_views where admin_id = '${coco.id}' and bad_id = '${iris.id}' and context = 'vue_bad'`,
+        ),
+      ),
+    ).toBeGreaterThanOrEqual(1);
+    expect(asOwner(`select count(*) from public.notifications where user_id = '${iris.id}'`)).toBe(
+      "0",
+    );
     await page.context().close();
   });
 
@@ -274,6 +334,7 @@ test.describe("administration roles (10f, local stack)", () => {
     expect(await menuEntries(page)).toEqual(["Greffe (photos)"]);
     await expect(page.getByRole("button", { name: "Rechercher un membre" })).toHaveCount(0);
     await expectForbidden(page, "/admin/membres");
+    await expectForbidden(page, "/admin/vue-bad");
     await page.context().close();
   });
 
