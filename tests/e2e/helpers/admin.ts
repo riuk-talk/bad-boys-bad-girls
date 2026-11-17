@@ -32,11 +32,13 @@ async function freshCode(secret: string): Promise<string> {
 }
 
 /**
- * An admin opens /admin/greffe: sign-in, then the second factor (Phase 5a-ter), which lands on the
- * dashboard (/admin, decision 10-9), then the Greffe. The first time,
- * the page shows the key to enrol; it is returned so later sessions can type a code from it.
+ * An account with an administration role signs in and passes the second factor (Phase 5a-ter):
+ * the sign-in goes to /onboarding, which sends any role to /admin (10f), which asks for the
+ * second factor first (/acces-admin). The first time, the page shows the key to enrol; it is
+ * returned so later sessions can type a code from it. Ends on the page the role lands on: the
+ * dashboard, or the first page the role opens (10f), its heading shown.
  */
-export async function openGreffe(
+export async function openAdmin(
   page: Page,
   account: { email: string; password: string; totpSecret?: string },
 ): Promise<string> {
@@ -44,32 +46,9 @@ export async function openGreffe(
   await page.getByLabel("E-mail").fill(account.email);
   await page.getByLabel("Mot de passe", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Se connecter" }).click();
-  // The login goes to /onboarding, which redirects once or twice more (an admin without a
-  // profile: the first onboarding step; the super admin: /admin, then /acces-admin) or shows the
-  // screen of an unfinished dossier (an admin with a profile, 10d). Wait for the final page, or
-  // the next navigation is interrupted (WebKit).
-  // /onboarding shows for a moment before a redirection (WebKit): it is final only once the
-  // dossier screen is there.
-  const redirected = /^\/(onboarding\/\d+|acces-admin)$/;
-  const dossier = page.getByRole("heading", { name: "Ton dossier", level: 1 });
-  await expect
-    .poll(
-      async () => {
-        const path = new URL(page.url()).pathname;
-        if (redirected.test(path)) return "redirected";
-        if (path === "/onboarding" && (await dossier.isVisible())) return "dossier";
-        return "pending";
-      },
-      { message: "the page after sign-in", timeout: 20_000 },
-    )
-    .not.toBe("pending");
-  if (redirected.test(new URL(page.url()).pathname)) {
-    await page.waitForURL((url) => redirected.test(url.pathname));
-  }
-  if (!page.url().includes("/acces-admin")) {
-    await page.goto("/admin/greffe");
-    await page.waitForURL(/\/acces-admin/);
-  }
+  // Wait for the final page (/onboarding and /admin show for a moment before their redirection),
+  // or the next navigation is interrupted (WebKit).
+  await page.waitForURL((url) => url.pathname === "/acces-admin");
   await expect(page.getByRole("heading", { name: "Double authentification" })).toBeVisible();
   let secret = account.totpSecret;
   if (!secret) {
@@ -80,6 +59,20 @@ export async function openGreffe(
   }
   await page.getByLabel("Code à 6 chiffres").fill(await freshCode(secret));
   await page.getByRole("button", { name: "Vérifier" }).click();
+  await page.waitForURL((url) => url.pathname.startsWith("/admin"));
+  await expect(page.locator("main h1").first()).toBeVisible();
+  return secret;
+}
+
+/**
+ * An admin with the Admin role opens /admin/greffe: sign-in, second factor, the dashboard
+ * (decision 10-9), then the Greffe.
+ */
+export async function openGreffe(
+  page: Page,
+  account: { email: string; password: string; totpSecret?: string },
+): Promise<string> {
+  const secret = await openAdmin(page, account);
   // After the second factor: the dashboard (decision 10-9), then the Greffe for the callers.
   await page.waitForURL((url) => url.pathname === "/admin");
   await expect(page.getByRole("heading", { name: "Tableau de bord", level: 1 })).toBeVisible();
