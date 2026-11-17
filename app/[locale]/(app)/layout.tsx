@@ -37,11 +37,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const memberArea = Boolean(profile?.onboarding_completed_at) && !isAdmin;
   return (
     <div className="flex min-h-dvh flex-col" data-accent={accent === "gold" ? undefined : accent}>
-      <AppHeader
-        onboardingDone={memberArea}
-        role={role}
-        isAdmin={isAdmin}
-      />
+      <AppHeader onboardingDone={memberArea} role={role} isAdmin={isAdmin} />
       <ClientIntl>
         <OfflineNotice />
         <ToastProvider>

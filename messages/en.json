@@ -1820,7 +1820,14 @@
       "not_found": "Not found.",
       "generic": "The decision could not be saved. Try again.",
       "underage": "Refused: the date asked for gives under 18.",
-      "invalid_reason": "The reason must be 3 to 300 characters long."
+      "invalid_reason": "The reason must be 3 to 300 characters long.",
+      "super_admin_protected": "The super admin can be neither changed nor removed.",
+      "team_manage_reserved": "Managing the team stays with the super admin: it is not a box of a role.",
+      "role_name_taken": "A role already has this name.",
+      "role_in_use": "This role is still held: take it back from the accounts first.",
+      "invalid_name": "A role's name is 2 to 40 characters long.",
+      "invalid_description": "The description is 200 characters at most.",
+      "invalid_role": "This role does not exist."
     },
     "roles": {
       "bad": "Bad",
@@ -1896,7 +1903,8 @@
       "reasonReporter": "Motive for the reporter",
       "action": "Sanction (if upheld)",
       "reasonTarget": "Motive for the member concerned (if upheld)",
-      "reasonTargetHint": "Sent to the member concerned. Never name the reporter."
+      "reasonTargetHint": "Sent to the member concerned. Never name the reporter.",
+      "noSanctionPermission": "Upholding a report sanctions the member: your role may not sanction."
     },
     "flags": {
       "title": "Flagged texts",
@@ -1961,7 +1969,8 @@
     },
     "log": {
       "title": "History of decisions",
-      "empty": "No decision yet."
+      "empty": "No decision yet.",
+      "moderationTitle": "Moderation decisions"
     },
     "pilotage": {
       "done": "Change saved.",
@@ -2215,6 +2224,67 @@
         "refused": "Refused",
         "pending": "Waiting"
       }
+    },
+    "forbidden": {
+      "title": "Access denied",
+      "body": "Your administration role does not open this page. The menu shows what it opens; for more, ask the super admin."
+    },
+    "permissions": {
+      "dashboard_view": "Dashboard",
+      "members_view": "Members: list and search",
+      "members_detail": "Members: full record",
+      "vue_visiteur_view": "See as a Visitor",
+      "greffe_decide": "Registry: validate or refuse photos",
+      "reports_decide": "Reports: decide",
+      "flags_decide": "Flagged texts: decide",
+      "texts_edit": "Flagged texts: erase a text",
+      "keywords_edit": "Keywords: edit",
+      "sanctions_apply": "Sanctions: apply",
+      "birthdate_decide": "Age corrections: decide",
+      "zones_edit": "Quartiers and opening: edit",
+      "questions_edit": "Interrogation questions: edit",
+      "signs_edit": "Distinctive marks: edit",
+      "performance_view": "Performance: read",
+      "history_view": "History: read",
+      "team_manage": "Team: manage (super admin)"
+    },
+    "team": {
+      "title": "Team",
+      "lead": "Who holds which administration role, and what each role allows. A member account given a role leaves the site as a member while it keeps it; its profile comes back as it was when the role is taken back. Every change is written in the History.",
+      "membersTitle": "The team's accounts",
+      "superAdmin": "Super admin (untouchable)",
+      "mfaOn": "two-factor authentication on",
+      "mfaOff": "two-factor authentication to set up at the next sign-in",
+      "since": "since {date}",
+      "role": "Role",
+      "change": "Change role",
+      "revoke": "Take the role back",
+      "grantTitle": "Give a role",
+      "grantLead": "To an existing account: its exact e-mail or exact nickname. It will have to set up two-factor authentication before any access.",
+      "account": "Exact e-mail or nickname",
+      "grant": "Give the role",
+      "rolesTitle": "The roles",
+      "rolesLead": "Tick what each role allows. A role nobody holds can be deleted.",
+      "roleHeading": "{name} · {count, plural, =0 {no account} one {# account} other {# accounts}}",
+      "newRole": "New role",
+      "name": "Name",
+      "description": "Description",
+      "permissions": "Permissions",
+      "saveRole": "Save the role",
+      "createRole": "Create the role",
+      "deleteRole": "Delete the role",
+      "logTitle": "Team",
+      "noPermission": "no permission",
+      "by": "by {who}",
+      "beforeAfter": "Before: {before} → after: {after}",
+      "log": {
+        "grant": "Role given",
+        "change_role": "Role changed",
+        "revoke": "Role taken back",
+        "role_create": "Role created",
+        "role_update": "Role changed",
+        "role_delete": "Role deleted"
+      }
     }
   },
   "Decisions": {
@@ -2421,7 +2491,8 @@
       "zones": "Quartiers",
       "view": "See as a Visitor",
       "performance": "Performance",
-      "corrections": "Age corrections"
+      "corrections": "Age corrections",
+      "team": "Team"
     }
   },
   "AdminDashboard": {

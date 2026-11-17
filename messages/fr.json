@@ -1820,7 +1820,14 @@
       "not_found": "Introuvable.",
       "generic": "La décision n'a pas pu être enregistrée. Réessaie.",
       "underage": "Refusé : la date demandée donne moins de 18 ans.",
-      "invalid_reason": "Le motif doit faire de 3 à 300 caractères."
+      "invalid_reason": "Le motif doit faire de 3 à 300 caractères.",
+      "super_admin_protected": "Le super admin ne peut être ni modifié ni retiré.",
+      "team_manage_reserved": "La gestion de l'équipe reste au super admin : elle ne se coche pas dans un rôle.",
+      "role_name_taken": "Un rôle porte déjà ce nom.",
+      "role_in_use": "Ce rôle est encore attribué : retire-le d'abord des comptes.",
+      "invalid_name": "Le nom d'un rôle fait de 2 à 40 caractères.",
+      "invalid_description": "La description fait 200 caractères au plus.",
+      "invalid_role": "Ce rôle n'existe pas."
     },
     "roles": {
       "bad": "Bad",
@@ -1896,7 +1903,8 @@
       "reasonReporter": "Motif pour le signaleur",
       "action": "Sanction (si retenu)",
       "reasonTarget": "Motif pour la personne concernée (si retenu)",
-      "reasonTargetHint": "Envoyé à la personne concernée. Ne cite jamais le signaleur."
+      "reasonTargetHint": "Envoyé à la personne concernée. Ne cite jamais le signaleur.",
+      "noSanctionPermission": "Retenir un signalement sanctionne le membre : ton rôle n'a pas la permission de sanctionner."
     },
     "flags": {
       "title": "Textes signalés",
@@ -1961,7 +1969,8 @@
     },
     "log": {
       "title": "Historique des décisions",
-      "empty": "Aucune décision pour l'instant."
+      "empty": "Aucune décision pour l'instant.",
+      "moderationTitle": "Décisions de modération"
     },
     "pilotage": {
       "done": "Modification enregistrée.",
@@ -2215,6 +2224,67 @@
         "refused": "Refusée",
         "pending": "En attente"
       }
+    },
+    "forbidden": {
+      "title": "Accès refusé",
+      "body": "Ton rôle d'administration n'ouvre pas cette page. Le menu montre ce qu'il ouvre ; pour plus, demande au super admin."
+    },
+    "permissions": {
+      "dashboard_view": "Tableau de bord",
+      "members_view": "Membres : liste et recherche",
+      "members_detail": "Membres : fiche complète",
+      "vue_visiteur_view": "Voir comme un Visiteur",
+      "greffe_decide": "Greffe : valider ou refuser les photos",
+      "reports_decide": "Signalements : décider",
+      "flags_decide": "Textes signalés : décider",
+      "texts_edit": "Textes signalés : effacer un texte",
+      "keywords_edit": "Mots-clés : modifier",
+      "sanctions_apply": "Sanctions : appliquer",
+      "birthdate_decide": "Corrections d'âge : décider",
+      "zones_edit": "Quartiers et ouverture : modifier",
+      "questions_edit": "Questions de l'Interrogatoire : modifier",
+      "signs_edit": "Signes distinctifs : modifier",
+      "performance_view": "Performance : lire",
+      "history_view": "Historique : lire",
+      "team_manage": "Équipe : gérer (super admin)"
+    },
+    "team": {
+      "title": "Équipe",
+      "lead": "Qui a quel rôle d'administration, et ce que chaque rôle permet. Un compte membre qui reçoit un rôle quitte le site comme membre tant qu'il le garde ; son profil revient tel quel quand le rôle est retiré. Chaque changement est inscrit dans l'Historique.",
+      "membersTitle": "Les comptes de l'équipe",
+      "superAdmin": "Super admin (intouchable)",
+      "mfaOn": "double authentification activée",
+      "mfaOff": "double authentification à activer à la prochaine connexion",
+      "since": "depuis le {date}",
+      "role": "Rôle",
+      "change": "Changer de rôle",
+      "revoke": "Retirer le rôle",
+      "grantTitle": "Donner un rôle",
+      "grantLead": "À un compte existant : son e-mail exact ou son pseudo exact. Il devra activer la double authentification avant tout accès.",
+      "account": "E-mail exact ou pseudo",
+      "grant": "Donner le rôle",
+      "rolesTitle": "Les rôles",
+      "rolesLead": "Coche ce que chaque rôle permet. Un rôle que personne n'a peut être supprimé.",
+      "roleHeading": "{name} · {count, plural, =0 {aucun compte} one {# compte} other {# comptes}}",
+      "newRole": "Nouveau rôle",
+      "name": "Nom",
+      "description": "Description",
+      "permissions": "Permissions",
+      "saveRole": "Enregistrer le rôle",
+      "createRole": "Créer le rôle",
+      "deleteRole": "Supprimer le rôle",
+      "logTitle": "Équipe",
+      "noPermission": "aucune permission",
+      "by": "par {who}",
+      "beforeAfter": "Avant : {before} → après : {after}",
+      "log": {
+        "grant": "Rôle donné",
+        "change_role": "Rôle changé",
+        "revoke": "Rôle retiré",
+        "role_create": "Rôle créé",
+        "role_update": "Rôle modifié",
+        "role_delete": "Rôle supprimé"
+      }
     }
   },
   "Decisions": {
@@ -2421,7 +2491,8 @@
       "zones": "Quartiers",
       "view": "Voir comme un Visiteur",
       "performance": "Performance",
-      "corrections": "Corrections d'âge"
+      "corrections": "Corrections d'âge",
+      "team": "Équipe"
     }
   },
   "AdminDashboard": {
