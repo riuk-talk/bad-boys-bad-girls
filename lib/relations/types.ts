@@ -12,7 +12,7 @@ export type RequestStatus = Database["public"]["Enums"]["visit_request_status"];
 const label = z.object({ fr: z.optional(z.string()), en: z.optional(z.string()) });
 export type Label = z.infer<typeof label>;
 
-const photo = z.object({
+export const photoSchema = z.object({
   position: z.number(),
   large: z.nullable(z.string()),
   small: z.nullable(z.string()),
@@ -21,24 +21,24 @@ const photo = z.object({
   /** Validated by the Greffe without cut-out (9k): shown as a stapled print. */
   waived: z.optional(z.boolean()),
 });
-const tribe = z.object({ label, detail: z.nullable(z.string()) });
+export const tribeSchema = z.object({ label, detail: z.nullable(z.string()) });
 const commonPoint = z.object({ question: label, answer: label });
-const gender = z.enum(["man", "woman", "non_binary", "other"]);
+export const genderSchema = z.enum(["man", "woman", "non_binary", "other"]);
 
 export const ficheSchema = z.object({
   id: z.string(),
   ecrou: z.nullable(z.string()),
   pseudo: z.string(),
-  gender,
+  gender: genderSchema,
   age: z.nullable(z.number()),
   city: z.nullable(z.string()),
   distance_km: z.nullable(z.number()),
-  seeking_genders: z.array(gender),
+  seeking_genders: z.array(genderSchema),
   seek_age_min: z.number(),
   seek_age_max: z.number(),
   on_file_since: z.string(),
-  photos: z.array(photo),
-  tribes: z.array(tribe),
+  photos: z.array(photoSchema),
+  tribes: z.array(tribeSchema),
   charges: z.array(z.string()),
   casier_changed_since_request: z.boolean(),
   bio: z.nullable(z.string()),
@@ -56,13 +56,13 @@ export type FicheView = z.infer<typeof ficheSchema>;
 export const permitSchema = z.object({
   id: z.string(),
   pseudo: z.string(),
-  gender,
+  gender: genderSchema,
   age: z.nullable(z.number()),
   city: z.nullable(z.string()),
   distance_km: z.nullable(z.number()),
-  photo: z.nullable(photo),
+  photo: z.nullable(photoSchema),
   motive: z.nullable(z.string()),
-  tribes: z.array(tribe),
+  tribes: z.array(tribeSchema),
   clean_record: z.boolean(),
   visits_honored: z.number(),
   visits_due: z.number(),

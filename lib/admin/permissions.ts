@@ -22,6 +22,7 @@ export const ADMIN_PERMISSIONS = [
   "performance.view",
   "history.view",
   "team.manage",
+  "vue_bad.view",
 ] as const;
 export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
 

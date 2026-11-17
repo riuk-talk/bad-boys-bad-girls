@@ -2246,7 +2246,8 @@
       "signs_edit": "Signes distinctifs : modifier",
       "performance_view": "Performance : lire",
       "history_view": "Historique : lire",
-      "team_manage": "Équipe : gérer (super admin)"
+      "team_manage": "Équipe : gérer (super admin)",
+      "vue_bad_view": "Voir comme un Bad"
     },
     "team": {
       "title": "Équipe",
@@ -2456,7 +2457,25 @@
     "picked": "Rang {rank} · {count, plural, one {tiré pour # Visiteur} other {tiré pour # Visiteurs}}",
     "ficheTitle": "Fiche, vue du Greffe",
     "ficheStatus": "Vue Greffe : lecture seule. Le vrai chef d'accusation n'est jamais montré, même au Greffe.",
-    "back": "Découverte du Greffe"
+    "back": "Découverte du Greffe",
+    "badTitle": "Voir comme un Bad",
+    "badLead": "Tous les Visiteurs au Permis délivré, sans les critères d'un Bad ni de quartier, chacun tel qu'un Bad le lit dans son Courrier.",
+    "badBannerHint": "Tu vois les Permis comme un Bad. Rien n'est enregistré chez les Visiteurs : aucune trace dans leurs vues ni leurs statistiques. Seul l'affichage de chaque Permis est noté dans le journal du Greffe.",
+    "badFilters": "Filtres",
+    "badGender": "Genre",
+    "badAgeMin": "Âge minimum",
+    "badAgeMax": "Âge maximum",
+    "badZone": "Quartier",
+    "badAny": "Tous",
+    "badApply": "Filtrer",
+    "badCount": "{count, plural, =0 {Aucun Visiteur} one {# Visiteur au Permis délivré} other {# Visiteurs au Permis délivré}}",
+    "badEmpty": "Aucun Visiteur ne correspond à ces filtres.",
+    "badZoneOf": "Quartier : {zone}",
+    "badNoZone": "Dans aucun quartier",
+    "badPages": "Pages",
+    "badPrevious": "Page précédente",
+    "badNext": "Page suivante",
+    "badPage": "Page {page} sur {pages}"
   },
   "AdminShell": {
     "label": "Administration",
@@ -2492,7 +2511,8 @@
       "view": "Voir comme un Visiteur",
       "performance": "Performance",
       "corrections": "Corrections d'âge",
-      "team": "Équipe"
+      "team": "Équipe",
+      "viewBad": "Voir comme un Bad"
     }
   },
   "AdminDashboard": {

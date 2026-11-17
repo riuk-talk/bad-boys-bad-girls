@@ -1103,6 +1103,11 @@ isOneToOne: false
               "age": number,"best_rank": number,"city": string,"gender": Database["public"]['Enums']["gender"],"good_conduct": boolean,"id": string,"photo_small": string,"pseudo": string,"visitors": number
             }[]
                            },
+"admin_view_visitors":
+{ Args: { "p_age_max"?: number,"p_age_min"?: number,"p_gender"?: Database["public"]['Enums']["gender"],"p_page"?: number,"p_zone"?: number }; Returns: {
+              "age": number,"city": string,"clean_record": boolean,"gender": Database["public"]['Enums']["gender"],"id": string,"motive": string,"photo": Json,"pseudo": string,"total": number,"tribes": Json,"visits_due": number,"visits_honored": number,"zone_name": string
+            }[]
+                           },
 "admin_waive_cutout":
 { Args: { "p_detail"?: string,"p_photo": string,"p_reason": string }; Returns: undefined
                            },
@@ -1113,6 +1118,11 @@ isOneToOne: false
                            },
 "admin_zone_health":
 { Args: { "p_from": string,"p_to": string,"p_zone": number }; Returns: Json
+                           },
+"admin_zone_names":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "name": string,"zone_id": number
+            }[]
                            },
 "admin_zones":
 { Args: Record<PropertyKey, never>; Returns: {

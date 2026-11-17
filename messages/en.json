@@ -2246,7 +2246,8 @@
       "signs_edit": "Distinctive marks: edit",
       "performance_view": "Performance: read",
       "history_view": "History: read",
-      "team_manage": "Team: manage (super admin)"
+      "team_manage": "Team: manage (super admin)",
+      "vue_bad_view": "See as a Bad"
     },
     "team": {
       "title": "Team",
@@ -2456,7 +2457,25 @@
     "picked": "Rank {rank} · {count, plural, one {drawn for # Visitor} other {drawn for # Visitors}}",
     "ficheTitle": "Fiche, seen from the Greffe",
     "ficheStatus": "Greffe view: read only. The true charge is never shown, not even to the Greffe.",
-    "back": "Greffe Découverte"
+    "back": "Greffe Découverte",
+    "badTitle": "See as a Bad",
+    "badLead": "Every Visitor whose permit is delivered, without a Bad's criteria nor a quartier, each as a Bad reads it in its mailbox.",
+    "badBannerHint": "You see the permits as a Bad does. Nothing is recorded for the Visitors: no trace in their views or statistics. Only each permit shown is noted in the Registry's log.",
+    "badFilters": "Filters",
+    "badGender": "Gender",
+    "badAgeMin": "Minimum age",
+    "badAgeMax": "Maximum age",
+    "badZone": "Quartier",
+    "badAny": "All",
+    "badApply": "Filter",
+    "badCount": "{count, plural, =0 {No Visitor} one {# Visitor with a delivered permit} other {# Visitors with a delivered permit}}",
+    "badEmpty": "No Visitor fits these filters.",
+    "badZoneOf": "Quartier: {zone}",
+    "badNoZone": "In no quartier",
+    "badPages": "Pages",
+    "badPrevious": "Previous page",
+    "badNext": "Next page",
+    "badPage": "Page {page} of {pages}"
   },
   "AdminShell": {
     "label": "Administration",
@@ -2492,7 +2511,8 @@
       "view": "See as a Visitor",
       "performance": "Performance",
       "corrections": "Age corrections",
-      "team": "Team"
+      "team": "Team",
+      "viewBad": "See as a Bad"
     }
   },
   "AdminDashboard": {

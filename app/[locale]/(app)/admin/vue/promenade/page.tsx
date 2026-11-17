@@ -25,7 +25,8 @@ export default async function GreffePromenadePage({ searchParams }: Props) {
   const member = await requireMember();
   const t = await getTranslations("GreffeView");
   const { zone } = await searchParams;
-  const { data: zones, error } = await member.supabase.rpc("admin_zones");
+  // The quartiers' names only (10f-bis): the view does not need zones.edit.
+  const { data: zones, error } = await member.supabase.rpc("admin_zone_names");
   if (error) notFound();
   const all = zones ?? [];
   const chosen = all.find((z) => String(z.zone_id) === zone) ?? all[0] ?? null;

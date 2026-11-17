@@ -70,6 +70,7 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
     key: "tools",
     items: [
       { key: "view", href: "/admin/vue", highlight: true, permission: "vue_visiteur.view" },
+      { key: "viewBad", href: "/admin/vue-bad", highlight: true, permission: "vue_bad.view" },
       { key: "performance", href: "/admin/performance", permission: "performance.view" },
     ],
   },
