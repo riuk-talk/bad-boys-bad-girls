@@ -196,7 +196,7 @@ begin
   for c in select * from pg_temp.calls() loop
     return next unalike(pg_temp.err(c.call), '42501 admin_only%', 'the super admin may: ' || c.call);
   end loop;
-  return next is(cardinality(public.my_admin_permissions()), 18, 'the super admin has the 18 permissions');
+  return next is(cardinality(public.my_admin_permissions()), 19, 'the super admin has the 19 permissions');
   perform pg_temp.as_owner();
   perform pg_temp.as_admin(watcher);
   return next is(public.my_admin_permissions(),
@@ -208,9 +208,9 @@ begin
   perform pg_temp.as_owner();
   return next is((select array_agg(permission order by permission) from public.admin_role_permissions where role_id = 2),
     array['birthdate.decide', 'dashboard.view', 'flags.decide', 'greffe.decide', 'keywords.edit', 'members.detail',
-          'members.view', 'reports.decide', 'sanctions.apply', 'texts.edit', 'vue_bad.view', 'vue_visiteur.view'],
+          'members.message', 'members.view', 'reports.decide', 'sanctions.apply', 'texts.edit', 'vue_bad.view', 'vue_visiteur.view'],
     'Modérateur as asked');
-  return next is((select count(*)::integer from public.admin_role_permissions where role_id = 1), 17,
+  return next is((select count(*)::integer from public.admin_role_permissions where role_id = 1), 18,
     'Admin: everything but team.manage');
   return next matches(pg_temp.err('insert into public.admin_role_permissions (role_id, permission) values (1, ''team.manage'')'),
     '^23514', 'team.manage can never be given to a role');
