@@ -396,6 +396,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"greffe_attachments": {
+                  Row: {
+                    "created_at": string,"deleted_at": string | null,"height": number,"id": string,"message_id": number,"path": string,"thread_id": string,"width": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"deleted_at"?: string | null,"height": number,"id"?: string,"message_id": number,"path": string,"thread_id": string,"width": number
+                  }
+                  Update: {
+                    "created_at"?: string,"deleted_at"?: string | null,"height"?: number,"id"?: string,"message_id"?: number,"path"?: string,"thread_id"?: string,"width"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "greffe_attachments_message_id_fkey"
+      columns: ["message_id"]
+isOneToOne: false
+      referencedRelation: "greffe_messages"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "greffe_attachments_thread_id_fkey"
+      columns: ["thread_id"]
+isOneToOne: false
+      referencedRelation: "greffe_threads"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"greffe_fiche_views": {
                   Row: {
                     "admin_id": string,"bad_id": string,"context": string,"id": number,"viewed_at": string
@@ -411,6 +436,75 @@ isOneToOne: false
       foreignKeyName: "greffe_fiche_views_bad_id_fkey"
       columns: ["bad_id"]
 isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"greffe_messages": {
+                  Row: {
+                    "author_id": string,"author_label": string | null,"body": string | null,"created_at": string,"id": number,"is_moderation": boolean,"kind": string,"pose": number | null,"side": string,"thread_id": string
+                  }
+                  Insert: {
+                    "author_id": string,"author_label"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: never,"is_moderation"?: boolean,"kind"?: string,"pose"?: number | null,"side": string,"thread_id": string
+                  }
+                  Update: {
+                    "author_id"?: string,"author_label"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: never,"is_moderation"?: boolean,"kind"?: string,"pose"?: number | null,"side"?: string,"thread_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "greffe_messages_thread_id_fkey"
+      columns: ["thread_id"]
+isOneToOne: false
+      referencedRelation: "greffe_threads"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"greffe_photo_proposals": {
+                  Row: {
+                    "applied_at": string | null,"created_at": string,"decided_at": string | null,"files_deleted_at": string | null,"height": number,"id": string,"is_cutout": boolean,"member_id": string,"message_id": number,"path_large": string,"path_small": string,"position": number,"proposed_by": string,"status": string,"thread_id": string,"width": number
+                  }
+                  Insert: {
+                    "applied_at"?: string | null,"created_at"?: string,"decided_at"?: string | null,"files_deleted_at"?: string | null,"height": number,"id"?: string,"is_cutout"?: boolean,"member_id": string,"message_id": number,"path_large": string,"path_small": string,"position": number,"proposed_by": string,"status"?: string,"thread_id": string,"width": number
+                  }
+                  Update: {
+                    "applied_at"?: string | null,"created_at"?: string,"decided_at"?: string | null,"files_deleted_at"?: string | null,"height"?: number,"id"?: string,"is_cutout"?: boolean,"member_id"?: string,"message_id"?: number,"path_large"?: string,"path_small"?: string,"position"?: number,"proposed_by"?: string,"status"?: string,"thread_id"?: string,"width"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "greffe_photo_proposals_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "greffe_photo_proposals_message_id_fkey"
+      columns: ["message_id"]
+isOneToOne: true
+      referencedRelation: "greffe_messages"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "greffe_photo_proposals_thread_id_fkey"
+      columns: ["thread_id"]
+isOneToOne: false
+      referencedRelation: "greffe_threads"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"greffe_threads": {
+                  Row: {
+                    "archived_at": string | null,"archived_by": string | null,"created_at": string,"id": string,"last_message_at": string | null,"last_side": string | null,"member_id": string,"member_read_id": number,"opened_by": string,"team_read_id": number
+                  }
+                  Insert: {
+                    "archived_at"?: string | null,"archived_by"?: string | null,"created_at"?: string,"id"?: string,"last_message_at"?: string | null,"last_side"?: string | null,"member_id": string,"member_read_id"?: number,"opened_by": string,"team_read_id"?: number
+                  }
+                  Update: {
+                    "archived_at"?: string | null,"archived_by"?: string | null,"created_at"?: string,"id"?: string,"last_message_at"?: string | null,"last_side"?: string | null,"member_id"?: string,"member_read_id"?: number,"opened_by"?: string,"team_read_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "greffe_threads_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: true
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
@@ -793,6 +887,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"team_names": {
+                  Row: {
+                    "name": string,"updated_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "name": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "name"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"tribes": {
                   Row: {
                     "id": number,"is_active": boolean,"label": NonNullable<Json>,"slug": string,"sort": number
@@ -986,6 +1093,23 @@ isOneToOne: false
                            },
 "admin_member_detail":
 { Args: { "p_user": string }; Returns: Json
+                           },
+"admin_messagerie_archive":
+{ Args: { "p_archived": boolean,"p_thread": string }; Returns: undefined
+                           },
+"admin_messagerie_open":
+{ Args: { "p_member": string }; Returns: string
+                           },
+"admin_messagerie_thread":
+{ Args: { "p_thread": string }; Returns: Json
+                           },
+"admin_messagerie_threads":
+{ Args: { "p_filter"?: string,"p_page"?: number,"p_query"?: string }; Returns: {
+              "archived_at": string,"last_message_at": string,"last_preview": string,"last_side": string,"member_id": string,"member_state": string,"pseudo": string,"role": Database["public"]['Enums']["member_role"],"thread_id": string,"total": number,"unread": number
+            }[]
+                           },
+"admin_messagerie_unread":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "admin_moderation_log":
 { Args: { "p_limit"?: number }; Returns: {
@@ -1182,6 +1306,14 @@ isOneToOne: false
 "cleanup_dispatch":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"cleanup_greffe_files_done":
+{ Args: { "p_attachments": (string)[],"p_proposals": (string)[] }; Returns: undefined
+                           },
+"cleanup_greffe_files_due":
+{ Args: { "p_limit"?: number }; Returns: {
+              "id": string,"kind": string,"paths": (string)[]
+            }[]
+                           },
 "cleanup_photo_rotated":
 { Args: { "p_new_large": string,"p_new_small": string,"p_old_large": string,"p_photo": string }; Returns: boolean
                            },
@@ -1343,6 +1475,45 @@ isOneToOne: false
                            },
 "get_visit":
 { Args: { "p_visit": string }; Returns: Json
+                           },
+"greffe_apply_photo_proposal":
+{ Args: { "p_proposal": string,"p_public_large": string,"p_public_small": string }; Returns: Json
+                           },
+"greffe_decide_photo_proposal":
+{ Args: { "p_accept": boolean,"p_proposal": string }; Returns: string
+                           },
+"greffe_mark_read":
+{ Args: { "p_thread": string,"p_upto": number }; Returns: undefined
+                           },
+"greffe_messages_since":
+{ Args: { "p_after"?: number,"p_thread": string }; Returns: Json
+                           },
+"greffe_my_team_name":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"greffe_my_thread":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"greffe_my_unread":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"greffe_note_deposit":
+{ Args: { "p_pose": number }; Returns: number
+                           },
+"greffe_propose_photo":
+{ Args: { "p_body"?: string,"p_height": number,"p_large": string,"p_position": number,"p_small": string,"p_thread": string,"p_width": number }; Returns: string
+                           },
+"greffe_report_message":
+{ Args: { "p_category": Database["public"]['Enums']["report_category"],"p_comment"?: string,"p_message": number }; Returns: number
+                           },
+"greffe_send":
+{ Args: { "p_attachments"?: Json,"p_body"?: string,"p_moderation"?: boolean,"p_thread": string }; Returns: number
+                           },
+"greffe_set_team_name":
+{ Args: { "p_name": string }; Returns: undefined
+                           },
+"greffe_write_target":
+{ Args: { "p_thread": string }; Returns: string
                            },
 "has_admin_permission":
 { Args: { "p_permission": string }; Returns: boolean
@@ -1608,7 +1779,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "case_close_reason": "dismissed_by_bad"|"no_answer_7d"|"no_slot_chosen"|"no_new_slots"|"second_no_show"|"not_prolonged"|"no_end_choice"|"closed_after_release"|"cancelled_by_visitor"|"role_change"|"blocked"|"account_deleted"|"banned"|"second_cancellation"|"closed_after_absence"|"moderation"|"staff_role","consent_type": "terms"|"privacy"|"age_18"|"art9_seeking","conversation_status": "visiting"|"open"|"closed","date_proposal_status": "pending"|"accepted"|"countered"|"not_yet"|"cancelled","email_kind": "request_digest"|"date_accepted"|"zone_opened"|"profile_dormant"|"weekly_digest"|"moderation_decision"|"onboarding_reminder"|"admin_photos_pending"|"visit_reminder"|"permit_granted"|"admin_zone_ready"|"fiche_online"|"dossier_incomplete","flag_source": "pseudo"|"bio"|"visit_motive"|"casier"|"tribe_detail"|"visit_request"|"message"|"date_venue","gender": "man"|"woman"|"non_binary"|"other","importance": "low"|"important"|"essential","launch_mode": "zones"|"open","member_role": "bad"|"visitor","message_kind": "text"|"system","moderation_action_type": "warn"|"suspend"|"ban"|"unban"|"hide_profile"|"unhide_profile"|"photo_approve"|"photo_reject"|"text_clear"|"text_remove"|"revoke_good_conduct"|"photo_cutout_waive","moderation_status": "pending"|"approved"|"rejected","notification_type": "request_received"|"request_accepted"|"request_dismissed"|"slot_chosen"|"slots_declined"|"slots_reproposed"|"visit_cancelled"|"visit_reminder_1h"|"visit_starting"|"visit_no_show"|"visit_released"|"visit_closed"|"message_received"|"date_proposed"|"date_accepted"|"date_countered"|"promenade_open"|"permit_granted"|"moderation_decision"|"zone_opened"|"profile_dormant"|"date_cancelled"|"report_decided"|"sanction"|"fiche_online"|"dossier_incomplete"|"birthdate_correction","question_phase": "core"|"extra","report_category": "fake_profile"|"minor"|"harassment"|"sexual_content"|"violence_threat"|"scam"|"other","report_status": "open"|"upheld"|"rejected","report_target": "profile"|"permit"|"photo"|"casier"|"message"|"visit_request","slot_status": "offered"|"chosen"|"declined"|"expired","venue_type": "bar"|"cafe"|"concert"|"walk"|"activity","visit_absence": "bad"|"visitor"|"both","visit_end_choice": "prolong"|"close","visit_request_status": "pending"|"accepted"|"released"|"dismissed"|"auto_dismissed"|"cancelled"|"closed","visit_status": "scheduled"|"in_progress"|"ended"|"cancelled"|"no_show","zone_status": "waitlist"|"open"
+            "case_close_reason": "dismissed_by_bad"|"no_answer_7d"|"no_slot_chosen"|"no_new_slots"|"second_no_show"|"not_prolonged"|"no_end_choice"|"closed_after_release"|"cancelled_by_visitor"|"role_change"|"blocked"|"account_deleted"|"banned"|"second_cancellation"|"closed_after_absence"|"moderation"|"staff_role","consent_type": "terms"|"privacy"|"age_18"|"art9_seeking","conversation_status": "visiting"|"open"|"closed","date_proposal_status": "pending"|"accepted"|"countered"|"not_yet"|"cancelled","email_kind": "request_digest"|"date_accepted"|"zone_opened"|"profile_dormant"|"weekly_digest"|"moderation_decision"|"onboarding_reminder"|"admin_photos_pending"|"visit_reminder"|"permit_granted"|"admin_zone_ready"|"fiche_online"|"dossier_incomplete"|"greffe_message","flag_source": "pseudo"|"bio"|"visit_motive"|"casier"|"tribe_detail"|"visit_request"|"message"|"date_venue","gender": "man"|"woman"|"non_binary"|"other","importance": "low"|"important"|"essential","launch_mode": "zones"|"open","member_role": "bad"|"visitor","message_kind": "text"|"system","moderation_action_type": "warn"|"suspend"|"ban"|"unban"|"hide_profile"|"unhide_profile"|"photo_approve"|"photo_reject"|"text_clear"|"text_remove"|"revoke_good_conduct"|"photo_cutout_waive"|"photo_proposal_accept","moderation_status": "pending"|"approved"|"rejected","notification_type": "request_received"|"request_accepted"|"request_dismissed"|"slot_chosen"|"slots_declined"|"slots_reproposed"|"visit_cancelled"|"visit_reminder_1h"|"visit_starting"|"visit_no_show"|"visit_released"|"visit_closed"|"message_received"|"date_proposed"|"date_accepted"|"date_countered"|"promenade_open"|"permit_granted"|"moderation_decision"|"zone_opened"|"profile_dormant"|"date_cancelled"|"report_decided"|"sanction"|"fiche_online"|"dossier_incomplete"|"birthdate_correction"|"greffe_message","question_phase": "core"|"extra","report_category": "fake_profile"|"minor"|"harassment"|"sexual_content"|"violence_threat"|"scam"|"other","report_status": "open"|"upheld"|"rejected","report_target": "profile"|"permit"|"photo"|"casier"|"message"|"visit_request"|"greffe_message","slot_status": "offered"|"chosen"|"declined"|"expired","venue_type": "bar"|"cafe"|"concert"|"walk"|"activity","visit_absence": "bad"|"visitor"|"both","visit_end_choice": "prolong"|"close","visit_request_status": "pending"|"accepted"|"released"|"dismissed"|"auto_dismissed"|"cancelled"|"closed","visit_status": "scheduled"|"in_progress"|"ended"|"cancelled"|"no_show","zone_status": "waitlist"|"open"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1728,7 +1899,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "case_close_reason": ["dismissed_by_bad", "no_answer_7d", "no_slot_chosen", "no_new_slots", "second_no_show", "not_prolonged", "no_end_choice", "closed_after_release", "cancelled_by_visitor", "role_change", "blocked", "account_deleted", "banned", "second_cancellation", "closed_after_absence", "moderation", "staff_role"],"consent_type": ["terms", "privacy", "age_18", "art9_seeking"],"conversation_status": ["visiting", "open", "closed"],"date_proposal_status": ["pending", "accepted", "countered", "not_yet", "cancelled"],"email_kind": ["request_digest", "date_accepted", "zone_opened", "profile_dormant", "weekly_digest", "moderation_decision", "onboarding_reminder", "admin_photos_pending", "visit_reminder", "permit_granted", "admin_zone_ready", "fiche_online", "dossier_incomplete"],"flag_source": ["pseudo", "bio", "visit_motive", "casier", "tribe_detail", "visit_request", "message", "date_venue"],"gender": ["man", "woman", "non_binary", "other"],"importance": ["low", "important", "essential"],"launch_mode": ["zones", "open"],"member_role": ["bad", "visitor"],"message_kind": ["text", "system"],"moderation_action_type": ["warn", "suspend", "ban", "unban", "hide_profile", "unhide_profile", "photo_approve", "photo_reject", "text_clear", "text_remove", "revoke_good_conduct", "photo_cutout_waive"],"moderation_status": ["pending", "approved", "rejected"],"notification_type": ["request_received", "request_accepted", "request_dismissed", "slot_chosen", "slots_declined", "slots_reproposed", "visit_cancelled", "visit_reminder_1h", "visit_starting", "visit_no_show", "visit_released", "visit_closed", "message_received", "date_proposed", "date_accepted", "date_countered", "promenade_open", "permit_granted", "moderation_decision", "zone_opened", "profile_dormant", "date_cancelled", "report_decided", "sanction", "fiche_online", "dossier_incomplete", "birthdate_correction"],"question_phase": ["core", "extra"],"report_category": ["fake_profile", "minor", "harassment", "sexual_content", "violence_threat", "scam", "other"],"report_status": ["open", "upheld", "rejected"],"report_target": ["profile", "permit", "photo", "casier", "message", "visit_request"],"slot_status": ["offered", "chosen", "declined", "expired"],"venue_type": ["bar", "cafe", "concert", "walk", "activity"],"visit_absence": ["bad", "visitor", "both"],"visit_end_choice": ["prolong", "close"],"visit_request_status": ["pending", "accepted", "released", "dismissed", "auto_dismissed", "cancelled", "closed"],"visit_status": ["scheduled", "in_progress", "ended", "cancelled", "no_show"],"zone_status": ["waitlist", "open"]
+            "case_close_reason": ["dismissed_by_bad", "no_answer_7d", "no_slot_chosen", "no_new_slots", "second_no_show", "not_prolonged", "no_end_choice", "closed_after_release", "cancelled_by_visitor", "role_change", "blocked", "account_deleted", "banned", "second_cancellation", "closed_after_absence", "moderation", "staff_role"],"consent_type": ["terms", "privacy", "age_18", "art9_seeking"],"conversation_status": ["visiting", "open", "closed"],"date_proposal_status": ["pending", "accepted", "countered", "not_yet", "cancelled"],"email_kind": ["request_digest", "date_accepted", "zone_opened", "profile_dormant", "weekly_digest", "moderation_decision", "onboarding_reminder", "admin_photos_pending", "visit_reminder", "permit_granted", "admin_zone_ready", "fiche_online", "dossier_incomplete", "greffe_message"],"flag_source": ["pseudo", "bio", "visit_motive", "casier", "tribe_detail", "visit_request", "message", "date_venue"],"gender": ["man", "woman", "non_binary", "other"],"importance": ["low", "important", "essential"],"launch_mode": ["zones", "open"],"member_role": ["bad", "visitor"],"message_kind": ["text", "system"],"moderation_action_type": ["warn", "suspend", "ban", "unban", "hide_profile", "unhide_profile", "photo_approve", "photo_reject", "text_clear", "text_remove", "revoke_good_conduct", "photo_cutout_waive", "photo_proposal_accept"],"moderation_status": ["pending", "approved", "rejected"],"notification_type": ["request_received", "request_accepted", "request_dismissed", "slot_chosen", "slots_declined", "slots_reproposed", "visit_cancelled", "visit_reminder_1h", "visit_starting", "visit_no_show", "visit_released", "visit_closed", "message_received", "date_proposed", "date_accepted", "date_countered", "promenade_open", "permit_granted", "moderation_decision", "zone_opened", "profile_dormant", "date_cancelled", "report_decided", "sanction", "fiche_online", "dossier_incomplete", "birthdate_correction", "greffe_message"],"question_phase": ["core", "extra"],"report_category": ["fake_profile", "minor", "harassment", "sexual_content", "violence_threat", "scam", "other"],"report_status": ["open", "upheld", "rejected"],"report_target": ["profile", "permit", "photo", "casier", "message", "visit_request", "greffe_message"],"slot_status": ["offered", "chosen", "declined", "expired"],"venue_type": ["bar", "cafe", "concert", "walk", "activity"],"visit_absence": ["bad", "visitor", "both"],"visit_end_choice": ["prolong", "close"],"visit_request_status": ["pending", "accepted", "released", "dismissed", "auto_dismissed", "cancelled", "closed"],"visit_status": ["scheduled", "in_progress", "ended", "cancelled", "no_show"],"zone_status": ["waitlist", "open"]
           }
         }
 } as const
