@@ -97,8 +97,20 @@ export function GreffeThread({
   const typingTimer = useRef<number | undefined>(undefined);
   const other: Side = side === "team" ? "member" : "team";
 
+  const messagesRef = useRef(initial);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   const refresh = useCallback(async () => {
-    const update = await loadGreffeAction(threadId, lastId.current).catch(() => null);
+    // From the oldest proposal still waiting for an answer, if any: its status lives on an older
+    // message than the newest shown.
+    const waiting = messagesRef.current.find(
+      (message) =>
+        message.proposal?.status === "proposed" || message.proposal?.status === "accepted",
+    );
+    const after = waiting ? Math.min(lastId.current, waiting.id - 1) : lastId.current;
+    const update = await loadGreffeAction(threadId, after).catch(() => null);
     if (!update) return;
     setReads({ member: update.member_read_id, team: update.team_read_id });
     if (update.messages.length === 0) return;
