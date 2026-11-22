@@ -106,3 +106,27 @@ export function webpHasMetadata(file: Buffer): boolean {
   }
   return false;
 }
+
+/** An image of the Messagerie du Greffe (10g): at most this side and this weight once re-encoded. */
+export const ATTACHMENT = { side: 1600, maxBytes: 900_000 } as const;
+
+/**
+ * Server-side control of an image sent in the Messagerie: decoded (any common format), turned by
+ * its EXIF orientation, re-encoded as WebP without any metadata (EXIF, GPS above all, XMP, IPTC),
+ * transparency flattened. The browser already compressed it; this is the guarantee.
+ */
+export async function processAttachment(input: Buffer) {
+  if (input.length > MAX_UPLOAD_BYTES) throw new PhotoError("too_large");
+  let oriented: Buffer;
+  try {
+    oriented = await sharp(input, { failOn: "error", limitInputPixels: 50_000_000 })
+      .rotate()
+      .flatten({ background: "#ffffff" })
+      .toBuffer();
+  } catch {
+    throw new PhotoError("unreadable");
+  }
+  const image = await encode(oriented, ATTACHMENT.side, ATTACHMENT.maxBytes);
+  const meta = await sharp(image).metadata();
+  return { image, width: meta.width ?? 0, height: meta.height ?? 0 };
+}

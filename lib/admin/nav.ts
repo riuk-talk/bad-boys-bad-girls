@@ -4,7 +4,7 @@
  */
 import type { AdminPermission } from "./permissions";
 
-export type AdminCounterKey = "photos_pending" | "reports_open" | "flags_open";
+export type AdminCounterKey = "photos_pending" | "reports_open" | "flags_open" | "messages_unread";
 
 export type AdminNavItem = {
   key: string;
@@ -31,6 +31,12 @@ export const ADMIN_NAV: readonly AdminNavGroup[] = [
       { key: "members", href: "/admin/membres", permission: "members.view" },
       { key: "history", href: "/admin/historique", permission: "history.view" },
       { key: "corrections", href: "/admin/corrections", permission: "birthdate.decide" },
+      {
+        key: "messagerie",
+        href: "/admin/messagerie",
+        counter: "messages_unread",
+        permission: "members.message",
+      },
       { key: "team", href: "/admin/equipe", permission: "team.manage" },
     ],
   },
@@ -104,18 +110,26 @@ export function activeHref(pathname: string): string | null {
   return best?.href ?? null;
 }
 
-export type AdminCounts = Record<AdminCounterKey, number>;
+/** The counters; the Messagerie's only for a role holding members.message (10g), else none. */
+export type AdminCounts = Record<Exclude<AdminCounterKey, "messages_unread">, number> & {
+  messages_unread: number | null;
+};
 
-/** The counters as the database gives them; anything else is no counter (never a made-up 0). */
-export function parseCounts(value: unknown): AdminCounts | null {
+/**
+ * The counters as the database gives them (admin_counts, and admin_messagerie_unread for the
+ * Messagerie); anything else is no counter (never a made-up 0).
+ */
+export function parseCounts(value: unknown, unread: unknown = null): AdminCounts | null {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, unknown>;
-  const keys: AdminCounterKey[] = ["photos_pending", "reports_open", "flags_open"];
+  const keys = ["photos_pending", "reports_open", "flags_open"] as const;
   if (!keys.every((key) => Number.isInteger(row[key]) && (row[key] as number) >= 0)) return null;
   return {
     photos_pending: row.photos_pending as number,
     reports_open: row.reports_open as number,
     flags_open: row.flags_open as number,
+    messages_unread:
+      Number.isInteger(unread) && (unread as number) >= 0 ? (unread as number) : null,
   };
 }
 

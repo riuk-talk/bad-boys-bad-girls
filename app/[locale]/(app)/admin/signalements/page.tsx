@@ -74,23 +74,27 @@ export default async function ReportsPage({ searchParams }: Props) {
                   })}
                 </span>
               </div>
-              <p>
-                {t("reports.target")}{" "}
-                {row.target_user_id ? (
-                  <Link
-                    href={`/admin/membres/${row.target_user_id}`}
-                    className="font-semibold underline underline-offset-4"
-                  >
-                    {row.target_pseudo ?? t("noPseudo")}
-                  </Link>
-                ) : null}{" "}
-                · {row.target_role ? t(`roles.${row.target_role}`) : null} ·{" "}
-                {t(`states.${row.target_state}`)} ·{" "}
-                {t("reports.counts", {
-                  open: row.target_open_reports,
-                  upheld: row.target_upheld_reports,
-                })}
-              </p>
+              {row.target_type === "greffe_message" ? (
+                <p className="font-semibold">{t("reports.teamMessage")}</p>
+              ) : (
+                <p>
+                  {t("reports.target")}{" "}
+                  {row.target_user_id ? (
+                    <Link
+                      href={`/admin/membres/${row.target_user_id}`}
+                      className="font-semibold underline underline-offset-4"
+                    >
+                      {row.target_pseudo ?? t("noPseudo")}
+                    </Link>
+                  ) : null}{" "}
+                  · {row.target_role ? t(`roles.${row.target_role}`) : null} ·{" "}
+                  {t(`states.${row.target_state}`)} ·{" "}
+                  {t("reports.counts", {
+                    open: row.target_open_reports,
+                    upheld: row.target_upheld_reports,
+                  })}
+                </p>
+              )}
               <p className="text-grey text-sm">
                 {t("reports.reporter", { pseudo: row.reporter_pseudo ?? t("noPseudo") })}
               </p>
@@ -115,13 +119,16 @@ export default async function ReportsPage({ searchParams }: Props) {
               ) : null}
               <form action={decideReportAction} className="grid gap-3 sm:grid-cols-2">
                 <input type="hidden" name="report" value={row.report_id} />
+                {row.target_type === "greffe_message" ? (
+                  <input type="hidden" name="team" value="1" />
+                ) : null}
                 <fieldset className="space-y-1 sm:col-span-2">
                   <legend className="text-sm font-semibold">{t("reports.outcome")}</legend>
                   <label className="mr-4 inline-flex min-h-11 items-center gap-2">
                     <input type="radio" name="outcome" value="rejected" required />
                     {t("reports.rejected")}
                   </label>
-                  {canSanction ? (
+                  {canSanction || row.target_type === "greffe_message" ? (
                     <label className="inline-flex min-h-11 items-center gap-2">
                       <input type="radio" name="outcome" value="upheld" />
                       {t("reports.upheld")}
@@ -143,7 +150,7 @@ export default async function ReportsPage({ searchParams }: Props) {
                     className={`${field} min-h-20`}
                   />
                 </div>
-                {canSanction ? (
+                {canSanction && row.target_type !== "greffe_message" ? (
                   <>
                     <div className="space-y-1">
                       <label htmlFor={`${id}-action`} className="text-sm font-semibold">

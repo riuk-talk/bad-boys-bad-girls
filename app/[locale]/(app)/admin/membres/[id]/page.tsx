@@ -7,6 +7,7 @@ import { Outcome } from "@/components/admin/outcome";
 import { Button } from "@/components/ui/button";
 import { parseMemberDetail } from "@/lib/admin/members";
 import { adminCan, requireAdminPermission } from "@/lib/admin/guard";
+import { openThreadAction } from "../../messagerie/actions";
 import { requireMember } from "@/lib/auth/user";
 import { publicPhotoUrl } from "@/lib/relations/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -72,6 +73,8 @@ export default async function MemberRecordPage({ params, searchParams }: Props) 
   const member = await requireAdminPermission("members.detail");
   // The sanction form only for a role that may sanction (10f).
   const canSanction = await adminCan(member, "sanctions.apply");
+  // « Écrire » (10g): the member's thread of the Messagerie.
+  const canWrite = await adminCan(member, "members.message");
   const t = await getTranslations("Admin");
   const format = await getFormatter();
   const { error, done } = await searchParams;
@@ -120,6 +123,14 @@ export default async function MemberRecordPage({ params, searchParams }: Props) 
             made: record.reports_made,
           })}
         </p>
+        {canWrite && !record.is_admin ? (
+          <form action={openThreadAction}>
+            <input type="hidden" name="member" value={id} />
+            <Button type="submit" variant="secondary">
+              {t("messagerie.write")}
+            </Button>
+          </form>
+        ) : null}
         <Outcome error={error} done={done} />
       </div>
 

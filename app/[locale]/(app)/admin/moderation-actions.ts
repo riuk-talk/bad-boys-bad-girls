@@ -59,6 +59,16 @@ export async function decideReportAction(form: FormData): Promise<void> {
   }
   const { report, reasonReporter, action, reasonTarget, days } = parsed.data;
   const upheld = parsed.data.outcome === "upheld";
+  // A message of the team (10g): upheld without sanctioning a member (the super admin decides).
+  if (form.get("team") === "1") {
+    const member = await requireMember();
+    const { error } = await member.supabase.rpc("admin_decide_report", {
+      p_report: report,
+      p_upheld: upheld,
+      p_reason_reporter: reasonReporter,
+    });
+    return back(path, error ? moderationErrorKey(error.message) : undefined);
+  }
   if (upheld && (!action || !reasonTarget))
     return back(path, action ? "reason_required" : "invalid_action");
   const member = await requireMember();

@@ -54,6 +54,14 @@ describe("admin menu (10c)", () => {
       photos_pending: 3,
       reports_open: 0,
       flags_open: 12,
+      messages_unread: null,
+    });
+    // The Messagerie's counter (10g): a whole number, or none (never a made-up 0).
+    expect(parseCounts({ photos_pending: 0, reports_open: 0, flags_open: 0 }, 4)).toMatchObject({
+      messages_unread: 4,
+    });
+    expect(parseCounts({ photos_pending: 0, reports_open: 0, flags_open: 0 }, "4")).toMatchObject({
+      messages_unread: null,
     });
     expect(parseCounts(null)).toBe(null);
     expect(parseCounts({ photos_pending: 3, reports_open: 1 })).toBe(null);

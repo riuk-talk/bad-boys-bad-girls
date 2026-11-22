@@ -33,7 +33,12 @@ async function render() {
   const { default: AdminLayout } = await import("@/app/[locale]/(app)/admin/layout");
   const element = await AdminLayout({ children: "the Greffe" });
   const props = element.props as { children: unknown; initialCounts: unknown };
-  expect(props.initialCounts).toEqual({ photos_pending: 2, reports_open: 1, flags_open: 0 });
+  expect(props.initialCounts).toEqual({
+    photos_pending: 2,
+    reports_open: 1,
+    flags_open: 0,
+    messages_unread: null,
+  });
   return props.children;
 }
 

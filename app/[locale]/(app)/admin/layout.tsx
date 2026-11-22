@@ -17,15 +17,20 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (role !== "admin" && role !== "super_admin") notFound();
   if (member.aal !== "aal2") return redirect({ href: "/acces-admin", locale: await getLocale() });
   // The counters of the menu at the first rendering; the shell reads them again every 30 s.
-  const [{ data: counts }, { data: permissions }] = await Promise.all([
+  const [{ data: counts }, { data: permissionsData }] = await Promise.all([
     member.supabase.rpc("admin_counts"),
     // What the role opens (10f): the menu shows only that; each page and function checks again.
     member.supabase.rpc("my_admin_permissions"),
   ]);
+  const permissions = parsePermissions(permissionsData);
+  // The threads waiting for the team (10g), for a role that opens the Messagerie.
+  const { data: unread } = permissions.includes("members.message")
+    ? await member.supabase.rpc("admin_messagerie_unread")
+    : { data: null };
   return (
     <AdminShell
-      initialCounts={parseCounts(Array.isArray(counts) ? counts[0] : counts)}
-      permissions={parsePermissions(permissions)}
+      initialCounts={parseCounts(Array.isArray(counts) ? counts[0] : counts, unread)}
+      permissions={permissions}
     >
       {children}
     </AdminShell>

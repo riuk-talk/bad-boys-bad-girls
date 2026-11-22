@@ -10,9 +10,15 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function adminCountsAction(): Promise<AdminCounts | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_counts");
+  const [{ data, error }, { data: allowed }] = await Promise.all([
+    supabase.rpc("admin_counts"),
+    supabase.rpc("has_admin_permission", { p_permission: "members.message" }),
+  ]);
   if (error) return null;
-  return parseCounts(Array.isArray(data) ? data[0] : data);
+  // The Messagerie's counter only for a role that opens it (10g).
+  const { data: unread } =
+    allowed === true ? await supabase.rpc("admin_messagerie_unread") : { data: null };
+  return parseCounts(Array.isArray(data) ? data[0] : data, unread);
 }
 
 export type MemberHit = { id: string; pseudo: string; meta: string };

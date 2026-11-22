@@ -4,7 +4,8 @@ import { GreffeCutout } from "@/components/admin/greffe-cutout";
 import { Mugshot } from "@/components/brand/mugshot";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
-import { requireAdminPermission } from "@/lib/admin/guard";
+import { adminCan, requireAdminPermission } from "@/lib/admin/guard";
+import { openThreadAction } from "../messagerie/actions";
 import { photoBatchAllowed } from "@/lib/photo-batch";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { decidePhotoAction } from "./actions";
@@ -44,6 +45,8 @@ export default async function GreffePage({ searchParams }: Props) {
   const member = await requireAdminPermission("greffe.decide");
   const t = await getTranslations("Greffe");
   const { error, done } = await searchParams;
+  // « Écrire au membre » (10g), for a role that opens the Messagerie.
+  const canWrite = await adminCan(member, "members.message");
 
   const { data: queue } = await member.supabase.rpc("admin_photo_queue", { p_limit: 60 });
   const rows = queue ?? [];
@@ -241,6 +244,14 @@ export default async function GreffePage({ searchParams }: Props) {
                   {t("reject")}
                 </Button>
               </form>
+              {canWrite ? (
+                <form action={openThreadAction}>
+                  <input type="hidden" name="member" value={row.owner_id} />
+                  <Button type="submit" variant="secondary" className="w-full">
+                    {t("writeToMember")}
+                  </Button>
+                </form>
+              ) : null}
             </li>
           );
         })}

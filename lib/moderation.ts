@@ -20,6 +20,8 @@ export const REPORT_TARGETS = [
   "casier",
   "message",
   "visit_request",
+  // A message of the team in the Courrier du Greffe (10g): the super admin's queue.
+  "greffe_message",
 ] as const;
 
 /** Sanctions an admin applies from a member's record (admin_sanction). */
@@ -52,6 +54,7 @@ export const ACTIONS = [
   "text_clear",
   "text_remove",
   "revoke_good_conduct",
+  "photo_proposal_accept",
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 

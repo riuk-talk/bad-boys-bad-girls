@@ -6,7 +6,10 @@
 const MAX_SIDE = 1600;
 const MAX_BYTES = 1_000_000;
 
-export async function compressForUpload(file: File): Promise<Blob> {
+export async function compressForUpload(
+  file: File,
+  { maxBytes = MAX_BYTES }: { maxBytes?: number } = {},
+): Promise<Blob> {
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   let scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
   for (let attempt = 0; attempt < 4; attempt += 1) {
@@ -25,7 +28,7 @@ export async function compressForUpload(file: File): Promise<Blob> {
           : await new Promise<Blob | null>((resolve) =>
               canvas.toBlob(resolve, "image/jpeg", quality),
             );
-      if (output && output.size <= MAX_BYTES) {
+      if (output && output.size <= maxBytes) {
         bitmap.close();
         return output;
       }
