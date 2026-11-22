@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { removeMemberFiles, rotatePublicPhoto } from "@/lib/cleanup/files";
+import { removeGreffeFilesDue, removeMemberFiles, rotatePublicPhoto } from "@/lib/cleanup/files";
 import { isAuthorizedCron } from "@/lib/push/dispatch";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -16,7 +16,8 @@ const BATCH = 50;
  * - public photos renamed after 30 days of pause and at a ban (SPEC §11);
  * - accounts whose onboarding is not finished 30 days after sign-up (SPEC §4): their files, then
  *   the Auth account (the database rows follow by cascade). Admins and the super admin are never
- *   listed, and the super admin's account is protected in the database anyway.
+ *   listed, and the super admin's account is protected in the database anyway;
+ * - the images of the Messagerie du Greffe past their retention (10g).
  */
 export async function POST(request: NextRequest) {
   if (!isAuthorizedCron(request.headers.get("authorization"), process.env.PUSH_CRON_SECRET)) {
@@ -59,5 +60,8 @@ export async function POST(request: NextRequest) {
     else deleted += 1;
   }
 
-  return NextResponse.json({ rotated, deleted, failed });
+  // The images of the Messagerie du Greffe past their retention (10g).
+  const greffeFiles = Date.now() - started > TIME_BUDGET_MS ? 0 : await removeGreffeFilesDue(admin, 200);
+
+  return NextResponse.json({ rotated, deleted, failed, greffeFiles });
 }

@@ -1010,7 +1010,8 @@
         "correction_pending": "A request is already waiting for the Registry's decision.",
         "generic": "Something went wrong. Try again."
       }
-    }
+    },
+    "greffeMailLink": "{count, plural, =0 {Registry mail} other {Registry mail (#)}}"
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
@@ -1147,7 +1148,8 @@
       },
       "detailLabel": "Explain the motive (required for “other”)",
       "submit": "Approve without cut-out"
-    }
+    },
+    "writeToMember": "Write to the member"
   },
   "Prompter": {
     "common": [
@@ -1856,7 +1858,8 @@
       "photo": "Photo",
       "casier": "Casier",
       "message": "Message",
-      "visit_request": "Visit request"
+      "visit_request": "Visit request",
+      "greffe_message": "Message from the Registry"
     },
     "statuses": {
       "open": "Pending",
@@ -1885,7 +1888,8 @@
       "photo_cutout_waive": "Photo approved without cut-out",
       "text_clear": "Text: nothing wrong",
       "text_remove": "Text removed",
-      "revoke_good_conduct": "Bonne conduite withdrawn"
+      "revoke_good_conduct": "Bonne conduite withdrawn",
+      "photo_proposal_accept": "Proposed photo accepted by the member"
     },
     "reports": {
       "title": "Reports",
@@ -1904,7 +1908,8 @@
       "action": "Sanction (if upheld)",
       "reasonTarget": "Motive for the member concerned (if upheld)",
       "reasonTargetHint": "Sent to the member concerned. Never name the reporter.",
-      "noSanctionPermission": "Upholding a report sanctions the member: your role may not sanction."
+      "noSanctionPermission": "Upholding a report sanctions the member: your role may not sanction.",
+      "teamMessage": "A message from the team, reported by its recipient. Upheld, it sanctions no member."
     },
     "flags": {
       "title": "Flagged texts",
@@ -2247,7 +2252,8 @@
       "performance_view": "Performance: read",
       "history_view": "History: read",
       "team_manage": "Team: manage (super admin)",
-      "vue_bad_view": "See as a Bad"
+      "vue_bad_view": "See as a Bad",
+      "members_message": "Messages: write to members"
     },
     "team": {
       "title": "Team",
@@ -2286,6 +2292,46 @@
         "role_update": "Role changed",
         "role_delete": "Role deleted"
       }
+    },
+    "messagerie": {
+      "title": "Messages",
+      "lead": "The team's threads with the members: one thread per member, opened by the team only. Every opening of a thread is logged. Messages can be neither edited nor deleted.",
+      "newTitle": "New thread",
+      "newLead": "Exact pseudo or inmate number of the member. You can also write from their Members record or from a photo in the Registry.",
+      "newMember": "Member",
+      "newSubmit": "Write",
+      "threadsTitle": "Threads",
+      "filters": "Filter the threads",
+      "filter": {
+        "open": "Open",
+        "waiting": "Waiting for an answer",
+        "archived": "Archived"
+      },
+      "search": "Search (pseudo or text)",
+      "searchSubmit": "Search",
+      "count": "{count, plural, =0 {No thread} one {# thread} other {# threads}}",
+      "unread": "{count, plural, one {# unread} other {# unread}}",
+      "theyWrote": "The member:",
+      "noText": "(image)",
+      "none": "No thread here.",
+      "pages": "Pages",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page} of {pages}",
+      "nameTitle": "Your team name",
+      "nameLead": "Members see « The Registry » followed by this first name or team pseudo. Empty: « The Registry » alone.",
+      "nameLabel": "First name or team pseudo (30 characters at most)",
+      "nameSubmit": "Save",
+      "threadTitle": "Thread",
+      "back": "← Messages",
+      "threadHeading": "Thread with {pseudo}",
+      "archivedTag": "Archived",
+      "unreachable": "Suspended or banned member: only a moderation decision can be sent (tick box).",
+      "openRecord": "Open their Members record",
+      "archive": "Archive",
+      "reopen": "Reopen",
+      "proposeTitle": "Propose a retouched photo",
+      "write": "Write (Messages)"
     }
   },
   "Decisions": {
@@ -2418,6 +2464,10 @@
     "dossier_incomplete": {
       "subject": "Your poses are validated",
       "body": "The Registry validated your 3 poses. Your case file still needs: {detail}.\n\nUntil it is finished, nobody can see your profile."
+    },
+    "greffe_message": {
+      "subject": "The Registry wrote to you",
+      "body": "A message from the Registry team is waiting in your Registry mail."
     }
   },
   "Unsubscribe": {
@@ -2512,7 +2562,8 @@
       "performance": "Performance",
       "corrections": "Age corrections",
       "team": "Team",
-      "viewBad": "See as a Bad"
+      "viewBad": "See as a Bad",
+      "messagerie": "Messages"
     }
   },
   "AdminDashboard": {
@@ -2573,6 +2624,100 @@
       "zone_closed": "Your quartier is not open yet: the profiles arrive when it opens.",
       "no_bad_matches": "No Bad in your quartier fits your criteria for now. You can widen them in My criteria.",
       "no_bad_accepts": "Some Bads fit your criteria, but you fit the criteria of none of them for now."
+    }
+  },
+  "GreffeMail": {
+    "title": "Registry mail",
+    "back": "← My profile",
+    "lead": "Messages from the Registry team, and your answers. You can answer while the thread is open; only the Registry can open one.",
+    "none": "The Registry has not written to you yet. If it does, its message will wait for you here.",
+    "closed": "This thread is archived: you can no longer answer. The Registry can reopen it.",
+    "safety": "The Registry will never ask for your password or for money.",
+    "safetyLink": "Safety tips",
+    "greffe": "The Registry",
+    "me": "Me",
+    "member": "The member",
+    "thread": "Messages of the thread",
+    "empty": "No message yet.",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "read": "Read",
+    "typing": "{name} is writing…",
+    "composer": "Write a message",
+    "messageLabel": "Your message",
+    "count": "{count} / {max}",
+    "photoFor": "Attached photo",
+    "deposit": {
+      "0": "Front pose",
+      "1": "Left profile",
+      "2": "Right profile",
+      "show": "Just to show"
+    },
+    "addImages": "Add images",
+    "choosePhoto": "Choose the photo",
+    "chosen": "{count, plural, one {# image chosen} other {# images chosen}}",
+    "clearImages": "Remove",
+    "imagesHint": "JPEG, PNG, WebP or HEIC, 10 MB at most each, 5 per message. They are compressed and stripped of their metadata (location included) before sending. A photo for a pose goes to the Registry as any upload does.",
+    "moderation": "This is a moderation decision (the only message a suspended or banned member receives)",
+    "moderationTag": "Moderation decision",
+    "sending": "Sending…",
+    "send": "Send",
+    "report": "Report",
+    "imageAlt": "Attached image no. {n}",
+    "imagesRemoved": "{count, plural, one {# image removed (retention period)} other {# images removed (retention period)}}",
+    "event": {
+      "deposit": "Photo uploaded to the Registry: {pose}.",
+      "accepted": "Proposed photo accepted.",
+      "refused": "Proposed photo refused."
+    },
+    "proposal": {
+      "title": "Photo proposed by the Registry: {pose}",
+      "alt": "Retouched photo proposed by the Registry",
+      "status": {
+        "proposed": "Waiting for your answer. Nothing changes without your consent.",
+        "accepted": "Accepted: being replaced.",
+        "refused": "Refused: your photo stays as it is.",
+        "applied": "Accepted: it replaces your pose."
+      },
+      "accept": "Accept",
+      "refuse": "Refuse",
+      "finish": "Finish the replacement"
+    },
+    "propose": {
+      "title": "Propose a retouched photo",
+      "pose": "For the pose",
+      "file": "Retouched photo",
+      "note": "A word for the member (optional)",
+      "hint": "The member will see it with « Accept » and « Refuse ». It replaces their pose only once they agree; accepted, it is validated at once and logged.",
+      "submit": "Propose the photo",
+      "done": "Photo proposed to the member."
+    },
+    "banner": "{count, plural, one {The Registry wrote to you: # unread message.} other {The Registry wrote to you: # unread messages.}}",
+    "bannerOpen": "Open",
+    "errors": {
+      "generic": "That did not work. Try again in a moment.",
+      "tooMany": "5 images at most per message.",
+      "tooBig": "An image is larger than 10 MB.",
+      "badType": "Accepted formats: JPEG, PNG, WebP, HEIC.",
+      "unreadable": "This image does not open on this device (HEIC often opens only on iPhone). Try a JPEG.",
+      "thread_closed": "This thread is archived: you can no longer answer.",
+      "member_unreachable": "This member is suspended or banned: only a moderation decision can be sent.",
+      "message_too_long": "2,000 characters at most.",
+      "empty_message": "Write a message or attach an image.",
+      "too_many_files": "5 images at most per message.",
+      "invalid_file": "An image could not be sent.",
+      "greffe_rate_limit": "Many messages in one hour: wait a little.",
+      "already_decided": "You already answered this proposal.",
+      "invalid_position": "This pose does not exist for this member.",
+      "no_deposit": "The photo was not uploaded.",
+      "report_limit": "Too many reports today.",
+      "photo_refused": "This photo could not be uploaded (too small or unreadable).",
+      "photoRequired": "Choose a photo.",
+      "photo_too_large": "Photo too heavy.",
+      "photo_unreadable": "Unreadable photo.",
+      "photo_too_small": "Photo too small (400 pixels at least).",
+      "photo_cannot_compress": "Photo too heavy.",
+      "not_found": "This thread does not exist."
     }
   }
 }

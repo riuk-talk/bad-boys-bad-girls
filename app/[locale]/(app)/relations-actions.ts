@@ -80,7 +80,7 @@ export async function decideVisitRequestAction(
   return { status: "done" };
 }
 
-const REPORT_TARGETS = ["profile", "permit", "visit_request", "message"] as const;
+const REPORT_TARGETS = ["profile", "permit", "visit_request", "message", "greffe_message"] as const;
 const REPORT_CATEGORIES = [
   "fake_profile",
   "minor",
@@ -111,6 +111,16 @@ export async function reportAction(_state: ActionState, form: FormData): Promise
   }
   const member = await requireMember();
   const comment = parsed.data.comment.trim();
+  // A message of the team in the Courrier du Greffe (10g): its own function (no member targeted).
+  if (parsed.data.type === "greffe_message") {
+    const { error } = await member.supabase.rpc("greffe_report_message", {
+      p_message: Number(parsed.data.target),
+      p_category: parsed.data.category,
+      p_comment: comment.length > 0 ? comment : undefined,
+    });
+    if (error) return { status: "error", message: requestErrorKey(error.message) };
+    return { status: "done" };
+  }
   const { error } = await member.supabase.rpc("report", {
     p_target_type: parsed.data.type,
     p_target_id: parsed.data.target,

@@ -1010,7 +1010,8 @@
         "correction_pending": "Une demande attend déjà la décision du Greffe.",
         "generic": "Une erreur est survenue. Réessaie."
       }
-    }
+    },
+    "greffeMailLink": "{count, plural, =0 {Courrier du Greffe} other {Courrier du Greffe (#)}}"
   },
   "Quarter": {
     "referralTitle": "Fais entrer tes complices",
@@ -1147,7 +1148,8 @@
       },
       "detailLabel": "Précise le motif (obligatoire pour « autre »)",
       "submit": "Valider sans détourage"
-    }
+    },
+    "writeToMember": "Écrire au membre"
   },
   "Prompter": {
     "common": [
@@ -1856,7 +1858,8 @@
       "photo": "Photo",
       "casier": "Casier",
       "message": "Message",
-      "visit_request": "Demande de parloir"
+      "visit_request": "Demande de parloir",
+      "greffe_message": "Message du Greffe"
     },
     "statuses": {
       "open": "En attente",
@@ -1885,7 +1888,8 @@
       "photo_cutout_waive": "Photo validée sans détourage",
       "text_clear": "Texte : rien à signaler",
       "text_remove": "Texte retiré",
-      "revoke_good_conduct": "Bonne conduite retirée"
+      "revoke_good_conduct": "Bonne conduite retirée",
+      "photo_proposal_accept": "Photo proposée acceptée par le membre"
     },
     "reports": {
       "title": "Signalements",
@@ -1904,7 +1908,8 @@
       "action": "Sanction (si retenu)",
       "reasonTarget": "Motif pour la personne concernée (si retenu)",
       "reasonTargetHint": "Envoyé à la personne concernée. Ne cite jamais le signaleur.",
-      "noSanctionPermission": "Retenir un signalement sanctionne le membre : ton rôle n'a pas la permission de sanctionner."
+      "noSanctionPermission": "Retenir un signalement sanctionne le membre : ton rôle n'a pas la permission de sanctionner.",
+      "teamMessage": "Un message de l'équipe, signalé par son destinataire. Retenu, il ne sanctionne aucun membre."
     },
     "flags": {
       "title": "Textes signalés",
@@ -2247,7 +2252,8 @@
       "performance_view": "Performance : lire",
       "history_view": "Historique : lire",
       "team_manage": "Équipe : gérer (super admin)",
-      "vue_bad_view": "Voir comme un Bad"
+      "vue_bad_view": "Voir comme un Bad",
+      "members_message": "Messagerie : écrire aux membres"
     },
     "team": {
       "title": "Équipe",
@@ -2286,6 +2292,46 @@
         "role_update": "Rôle modifié",
         "role_delete": "Rôle supprimé"
       }
+    },
+    "messagerie": {
+      "title": "Messagerie",
+      "lead": "Les fils de l'équipe avec les membres : un fil par membre, que seule l'équipe ouvre. Chaque ouverture d'un fil est journalisée. Les messages ne se modifient ni ne se suppriment.",
+      "newTitle": "Nouveau fil",
+      "newLead": "Pseudo exact ou N° d'écrou du membre. On peut aussi écrire depuis sa fiche Membres ou depuis une photo du Greffe.",
+      "newMember": "Membre",
+      "newSubmit": "Écrire",
+      "threadsTitle": "Les fils",
+      "filters": "Filtrer les fils",
+      "filter": {
+        "open": "Ouverts",
+        "waiting": "En attente de réponse",
+        "archived": "Archivés"
+      },
+      "search": "Rechercher (pseudo ou texte)",
+      "searchSubmit": "Rechercher",
+      "count": "{count, plural, =0 {Aucun fil} one {# fil} other {# fils}}",
+      "unread": "{count, plural, one {# non lu} other {# non lus}}",
+      "theyWrote": "Le membre :",
+      "noText": "(image)",
+      "none": "Aucun fil ici.",
+      "pages": "Pages",
+      "previous": "Page précédente",
+      "next": "Page suivante",
+      "page": "Page {page} sur {pages}",
+      "nameTitle": "Ton nom d'équipe",
+      "nameLead": "Les membres voient « Le Greffe » suivi de ce prénom ou pseudo d'équipe. Vide : « Le Greffe » seul.",
+      "nameLabel": "Prénom ou pseudo d'équipe (30 caractères au plus)",
+      "nameSubmit": "Enregistrer",
+      "threadTitle": "Fil de la Messagerie",
+      "back": "← Messagerie",
+      "threadHeading": "Fil avec {pseudo}",
+      "archivedTag": "Archivé",
+      "unreachable": "Membre suspendu ou banni : seule une décision de modération peut lui être envoyée (case à cocher).",
+      "openRecord": "Ouvrir sa fiche Membres",
+      "archive": "Archiver",
+      "reopen": "Rouvrir",
+      "proposeTitle": "Proposer une photo retouchée",
+      "write": "Écrire (Messagerie)"
     }
   },
   "Decisions": {
@@ -2418,6 +2464,10 @@
     "dossier_incomplete": {
       "subject": "Tes poses sont validées",
       "body": "Le Greffe a validé tes 3 poses. Il manque encore à ton dossier : {detail}.\n\nTant qu'il n'est pas terminé, ta Fiche n'est visible de personne."
+    },
+    "greffe_message": {
+      "subject": "Le Greffe t'a écrit",
+      "body": "Un message de l'équipe du Greffe t'attend dans ton Courrier du Greffe."
     }
   },
   "Unsubscribe": {
@@ -2512,7 +2562,8 @@
       "performance": "Performance",
       "corrections": "Corrections d'âge",
       "team": "Équipe",
-      "viewBad": "Voir comme un Bad"
+      "viewBad": "Voir comme un Bad",
+      "messagerie": "Messagerie"
     }
   },
   "AdminDashboard": {
@@ -2573,6 +2624,100 @@
       "zone_closed": "Ton quartier n'est pas encore ouvert : les Fiches arrivent à son ouverture.",
       "no_bad_matches": "Aucun Bad de ton quartier ne correspond à tes critères pour le moment. Tu peux les élargir dans Mes critères.",
       "no_bad_accepts": "Des Bads correspondent à tes critères, mais tu ne corresponds aux critères d'aucun d'entre eux pour le moment."
+    }
+  },
+  "GreffeMail": {
+    "title": "Courrier du Greffe",
+    "back": "← Ma fiche",
+    "lead": "Les messages de l'équipe du Greffe, et tes réponses. Tu peux répondre tant que le fil est ouvert ; seul le Greffe peut en ouvrir un.",
+    "none": "Le Greffe ne t'a pas encore écrit. S'il le fait, son message t'attendra ici.",
+    "closed": "Ce fil est archivé : tu ne peux plus y répondre. Le Greffe peut le rouvrir.",
+    "safety": "Le Greffe ne te demandera jamais ton mot de passe ni d'argent.",
+    "safetyLink": "Conseils sécurité",
+    "greffe": "Le Greffe",
+    "me": "Moi",
+    "member": "Le membre",
+    "thread": "Messages du fil",
+    "empty": "Aucun message pour l'instant.",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "read": "Lu",
+    "typing": "{name} écrit…",
+    "composer": "Écrire un message",
+    "messageLabel": "Ton message",
+    "count": "{count} / {max}",
+    "photoFor": "Photo jointe",
+    "deposit": {
+      "0": "Pose de face",
+      "1": "Profil gauche",
+      "2": "Profil droit",
+      "show": "Juste pour montrer"
+    },
+    "addImages": "Ajouter des images",
+    "choosePhoto": "Choisir la photo",
+    "chosen": "{count, plural, one {# image choisie} other {# images choisies}}",
+    "clearImages": "Retirer",
+    "imagesHint": "JPEG, PNG, WebP ou HEIC, 10 Mo au plus chacune, 5 par message. Elles sont compressées et débarrassées de leurs métadonnées (dont la localisation) avant l'envoi. Une photo pour une pose part au Greffe comme un dépôt normal.",
+    "moderation": "C'est une décision de modération (le seul message que reçoit un membre suspendu ou banni)",
+    "moderationTag": "Décision de modération",
+    "sending": "Envoi…",
+    "send": "Envoyer",
+    "report": "Signaler",
+    "imageAlt": "Image jointe n° {n}",
+    "imagesRemoved": "{count, plural, one {# image effacée (durée de conservation)} other {# images effacées (durée de conservation)}}",
+    "event": {
+      "deposit": "Photo déposée au Greffe : {pose}.",
+      "accepted": "Photo proposée acceptée.",
+      "refused": "Photo proposée refusée."
+    },
+    "proposal": {
+      "title": "Photo proposée par le Greffe : {pose}",
+      "alt": "Photo retouchée proposée par le Greffe",
+      "status": {
+        "proposed": "En attente de ta réponse. Rien ne change sans ton accord.",
+        "accepted": "Acceptée : remplacement en cours.",
+        "refused": "Refusée : ta photo reste telle quelle.",
+        "applied": "Acceptée : elle remplace ta pose."
+      },
+      "accept": "Accepter",
+      "refuse": "Refuser",
+      "finish": "Terminer le remplacement"
+    },
+    "propose": {
+      "title": "Proposer une photo retouchée",
+      "pose": "Pour la pose",
+      "file": "Photo retouchée",
+      "note": "Mot pour le membre (facultatif)",
+      "hint": "Le membre la verra avec « Accepter » et « Refuser ». Elle ne remplace sa pose qu'après son accord ; acceptée, elle est validée d'office et journalisée.",
+      "submit": "Proposer la photo",
+      "done": "Photo proposée au membre."
+    },
+    "banner": "{count, plural, one {Le Greffe t'a écrit : # message non lu.} other {Le Greffe t'a écrit : # messages non lus.}}",
+    "bannerOpen": "Ouvrir",
+    "errors": {
+      "generic": "Ça n'a pas marché. Réessaie dans un instant.",
+      "tooMany": "5 images au plus par message.",
+      "tooBig": "Une image dépasse 10 Mo.",
+      "badType": "Formats acceptés : JPEG, PNG, WebP, HEIC.",
+      "unreadable": "Cette image ne s'ouvre pas sur cet appareil (le HEIC ne s'ouvre souvent que sur iPhone). Essaie en JPEG.",
+      "thread_closed": "Ce fil est archivé : tu ne peux plus y répondre.",
+      "member_unreachable": "Ce membre est suspendu ou banni : seule une décision de modération peut lui être envoyée.",
+      "message_too_long": "2 000 caractères au plus.",
+      "empty_message": "Écris un message ou joins une image.",
+      "too_many_files": "5 images au plus par message.",
+      "invalid_file": "Une image n'a pas pu être envoyée.",
+      "greffe_rate_limit": "Beaucoup de messages en une heure : attends un peu.",
+      "already_decided": "Tu as déjà répondu à cette proposition.",
+      "invalid_position": "Cette pose n'existe pas pour ce membre.",
+      "no_deposit": "La photo n'a pas été déposée.",
+      "report_limit": "Trop de signalements aujourd'hui.",
+      "photo_refused": "Cette photo n'a pas pu être déposée (trop petite ou illisible).",
+      "photoRequired": "Choisis une photo.",
+      "photo_too_large": "Photo trop lourde.",
+      "photo_unreadable": "Photo illisible.",
+      "photo_too_small": "Photo trop petite (400 pixels au moins).",
+      "photo_cannot_compress": "Photo trop lourde.",
+      "not_found": "Ce fil n'existe pas."
     }
   }
 }

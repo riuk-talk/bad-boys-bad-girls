@@ -5,6 +5,7 @@ import { PermitCard } from "@/components/brand/permit-card";
 import { FicheEditor } from "@/components/fiche/fiche-editor";
 import { PhotoManager } from "@/components/fiche/photo-manager";
 import { Notices, type Notice } from "@/components/fiche/notices";
+import { GreffeMailBanner } from "@/components/greffe-mail/banner";
 import { PosesEditor } from "@/components/onboarding/poses";
 import { EmailSettings } from "@/components/app/email-settings";
 import { PushSettings } from "@/components/push/push-settings";
@@ -54,6 +55,7 @@ export default async function MyFichePage() {
     { data: blocked },
     { data: prefs },
     { data: devices },
+    { data: greffeUnread },
   ] = await Promise.all([
     supabase
       .from("places")
@@ -95,6 +97,8 @@ export default async function MyFichePage() {
       .eq("user_id", userId)
       .maybeSingle(),
     supabase.rpc("push_device_count"),
+    // Courrier du Greffe (10g): the messages of the team not read yet.
+    supabase.rpc("greffe_my_unread"),
   ]);
 
   // Validated photos: their public files; waiting ones: short-lived signed URLs, owner only
@@ -159,6 +163,8 @@ export default async function MyFichePage() {
         {t(`status_${role}.${statusKey}`, { reason: main?.rejection_reason ?? "" })}
       </p>
 
+      <GreffeMailBanner unread={greffeUnread ?? 0} />
+
       <Notices notices={(notices ?? []) as Notice[]} />
 
       <nav aria-label={t("shortcutsLabel")} className="flex flex-wrap gap-3">
@@ -183,6 +189,9 @@ export default async function MyFichePage() {
         </ButtonLink>
         <ButtonLink href="/ma-fiche/donnees" variant="secondary">
           {t("myDataLink")}
+        </ButtonLink>
+        <ButtonLink href="/ma-fiche/courrier-du-greffe" variant="secondary">
+          {t("greffeMailLink", { count: greffeUnread ?? 0 })}
         </ButtonLink>
         <ButtonLink href="/ma-fiche/decisions" variant="secondary">
           {t("decisionsLink", { count: unreadDecisions ?? 0 })}

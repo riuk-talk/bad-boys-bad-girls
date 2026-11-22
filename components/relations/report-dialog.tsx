@@ -14,7 +14,7 @@ type Props = {
   onClose: () => void;
   pseudo: string;
   /** What is reported: a Fiche, a Permis, a request of the Courrier or a message of the Parloir. */
-  reportType: "profile" | "permit" | "visit_request" | "message";
+  reportType: "profile" | "permit" | "visit_request" | "message" | "greffe_message";
   reportTarget: string;
 };
 
@@ -29,7 +29,7 @@ export function ReportDialog({ open, onClose, pseudo, reportType, reportTarget }
       open={open}
       onClose={onClose}
       title={
-        reportType === "message"
+        reportType === "message" || reportType === "greffe_message"
           ? t("reportMessageTitle", { pseudo })
           : t("reportTitle", { pseudo })
       }

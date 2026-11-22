@@ -26,6 +26,7 @@ const TEXTS = /* TEXTS */ {
     "fiche_online": ["Ta Fiche est en ligne", "Le Greffe a validé tes 3 poses : ton dossier est complet."],
     "dossier_incomplete": ["Tes poses sont validées", "Il manque encore quelque chose à ton dossier : regarde quoi."],
     "birthdate_correction": ["Le Greffe a répondu", "Ta demande de correction de date de naissance a reçu une réponse."],
+    "greffe_message": ["Le Greffe t'a écrit", "Un message de l'équipe t'attend dans ton Courrier du Greffe."],
     "default": ["Du nouveau", "Quelque chose t'attend."]
   },
   "en": {
@@ -49,6 +50,7 @@ const TEXTS = /* TEXTS */ {
     "fiche_online": ["Your profile is online", "The Registry validated your 3 poses: your case file is complete."],
     "dossier_incomplete": ["Your poses are validated", "Something is still missing from your case file: see what."],
     "birthdate_correction": ["The Registry has answered", "Your request to correct your date of birth has been answered."],
+    "greffe_message": ["The Registry wrote to you", "A message from the team is waiting in your Registry mail."],
     "default": ["Something new", "Something is waiting for you."]
   }
 } /* /TEXTS */;

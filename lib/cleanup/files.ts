@@ -42,7 +42,36 @@ export async function removeMemberFiles(
     const { error } = await admin.storage.from("photos").remove([...publicPaths]);
     if (error) return false;
   }
+  // The images and proposed photos of the Courrier du Greffe (10g), under the member's folder.
+  const { data: mail, error: mailError } = await admin.storage
+    .from("greffe-mail")
+    .list(userId, { limit: 1000 });
+  if (mailError) return false;
+  if ((mail ?? []).length > 0) {
+    const { error } = await admin.storage
+      .from("greffe-mail")
+      .remove((mail ?? []).map((file) => `${userId}/${file.name}`));
+    if (error) return false;
+  }
   return true;
+}
+
+/**
+ * The files of the Messagerie due for removal (10g: 30 days after the archiving of a thread,
+ * 12 months at most, a proposal once decided): removed, then marked so in the database.
+ */
+export async function removeGreffeFilesDue(admin: Admin, limit: number): Promise<number> {
+  const { data: due, error } = await admin.rpc("cleanup_greffe_files_due", { p_limit: limit });
+  if (error || !due || due.length === 0) return 0;
+  const { error: removeError } = await admin.storage
+    .from("greffe-mail")
+    .remove(due.flatMap((row) => row.paths));
+  if (removeError) return 0;
+  const { error: doneError } = await admin.rpc("cleanup_greffe_files_done", {
+    p_attachments: due.filter((row) => row.kind === "attachment").map((row) => row.id),
+    p_proposals: due.filter((row) => row.kind === "proposal").map((row) => row.id),
+  });
+  return doneError ? 0 : due.length;
 }
 
 /**

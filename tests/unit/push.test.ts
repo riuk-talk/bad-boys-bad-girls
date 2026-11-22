@@ -58,7 +58,7 @@ describe("service worker texts", () => {
   const source = readFileSync("public/sw.js", "utf8");
   const json = source.split("/* TEXTS */")[1]!.split("/* /TEXTS */")[0]!;
   const texts = JSON.parse(json) as Record<"fr" | "en", Record<string, [string, string]>>;
-  // Every type push_path() (migrations phase5a, phase5b, phase5c, phase6b, 10d, 10e) can queue, plus the fallback.
+  // Every type push_path() (migrations phase5a, phase5b, phase5c, phase6b, 10d, 10e, 10g) can queue, plus the fallback.
   const types = [
     "request_received",
     "request_accepted",
@@ -80,6 +80,7 @@ describe("service worker texts", () => {
     "fiche_online",
     "dossier_incomplete",
     "birthdate_correction",
+    "greffe_message",
     "default",
   ];
 

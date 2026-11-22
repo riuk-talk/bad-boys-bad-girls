@@ -1,6 +1,7 @@
 import { Check, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
+import { GreffeMailBanner } from "@/components/greffe-mail/banner";
 import { FinishDossierForm } from "@/components/onboarding/forms";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Link, redirect } from "@/i18n/navigation";
@@ -48,6 +49,8 @@ export default async function OnboardingEntry() {
 
   const t = await getTranslations("Onboarding.dossier");
   const shown = shownMissing(missing, role);
+  // The Greffe may write to an unfinished dossier too (10g).
+  const { data: greffeUnread } = await member.supabase.rpc("greffe_my_unread");
   return (
     <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
       <div className="space-y-2">
@@ -57,6 +60,7 @@ export default async function OnboardingEntry() {
         <h1 className="font-display text-4xl tracking-wide uppercase">{t("title")}</h1>
         <p className="text-cream/85">{shown.length > 0 ? t("lead") : t("leadDone")}</p>
       </div>
+      <GreffeMailBanner unread={greffeUnread ?? 0} />
 
       {shown.length > 0 ? (
         <section aria-labelledby="missing-title" className="space-y-3">
