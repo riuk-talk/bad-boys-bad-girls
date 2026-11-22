@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : 10a à 10d en production. **10e** : faite, CI n° 149 verte, décisions 10-19 à 10-21 et question 10-22 à valider. **10f** : migrations appliquées à la preview par le conseiller (2026-11-17) ; décisions 10-24 à 10-31 à valider. **Correctif temps réel du Parloir** (le canal rejoignait sans jeton) : fait, CI n° 153 et 154 vertes sans relance. **10f-bis (« Voir comme un Bad »)** : faite et testée, migration `20261117140000_vue_bad` **pas sur la preview** (connecteur), décisions 10-32 à 10-36 à valider. Voir ces sections.
+**Phase 10** (branche `phase-10`) : 10a à 10d en production. **10e** : faite, CI n° 149 verte, décisions 10-19 à 10-21 et question 10-22 à valider. **10f** : migrations appliquées à la preview par le conseiller (2026-11-17) ; décisions 10-24 à 10-31 à valider. **Correctif temps réel du Parloir** (le canal rejoignait sans jeton) : fait, CI n° 153 et 154 vertes sans relance. **10f-bis (« Voir comme un Bad »)** : faite et testée, migration `20261117140000_vue_bad` **pas sur la preview** (connecteur), décisions 10-32 à 10-36 à valider. Voir ces sections. **10g (Messagerie du Greffe)** : faite sur `phase-10` (repartie de `main` `4ee8b28`), tests locaux verts sauf deux échecs WebKit locaux hors 10g. **Deux blocages** : la CI n'est pas lancée par GitHub (paiement ou limite de dépenses du compte) et le connecteur Supabase ne voit pas la preview (migrations de la 10g pas appliquées). Décisions 10-37 à 10-52 à valider ; voir la section 10g.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -201,6 +201,79 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
   - le lien du courriel « photos en attente » mène toujours au Greffe (`/admin/greffe`), puisqu'il désigne cette file ;
   - local : Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : `super-admin`, `relations`, `moderation-rgpd`, `onboarding-complete`, `photo-cutout` et le parcours complet verts (32 réussis) ;
   - CI : verte, run 130 (`df8d43f`) : checks, e2e Pixel 7 (50 réussis, 2 ignorés), e2e iPhone 14 (41 réussis, 11 ignorés), aucun test instable (flaky).
+
+### 10g — Messagerie du Greffe (demande du porteur, 2026-11-22)
+Branche `phase-10` repartie de `main` (`4ee8b28`, qui contenait déjà toute la 10f et la 10f-bis), en avance rapide sur l'ancienne `phase-10`. Relu : SPEC §7 quater, §10, §11, §15, §16 ; les briques du Parloir (temps réel corrigé en 10f, « … écrit »). Tables séparées de celles du Parloir. Découpage annoncé et suivi : 10g-1 base ; 10g-2 Messagerie (admin) ; 10g-3 Courrier du Greffe (membre) ; 10g-4 notifications, i18n, e2e, rapport.
+- **Base** (`20261122120000_messagerie_enums`, `20261122120100_messagerie`) :
+  - permission `members.message` (cochée Admin et Modérateur, pas Observateur) ;
+  - tables `greffe_threads` (un fil par membre), `greffe_messages`, `greffe_attachments`, `greffe_photo_proposals`, `team_names`. RLS partout, lecture seule : le membre de son fil, l'équipe avec la permission et la double authentification. Toute écriture passe par des fonctions `security definer` ;
+  - messages **ni modifiables ni supprimables**, par personne, clé secrète et propriétaire de la base compris (déclencheur). Seules exceptions : la cascade d'une suppression de compte et la rétention. Chaque message garde son auteur réel (`author_id`, jamais montré au membre) et une étiquette figée « Le Greffe · <nom d'équipe> » ;
+  - membre suspendu ou banni : plus rien, sauf un message marqué « décision de modération » (case visible pour l'équipe dans ce cas seulement) ; push et e-mail suivent la même règle ;
+  - images : bucket privé `greffe-mail`, fichiers sous le dossier du membre. Le serveur ne les dépose qu'après le feu vert de la base (`greffe_write_target`), et `greffe_send` vérifie que chaque fichier existe, est dans le bon dossier et n'a jamais servi. Lecture par des URL signées de 2 minutes, accordées par la politique du bucket aux seuls lecteurs du fil ;
+  - temps réel : `greffe_messages` et `greffe_threads` publiés (nouveaux messages, « Lu »). L'abonnement attend le jeton et la confirmation de la base, comme le Parloir depuis la 10f. « … écrit » passe par un canal Broadcast privé `greffe-typing:<fil>` (`can_use_typing_channel` étendue) ;
+  - photos aux normes. Le membre dépose une photo pour une pose depuis son Courrier : même envoi que Ma fiche, même file du Greffe, signalé dans le fil. L'équipe propose une photo retouchée ; seul le membre peut l'accepter (garde au niveau de la ligne, même contre une écriture directe). Ensuite seulement, le serveur la copie dans le bucket public et `greffe_apply_photo_proposal` (clé secrète seule, refusée sans acceptation) remplace la pose. Celle-ci est validée d'office par l'auteur de la proposition et journalisée (`moderation_actions.photo_proposal_accept`) ;
+  - signalement d'un message de l'équipe par son destinataire : file Signalements du **super admin seul**, décidé sans sanction de membre (`admin_report_queue` et `admin_decide_report` réécrites) ;
+  - rétention :
+    - images effacées 30 jours après l'archivage, et à 12 mois au plus ;
+    - photos proposées effacées dès la décision ;
+    - textes effacés à 12 mois, une fois leurs fichiers partis ;
+    - fil archivé et vide effacé à 12 mois ;
+    - tâche quotidienne existante : `cleanup_rows`, `cleanup_dispatch` et la route `/api/cron/cleanup` ;
+  - export RGPD : clé `courrier_du_greffe`. Suppression du compte : cascade, plus les fichiers du dossier du membre (`removeMemberFiles`).
+- **Messagerie** (`/admin/messagerie`, dans le groupe Comptes du menu, avec son compteur de fils non lus) :
+  - liste : non-lus en tête ; filtres Ouverts, En attente de réponse, Archivés ; recherche sur le pseudo ou le texte ; 30 fils par page ;
+  - nouveau fil par pseudo exact ou N° d'écrou ; bouton « Écrire » sur la fiche Membres et sur chaque photo du Greffe ;
+  - archiver et rouvrir ; « Ton nom d'équipe » ;
+  - page d'un fil : messages en direct, « … écrit », « Lu », images, « Proposer une photo retouchée ».
+- **Courrier du Greffe** (`/ma-fiche/courrier-du-greffe`) :
+  - bandeau « Le Greffe t'a écrit » sur Ma fiche et sur l'entrée d'un dossier inachevé, et lien dans les raccourcis ;
+  - réponse tant que le fil est ouvert ; le membre ne peut pas en ouvrir un ;
+  - photo jointe : pose de face, profil gauche, profil droit ou « juste pour montrer » ;
+  - Accepter / Refuser une photo proposée ; Signaler un message.
+- **Notifications** :
+  - push « Le Greffe t'a écrit », un par jour au plus ;
+  - e-mail du même titre, neutre, sans contenu, un par jour au plus (index unique), dans le quota Resend existant ;
+  - lien vers le Courrier du Greffe.
+- **i18n** fr/en complète :
+  - côté membre, « Courrier du Greffe » (en : « Registry mail ») ;
+  - côté admin, « Messagerie » (en : « Messages ») ;
+  - jamais « chat », « support » ni les termes interdits. Le test de vocabulaire a refusé un « like » anglais, remplacé.
+- **Tests** :
+  - pgTAP `phase10g_messagerie` (**82 vérifications**) :
+    - accès : anonyme ; autre membre ; rôle sans la permission ; sans double authentification ;
+    - le membre : ne peut ni ouvrir un fil ni écrire dans les tables ; répond seulement si le fil est ouvert ;
+    - les messages : modification et suppression refusées, clé secrète comprise ; plafonds (2 000 caractères, 5 images, fichier inexistant ou d'un autre dossier, réutilisé) ; lecture du bucket ;
+    - proposition de photo : refusée par l'équipe à la place du membre, par écriture directe, par un autre membre, sans acceptation ; acceptée puis appliquée une fois et journalisée ; refusée sans effet ;
+    - suspendu ou banni ; signalement (file du super admin seule) ; rétention ; export ; cascade ;
+    - `phase8a` (fonctions revues) et `phase10f` (19 permissions) mis à jour ;
+  - Vitest `greffe-mail.test.ts` ; compteur du menu, permissions et textes du push mis à jour ;
+  - e2e `messagerie.spec.ts` (Pixel 7 et iPhone 14, axe sur chaque écran, aucune souscription Realtime refusée) :
+    - aller-retour complet en direct : bandeau, étiquette « Le Greffe · Sam », « Lu », « … écrit », la réponse ;
+    - une image JPEG avec GPS envoyée : stockée en WebP **sans EXIF**, sans adresse publique ;
+    - une pose retouchée proposée : rien ne change avant le clic, puis la pose est remplacée, validée par son auteur et journalisée.
+  - Bug trouvé par l'e2e et corrigé : la relecture ne ramenait que les nouveaux messages, et le statut d'une proposition (porté par un message plus ancien) ne se mettait pas à jour.
+- **Résultats locaux** : pgTAP 34 fichiers, 191 tests ; Vitest 309 ; lint, typecheck, format, build ; e2e Pixel 7 complet vert (61 réussis, 5 ignorés) ; `messagerie` vert sur iPhone 14. iPhone 14 complet en local : 2 échecs « WebKit encountered an internal error » sur un `page.goto` vers `/ma-fiche…` (`journey` 12, `relations:853`), le même symptôme local que le 2026-11-17, avant la 10g ; cause non trouvée, je ne les classe pas instables.
+- **CI** : **non lancée par GitHub**. Les runs n° 160 (`phase-10`) et n° 161 (branche de session), sur `fc92804`, ont vu leurs 4 jobs refusés avant tout démarrage, avec l'annotation « The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings. » Le dépôt est bien public : c'est la facturation du compte GitHub qui bloque. **À faire par le porteur : Settings › Billing & plans (paiement, limite de dépenses).** Pas de relance : elle échouerait de la même façon. La 10g n'est donc **pas « CI verte »** ; seuls les résultats locaux ci-dessus en témoignent.
+- **Blocage** : le connecteur Supabase ne voit toujours qu'un autre compte (« Ufdm's Project ») : **migrations pas sur la preview**, types générés depuis la base locale. À appliquer dans l'ordre :
+  1. `20261122120000_messagerie_enums` ;
+  2. `20261122120100_messagerie`. Elle remplace deux contraintes (`admin_permissions_key_check`, `greffe_fiche_views_context_check`) et un index (`email_outbox_one_per_day`) par des versions plus larges, sans perte de données. Si le connecteur demande une confirmation pour ces `drop`, la lancer dans le SQL Editor (règle 11).
+- **Décisions à valider (10g)** :
+  - **10-37** La clé demandée `members.message` a un verbe nouveau : la contrainte de format des clés l'accepte désormais (`…|manage|message`).
+  - **10-38** Un seul fil par membre, pour toujours : l'archiver puis « Écrire » le rouvre, au lieu d'en créer un autre.
+  - **10-39** Le nom d'équipe (2 à 30 caractères) est choisi par chaque membre de l'équipe pour lui-même, sur la page Messagerie ; sans nom, « Le Greffe » seul.
+  - **10-40** Chaque ouverture d'un fil par **n'importe quel** membre de l'équipe est journalisée (`greffe_fiche_views`, contexte `messagerie`), pas seulement par le super admin.
+  - **10-41** Les messages du membre sont eux aussi immuables : il ne peut ni modifier ni supprimer les siens.
+  - **10-42** Un message de l'équipe signalé va dans la file du **super admin seul**, puisqu'il porte sur la conduite de l'équipe. Retenu, il ne sanctionne aucun membre.
+  - **10-43** Une « décision de modération » est un message marqué par l'équipe (case visible seulement si le membre est suspendu ou banni).
+  - **10-44** Le push du Courrier ne dépend d'aucune préférence (seulement d'un appareil inscrit). L'e-mail n'est pas désinscriptible, comme les décisions de modération : c'est un message de service, un par jour au plus.
+  - **10-45** HEIC : décodé par le navigateur quand il le peut (Safari en pratique). Ailleurs, un message propose le JPEG. Le serveur ne reçoit que des images déjà compressées, puis les ré-encode lui-même.
+  - **10-46** Une photo proposée non détourée pour une pose 0 à 2 est acceptée avec la dispense de détourage et le motif fixe « Photo retouchée par le Greffe, acceptée par le membre ». Le détourage reste l'affaire de l'équipe avant de proposer.
+  - **10-47** Un Visiteur ne reçoit et ne dépose que la pose de face (règle d'une seule photo).
+  - **10-48** Un membre peut écrire 30 messages par heure au plus.
+  - **10-49** Images : au plus 1 600 px de côté et 900 Ko après ré-encodage serveur (450 Ko visés dans le navigateur).
+  - **10-50** Une pose déposée depuis le Courrier remplace la photo de cette position comme dans Ma fiche. Une pose validée disparaît donc de la Fiche jusqu'à la validation de la nouvelle : c'est le comportement actuel du dépôt normal.
+  - **10-51** Relecture de sécurité du fil : toutes les 15 s quand le temps réel est confirmé, toutes les 3 s sans, et immédiate à la (ré)ouverture et au retour sur l'onglet.
+  - **10-52** Défaut connu, accepté faute de mieux simple : proposer une photo pour une pose que le membre n'a jamais déposée crée sa ligne de photo, ce qui envoie aux admins, ce jour-là, l'e-mail « photos en attente » sans photo réellement en attente.
 
 ### 10f — correctif : messages du Parloir manqués par le temps réel (demande du conseiller, 2026-11-17)
 CI n° 151 (run 44102433042, relancée après le passage du dépôt en public) : vérifications et iPhone verts, **Pixel 7 rouge** : `journey.spec.ts` « 6. the visit », le message du Bad n'apparaît pas chez le Visiteur en 15 s, aussi à la relance. C'est le défaut noté le 2026-11-07.
