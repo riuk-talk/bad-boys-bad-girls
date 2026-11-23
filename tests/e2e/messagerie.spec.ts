@@ -391,6 +391,9 @@ test.describe("Messagerie du Greffe (10g, local stack)", () => {
     // Her own Ma fiche says so.
     await member.goto("/ma-fiche");
     await expect(member.getByText(/nouvelle pose en attente du Greffe/)).toBeVisible();
+    // Target sizes measured with the tab bar in the flow, as the journey's sweep does (9 ter):
+    // content scrolled under a sticky bar is not a small target.
+    await member.addStyleTag({ content: "[data-tab-bar] { position: static !important; }" });
     expect(await axeViolations(member)).toEqual([]);
     await member.context().close();
     await staff.context().close();
