@@ -171,10 +171,10 @@ function wasmAllowedInPage(): boolean {
 }
 
 /**
- * Where the cut-out can run, found at once, before any download: the worker when it has a WebGL
- * context, otherwise the page when its policy allows WebAssembly (the photo pages, loaded
- * directly), otherwise nowhere ("none": a photo page reached by a link keeps the policy of the
- * page before it; usePreloadCutout then loads it again).
+ * Where the MediaPipe fallback can run, found at once, before any download: the worker when it
+ * has a WebGL context, otherwise the page when its policy allows WebAssembly (the photo pages,
+ * loaded directly), otherwise nowhere ("none": a photo page reached by a link keeps the policy of
+ * the page before it). MODNet, the main engine, runs in the worker in every case (10h).
  */
 export type EngineChoice = "worker" | "page" | "none";
 let choice: Promise<EngineChoice> | null = null;

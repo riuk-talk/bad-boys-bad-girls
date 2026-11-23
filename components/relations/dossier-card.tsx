@@ -19,8 +19,8 @@ export async function DossierCard({
 }: {
   bad: BadCardData;
   priority?: boolean;
-  /** Elsewhere than the member's Fiche (the Greffe view, 10a): not prefetched, so a Fiche is only
-   * opened, and logged, when it is really opened. */
+  /** Elsewhere than the member's Fiche (the Greffe view, 10a). Never prefetched (10h): a Fiche is
+   * only opened, and logged in the Greffe view, when it is really opened. */
   href?: string;
 }) {
   const t = await getTranslations("Relations.card");
@@ -33,7 +33,6 @@ export async function DossierCard({
     <LocalizedLink
       href={href ?? `/fiche/${bad.id}`}
       scroll={false}
-      prefetch={href ? false : undefined}
       aria-label={t("openDossier", { pseudo: bad.pseudo, line: full })}
       data-accent={accentForGender(bad.gender)}
       className="kraft relative block h-[232px] overflow-hidden rounded shadow-[0_10px_18px_rgb(0_0_0/0.55)] transition-transform duration-200 [contain-intrinsic-size:auto_232px] [content-visibility:auto] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#e8b84a] active:scale-[0.97] motion-reduce:transition-none"

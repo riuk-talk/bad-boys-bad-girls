@@ -11,41 +11,28 @@ import type { CutoutResult } from "@/lib/image/cutout";
 /** What is sent: the cut-out, or the original that the Greffe will cut out (`cutout` false). */
 export type PhotoChoice = { blob: Blob; cutout: boolean };
 
-const RELOADED_KEY = "cutout-reloaded";
-
-/** Loads the page again, once per page, to get the photo page's own policy. */
-function reloadOnce(): boolean {
-  try {
-    if (sessionStorage.getItem(RELOADED_KEY) === location.pathname) return false;
-    sessionStorage.setItem(RELOADED_KEY, location.pathname);
-  } catch {
-    return false;
-  }
-  location.reload();
-  return true;
-}
-
 /**
  * Starts loading the cut-out runtime as soon as a photo page is shown (shared afterwards), and
- * returns where the cut-out will run ("loading" until known; data-cutout-engine for the tests).
- * Where it cannot run at all (a photo page reached by a link, in a browser whose worker cannot
- * compute), the page is loaded again once, right away, to get its own policy.
+ * returns where the fallback cut-out would run ("loading" until known; data-cutout-engine for
+ * the tests). The page never loads itself again (10h): MODNet runs in the worker, under the
+ * worker's own policy, whatever page it was reached from; only the MediaPipe fallback needs
+ * WebAssembly in the page ("none" when a photo page was reached by a link, in a browser whose
+ * worker has no WebGL). Without either, the photo goes to the Greffe, which cuts it out.
  */
 export function usePreloadCutout(): string {
   const [engine, setEngine] = useState("loading");
   useEffect(() => {
     let alive = true;
-    const page = location.pathname;
     void import("@/lib/image/cutout")
       .then(async (module) => {
         const where = await module.chooseEngine();
-        // Only while this page is still the one shown: the member may have left it meanwhile
-        // (a reload would then load the other page and cut its requests).
-        if (where === "none" && alive && location.pathname === page && reloadOnce()) return;
         if (alive) setEngine(where);
         await module.preloadCutout();
       })
-      .catch(() => undefined);
+      .catch(() => {
+        // The runtime could not even be loaded: no cut-out on this device, the Greffe's then.
+        if (alive) setEngine("none");
+      });
     return () => {
       alive = false;
     };
