@@ -15,6 +15,7 @@ import {
   prepareForUpload,
   useCutoutChoice,
   usePreloadCutout,
+  warmCutout,
 } from "@/components/onboarding/cutout-choice";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -100,6 +101,7 @@ function PoseSlot({
     <div className={cn("flex flex-col items-center gap-1.5", face ? "flex-[1.15]" : "flex-1")}>
       <label
         htmlFor={id}
+        onPointerDown={warmCutout}
         className={cn(
           "toise-wall has-focus-visible:outline-accent relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-sm border-2 has-focus-visible:outline-3",
           face ? "aspect-[3/4]" : "aspect-[3/4.4]",
@@ -129,6 +131,7 @@ function PoseSlot({
           aria-label={`${url ? t("replace") : t("add")} : ${label}`}
           aria-describedby={error ? `${id}-error` : undefined}
           disabled={busy}
+          onFocus={warmCutout}
           onChange={(event) => {
             // Read, then cleared: the same file may be chosen again after a cancel.
             const chosen = event.target.files?.[0];
@@ -186,11 +189,14 @@ function PoseSlot({
 function PoseSlots({
   photos,
   onUploaded,
+  eager = true,
 }: {
   photos: Record<number, PhotoInfo | null>;
   onUploaded: (position: number) => void;
+  /** At the onboarding the runtime loads at once; in Ma fiche, on the member's intent (10h). */
+  eager?: boolean;
 }) {
-  const engine = usePreloadCutout();
+  const engine = usePreloadCutout({ eager });
   const t = useTranslations("Onboarding.cutout");
   return (
     <div className="space-y-2" data-cutout-engine={engine}>
@@ -233,7 +239,7 @@ export function PosesEditor({ photos }: { photos: Record<number, PhotoInfo | nul
   const router = useRouter();
   return (
     <div className="space-y-4">
-      <PoseSlots photos={photos} onUploaded={() => router.refresh()} />
+      <PoseSlots photos={photos} onUploaded={() => router.refresh()} eager={false} />
       <GreffeRules />
     </div>
   );

@@ -12,14 +12,15 @@ import type { CutoutResult } from "@/lib/image/cutout";
 export type PhotoChoice = { blob: Blob; cutout: boolean };
 
 /**
- * Starts loading the cut-out runtime as soon as a photo page is shown (shared afterwards), and
+ * Starts loading the cut-out runtime as soon as a photo page is shown (shared afterwards; with
+ * `eager` false, only on the member's intent, warmCutout), and
  * returns where the fallback cut-out would run ("loading" until known; data-cutout-engine for
  * the tests). The page never loads itself again (10h): MODNet runs in the worker, under the
  * worker's own policy, whatever page it was reached from; only the MediaPipe fallback needs
  * WebAssembly in the page ("none" when a photo page was reached by a link, in a browser whose
  * worker has no WebGL). Without either, the photo goes to the Greffe, which cuts it out.
  */
-export function usePreloadCutout(): string {
+export function usePreloadCutout({ eager = true }: { eager?: boolean } = {}): string {
   const [engine, setEngine] = useState("loading");
   useEffect(() => {
     let alive = true;
@@ -27,7 +28,7 @@ export function usePreloadCutout(): string {
       .then(async (module) => {
         const where = await module.chooseEngine();
         if (alive) setEngine(where);
-        await module.preloadCutout();
+        if (eager) await module.preloadCutout();
       })
       .catch(() => {
         // The runtime could not even be loaded: no cut-out on this device, the Greffe's then.
@@ -36,8 +37,18 @@ export function usePreloadCutout(): string {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [eager]);
   return engine;
+}
+
+/**
+ * Starts downloading the cut-out runtime (MODNet in the worker, several MB) on the member's intent:
+ * a touch or the focus on a photo button, so it loads while they pick their file (10h). On a page
+ * they mostly visit for something else (Ma fiche), downloading it at every display was wasted data
+ * and kept requests in flight when they went elsewhere at once.
+ */
+export function warmCutout(): void {
+  void import("@/lib/image/cutout").then((module) => module.preloadCutout()).catch(() => undefined);
 }
 
 /** Runs the cut-out of `photo` on the device; any failure is a decision, never an exception. */

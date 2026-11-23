@@ -9,6 +9,7 @@ import {
   prepareForUpload,
   useCutoutChoice,
   usePreloadCutout,
+  warmCutout,
 } from "@/components/onboarding/cutout-choice";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
@@ -48,7 +49,8 @@ export function PhotoManager({
     : positions.find((p) => !photos.some((photo) => photo.position === p));
   const replacing = single && photos.length > 0;
   const { choose, dialog } = useCutoutChoice(prepareForUpload);
-  const engine = usePreloadCutout();
+  // Ma fiche: the cut-out runtime loads on the member's intent, not at every display (10h).
+  const engine = usePreloadCutout({ eager: false });
 
   useEffect(() => {
     if (state.status === "done") {
@@ -113,6 +115,7 @@ export function PhotoManager({
         <form ref={formRef}>
           <label
             htmlFor={`${id}-add`}
+            onPointerDown={warmCutout}
             className="border-cream/80 has-focus-visible:outline-accent hover:bg-cream hover:text-ink inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-2 px-5 py-2 font-semibold has-focus-visible:outline-3"
           >
             <ImagePlus aria-hidden="true" className="size-5" />
@@ -123,6 +126,7 @@ export function PhotoManager({
               accept="image/*"
               className="sr-only"
               disabled={pending || preparing}
+              onFocus={warmCutout}
               onChange={(event) => void onFile(event.target.files?.[0])}
             />
           </label>
