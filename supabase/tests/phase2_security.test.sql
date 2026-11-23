@@ -238,9 +238,11 @@ begin
       a, i, a || '/' || i || '.webp'));
   end loop;
   return next is(pg_temp.val('select count(*) from public.photos'), '6', 'six photos accepted');
+  -- 10g (10-50 refused): a position holds one validated photo and one other at most, so a second
+  -- photo waiting at a position is refused (positions stay 0 to 5).
   return next matches(coalesce(pg_temp.try(format(
     'insert into public.photos (owner_id, position) values (%L, 5)', a)), 'ok'),
-    'too_many_photos', 'a seventh photo is refused');
+    'photos_one_other', 'a seventh photo is refused (one waiting photo per position)');
   return next is(pg_temp.val('select string_agg(distinct status::text, '','') from public.photos'), 'pending',
     'new photos are always pending');
   return next matches(coalesce(pg_temp.try('update public.photos set status = ''approved'''), 'ok'),
