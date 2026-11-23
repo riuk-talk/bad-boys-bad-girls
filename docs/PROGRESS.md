@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : 10a à 10d en production. **10e** : faite, CI n° 149 verte, décisions 10-19 à 10-21 et question 10-22 à valider. **10f** : migrations appliquées à la preview par le conseiller (2026-11-17) ; décisions 10-24 à 10-31 à valider. **Correctif temps réel du Parloir** (le canal rejoignait sans jeton) : fait, CI n° 153 et 154 vertes sans relance. **10f-bis (« Voir comme un Bad »)** : faite et testée, migration `20261117140000_vue_bad` **pas sur la preview** (connecteur), décisions 10-32 à 10-36 à valider. Voir ces sections. **10g (Messagerie du Greffe)** : faite sur `phase-10` (repartie de `main` `4ee8b28`), tests locaux verts sauf deux échecs WebKit locaux hors 10g. Migrations appliquées à la preview le 2026-11-23, types régénérés depuis la preview. **Corrections du conseiller (10-50, 10-52)** : faites et testées en local ; migration `20261123120000_photo_replacement` pas encore sur la preview (à lancer dans le SQL Editor) ; CI GitHub bloquée. Décisions 10-37 à 10-49 et 10-51 validées, 10-50 et 10-52 corrigées ; voir les sections 10g.
+**Phase 10** (branche `phase-10`) : 10a à 10d en production. **10e** : faite, CI n° 149 verte, décisions 10-19 à 10-21 et question 10-22 à valider. **10f** : migrations appliquées à la preview par le conseiller (2026-11-17) ; décisions 10-24 à 10-31 à valider. **Correctif temps réel du Parloir** (le canal rejoignait sans jeton) : fait, CI n° 153 et 154 vertes sans relance. **10f-bis (« Voir comme un Bad »)** : faite et testée, migration `20261117140000_vue_bad` **pas sur la preview** (connecteur), décisions 10-32 à 10-36 à valider. Voir ces sections. **10g (Messagerie du Greffe)** : faite sur `phase-10` (repartie de `main` `4ee8b28`), tests locaux verts sauf deux échecs WebKit locaux hors 10g. Migrations appliquées à la preview le 2026-11-23, types régénérés depuis la preview. **Corrections du conseiller (10-50, 10-52)** : faites ; CI n° 166 verte sans relance (n° 167 : une relance sur un défaut WebKit préexistant, voir la section) ; migration `20261123120000_photo_replacement` pas encore sur la preview (à lancer dans le SQL Editor). Décisions 10-37 à 10-49 et 10-51 validées, 10-50 et 10-52 corrigées ; voir les sections 10g.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -237,7 +237,16 @@ Revue du conseiller : décisions 10-37 à 10-49 et 10-51 **validées** ; 10-50 *
     - `journey` 7 : « WebKit encountered an internal error » sur `page.goto` ;
     - puis `journey` 6 : `page.goto("/visites")` sans fin avant la limite de 2 minutes ;
     - même famille que `journey` 12, `relations:853` et `onboarding:391` les 17 et 22 novembre. Cause non trouvée ; je ne les classe pas instables.
-- **CI GitHub** : bloquée (dépôt redevenu privé, minutes épuisées) ; non lancée.
+- **CI GitHub** (dépôt repassé public le 2026-11-23) :
+  - n° 164 et 165, sur `04a3dbb` : les 3 jobs e2e sont verts, mais l'étape « Format » échoue. Cause : `app/api/cron/cleanup/route.ts` (modifié en 10g) n'était pas passé par prettier. Corrigé en `817c990`.
+  - **n° 166 (`phase-10`, `817c990`) : verte, sans aucune relance** :
+    - Pixel 7 : 65 réussis ;
+    - iPhone 14 : 32 + 24 réussis.
+  - n° 167 (branche de session, même commit) : verte, mais avec **un test réussi seulement à la relance**, donc pas « verte » au sens de nos règles. Il s'agit de `relations.spec.ts:855`, sur iPhone : après `goto("/ma-fiche")` et le clic « Reprendre », le bouton « Mettre en pause » n'apparaît pas en 5 s.
+  - Le n° 165 avait déjà un test passé à la relance : `moderation-rgpd.spec.ts:237`. Son `login` attend le moteur de détourage de Ma fiche, qui est resté « loading » 20 s après le rechargement unique de la page, autrement dit un script de page qui ne s'est jamais exécuté.
+  - Aucun de ces deux tests ne touche au code de la 10g. Ils appartiennent à la même famille que les navigations WebKit qui n'aboutissent pas, vues en local (17, 22 et 23 novembre) : pages qui restent sans script, ou `goto` qui ne finit pas.
+  - Piste vérifiée et écartée : le rechargement unique de `cutout-choice.tsx` ne se produit pas sur Ma fiche chargée directement (WebAssembly y est autorisé).
+  - Cause non trouvée. C'est un défaut préexistant, qui vit dans les pages membres et les tests, hors du périmètre de la 10g. **À traiter dans une sous-phase dédiée**, sans le classer instable.
 - **Preview** : la migration `20261123120000_photo_replacement` **n'est pas appliquée**. Le connecteur a demandé une confirmation (`drop constraint`, `drop trigger`), restée sans réponse en 60 s ; vérifié : rien n'est passé. À lancer dans le SQL Editor (règle 11), puis historique à la version du fichier et vérification.
 
 ### 10g — Messagerie du Greffe (demande du porteur, 2026-11-22)
