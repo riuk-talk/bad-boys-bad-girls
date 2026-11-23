@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : 10a à 10d en production. **10e** : faite, CI n° 149 verte, décisions 10-19 à 10-21 et question 10-22 à valider. **10f** : migrations appliquées à la preview par le conseiller (2026-11-17) ; décisions 10-24 à 10-31 à valider. **Correctif temps réel du Parloir** (le canal rejoignait sans jeton) : fait, CI n° 153 et 154 vertes sans relance. **10f-bis (« Voir comme un Bad »)** : faite et testée, migration `20261117140000_vue_bad` **pas sur la preview** (connecteur), décisions 10-32 à 10-36 à valider. Voir ces sections. **10g (Messagerie du Greffe)** : faite sur `phase-10` (repartie de `main` `4ee8b28`), tests locaux verts sauf deux échecs WebKit locaux hors 10g. Migrations appliquées à la preview le 2026-11-23, types régénérés depuis la preview. **Blocage restant** : la CI n'est pas lancée par GitHub (paiement ou limite de dépenses du compte). Décisions 10-37 à 10-52 à valider ; voir la section 10g.
+**Phase 10** (branche `phase-10`) : 10a à 10d en production. **10e** : faite, CI n° 149 verte, décisions 10-19 à 10-21 et question 10-22 à valider. **10f** : migrations appliquées à la preview par le conseiller (2026-11-17) ; décisions 10-24 à 10-31 à valider. **Correctif temps réel du Parloir** (le canal rejoignait sans jeton) : fait, CI n° 153 et 154 vertes sans relance. **10f-bis (« Voir comme un Bad »)** : faite et testée, migration `20261117140000_vue_bad` **pas sur la preview** (connecteur), décisions 10-32 à 10-36 à valider. Voir ces sections. **10g (Messagerie du Greffe)** : faite sur `phase-10` (repartie de `main` `4ee8b28`), tests locaux verts sauf deux échecs WebKit locaux hors 10g. Migrations appliquées à la preview le 2026-11-23, types régénérés depuis la preview. **Corrections du conseiller (10-50, 10-52)** : faites et testées en local ; migration `20261123120000_photo_replacement` pas encore sur la preview (à lancer dans le SQL Editor) ; CI GitHub bloquée. Décisions 10-37 à 10-49 et 10-51 validées, 10-50 et 10-52 corrigées ; voir les sections 10g.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -201,6 +201,44 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
   - le lien du courriel « photos en attente » mène toujours au Greffe (`/admin/greffe`), puisqu'il désigne cette file ;
   - local : Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : `super-admin`, `relations`, `moderation-rgpd`, `onboarding-complete`, `photo-cutout` et le parcours complet verts (32 réussis) ;
   - CI : verte, run 130 (`df8d43f`) : checks, e2e Pixel 7 (50 réussis, 2 ignorés), e2e iPhone 14 (41 réussis, 11 ignorés), aucun test instable (flaky).
+
+### 10g — corrections du conseiller (2026-11-23)
+Revue du conseiller : décisions 10-37 à 10-49 et 10-51 **validées** ; 10-50 **refusée** ; 10-52 **à corriger**.
+- **10-50 corrigée** (migration `20261123120000_photo_replacement`) :
+  - Une nouvelle pose déposée, depuis Ma fiche comme depuis le Courrier, n'efface plus la photo validée de cette position. Une position peut porter **une photo validée et une autre** (en attente ou refusée), jamais deux de chaque : la contrainte `photos_owner_position` est remplacée par deux index uniques partiels.
+  - La photo validée reste affichée et compte pour la visibilité (`has_three_poses`, `has_permit`, `public_photos` ne lisent que les validées) jusqu'à la décision du Greffe.
+  - **Validée** : la nouvelle remplace l'ancienne (`admin_decide_photo` supprime l'ancienne ligne ; l'action du Greffe efface ses fichiers publics), sans nouveau « Fiche en ligne » ni nouveau Permis délivré.
+  - **Refusée** : l'ancienne reste, et le motif s'affiche sous la pose.
+  - Application :
+    - l'envoi ne remplace plus que la photo en attente ou refusée de la position ;
+    - Ma fiche, la Promenade, la Découverte et la Fiche montrent la photo validée ;
+    - une pose validée qui a une remplaçante affiche « Validée · nouvelle pose en attente du Greffe (celle-ci reste en ligne) », ou le motif du refus.
+  - La limite passe de 6 à 12 lignes, soit 6 positions × 2. Le test `phase2_security` « une 7e photo est refusée » vérifie désormais la règle « une seule photo en attente par position ».
+  - Défaut résiduel accepté : si l'effacement des anciens fichiers publics échoue après la validation, ils restent orphelins dans le bucket public (noms aléatoires, plus référencés).
+- **10-52 corrigée** :
+  - une photo proposée ne crée aucune ligne avant « Accepter » (déjà le cas) ;
+  - une fois acceptée, elle remplace sur place la photo validée de la pose, ou est **insérée directement validée** s'il n'y en a pas ;
+  - l'alerte « photos en attente » ne part plus que pour un dépôt réellement en attente : déclencheur `photos_notify_admins` avec table de transition, lignes `pending` avec un fichier en attente ;
+  - le déclencheur « Fiche en ligne » couvre aussi l'insertion validée.
+- **Tests** :
+  - pgTAP `phase10g_photo_replacement` (**21 vérifications**) :
+    - une pose en attente à côté de la validée ; Bad toujours visible ; photo validée toujours affichée ;
+    - refusée : l'ancienne reste ; validée : remplacement, une seule ligne, pas de nouveau « Fiche en ligne » ;
+    - une seule photo en attente par position ;
+    - Visiteur : Permis gardé pendant l'attente, pas redélivré ;
+    - proposition : aucune ligne ni alerte avant et après l'acceptation, et un vrai dépôt alerte toujours.
+  - e2e `messagerie.spec.ts`, nouveau test 4 (Pixel 7 et iPhone 14, axe) : Rose, Fiche en ligne, dépose un nouveau profil gauche depuis son Courrier. La vue Greffe « comme un Visiteur » affiche toujours sa Fiche avec l'ancien profil, et Ma fiche dit « nouvelle pose en attente ».
+  - Accessibilité, défaut trouvé sur iPhone : la barre d'onglets fixe recouvrait au chargement les raccourcis « Mes critères » et « Mes données » de Ma fiche (mesuré : y 598 à 642 contre une barre à partir de y 607). Le contrôle axe de ce test mesure maintenant les tailles de cible avec la barre dans le flux, comme le balayage du parcours (9 ter).
+- **Résultats locaux (2026-11-23)** :
+  - pgTAP 35 fichiers, 194 tests ; Vitest 309 ; lint, typecheck, format, build ;
+  - e2e Pixel 7 complet vert (62 réussis, 5 ignorés, aucun « flaky ») ;
+  - e2e `messagerie` vert sur Pixel 7 et iPhone 14 (4/4) ;
+  - iPhone 14 complet : 2 passages, un échec WebKit local à chaque fois, sur une page que la 10g ne touche pas, et pas au même endroit :
+    - `journey` 7 : « WebKit encountered an internal error » sur `page.goto` ;
+    - puis `journey` 6 : `page.goto("/visites")` sans fin avant la limite de 2 minutes ;
+    - même famille que `journey` 12, `relations:853` et `onboarding:391` les 17 et 22 novembre. Cause non trouvée ; je ne les classe pas instables.
+- **CI GitHub** : bloquée (dépôt redevenu privé, minutes épuisées) ; non lancée.
+- **Preview** : la migration `20261123120000_photo_replacement` **n'est pas appliquée**. Le connecteur a demandé une confirmation (`drop constraint`, `drop trigger`), restée sans réponse en 60 s ; vérifié : rien n'est passé. À lancer dans le SQL Editor (règle 11), puis historique à la version du fichier et vérification.
 
 ### 10g — Messagerie du Greffe (demande du porteur, 2026-11-22)
 Branche `phase-10` repartie de `main` (`4ee8b28`, qui contenait déjà toute la 10f et la 10f-bis), en avance rapide sur l'ancienne `phase-10`. Relu : SPEC §7 quater, §10, §11, §15, §16 ; les briques du Parloir (temps réel corrigé en 10f, « … écrit »). Tables séparées de celles du Parloir. Découpage annoncé et suivi : 10g-1 base ; 10g-2 Messagerie (admin) ; 10g-3 Courrier du Greffe (membre) ; 10g-4 notifications, i18n, e2e, rapport.
