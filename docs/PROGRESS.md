@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : 10a à 10d en production. **10e** : faite, CI n° 149 verte, décisions 10-19 à 10-21 et question 10-22 à valider. **10f** : migrations appliquées à la preview par le conseiller (2026-11-17) ; décisions 10-24 à 10-31 à valider. **Correctif temps réel du Parloir** (le canal rejoignait sans jeton) : fait, CI n° 153 et 154 vertes sans relance. **10f-bis (« Voir comme un Bad »)** : faite et testée, migration `20261117140000_vue_bad` **pas sur la preview** (connecteur), décisions 10-32 à 10-36 à valider. Voir ces sections. **10g (Messagerie du Greffe)** : faite sur `phase-10` (repartie de `main` `4ee8b28`), tests locaux verts sauf deux échecs WebKit locaux hors 10g. Migrations appliquées à la preview le 2026-11-23, types régénérés depuis la preview. **Corrections du conseiller (10-50, 10-52)** : faites ; CI n° 166 verte sans relance (n° 167 : une relance sur un défaut WebKit préexistant, voir la section) ; migration `20261123120000_photo_replacement` pas encore sur la preview (à lancer dans le SQL Editor). Décisions 10-37 à 10-49 et 10-51 validées, 10-50 et 10-52 corrigées ; voir les sections 10g.
+**Phase 10** (branche `phase-10`) : 10a à 10g en production (`main` = `c47c1d6`). **10h (pages qui ne finissent pas de charger sous WebKit)** : trois causes trouvées et corrigées ; 50 exécutions consécutives sans échec en local sur les deux tests ; CI n° 173 et 174 vertes sans relance ; décisions 10-53 à 10-55 à valider ; voir la section 10h.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -201,6 +201,53 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
   - le lien du courriel « photos en attente » mène toujours au Greffe (`/admin/greffe`), puisqu'il désigne cette file ;
   - local : Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : `super-admin`, `relations`, `moderation-rgpd`, `onboarding-complete`, `photo-cutout` et le parcours complet verts (32 réussis) ;
   - CI : verte, run 130 (`df8d43f`) : checks, e2e Pixel 7 (50 réussis, 2 ignorés), e2e iPhone 14 (41 réussis, 11 ignorés), aucun test instable (flaky).
+
+### 10h — Pages qui ne finissent pas de charger sous WebKit (demande du conseiller, 2026-11-23)
+Base : `main` = `c47c1d6` (10g en production). Types de la preview régénérés : **identiques** à ceux du dépôt (la migration `20261123120000` ne change aucune signature), donc rien à commiter.
+- **Reproduction** :
+  - test temporaire, non commité, sur iPhone 14 en local, 50 à 100 exécutions par série, chacune indépendante : connexion d'une Bad (arrivée sur Ma fiche par navigation côté client, comme le `login` de `moderation-rgpd:237`), puis `goto("/ma-fiche")`, « Mettre en pause », « Reprendre » (comme `relations:855`) ;
+  - captures : trace Playwright, console, requêtes échouées ou encore en cours, et un script d'initialisation qui note chaque document, `pagehide` et la valeur de `data-cutout-engine`.
+  - **Avant correction : 3 échecs sur 100**, toujours « page.goto: WebKit encountered an internal error ».
+- **Cause 1, prouvée : la page se rechargeait d'elle-même.**
+  - Une page photo (Ma fiche, onboarding, Greffe) atteinte par navigation côté client garde la politique de sécurité de la page précédente, sans WebAssembly.
+  - Sous WebKit Linux, le worker n'a pas de WebGL : `usePreloadCutout` (`components/onboarding/cutout-choice.tsx`) concluait `none` et faisait `location.reload()` une fois. Trace : `engines=loading,none`, puis `pagehide`, puis un nouveau document.
+  - La navigation suivante, celle du test ou celle d'un membre, arrivait pendant ce rechargement et échouait. Dans le cas de `moderation-rgpd:237` en CI, le document rechargé restait bloqué sur « loading ».
+  - Ce rechargement n'était pas nécessaire. MODNet, le moteur principal, tourne dans le worker sous la politique du worker, et il se charge (vérifié : `ok: true`) même quand la page interdit WebAssembly, sous WebKit comme sous Chromium. Seul le secours MediaPipe a besoin de WebAssembly dans la page.
+- **Cause 2, prouvée : une navigation pendant une rafale de requêtes GET.**
+  - Après suppression du rechargement, il restait 1 échec sur 300, sans `pagehide`.
+  - La trace montre, au moment du `goto`, les préchargements automatiques de Next encore en cours (`/ma-fiche/identite`, `/decouverte`, `/promenade`, `/quartier`, …) : chaque lien visible en lance un à l'affichage de la page.
+  - Reproduit **sans le code de l'application** : depuis une page vide, des `fetch` GET en cours au moment d'un `page.goto` font échouer la navigation (2 sur 64), alors qu'une requête POST en cours (8 sur 8) ou le chargement du worker (50 sur 50) ne la font jamais échouer.
+- **Cause 3 (aggravante) : le runtime de détourage téléchargé à chaque affichage de Ma fiche.**
+  - Après les deux premières corrections, la chaîne `relations` faisait encore **2 échecs sur 150**, avec la même erreur, sur un `goto` juste après l'arrivée sur Ma fiche.
+  - Seules requêtes en vol à cet instant dans les traces : le téléchargement par le worker du runtime de MODNet (`ort-wasm-simd-threaded.mjs` et `.wasm`, plusieurs Mo), lancé à chaque affichage de Ma fiche.
+  - Isolé, ce téléchargement ne suffit pas à faire échouer une navigation (0 sur 200, comme sans worker, 0 sur 200). L'échec dépend donc de l'ensemble des chargements en cours ; je n'ai pas trouvé de déclencheur unique dans le moteur.
+  - Ce téléchargement était de toute façon superflu sur Ma fiche, une page où l'on vient surtout pour autre chose.
+- **Corrections** :
+  1. `usePreloadCutout` ne recharge plus jamais la page. `none` signifie seulement « pas de secours MediaPipe dans ce document ». MODNet se précharge dans le worker dans tous les cas, et un échec du chargement du moteur donne `none` au lieu de rester « loading ».
+  2. Plus aucun préchargement automatique des liens. `Link` (`i18n/navigation.tsx`) et `LocalizedLink` ont `prefetch={false}` par défaut, comme l'admin le faisait déjà. Toutes les pages sont dynamiques et sans `loading.tsx` : le préchargement n'apportait presque rien, et coûtait une requête serveur par lien visible et par page.
+  3. Sur Ma fiche (`PosesEditor`, `PhotoManager`), le runtime de détourage se télécharge **à l'intention** : au toucher ou au focus d'un bouton photo (`warmCutout`), donc pendant que le membre choisit son fichier. Les étapes photo de l'onboarding et le Greffe le gardent à l'affichage.
+- **Membres sur Safari iOS** :
+  - **Cause 1 : oui**, sur les Safari dont le worker n'a pas WebGL (iOS 16 et antérieurs ; probablement le mode Isolement, à vérifier). Arrivée sur Ma fiche ou une page photo par un lien, notamment après la connexion : la page se rechargeait une fois, et un geste fait à cet instant (un tap, un envoi de formulaire) était perdu ou la navigation interrompue. Safari 17 et ultérieurs ont WebGL dans les workers : pas de rechargement.
+  - **Cause 2 : probablement non.** L'échec vient de la pile réseau de WebKit sous Linux (libsoup), celle de Playwright ; Safari iOS utilise la pile réseau d'Apple. Je ne peux pas le vérifier ici : à tester sur un vrai iPhone si on veut une certitude. Supprimer les préchargements reste utile en soi, avec moins de requêtes et de calcul serveur.
+- **Compromis accepté** : sur un navigateur sans WebGL dans le worker, arrivé sur une page photo par un lien, si MODNet échoue (appareil trop lent), le secours MediaPipe n'est plus disponible : la photo part au Greffe, qui la détoure, comme pour tout détourage impossible. Avant, la page se rechargeait pour offrir ce secours.
+- **Preuves** (iPhone 14, WebKit, en local ; tests et délais inchangés, aucun test exclu) :
+
+| Mesure | Avant | Après les 3 corrections |
+|---|---|---|
+| Reproduction ciblée | 3 échecs sur 100 | 100 sur 100 |
+| `moderation-rgpd` 202 → 237 | 2 échecs sur 50 | **50 sur 50** (100 étapes) |
+| `relations` 308 → 380 → 781, qui contient `:855` | 2 échecs sur 50 après les deux premières corrections | **50 sur 50** (150 étapes) |
+
+  - CI **verte deux fois de suite, sans relance** sur `5d814e0` :
+    - n° 173 (`phase-10`) et n° 174 (branche de session) ;
+    - Pixel 7 : 65 réussis ; iPhone 14 : 32 + 24 réussis ;
+    - aucun « flaky ».
+  - Le n° 172 (`daeefb1`) avait échoué avant tout test : la pile Supabase locale n'a pas démarré en 8 minutes dans un job iPhone (incident de machine CI). Le n° 171, sur le même commit, était vert.
+- **Incident de commit** : `e154809` ne contient que le renommage de `i18n/navigation.ts` en `.tsx`, sous un message qui décrit toute la correction. Mon `git add` avait échoué sur l'ancien chemin. Les modifications sont dans `daeefb1` ; je n'ai pas réécrit l'historique poussé.
+- **Décisions à valider (10h)** :
+  - **10-53** Une page photo ne se recharge plus jamais d'elle-même. Prix : sans WebGL dans le worker et arrivé par un lien, si MODNet échoue, la photo part au Greffe au lieu du secours MediaPipe.
+  - **10-54** Aucun lien n'est préchargé par défaut (`prefetch` à `false` dans `Link` et `LocalizedLink`). Un lien qui en aurait vraiment besoin peut le demander.
+  - **10-55** Sur Ma fiche, le runtime de détourage (plusieurs Mo) se télécharge à l'intention du membre, plus à l'affichage. Risque : sur un réseau lent, un premier détourage peut dépasser son budget de chargement et partir au Greffe.
 
 ### 10g — corrections du conseiller (2026-11-23)
 Revue du conseiller : décisions 10-37 à 10-49 et 10-51 **validées** ; 10-50 **refusée** ; 10-52 **à corriger**.
