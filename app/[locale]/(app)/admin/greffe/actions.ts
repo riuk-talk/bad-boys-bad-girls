@@ -77,10 +77,19 @@ export async function decidePhotoAction(form: FormData): Promise<void> {
   const admin = createAdminClient();
   const { data: photo } = await admin
     .from("photos")
-    .select("pending_path, status")
+    .select("pending_path, status, owner_id, position")
     .eq("id", photoId)
     .maybeSingle();
   if (!photo || photo.status !== "pending" || !photo.pending_path) return back("notPending");
+  // The validated photo this one would replace (10g, decision 10-50 corrected): it stays until
+  // this decision; validated, the database removes its row and its files go here.
+  const { data: replaced } = await admin
+    .from("photos")
+    .select("public_path_large, public_path_small")
+    .eq("owner_id", photo.owner_id)
+    .eq("position", photo.position)
+    .eq("status", "approved")
+    .maybeSingle();
   const pending = [photo.pending_path, smallPath(photo.pending_path)];
 
   if (decision === "reject") {
@@ -141,6 +150,10 @@ export async function decidePhotoAction(form: FormData): Promise<void> {
     return back("generic");
   }
   await admin.storage.from("photos-pending").remove(pending);
+  const oldPublic = [replaced?.public_path_large, replaced?.public_path_small].filter(
+    (path): path is string => typeof path === "string",
+  );
+  if (oldPublic.length > 0) await admin.storage.from("photos").remove(oldPublic);
   return back();
 }
 

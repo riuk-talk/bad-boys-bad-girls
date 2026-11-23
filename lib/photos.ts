@@ -10,6 +10,11 @@ export type PhotoInfo = {
   reason: string | null;
   /** Cut out in the browser: shown in front of the wall (2026-10-23, version B). */
   cutout: boolean;
+  /**
+   * A new photo deposited while this one is validated (10g, decision 10-50 corrected): it waits for
+   * the Greffe, or was refused; the validated one stays shown and counts meanwhile.
+   */
+  next: { status: "pending" | "rejected"; reason: string | null } | null;
 };
 
 /**
@@ -38,7 +43,18 @@ export async function photoInfos(
         SIGNED_URL_SECONDS,
       )
     : { data: [] };
-  for (const photo of photos ?? []) {
+  // The validated photo of a position comes first: it is the one shown (10-50 corrected).
+  const ordered = [...(photos ?? [])].sort(
+    (a, b) => Number(b.status === "approved") - Number(a.status === "approved"),
+  );
+  for (const photo of ordered) {
+    const shown = result[photo.position];
+    if (shown) {
+      if (shown.status === "approved" && photo.status !== "approved") {
+        shown.next = { status: photo.status, reason: photo.rejection_reason };
+      }
+      continue;
+    }
     const url =
       photo.status === "approved" && photo.public_path_large
         ? supabase.storage.from("photos").getPublicUrl(photo.public_path_large).data.publicUrl
@@ -50,6 +66,7 @@ export async function photoInfos(
       status: photo.status,
       reason: photo.rejection_reason,
       cutout: photo.is_cutout,
+      next: null,
     };
   }
   return result;

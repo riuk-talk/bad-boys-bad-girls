@@ -701,7 +701,9 @@
       "submit": "Hand in to the Registry",
       "approved": "Approved",
       "rejected": "Refused: {reason}",
-      "greffeCutout": "The Registry cuts it out"
+      "greffeCutout": "The Registry cuts it out",
+      "nextPending": "Validated · new pose waiting for the Registry (this one stays online)",
+      "nextRejected": "Validated · new pose refused: {reason} (this one stays online)"
     },
     "casier": {
       "lead": "Start with the true one: the most striking fact about you. The two false ones come next.",

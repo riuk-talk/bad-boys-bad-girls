@@ -283,12 +283,15 @@ export async function uploadPhotoAction(_state: StepState, form: FormData): Prom
   ]);
   if (uploads.some((result) => result.error)) return failMessage("generic");
 
-  // Replacing the photo at this position: drop the previous files and row first.
+  // A new photo at this position replaces a previous one waiting or refused (its files and row go
+  // first); a validated one stays shown, and counts, until the Greffe decides on the new one
+  // (10g, decision 10-50 corrected): validated, it replaces it; refused, it stays.
   const { data: previous } = await member.supabase
     .from("photos")
     .select("id, pending_path")
     .eq("owner_id", member.userId)
     .eq("position", position)
+    .neq("status", "approved")
     .maybeSingle();
   if (previous) {
     if (previous.pending_path) {

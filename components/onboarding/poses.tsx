@@ -47,6 +47,8 @@ function PoseSlot({
   const [url, setUrl] = useState(initial?.url ?? null);
   const [cutout, setCutout] = useState(initial?.cutout ?? false);
   const [status, setStatus] = useState(initial?.status ?? null);
+  // A new pose deposited while this one is validated: it waits, the validated one stays (10-50).
+  const [next, setNext] = useState(initial?.next ?? null);
   const { choose, dialog } = useCutoutChoice(prepareForUpload, { placard: true });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -78,9 +80,14 @@ function PoseSlot({
         setError(errorT(key as "generic"));
         return;
       }
-      setUrl(URL.createObjectURL(blob));
-      setCutout(choice.cutout);
-      setStatus("pending");
+      if (status === "approved") {
+        // The validated pose stays shown and online until the Greffe decides on the new one.
+        setNext({ status: "pending", reason: null });
+      } else {
+        setUrl(URL.createObjectURL(blob));
+        setCutout(choice.cutout);
+        setStatus("pending");
+      }
       onUploaded(slot.position);
     } catch {
       setError(errorT("photoUnreadable"));
@@ -136,6 +143,12 @@ function PoseSlot({
       <span aria-live="polite" className="min-h-5 text-xs font-bold">
         {busy ? (
           <span className="text-grey">{t("uploading")}</span>
+        ) : status === "approved" && next ? (
+          <span className={next.status === "rejected" ? "text-red-bright" : "text-grey"}>
+            {next.status === "rejected"
+              ? t("nextRejected", { reason: reasonT((next.reason ?? "other") as "other") })
+              : t("nextPending")}
+          </span>
         ) : status === "approved" ? (
           <span className="text-green-bright inline-flex items-center gap-1">
             <Check aria-hidden="true" className="size-3.5" />

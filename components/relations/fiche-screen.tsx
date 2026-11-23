@@ -43,6 +43,7 @@ export async function FicheScreen({ id, dossier = false }: { id: string; dossier
         .select("status")
         .eq("owner_id", userId)
         .eq("position", 0)
+        .eq("status", "approved")
         .maybeSingle(),
       supabase.from("profile_tribes").select("tribes(label)").eq("profile_id", userId),
       supabase.rpc("mark_promenade_seen", { p_bad: fiche.id }),

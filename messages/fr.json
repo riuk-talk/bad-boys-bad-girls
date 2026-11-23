@@ -701,7 +701,9 @@
       "submit": "Déposer au Greffe",
       "approved": "Validée",
       "rejected": "Refusée : {reason}",
-      "greffeCutout": "Le Greffe la détoure"
+      "greffeCutout": "Le Greffe la détoure",
+      "nextPending": "Validée · nouvelle pose en attente du Greffe (celle-ci reste en ligne)",
+      "nextRejected": "Validée · nouvelle pose refusée : {reason} (celle-ci reste en ligne)"
     },
     "casier": {
       "lead": "On commence par le vrai : ton fait le plus marquant. Les deux faux viendront après.",

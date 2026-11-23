@@ -26,7 +26,14 @@ export default async function PromenadePage() {
   const criteria = await getTranslations("Criteria");
   const [{ data: picks }, { data: face }] = await Promise.all([
     supabase.rpc("get_my_promenade"),
-    supabase.from("photos").select("status").eq("owner_id", userId).eq("position", 0).maybeSingle(),
+    // The validated face photo, if any (a new one may wait beside it, 10-50 corrected).
+    supabase
+      .from("photos")
+      .select("status")
+      .eq("owner_id", userId)
+      .eq("position", 0)
+      .eq("status", "approved")
+      .maybeSingle(),
     supabase.rpc("mark_notifications_read", { p_types: ["promenade_open"] }),
   ]);
   const bads: BadCardData[] = (picks ?? []).map((pick) => ({

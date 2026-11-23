@@ -111,16 +111,25 @@ export default async function MyFichePage() {
   const selected = Object.fromEntries((mine ?? []).map((row) => [row.tribe_id, row.detail]));
   // A Permis shows one photo; an ex-Bad's other photos stay in reserve (SPEC v7 §5 bis).
   const shownPhotos = (photos ?? []).filter((photo) => !isVisitor || photo.position === 0);
-  const main = shownPhotos.find((photo) => photo.position === 0);
+  // The validated photo of a position first: a new one waiting beside it does not replace it
+  // before the Greffe's decision (10g, decision 10-50 corrected).
+  const shownAt = (position: number) =>
+    shownPhotos.find((photo) => photo.position === position && photo.status === "approved") ??
+    shownPhotos.find((photo) => photo.position === position);
+  const main = shownAt(0);
   const mainUrl = main ? (urls[main.id]?.large ?? null) : null;
   const gauge = completeness({
     mainPhoto: main ? main.status : "missing",
-    photoCount: photos?.length ?? 0,
+    photoCount: new Set((photos ?? []).map((photo) => photo.position)).size,
     bioLength: profile.bio?.length ?? 0,
     signCount: mine?.length ?? 0,
   });
   // A Bad's Fiche is validated once the 3 poses are (PARCOURS-DESIGN §3).
-  const poses = [0, 1, 2].map((position) => photos?.find((p) => p.position === position));
+  const poses = [0, 1, 2].map(
+    (position) =>
+      photos?.find((p) => p.position === position && p.status === "approved") ??
+      photos?.find((p) => p.position === position),
+  );
   const statusKey = isVisitor
     ? main
       ? main.status

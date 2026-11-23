@@ -324,4 +324,75 @@ test.describe("Messagerie du Greffe (10g, local stack)", () => {
     await member.context().close();
     await staff.context().close();
   });
+
+  test("a visible Bad stays visible while a new pose waits for the Greffe (10-50 corrected)", async ({
+    browser,
+  }) => {
+    // Rose's Fiche online: her 3 poses validated (the left profile is the accepted proposal), her
+    // Casier, seen today.
+    for (const position of [0, 2]) {
+      asOwner(
+        `insert into public.photos (owner_id, position, pending_path) values ('${rose.id}', ${position}, '${rose.id}/p${position}.webp')`,
+      );
+    }
+    asOwner(
+      `update public.photos set status = 'approved', pending_path = null, is_cutout = true,
+         public_path_large = gen_random_uuid() || '.webp', public_path_small = gen_random_uuid() || '-s.webp'
+       where owner_id = '${rose.id}' and status = 'pending'`,
+    );
+    asOwner(
+      `insert into public.casier_charges (profile_id, charge_1, charge_2, charge_3, true_index)
+       values ('${rose.id}', 'Vol de lune', 'Excès de charme', 'Retard chronique', 1)
+       on conflict (profile_id) do nothing`,
+    );
+    asOwner(`update public.profiles set last_seen_at = now() where id = '${rose.id}'`);
+    const left = asOwner(
+      `select public_path_large from public.photos where owner_id = '${rose.id}' and position = 1 and status = 'approved'`,
+    );
+
+    const staff = await (await browser.newContext()).newPage();
+    watchRealtimeRefusals(staff, refusals);
+    await openAdmin(staff, team);
+    const leftPose = async () => {
+      await staff.goto(`/admin/vue/fiche/${rose.id}`);
+      const fiche = staff.getByTestId("fiche");
+      await expect(fiche.getByTestId("pose-left")).toBeVisible();
+      return fiche.getByTestId("pose-left").locator("img").first().getAttribute("src");
+    };
+    expect(await leftPose(), "the Fiche is online, with its left profile").toContain(left);
+
+    // Rose deposits a new left profile from her Courrier: it goes to the Greffe's queue.
+    const photo = await sharp({
+      create: { width: 900, height: 1200, channels: 3, background: { r: 90, g: 90, b: 110 } },
+    })
+      .jpeg()
+      .toBuffer();
+    const member = await memberPage(browser, rose.email, rose.password);
+    await member.goto("/ma-fiche/courrier-du-greffe");
+    await member.getByLabel("Photo jointe").selectOption("1");
+    await member
+      .getByTestId("greffe-files")
+      .setInputFiles({ name: "profil.jpg", mimeType: "image/jpeg", buffer: photo });
+    await member.getByRole("button", { name: "Envoyer" }).click();
+    await expect(
+      member
+        .getByRole("list", { name: "Messages du fil" })
+        .getByText("Photo déposée au Greffe : Profil gauche."),
+    ).toBeVisible();
+    expect(
+      asOwner(
+        `select string_agg(status::text, ',' order by status::text) from public.photos where owner_id = '${rose.id}' and position = 1`,
+      ),
+      "the new pose waits beside the validated one",
+    ).toBe("approved,pending");
+
+    // Still online, with the validated left profile, while the new one waits.
+    expect(await leftPose(), "the Bad stays visible, the validated pose shown").toContain(left);
+    // Her own Ma fiche says so.
+    await member.goto("/ma-fiche");
+    await expect(member.getByText(/nouvelle pose en attente du Greffe/)).toBeVisible();
+    expect(await axeViolations(member)).toEqual([]);
+    await member.context().close();
+    await staff.context().close();
+  });
 });

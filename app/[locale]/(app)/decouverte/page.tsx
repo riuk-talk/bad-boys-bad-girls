@@ -52,7 +52,14 @@ export default async function DiscoverPage({ searchParams }: Props) {
       p_limit: PAGE_SIZE,
     }),
     supabase.from("tribes").select("id, label").eq("is_active", true).order("sort"),
-    supabase.from("photos").select("status").eq("owner_id", userId).eq("position", 0).maybeSingle(),
+    // The validated face photo, if any (a new one may wait beside it, 10-50 corrected).
+    supabase
+      .from("photos")
+      .select("status")
+      .eq("owner_id", userId)
+      .eq("position", 0)
+      .eq("status", "approved")
+      .maybeSingle(),
   ]);
   const bads: BadCardData[] = (rows ?? []).map((row) => ({
     id: row.id,
