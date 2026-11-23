@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
   }
 
   // The images of the Messagerie du Greffe past their retention (10g).
-  const greffeFiles = Date.now() - started > TIME_BUDGET_MS ? 0 : await removeGreffeFilesDue(admin, 200);
+  const greffeFiles =
+    Date.now() - started > TIME_BUDGET_MS ? 0 : await removeGreffeFilesDue(admin, 200);
 
   return NextResponse.json({ rotated, deleted, failed, greffeFiles });
 }
