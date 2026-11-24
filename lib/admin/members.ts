@@ -156,3 +156,79 @@ export function parseMemberDetail(value: unknown): MemberDetail | null {
   if (!missing) return null;
   return { ...parsed.data, missing };
 }
+
+const label = z.record(z.string(), z.string());
+const counts = z.record(z.string(), z.number());
+
+/**
+ * The rest of the record (10i, admin_member_extra): exact date of birth, N° d'écrou, role and its
+ * last change, the Interrogatoire, the activity, the settings. Never the true charge either.
+ */
+const extraSchema = z.object({
+  birthdate: nullableString,
+  ecrou: nullableString,
+  role: z.nullable(z.enum(["bad", "visitor"])),
+  role_changed_at: nullableString,
+  answers: z.array(
+    z.object({
+      question: label,
+      answer: z.nullable(label),
+      accepted: z.array(label),
+      importance: z.enum(["low", "important", "essential"]),
+    }),
+  ),
+  activity: z.object({
+    sent: counts,
+    received: counts,
+    last_requests: z.array(
+      z.object({
+        id: z.string(),
+        created_at: z.string(),
+        direction: z.enum(["sent", "received"]),
+        other_id: z.string(),
+        other_pseudo: nullableString,
+        status: z.string(),
+      }),
+    ),
+    visits_upcoming: z.number(),
+    visits_honored: z.number(),
+    visits_absent: z.number(),
+    permits_open: z.number(),
+    cavales_proposed: z.number(),
+    cavales_accepted: z.number(),
+    blocks_made: z.number(),
+    blocks_received: z.number(),
+    reports_made: z.number(),
+    reports_received: z.number(),
+    reports_open: z.number(),
+    sanctions: z.array(
+      z.object({
+        action: z.string(),
+        reason: nullableString,
+        ends_at: nullableString,
+        created_at: z.string(),
+      }),
+    ),
+  }),
+  settings: z.object({
+    paused: z.boolean(),
+    paused_at: nullableString,
+    requests_cap: z.nullable(z.number()),
+    requests_open: z.nullable(z.boolean()),
+    requests_closed_manual: z.nullable(z.boolean()),
+    pending_requests: z.nullable(z.number()),
+    notifications: z.nullable(z.record(z.string(), z.unknown())),
+    devices: z.number(),
+    referral_code: nullableString,
+    referrals: z.number(),
+  }),
+});
+
+export type MemberExtra = z.infer<typeof extraSchema>;
+
+/** The rest of the record as the database gives it, or null (and never with a true charge). */
+export function parseMemberExtra(value: unknown): MemberExtra | null {
+  if (JSON.stringify(value ?? null).includes("true_index")) return null;
+  const parsed = extraSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+}

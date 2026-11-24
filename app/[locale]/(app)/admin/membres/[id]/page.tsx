@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import * as z from "zod/mini";
-import { MemberDossier } from "@/components/admin/member-dossier";
+import { IdentityHistory, MemberDossier, Section } from "@/components/admin/member-dossier";
 import { Outcome } from "@/components/admin/outcome";
 import { Button } from "@/components/ui/button";
-import { parseMemberDetail } from "@/lib/admin/members";
+import { parseMemberDetail, parseMemberExtra } from "@/lib/admin/members";
 import { adminCan, requireAdminPermission } from "@/lib/admin/guard";
 import { openThreadAction } from "../../messagerie/actions";
 import { requireMember } from "@/lib/auth/user";
@@ -91,10 +91,16 @@ export default async function MemberRecordPage({ params, searchParams }: Props) 
     return (
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 sm:py-12">
         <h1 className="font-display text-4xl tracking-wide uppercase">{t("noPseudo")}</h1>
-        <MemberDossier detail={detail} thumbnails={thumbnails} />
+        <MemberDossier detail={detail} extra={null} thumbnails={thumbnails} canSeeEmail={false} />
       </div>
     );
   }
+  // 10i: the rest of the record, and whether this role may show the e-mail (members.email).
+  const [{ data: extraData }, canSeeEmail] = await Promise.all([
+    member.supabase.rpc("admin_member_extra", { p_user: id }),
+    adminCan(member, "members.email"),
+  ]);
+  const extra = parseMemberExtra(extraData);
   const { data } = await member.supabase.rpc("admin_member", { p_user: id });
   const parsed = memberRecordSchema.safeParse(data);
   if (!parsed.success) notFound();
@@ -134,7 +140,12 @@ export default async function MemberRecordPage({ params, searchParams }: Props) 
         <Outcome error={error} done={done} />
       </div>
 
-      <MemberDossier detail={detail} thumbnails={thumbnails} />
+      <MemberDossier
+        detail={detail}
+        extra={extra}
+        thumbnails={thumbnails}
+        canSeeEmail={canSeeEmail}
+      />
 
       {canSanction ? (
         <section
@@ -196,71 +207,76 @@ export default async function MemberRecordPage({ params, searchParams }: Props) 
         </section>
       ) : null}
 
-      <section aria-labelledby="actions-title" className="space-y-3">
-        <h2 id="actions-title" className="font-display text-2xl uppercase">
-          {t("member.history")}
-        </h2>
-        {record.actions.length === 0 ? <p className="text-grey">{t("member.noActions")}</p> : null}
-        <ul className="divide-line divide-y">
-          {record.actions.map((action) => (
-            <li key={action.id} className="space-y-1 py-3">
-              <p>
-                <span className="font-semibold">{t(`actions.${action.action}`)}</span>{" "}
-                <span className="text-grey text-sm">{when(action.created_at)}</span>
-                {action.ends_at ? (
-                  <span className="text-grey text-sm">
-                    {" "}
-                    · {t("member.until", { date: when(action.ends_at) })}
-                  </span>
+      <Section id="history" title={t("dossier.history")}>
+        <IdentityHistory detail={detail} />
+        <div className="space-y-3">
+          <h3 id="actions-title" className="font-semibold">
+            {t("member.history")}
+          </h3>
+          {record.actions.length === 0 ? (
+            <p className="text-grey">{t("member.noActions")}</p>
+          ) : null}
+          <ul className="divide-line divide-y">
+            {record.actions.map((action) => (
+              <li key={action.id} className="space-y-1 py-3">
+                <p>
+                  <span className="font-semibold">{t(`actions.${action.action}`)}</span>{" "}
+                  <span className="text-grey text-sm">{when(action.created_at)}</span>
+                  {action.ends_at ? (
+                    <span className="text-grey text-sm">
+                      {" "}
+                      · {t("member.until", { date: when(action.ends_at) })}
+                    </span>
+                  ) : null}
+                </p>
+                {action.reason ? (
+                  <p className="text-sm whitespace-pre-wrap">{action.reason}</p>
                 ) : null}
-              </p>
-              {action.reason ? (
-                <p className="text-sm whitespace-pre-wrap">{action.reason}</p>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </section>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <section aria-labelledby="received-title" className="space-y-3">
-        <h2 id="received-title" className="font-display text-2xl uppercase">
-          {t("member.received")}
-        </h2>
-        {record.reports_received.length === 0 ? (
-          <p className="text-grey">{t("member.noReports")}</p>
-        ) : null}
-        <ul className="divide-line divide-y">
-          {record.reports_received.map((report) => (
-            <li key={report.id} className="space-y-1 py-3">
-              <p>
-                <span className="font-semibold">{t(`categories.${report.category}`)}</span> ·{" "}
-                {t(`targets.${report.target_type}`)} · {t(`statuses.${report.status}`)}{" "}
-                <span className="text-grey text-sm">{when(report.created_at)}</span>
-              </p>
-              {report.comment ? <p className="text-sm">{report.comment}</p> : null}
-            </li>
-          ))}
-        </ul>
-      </section>
+        <div className="space-y-3">
+          <h3 id="received-title" className="font-semibold">
+            {t("member.received")}
+          </h3>
+          {record.reports_received.length === 0 ? (
+            <p className="text-grey">{t("member.noReports")}</p>
+          ) : null}
+          <ul className="divide-line divide-y">
+            {record.reports_received.map((report) => (
+              <li key={report.id} className="space-y-1 py-3">
+                <p>
+                  <span className="font-semibold">{t(`categories.${report.category}`)}</span> ·{" "}
+                  {t(`targets.${report.target_type}`)} · {t(`statuses.${report.status}`)}{" "}
+                  <span className="text-grey text-sm">{when(report.created_at)}</span>
+                </p>
+                {report.comment ? <p className="text-sm">{report.comment}</p> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <section aria-labelledby="flags-title" className="space-y-3">
-        <h2 id="flags-title" className="font-display text-2xl uppercase">
-          {t("member.flags")}
-        </h2>
-        {record.flags.length === 0 ? <p className="text-grey">{t("member.noFlags")}</p> : null}
-        <ul className="divide-line divide-y">
-          {record.flags.map((flag) => (
-            <li key={flag.id} className="space-y-1 py-3">
-              <p>
-                <span className="font-semibold">{t(`sources.${flag.source}`)}</span> ·{" "}
-                {t(`statuses.${flag.status}`)}{" "}
-                <span className="text-grey text-sm">{when(flag.created_at)}</span>
-              </p>
-              <p className="text-sm whitespace-pre-wrap">{flag.excerpt}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <div className="space-y-3">
+          <h3 id="flags-title" className="font-semibold">
+            {t("member.flags")}
+          </h3>
+          {record.flags.length === 0 ? <p className="text-grey">{t("member.noFlags")}</p> : null}
+          <ul className="divide-line divide-y">
+            {record.flags.map((flag) => (
+              <li key={flag.id} className="space-y-1 py-3">
+                <p>
+                  <span className="font-semibold">{t(`sources.${flag.source}`)}</span> ·{" "}
+                  {t(`statuses.${flag.status}`)}{" "}
+                  <span className="text-grey text-sm">{when(flag.created_at)}</span>
+                </p>
+                <p className="text-sm whitespace-pre-wrap">{flag.excerpt}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Section>
     </div>
   );
 }

@@ -11,9 +11,9 @@ const OBSERVER = [
 ] as const;
 
 describe("administration roles (10f)", () => {
-  it("knows the 19 permissions; team.manage is never a role's box", () => {
-    expect(ADMIN_PERMISSIONS).toHaveLength(19);
-    expect(ROLE_PERMISSIONS).toHaveLength(18);
+  it("knows the 20 permissions; team.manage is never a role's box", () => {
+    expect(ADMIN_PERMISSIONS).toHaveLength(20);
+    expect(ROLE_PERMISSIONS).toHaveLength(19);
     expect(ROLE_PERMISSIONS).not.toContain("team.manage");
   });
 

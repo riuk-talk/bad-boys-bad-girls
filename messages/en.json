@@ -2214,7 +2214,81 @@
       "pseudoHistory": "Previous nicknames",
       "pseudoChange": "{old} → {new}, on {date}",
       "corrections": "Date of birth corrections",
-      "correctionRow": "{status} · asked on {date} · {age} years old asked for"
+      "correctionRow": "{status} · asked on {date} · {age} years old asked for",
+      "birthdate": "Date of birth",
+      "birthdateValue": "{date} ({age} years old)",
+      "ecrou": "Inmate number",
+      "role": "Role",
+      "roleChanged": "last changed on {date}",
+      "email": "E-mail",
+      "emailHidden": "Hidden (« show the e-mail » permission required)",
+      "search": "Search",
+      "fiche": "Profile",
+      "interrogation": "Interrogation",
+      "answersCount": "{count, plural, =0 {No answer} one {# answer} other {# answers}}",
+      "answerGiven": "Their answer: {answer}",
+      "answerAccepted": "Answers accepted: {answers}",
+      "importance": {
+        "low": "Not important",
+        "important": "Important",
+        "essential": "Essential"
+      },
+      "activity": "Activity",
+      "requestsSent": "Visit requests sent",
+      "requestsReceived": "Visit requests received",
+      "requestStatus": {
+        "pending": "pending",
+        "accepted": "accepted",
+        "released": "permanent permit",
+        "dismissed": "case closed",
+        "auto_dismissed": "closed automatically",
+        "cancelled": "cancelled",
+        "closed": "closed"
+      },
+      "visits": "Visits",
+      "visitsValue": "{upcoming} upcoming · {honored} attended · {absent} absences",
+      "permits": "Permanent permits in progress",
+      "cavales": "Cavales",
+      "cavalesValue": "{proposed} proposed · {accepted} accepted",
+      "blocks": "Blocks",
+      "madeReceived": "{made} made · {received} received",
+      "reports": "Reports",
+      "reportsOpen": "{count, plural, one {# open in the queue} other {# open in the queue}}",
+      "sanctions": "Sanctions",
+      "lastRequests": "The last 20 requests",
+      "direction": {
+        "sent": "sent to",
+        "received": "received from"
+      },
+      "settings": "Settings",
+      "pause": "Pause",
+      "pausedSince": "Paused since {date}",
+      "notPaused": "Not paused",
+      "cap": "Request cap",
+      "capValue": "{cap} at most · {pending} pending",
+      "parloirFull": "Visiting room full",
+      "closedManual": "closed by hand",
+      "notifications": "Notifications",
+      "on": "yes",
+      "off": "no",
+      "defaults": "Default settings",
+      "prefs": {
+        "push_requests": "Push: requests",
+        "push_visits": "Push: visits",
+        "push_messages": "Push: messages",
+        "push_promenade": "Push: the Yard",
+        "email_request_digest": "E-mail: requests digest",
+        "email_date_accepted": "E-mail: Cavale accepted",
+        "email_visit_reminder": "E-mail: visit reminder",
+        "email_permit_granted": "E-mail: permit issued",
+        "email_zone_opened": "E-mail: area opened",
+        "email_dormant": "E-mail: profile asleep",
+        "email_weekly": "E-mail: weekly news"
+      },
+      "devices": "Registered devices (push)",
+      "referral": "Referral",
+      "referralValue": "code {code} · {count, plural, =0 {nobody referred} one {# referred} other {# referred}}",
+      "history": "History"
     },
     "corrections": {
       "title": "Age corrections",
@@ -2255,7 +2329,8 @@
       "history_view": "History: read",
       "team_manage": "Team: manage (super admin)",
       "vue_bad_view": "See as a Bad",
-      "members_message": "Messages: write to members"
+      "members_message": "Messages: write to members",
+      "members_email": "Members: show the e-mail (logged)"
     },
     "team": {
       "title": "Team",
@@ -2566,6 +2641,15 @@
       "team": "Team",
       "viewBad": "See as a Bad",
       "messagerie": "Messages"
+    },
+    "email": {
+      "show": "Show the e-mail",
+      "logged": "Each showing is logged.",
+      "errors": {
+        "forbidden": "Your role cannot show the e-mail.",
+        "not_found": "No e-mail to show for this account.",
+        "generic": "That did not work. Try again."
+      }
     }
   },
   "AdminDashboard": {

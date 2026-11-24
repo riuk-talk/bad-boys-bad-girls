@@ -2214,7 +2214,81 @@
       "pseudoHistory": "Pseudos précédents",
       "pseudoChange": "{old} → {new}, le {date}",
       "corrections": "Corrections de date de naissance",
-      "correctionRow": "{status} · demandée le {date} · {age} ans demandés"
+      "correctionRow": "{status} · demandée le {date} · {age} ans demandés",
+      "birthdate": "Date de naissance",
+      "birthdateValue": "{date} ({age} ans)",
+      "ecrou": "N° d'écrou",
+      "role": "Rôle",
+      "roleChanged": "dernier changement le {date}",
+      "email": "E-mail",
+      "emailHidden": "Masqué (permission « afficher l'e-mail » requise)",
+      "search": "Recherche",
+      "fiche": "Fiche",
+      "interrogation": "Interrogatoire",
+      "answersCount": "{count, plural, =0 {Aucune réponse} one {# réponse} other {# réponses}}",
+      "answerGiven": "Sa réponse : {answer}",
+      "answerAccepted": "Réponses acceptées : {answers}",
+      "importance": {
+        "low": "Peu important",
+        "important": "Important",
+        "essential": "Essentiel"
+      },
+      "activity": "Activité",
+      "requestsSent": "Demandes de parloir envoyées",
+      "requestsReceived": "Demandes de parloir reçues",
+      "requestStatus": {
+        "pending": "en attente",
+        "accepted": "acceptée",
+        "released": "Permis permanent",
+        "dismissed": "affaire classée",
+        "auto_dismissed": "classée d'office",
+        "cancelled": "annulée",
+        "closed": "close"
+      },
+      "visits": "Visites",
+      "visitsValue": "{upcoming} à venir · {honored} honorées · {absent} absences",
+      "permits": "Permis permanents en cours",
+      "cavales": "Cavales",
+      "cavalesValue": "{proposed} proposées · {accepted} acceptées",
+      "blocks": "Blocages",
+      "madeReceived": "{made} faits · {received} reçus",
+      "reports": "Signalements",
+      "reportsOpen": "{count, plural, one {# ouvert dans la file} other {# ouverts dans la file}}",
+      "sanctions": "Sanctions",
+      "lastRequests": "Les 20 dernières demandes",
+      "direction": {
+        "sent": "envoyée à",
+        "received": "reçue de"
+      },
+      "settings": "Réglages",
+      "pause": "Pause",
+      "pausedSince": "En pause depuis le {date}",
+      "notPaused": "Pas en pause",
+      "cap": "Plafond de demandes",
+      "capValue": "{cap} au plus · {pending} en attente",
+      "parloirFull": "Parloir complet",
+      "closedManual": "fermé à la main",
+      "notifications": "Notifications",
+      "on": "oui",
+      "off": "non",
+      "defaults": "Réglages par défaut",
+      "prefs": {
+        "push_requests": "Push : demandes",
+        "push_visits": "Push : visites",
+        "push_messages": "Push : messages",
+        "push_promenade": "Push : Promenade",
+        "email_request_digest": "E-mail : récapitulatif des demandes",
+        "email_date_accepted": "E-mail : Cavale acceptée",
+        "email_visit_reminder": "E-mail : rappel de visite",
+        "email_permit_granted": "E-mail : Permis délivré",
+        "email_zone_opened": "E-mail : quartier ouvert",
+        "email_dormant": "E-mail : Fiche en sommeil",
+        "email_weekly": "E-mail : nouvelles de la semaine"
+      },
+      "devices": "Appareils inscrits (push)",
+      "referral": "Parrainage",
+      "referralValue": "code {code} · {count, plural, =0 {aucun parrainé} one {# parrainé} other {# parrainés}}",
+      "history": "Historique"
     },
     "corrections": {
       "title": "Corrections d'âge",
@@ -2255,7 +2329,8 @@
       "history_view": "Historique : lire",
       "team_manage": "Équipe : gérer (super admin)",
       "vue_bad_view": "Voir comme un Bad",
-      "members_message": "Messagerie : écrire aux membres"
+      "members_message": "Messagerie : écrire aux membres",
+      "members_email": "Membres : afficher l'e-mail (journalisé)"
     },
     "team": {
       "title": "Équipe",
@@ -2566,6 +2641,15 @@
       "team": "Équipe",
       "viewBad": "Voir comme un Bad",
       "messagerie": "Messagerie"
+    },
+    "email": {
+      "show": "Afficher l'e-mail",
+      "logged": "Chaque affichage est journalisé.",
+      "errors": {
+        "forbidden": "Ton rôle ne permet pas d'afficher l'e-mail.",
+        "not_found": "Pas d'e-mail à afficher pour ce compte.",
+        "generic": "Ça n'a pas marché. Réessaie."
+      }
     }
   },
   "AdminDashboard": {
