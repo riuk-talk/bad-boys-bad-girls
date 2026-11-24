@@ -22,6 +22,23 @@ const IDLE: ActionState = { status: "idle" };
 
 type Preferences = { requests: boolean; promenade: boolean; visits: boolean };
 type Device = "loading" | "on" | "off" | "blocked" | PushSupport;
+type Known = Exclude<Device, "loading" | "ok">;
+
+/** Every state this browser can be found in, and the label of its button, if it has one. */
+const DEVICE_STATES = [
+  "on",
+  "off",
+  "blocked",
+  "install",
+  "unsupported",
+] as const satisfies readonly Known[];
+const ACTION_LABEL: Record<Known, "switchOff" | "switchOn" | "installLink" | null> = {
+  on: "switchOff",
+  off: "switchOn",
+  blocked: null,
+  install: "installLink",
+  unsupported: null,
+};
 
 /** Ma Fiche · Notifications: this browser on or off, how many browsers, which kinds. */
 export function PushSettings({
@@ -80,22 +97,48 @@ export function PushSettings({
     <div className="flex flex-col gap-5">
       <div className="border-line bg-ink-2 flex flex-col gap-3 rounded-md border p-4">
         <p className="font-semibold">{t("deviceTitle")}</p>
-        <p className="text-grey text-sm" role="status">
-          {device === "loading" ? " " : t(`device_${device}`)}
-        </p>
-        {device === "on" ? (
-          <Button variant="secondary" onClick={switchOff} disabled={busy} className="self-start">
-            {t("switchOff")}
-          </Button>
-        ) : device === "off" ? (
-          <Button onClick={switchOn} disabled={busy} className="self-start">
-            {t("switchOn")}
-          </Button>
-        ) : device === "install" ? (
-          <Link href="/installer" className={buttonClasses("primary", "md", "self-start")}>
-            {t("installLink")}
-          </Link>
-        ) : null}
+        {/* The state of this browser is only known after the page is shown. Every state is laid
+            out, hidden, in the same cell, so the box keeps the height of the tallest one from the
+            first paint: nothing below it (the pause of the Fiche) moves under a finger (10i). */}
+        <div className="grid">
+          {DEVICE_STATES.map((state) => (
+            <div
+              key={state}
+              aria-hidden="true"
+              className="invisible col-start-1 row-start-1 flex flex-col gap-3"
+            >
+              <p className="text-sm">{t(`device_${state}`)}</p>
+              {ACTION_LABEL[state] ? (
+                <span className={buttonClasses("primary", "md", "self-start")}>
+                  {t(ACTION_LABEL[state])}
+                </span>
+              ) : null}
+            </div>
+          ))}
+          <div className="col-start-1 row-start-1 flex flex-col gap-3">
+            <p className="text-grey text-sm" role="status">
+              {device === "loading" ? " " : t(`device_${device}`)}
+            </p>
+            {device === "on" ? (
+              <Button
+                variant="secondary"
+                onClick={switchOff}
+                disabled={busy}
+                className="self-start"
+              >
+                {t("switchOff")}
+              </Button>
+            ) : device === "off" ? (
+              <Button onClick={switchOn} disabled={busy} className="self-start">
+                {t("switchOn")}
+              </Button>
+            ) : device === "install" ? (
+              <Link href="/installer" className={buttonClasses("primary", "md", "self-start")}>
+                {t("installLink")}
+              </Link>
+            ) : null}
+          </div>
+        </div>
         {failed ? <p className="text-red-bright text-sm">{t("error")}</p> : null}
         <p className="text-grey text-xs">{t("devices", { count: devices })}</p>
       </div>

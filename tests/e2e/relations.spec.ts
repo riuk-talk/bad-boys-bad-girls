@@ -845,7 +845,25 @@ test.describe("Phase 4: Promenade, Fiche, Demande de parloir, Courrier (real Sup
     await shot(page, "bad-voir-ma-fiche");
 
     // Pause and cap from Ma Fiche / the Courrier settings.
+    // The pause never moves once the page is painted (10i): the Notifications box above it finds
+    // the state of this browser only after the first paint, and it used to grow then, so a tap
+    // meant for « Reprendre » landed beside it. Its place without JavaScript (the first paint) is
+    // its place once that state is known.
+    const firstPaint = await browser.newContext({
+      javaScriptEnabled: false,
+      storageState: await page.context().storageState(),
+    });
+    const still = await firstPaint.newPage();
+    await still.goto("/ma-fiche");
+    const before = await still.getByRole("button", { name: "Mettre en pause" }).boundingBox();
+    await firstPaint.close();
     await page.goto("/ma-fiche");
+    await expect(
+      page.getByRole("status").filter({ hasText: /navigateur|écran d'accueil/ }),
+    ).toBeVisible();
+    const after = await page.getByRole("button", { name: "Mettre en pause" }).boundingBox();
+    expect(before).not.toBeNull();
+    expect(after?.y).toBe(before?.y);
     await page.getByRole("button", { name: "Mettre en pause" }).click();
     await expect(page.getByRole("button", { name: "Reprendre" })).toBeVisible();
     await page.goto("/courrier");
