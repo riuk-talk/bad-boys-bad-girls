@@ -10,6 +10,7 @@ import { accentForGender } from "@/lib/accent";
 import { ficheAction } from "@/lib/relations/fiche-action";
 import { loadFiche, publicPhotoUrl, requireRole } from "@/lib/relations/server";
 import { localize, type Label } from "@/lib/relations/types";
+import { SITE_TIME_ZONE } from "@/lib/time-zone";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -83,9 +84,11 @@ export async function FicheScreen({ id, dossier = false }: { id: string; dossier
             ? pageT("released")
             : action.kind === "cooldown"
               ? pageT("cooldown", {
-                  date: new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" }).format(
-                    action.until,
-                  ),
+                  date: new Intl.DateTimeFormat(locale, {
+                    timeZone: SITE_TIME_ZONE,
+                    day: "numeric",
+                    month: "long",
+                  }).format(action.until),
                 })
               : action.kind === "permit"
                 ? pageT("permitPending")

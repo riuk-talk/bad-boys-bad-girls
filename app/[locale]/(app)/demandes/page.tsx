@@ -79,7 +79,11 @@ export default async function MyRequestsPage() {
         }).format(new Date(iso))
       : "";
   const others = rows.filter((row) => row.status !== "accepted");
-  const dateFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" });
+  const dateFormat = new Intl.DateTimeFormat(locale, {
+    timeZone: tz,
+    day: "numeric",
+    month: "long",
+  });
   const relative = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const today = new Date();
   const daysAgo = (iso: string) =>

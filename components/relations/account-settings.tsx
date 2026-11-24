@@ -12,6 +12,7 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Link } from "@/i18n/navigation";
 import type { Role } from "@/lib/onboarding/config";
+import { SITE_TIME_ZONE } from "@/lib/time-zone";
 
 const IDLE: ActionState = { status: "idle" };
 
@@ -47,6 +48,7 @@ export function AccountSettings({
   const tooSoon = nextRoleChange !== null && new Date(nextRoleChange) > new Date();
   const until = nextRoleChange
     ? new Intl.DateTimeFormat(locale, {
+        timeZone: SITE_TIME_ZONE,
         day: "numeric",
         month: "long",
         hour: "2-digit",
