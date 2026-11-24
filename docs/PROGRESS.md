@@ -13,9 +13,11 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10 close** (porteur, 2026-11-24) : **10a à 10h en production** (`main` = `7d3bd43`), toutes les décisions de la phase validées (10-1 à 10-55 ; 10-18 sans objet). Reste ouverte la **question 10-22** (changer d'e-mail et de mot de passe depuis Ma fiche : non codé).
+**Phase 10 close** (porteur, 2026-11-24) : **10a à 10h en production** (`main` = `7d3bd43`), toutes les décisions de la phase validées (10-1 à 10-55 ; 10-18 sans objet). La **question 10-22** est tranchée et codée en 10j.
 
-**10i (fiche membre complète dans l'admin, 2026-11-24)** : faite sur `phase-10`, migration appliquée à la preview, décisions 10-56 à 10-63 à valider ; voir la section 10i. En attente de validation.
+**10i** validée (décisions 10-56 à 10-64), mise en production après la migration lancée par le porteur.
+
+**10j (changer de mot de passe et d'e-mail, question 10-22 tranchée, 2026-11-24)** : faite sur `phase-10`, migration appliquée à la preview, CI verte sans relance, décisions 10-65 à 10-70 à valider, trois réglages du tableau de bord Supabase à faire par le porteur avant la prod ; voir la section 10j. En attente de validation.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -205,6 +207,41 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
   - le lien du courriel « photos en attente » mène toujours au Greffe (`/admin/greffe`), puisqu'il désigne cette file ;
   - local : Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : `super-admin`, `relations`, `moderation-rgpd`, `onboarding-complete`, `photo-cutout` et le parcours complet verts (32 réussis) ;
   - CI : verte, run 130 (`df8d43f`) : checks, e2e Pixel 7 (50 réussis, 2 ignorés), e2e iPhone 14 (41 réussis, 11 ignorés), aucun test instable (flaky).
+
+### 10j — Changer de mot de passe et d'e-mail depuis Ma fiche (question 10-22 tranchée par le porteur, 2026-11-24)
+
+Branche `phase-10`. Commits : `999723e` (base), `e49a6ca` (types locaux), `af34243` (pages, Auth, tests), puis les types de la preview et ce rapport. **Terminé, en attente de validation.** Rien sur `main` ni sur la prod.
+
+**Fait**
+- **Pages** (Ma fiche › Mon compte : deux boutons, chacun mène à sa page, pour ne charger Turnstile que là) :
+  - `/ma-fiche/mot-de-passe` : mot de passe actuel, nouveau mot de passe (politique de l'inscription : 12 caractères), Turnstile. Après le changement, toutes les autres sessions sont fermées (`signOut({ scope: "others" })`) ; ce navigateur reste connecté. Supabase Auth envoie « Ton mot de passe a changé » (avis de sécurité natif).
+  - `/ma-fiche/e-mail` : adresse actuelle, changement en attente s'il y en a un, nouvelle adresse (avertissement de faute de frappe du domaine comme à l'inscription, 10d), mot de passe actuel, Turnstile. Refusés : même adresse, adresse bannie, compte super-admin. Une adresse déjà utilisée reçoit la même réponse qu'une adresse libre (pas d'énumération). Après les liens : « Première confirmation reçue » puis « C'est fait » (route `/api/auth/confirm`, type `email_change`), ou « lien plus valable ».
+- **Mot de passe actuel** vérifié par une connexion jetable (`lib/auth/verify-password.ts`), fermée aussitôt ; la suppression de compte (Mes données) utilise désormais la même fonction.
+- **Base** (`20261125120000_account_security_10j.sql`) :
+  - `account_changes` (RLS, aucun droit d'API) et `claim_account_change(kind)` : **3 changements de chaque type par 24 h et par membre**, pour tenir le quota de Resend (les e-mails passent par Supabase Auth, réserve de 50 par jour, 10-5) ;
+  - déclencheur `account_email_guarded` sur `auth.users` : refuse une adresse bannie (à la demande et à la confirmation) et tout changement d'adresse d'un super-admin, **même si l'API de Supabase Auth est appelée directement** ; le propriétaire de la base (SQL Editor) n'est pas concerné ;
+  - `email_is_banned` (clé secrète seulement), pour une réponse claire avant d'appeler Supabase Auth.
+- **E-mails de Supabase Auth** : modèles français dans `supabase/templates/` (« Change email address », avis « Password changed » et « Email address changed »), branchés dans `supabase/config.toml` pour la pile locale et la CI. Le lien du changement d'adresse utilise `token_hash` (fonctionne d'un autre appareil que celui de la demande).
+- **Tests** :
+  - pgTAP `phase10j_account_security` (5 groupes) : droits (anonyme, membre, clé secrète), compte des 3 changements par type et par membre, oubli après 24 h, lecture des adresses bannies réservée au serveur, garde de `auth.users` (bannie à la demande et à la confirmation, super-admin, autres colonnes non concernées, propriétaire autorisé). `phase8a` : `claim_account_change` ajoutée à la liste revue.
+  - Vitest `account-security.test.ts` (schémas, correspondance des erreurs de Supabase Auth).
+  - e2e `account-security.spec.ts` (Pixel 7 et iPhone 14, axe) : mot de passe (mauvais actuel, trop court, changé, ancien refusé, l'autre session ne se renouvelle plus, e-mail reçu) ; e-mail (faute de frappe signalée, même adresse, adresse bannie, mauvais mot de passe, message aux deux adresses, rien ne change avant les deux liens, première puis seconde confirmation, avis à l'ancienne adresse, connexion avec la nouvelle, API appelée directement vers une adresse bannie refusée) ; super-admin (page fermée, API refusée).
+  - **Défaut de test corrigé** : `phase2_security` (anon sans droit sur les tables publiques) construisait des noms depuis `information_schema` et pouvait les vérifier avant de filtrer le schéma (ordre du planificateur) : il tombait sur `vault.decrypted_secrets`. Il lit maintenant `pg_class` par oid ; vérifié qu'il détecte toujours un droit donné à anon.
+- **Résultats** : local : pgTAP 37 fichiers / 202 tests, Vitest 315, lint, format, typecheck ; e2e complets Pixel 7 (68 passés) et iPhone 14 (59 passés) ; `account-security` 3 fois de suite sur les deux appareils. **CI sur `af34243` : verte sur `phase-10` (run 45435020635) et `ccr-7f52246f-59ami6` (run 45435026793), première tentative, aucune annotation « flaky ».**
+- **Preview** : migration appliquée par le conseiller (le connecteur attendait une confirmation restée sans réponse : rien n'avait été appliqué) ; types régénérés depuis la preview (seuls ajouts : la table et les deux fonctions).
+
+**À faire par le porteur avant la mise en production** (tableau de bord Supabase, preview puis prod, Authentication › Emails) :
+1. coller les 3 modèles de `supabase/templates/` (sujets dans `supabase/config.toml`) ; sans le modèle « Change email address », le lien par défaut casse la première confirmation (« lien invalide ») ;
+2. vérifier que « Secure email change » (double confirmation) est activé, et activer les deux avis de sécurité ;
+3. vérifier si les jetons d'accès sont signés par des clés asymétriques (Project Settings › JWT Keys) : dans ce cas, la déconnexion des autres appareils prend effet à l'expiration de leur jeton d'accès (1 h au plus), pas immédiatement.
+
+**Décisions à valider**
+- **10-65** Changement d'adresse : la **double confirmation de Supabase Auth est gardée** (le même message part aux deux adresses, l'adresse change une fois les deux liens ouverts), au lieu d'une confirmation par la seule nouvelle adresse plus un simple avis. Raison : la désactiver permettrait à quelqu'un qui a volé une session de prendre le compte avec un seul clic depuis sa propre boîte. Après le changement, l'ancienne adresse reçoit aussi « L'adresse de ton compte a changé ».
+- **10-66** Plafond : 3 changements de mot de passe et 3 d'e-mail par 24 h glissantes et par membre ; un essai compte une fois le mot de passe actuel vérifié, même si Supabase Auth refuse ensuite.
+- **10-67** Une adresse déjà utilisée par un autre compte reçoit la même réponse qu'une adresse libre (« Si cette adresse peut être utilisée… ») ; une adresse bannie est refusée en clair, comme à l'inscription.
+- **10-68** Deux pages dédiées (`/ma-fiche/mot-de-passe`, `/ma-fiche/e-mail`) plutôt que des formulaires dans Ma fiche : Turnstile ne se charge que là.
+- **10-69** Le super-admin ne peut jamais changer d'adresse par Supabase Auth (garde de la base, au-delà de la page) ; seul le propriétaire de la base le peut, dans le SQL Editor.
+- **10-70** Le journal `account_changes` ne garde que 24 h et n'entre pas dans l'export « Mes données » (simple compteur de sécurité).
 
 ### 10i — Fiche membre complète dans l'admin (demande du porteur, 2026-11-24)
 
@@ -500,8 +537,8 @@ Branche `phase-10` depuis `main` (`8631004`, 10d en production). Relu : SPEC §4
   - **Où se modifie chaque champ de l'inscription** :
     | Saisi à l'inscription | Où le revoir et le modifier ensuite |
     |---|---|
-    | E-mail | **Nulle part aujourd'hui** (voir question 10-22) |
-    | Mot de passe | « Mot de passe oublié ? » sur la page de connexion (lien par e-mail) ; pas de changement depuis Ma fiche (question 10-22) |
+    | E-mail | Ma fiche › Mon compte › Changer d'e-mail (10j) |
+    | Mot de passe | Ma fiche › Mon compte › Changer de mot de passe (10j) ; « Mot de passe oublié ? » sur la page de connexion |
     | Étape 1 : date de naissance | Ma fiche › Mon identité › « Demander une correction » (décision du Greffe) |
     | Étape 1 : attestation 18 ans, CGU, confidentialité | Acceptées une fois (textes en bas de chaque page) ; la suppression du compte dans Ma fiche › Mes données vaut retrait |
     | Étape 2 : pseudo, genre, ville | Ma fiche › Mon identité |
