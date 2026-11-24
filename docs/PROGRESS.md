@@ -13,7 +13,7 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10** (branche `phase-10`) : 10a à 10g en production (`main` = `c47c1d6`). **10h (pages qui ne finissent pas de charger sous WebKit)** : trois causes trouvées et corrigées ; 50 exécutions consécutives sans échec en local sur les deux tests ; CI n° 173 et 174 vertes sans relance ; décisions 10-53 à 10-55 à valider ; voir la section 10h.
+**Phase 10 close** (porteur, 2026-11-24) : **10a à 10h en production** (`main` = `7d3bd43`), toutes les décisions de la phase validées (10-1 à 10-55 ; 10-18 sans objet). Reste ouverte la **question 10-22** (changer d'e-mail et de mot de passe depuis Ma fiche : non codé). En attente de la suite.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -98,7 +98,9 @@ Diagnostic du conseiller (journal Supabase Auth de la prod) : 6 inscriptions ref
   - Prod : `launch_mode = 'zones'`, Toulon et Nice en liste d'attente, 0 super admin, **coffre inchangé** (1 secret : `ban_email_pepper`), aucune variable Vercel touchée. Sans `push_endpoint_url` ni `push_cron_secret`, `push_dispatch` ne fait rien (vérifié dans le code).
 - **Reste** : super admin ; clés de notification propres à la prod au lancement (checklist) ; retrait des droits d'écriture du connecteur d'IA sur la prod (checklist).
 
-## Phase 10 (branche `phase-10`)
+## Phase 10 (branche `phase-10`) — close le 2026-11-24, en production
+
+**Clôture** (porteur, 2026-11-24) : 10a à 10h en production, `main` = `7d3bd43`. Toutes les décisions validées. Question 10-22 toujours ouverte (non codée).
 
 **Branche** : `phase-10`, créée le 2026-11-04 à partir de `main` (`ef970c0`). `main` a avancé depuis (textes légaux remplis, `dc9a957` et `185fd79`) : fusionné dans `phase-10` le 2026-11-06 (commit de fusion, historique non réécrit). Rien sur `main` ni sur la prod.
 
@@ -143,7 +145,7 @@ Demande du conseiller : passer le cron d'e-mails (`/api/cron/email`) de l'API Br
   - Local (Pixel 7) : suite complète verte (44 réussis, 2 ignorés), pgTAP 28 fichiers, Vitest 258.
 - **Documentation** : README (variables, limites de l'offre gratuite, checklist) et `.env.example` passés à Resend.
 - **Preview** : les deux migrations ne sont **pas encore appliquées** : le connecteur Supabase a demandé une confirmation (la fonction de nettoyage contient des `DELETE`), restée sans réponse ; non contournée.
-- **Décision à valider (10b)** :
+- **Décision (10b)**, validée (clôture de la phase 10, 2026-11-24) :
   - **10-5** Partage du quota Resend : 50 par jour pour l'Auth, 50 pour l'app. Au lancement, les confirmations d'inscription passent avant les e-mails de l'app ; ce qui dépasse attend le lendemain (rappels de visite abandonnés une fois la visite commencée, comme avant).
 - **Pour le porteur** :
   - poser `RESEND_API_KEY` (Sensitive) et `EMAIL_FROM=ne-pas-repondre@bad-boys8bad-girls.fr` sur Vercel **Production** uniquement (en Preview, la route continuerait d'envoyer de vrais e-mails aux comptes de test) ; retirer `BREVO_API_KEY` et `BREVO_API_URL` s'ils existent ;
@@ -244,7 +246,7 @@ Base : `main` = `c47c1d6` (10g en production). Types de la preview régénérés
     - aucun « flaky ».
   - Le n° 172 (`daeefb1`) avait échoué avant tout test : la pile Supabase locale n'a pas démarré en 8 minutes dans un job iPhone (incident de machine CI). Le n° 171, sur le même commit, était vert.
 - **Incident de commit** : `e154809` ne contient que le renommage de `i18n/navigation.ts` en `.tsx`, sous un message qui décrit toute la correction. Mon `git add` avait échoué sur l'ancien chemin. Les modifications sont dans `daeefb1` ; je n'ai pas réécrit l'historique poussé.
-- **Décisions à valider (10h)** :
+- **Décisions (10h)**, validées (porteur, 2026-11-24) :
   - **10-53** Une page photo ne se recharge plus jamais d'elle-même. Prix : sans WebGL dans le worker et arrivé par un lien, si MODNet échoue, la photo part au Greffe au lieu du secours MediaPipe.
   - **10-54** Aucun lien n'est préchargé par défaut (`prefetch` à `false` dans `Link` et `LocalizedLink`). Un lien qui en aurait vraiment besoin peut le demander.
   - **10-55** Sur Ma fiche, le runtime de détourage (plusieurs Mo) se télécharge à l'intention du membre, plus à l'affichage. Risque : sur un réseau lent, un premier détourage peut dépasser son budget de chargement et partir au Greffe.
@@ -357,7 +359,7 @@ Branche `phase-10` repartie de `main` (`4ee8b28`, qui contenait déjà toute la 
     - `team_names` a la RLS sans politique, ce qui est voulu (accès par fonctions seulement, comme 27 autres tables) ;
     - les 17 fonctions 10g ouvertes aux membres connectés sont exactement la liste revue (`phase8a`).
   - Types régénérés depuis la preview : typecheck, lint et Vitest (309) verts.
-- **Décisions à valider (10g)** :
+- **Décisions (10g)**, validées par le conseiller le 2026-11-23 (10-50 et 10-52 après correction) :
   - **10-37** La clé demandée `members.message` a un verbe nouveau : la contrainte de format des clés l'accepte désormais (`…|manage|message`).
   - **10-38** Un seul fil par membre, pour toujours : l'archiver puis « Écrire » le rouvre, au lieu d'en créer un autre.
   - **10-39** Le nom d'équipe (2 à 30 caractères) est choisi par chaque membre de l'équipe pour lui-même, sur la page Messagerie ; sans nom, « Le Greffe » seul.
@@ -407,7 +409,7 @@ Branche `phase-10`, après la 10f. Relu : SPEC §10, §15 et la carte Permis du 
 - **Blocages (inchangés depuis la 10f)** :
   1. ~~CI GitHub~~ : levé, le dépôt est public (CI n° 153 et 154 vertes).
   2. Connecteur Supabase sur un autre compte : **rien sur la preview**, comme demandé. Migrations à appliquer dans l'ordre, après celles de la 10f : `20261117140000_vue_bad` (ajoute une permission et ses cases, remplace la contrainte de contexte de `greffe_fiche_views` par une plus large, crée deux fonctions ; aucune donnée supprimée).
-- **Décisions à valider (10f-bis)** :
+- **Décisions (10f-bis)**, validées (clôture de la phase 10, 2026-11-24) :
   - **10-32** Une ligne de journal par Permis **affiché** (24 au plus par page), à chaque ouverture ou changement de page ou de filtre, et non une ligne par ouverture de la page : on sait quel admin a vu quel Visiteur.
   - **10-33** Le journal réutilise `greffe_fiche_views` (contexte `vue_bad`, colonne `bad_id` = id du Visiteur) plutôt qu'une nouvelle table.
   - **10-34** Sans filtre d'âge : de 18 à 99 ans ; tri du plus récent au plus ancien ; 24 par page.
@@ -437,7 +439,7 @@ Branche `phase-10` après la 10e (`main` = `8631004` ; 10e encore sur la branche
 - **Blocages (rien n'est perdu, tout est poussé)** :
   1. ~~CI non lancée par GitHub~~ (levé : dépôt public, CI relancée). Pour mémoire : **CI non lancée par GitHub** : la n° 151 (`984d72c`) et sa relance unique ont vu les 4 jobs refusés en 3 s, sans machine ni journal (aucun message lisible par l'API). C'est le comportement d'un compte dont les minutes GitHub Actions du dépôt privé gratuit sont épuisées ou dont la limite de dépenses est atteinte ; **à vérifier par le porteur : Settings › Billing › Actions (minutes du mois, limite de dépenses)**. Je n'ai pas relancé une seconde fois. Les résultats locaux ci-dessus sont la seule preuve pour l'instant ; la 10f n'est pas « CI verte ».
   2. ~~Migrations de la 10f~~ : appliquées à la preview par le conseiller le 2026-11-17 (historique aux versions des fichiers ; 48 fonctions admin sur `has_admin_permission`, `admin_counts` garde `is_admin()`, accepté : des nombres seulement). Pour mémoire : **Connecteur Supabase sur un autre compte** : il ne voit plus qu'un projet « Ufdm's Project » (`koxuumumxlgrrlclumqi`, jamais touché) et refuse la preview (`You do not have permission`). **Les deux migrations de la 10f ne sont pas sur la preview** (`20261117120000_staff_close_reason`, `20261117120100_admin_roles`) ; les types viennent de la base locale en attendant. À faire : reconnecter le connecteur à l'organisation de Bad Boys & Bad Girls (je les applique alors et je régénère les types depuis la preview), ou les faire appliquer par le conseiller dans le SQL Editor, dans cet ordre. Attention : la seconde **modifie des données** (les comptes admin qui ont un profil membre sont retirés du site et leurs demandes en cours classées : c'est voulu, cas de Coco). Les versions des fichiers devront peut-être être renommées comme en 10d et 10e si elles sont appliquées par le connecteur.
-- **Décisions à valider (10f)** :
+- **Décisions (10f)**, validées (clôture de la phase 10, 2026-11-24) :
   - **10-24** Les trois rôles de départ sont modifiables (renommer, cocher) comme les autres ; seul le super admin reste hors système.
   - **10-25** `team.manage` n'est jamais une case de rôle (contrainte en base) : seul le super admin gère l'équipe, ce qui empêche un rôle de se donner plus de droits.
   - **10-26** « Textes » : `flags.decide` = lire la file et décider « Rien à signaler » ou « Retenu » ; `texts.edit` = effacer le texte d'un membre. Retenir un signalement exige aussi `sanctions.apply`.
@@ -483,7 +485,7 @@ Branche `phase-10` depuis `main` (`8631004`, 10d en production). Relu : SPEC §4
     - le test de correction lisait la date en base dès qu'une zone `status` était là (il y en a une sur chaque page) : il attend maintenant « Décision enregistrée. » puis interroge la base jusqu'au résultat ;
     - `settled()` (attente des animations finies avant axe) attendait sans limite : une fois, une attente a mené le test à sa limite de 2 min sans dire ce qu'elle attendait. Instrumentée sur 3 passages, aucune animation bloquée ne s'est montrée ; l'attente est maintenant bornée à 5 s (la plus longue animation du site dure 520 ms) et le test échoue en nommant les animations encore en cours, au lieu d'attendre en silence.
 - **Preview et types** : les 2 migrations appliquées à la preview **par le connecteur**, texte exact des fichiers, sans opération destructive ; fichiers renommés aux versions enregistrées par la preview (`20261110232416_identity_notification_type`, `20261110232510_my_identity`). Types régénérés depuis la preview : 116 lignes ajoutées, aucune retirée.
-- **Décisions et questions à valider (10e)** :
+- **Décisions (10e)**, validées (clôture de la phase 10, 2026-11-24) ; question 10-22 toujours ouverte :
   - **10-19** Le délai de 30 jours ne s'applique qu'après l'inscription ; le premier changement est possible tout de suite.
   - **10-20** Changer de genre ne touche pas la Promenade déjà tirée du jour ; elle suit dès le tirage suivant.
   - **10-21** La demande de correction n'est possible qu'une fois le dossier terminé (avant, l'étape 1 modifie la date directement). Le Greffe voit les deux dates et les âges, jamais d'autre pièce : aucun justificatif n'est demandé (rien à stocker).
@@ -529,7 +531,7 @@ Demande du porteur, branche `phase-10` depuis `main` (`730efa2`) ; la retouche 1
   - e2e (Pixel 7 et iPhone 14, axe sur chaque nouvel écran) : `signup.spec.ts` (écran du dossier après les étapes 1 et 2, lien vers l'étape 3 et « Reprendre » ; adresse `…@gmail.comj` : suggestion, champ corrigé, adresse affichée, « Corriger ») ; `relations.spec.ts` (Visiteur : « Tu cherches », « Mes critères » avec consentement obligatoire, Découverte vide « aucun Bad ne correspond », puis « tu ne corresponds aux critères d'aucun » quand c'est le Bad qui l'exclut, retour à la normale ; admin : libellés du tableau de bord, carte « Dossiers bloqués » vers la liste filtrée, liste sans recherche, filtre rôle, fiche complète du Bad avec ses chefs d'accusation sans `true_index`, journalisation `member`).
   - **Défaut trouvé par le test e2e et corrigé** : la fiche admin d'un dossier terminé avant un changement de règle disait « Dossier inachevé » ; elle dit maintenant « Dossier terminé, mais les règles d'aujourd'hui demandent encore : … ».
 - **Preview et types** : les 4 migrations ont été appliquées à la preview **par le connecteur**, texte exact des fichiers, sans demande de confirmation (aucune opération destructive). Le connecteur leur a donné ses propres numéros de version ; **les fichiers ont été renommés à ces numéros** (`20261110161316_dossier_notification_types`, `20261110161345_onboarding_missing`, `20261110161354_search_empty_reason`, `20261110161432_admin_members_10d`) pour que l'historique de la preview et celui du dépôt soient identiques ; c'est avec ces noms qu'elles passeront en production. Types régénérés depuis la preview : le diff ne contient que les ajouts de la 10d (5 fonctions, 2 valeurs dans deux énumérations, la colonne `context`).
-- **Décisions à valider (10d)** :
+- **Décisions (10d)**, validées :
   - **10-10** (validée) `/onboarding` montre l'écran du dossier dès qu'un profil existe ; un compte sans profil va directement à l'étape 1.
   - **10-11** (validée) « Ta Fiche est en ligne » est aussi envoyé à un Bad déjà terminé quand sa 3e pose est validée (y compris après le remplacement d'une pose) : c'est le moment où sa Fiche devient visible. L'e-mail précise « dès que ton quartier est ouvert », pour ne pas promettre une visibilité qu'un quartier fermé empêche.
   - **10-12** (validée) Les e-mails « Ta Fiche est en ligne » et « Tes poses sont validées » ne se désactivent pas (messages sur le compte, comme le rappel d'inscription) ; le push suit l'interrupteur des visites, comme les autres avis du Greffe.
@@ -546,7 +548,7 @@ Demande du porteur, branche `phase-10` depuis `main` (`730efa2`) ; la retouche 1
 - **CI** :
   - n° 142 (`37a01eb`) : vérifications et pgTAP verts, Pixel 7 vert (53 réussis), iPhone 14 : **44 tests sur 44 réussis, mais le job a été coupé par la limite de 15 min**, 10 s après le dernier test (12 min 30 de tests plus la préparation ; la n° 130 tenait déjà en 14 min 55). La limite est gardée (décision de la 9f) : la suite iPhone est **partagée en deux moitiés parallèles** (`--shard`, `.github/workflows/ci.yml`) ;
   - **n° 144 (`541847e`) verte sur les 4 jobs, aucun test instable** : vérifications et pgTAP ; Pixel 7, 53 réussis, 2 ignorés (9 min 36) ; iPhone 14 1/2, 24 réussis, 4 ignorés (8 min 24, avec le parcours complet) ; iPhone 14 2/2, 20 réussis, 7 ignorés (3 min 12). Les tests 10d ont tourné sur les deux appareils.
-- **Décision à valider (CI)** :
+- **Décision (CI)** :
   - **10-18** (sans objet, porteur 2026-11-11 : dépôt privé gratuit, pas de protection de branche) Les jobs iPhone s'appellent maintenant « e2e (iphone-14, 1/2) » et « e2e (iphone-14, 2/2) ». Si `main` exige des contrôles de statut par leur nom, il faut remplacer « e2e (iphone-14) » par ces deux noms dans les réglages GitHub de la branche (je ne peux pas le vérifier ni le faire d'ici). Pixel 7 tient en 12 min 30 environ : même partage à prévoir s'il grossit encore.
 
 ## Phase 9 — Éléments [P1] (2026-10-22, découpage annoncé, sous-phases enchaînées)
