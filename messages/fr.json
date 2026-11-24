@@ -1013,7 +1013,9 @@
         "generic": "Une erreur est survenue. Réessaie."
       }
     },
-    "greffeMailLink": "{count, plural, =0 {Courrier du Greffe} other {Courrier du Greffe (#)}}"
+    "greffeMailLink": "{count, plural, =0 {Courrier du Greffe} other {Courrier du Greffe (#)}}",
+    "passwordLink": "Changer de mot de passe",
+    "emailLink": "Changer d'e-mail"
   },
   "Quarter": {
     "referralTitle": "Fais entrer tes complices",
@@ -2804,6 +2806,45 @@
       "photo_too_small": "Photo trop petite (400 pixels au moins).",
       "photo_cannot_compress": "Photo trop lourde.",
       "not_found": "Ce fil n'existe pas."
+    }
+  },
+  "AccountSecurity": {
+    "back": "Retour à ma Fiche",
+    "current": "Mot de passe actuel",
+    "password": {
+      "title": "Changer de mot de passe",
+      "lead": "Ton mot de passe actuel est demandé. Une fois le nouveau enregistré, tes autres appareils sont déconnectés et un e-mail « Ton mot de passe a changé » part à l'adresse de ton compte.",
+      "new": "Nouveau mot de passe",
+      "submit": "Changer de mot de passe",
+      "done": "Mot de passe changé. Tes autres appareils sont déconnectés ; un e-mail de confirmation part à l'adresse de ton compte."
+    },
+    "email": {
+      "title": "Changer d'e-mail",
+      "currentAddress": "Adresse actuelle : <strong></strong>",
+      "pending": "Changement en attente vers <strong></strong> : ouvre le lien reçu à chacune des deux adresses.",
+      "lead": "Un lien part vers la nouvelle adresse et vers l'actuelle. L'adresse ne change qu'une fois le lien ouvert depuis chacune des deux.",
+      "new": "Nouvelle adresse e-mail",
+      "submit": "Changer d'e-mail",
+      "sent": "Si cette adresse peut être utilisée, un lien de confirmation y a été envoyé (<strong></strong>). Le même message part vers ton adresse actuelle : ouvre le lien depuis chacune des deux. D'ici là, ton adresse ne change pas.",
+      "state": {
+        "attente": "Première confirmation reçue. Ouvre maintenant le lien envoyé à l'autre adresse.",
+        "change": "C'est fait : ton compte utilise désormais cette adresse.",
+        "lien": "Ce lien n'est plus valable (déjà utilisé ou expiré). Recommence le changement si besoin."
+      }
+    },
+    "errors": {
+      "wrongPassword": "Mot de passe actuel incorrect.",
+      "captchaFailed": "La vérification anti-robot a échoué. Réessaie.",
+      "rateLimited": "Trop de tentatives. Réessaie dans quelques minutes.",
+      "tooManyChanges": "Tu as déjà fait 3 changements de ce type en 24 heures. Réessaie plus tard.",
+      "samePassword": "Le nouveau mot de passe doit être différent de l'actuel.",
+      "weakPassword": "Ce mot de passe est trop facile à deviner. Choisis-en un autre.",
+      "secondFactorRequired": "Ce compte a une double authentification : reconnecte-toi avec ton code, puis recommence.",
+      "signInAgain": "Pour ta sécurité, reconnecte-toi, puis recommence.",
+      "sameEmail": "C'est déjà l'adresse de ton compte.",
+      "emailBanned": "Cette adresse ne peut plus être utilisée sur le site.",
+      "superAdmin": "L'adresse du compte super-admin ne se change pas depuis cette page.",
+      "generic": "Une erreur est survenue. Réessaie."
     }
   }
 }

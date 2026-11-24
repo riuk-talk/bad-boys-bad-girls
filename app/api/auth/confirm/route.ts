@@ -25,12 +25,21 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
   let ok = false;
+  let session = false;
   if (tokenHash && type && OTP_TYPES.includes(type)) {
-    ok = !(await supabase.auth.verifyOtp({ type, token_hash: tokenHash })).error;
+    const { data, error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
+    ok = !error;
+    session = Boolean(data.session);
   } else if (code) {
     ok = !(await supabase.auth.exchangeCodeForSession(code)).error;
   }
 
+  // A change of address (10j) is confirmed from both addresses: the first link opened is
+  // accepted without a session, the second one makes the change and signs in.
+  if (type === "email_change") {
+    const state = !ok ? "lien" : session ? "change" : "attente";
+    return NextResponse.redirect(new URL(`/ma-fiche/e-mail?etat=${state}`, origin));
+  }
   if (!ok) return NextResponse.redirect(new URL("/connexion?erreur=lien", origin));
   const destination = type === "recovery" ? "/nouveau-mot-de-passe" : next;
   return NextResponse.redirect(new URL(destination, origin));

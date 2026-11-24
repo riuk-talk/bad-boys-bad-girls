@@ -250,11 +250,23 @@ otp_expiry = 3600
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 
-# Uncomment to customize notification email template
-# [auth.email.notification.password_changed]
-# enabled = true
-# subject = "Your password has been changed"
-# content_path = "./supabase/templates/password_changed_notification.html"
+# 10j: Ma fiche › Mon compte. The same texts are pasted in the dashboard of the preview and the
+# production (Authentication › Emails): « Change email address », and the security notifications
+# « Password changed » and « Email address changed ». The change of address keeps its double
+# confirmation (double_confirm_changes): the same message goes to both addresses.
+[auth.email.template.email_change]
+subject = "Changement d'adresse e-mail de ton compte"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.notification.password_changed]
+enabled = true
+subject = "Ton mot de passe a changé"
+content_path = "./supabase/templates/password_changed_notification.html"
+
+[auth.email.notification.email_changed]
+enabled = true
+subject = "L'adresse de ton compte a changé"
+content_path = "./supabase/templates/email_changed_notification.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.

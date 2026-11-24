@@ -1013,7 +1013,9 @@
         "generic": "Something went wrong. Try again."
       }
     },
-    "greffeMailLink": "{count, plural, =0 {Registry mail} other {Registry mail (#)}}"
+    "greffeMailLink": "{count, plural, =0 {Registry mail} other {Registry mail (#)}}",
+    "passwordLink": "Change password",
+    "emailLink": "Change email"
   },
   "Quarter": {
     "referralTitle": "Bring your accomplices in",
@@ -2804,6 +2806,45 @@
       "photo_too_small": "Photo too small (400 pixels at least).",
       "photo_cannot_compress": "Photo too heavy.",
       "not_found": "This thread does not exist."
+    }
+  },
+  "AccountSecurity": {
+    "back": "Back to my profile",
+    "current": "Current password",
+    "password": {
+      "title": "Change password",
+      "lead": "Your current password is required. Once the new one is saved, your other devices are signed out and a « Your password has changed » email goes to the address of your account.",
+      "new": "New password",
+      "submit": "Change password",
+      "done": "Password changed. Your other devices are signed out; a confirmation email goes to the address of your account."
+    },
+    "email": {
+      "title": "Change email",
+      "currentAddress": "Current address: <strong></strong>",
+      "pending": "Change waiting for <strong></strong>: open the link received at each of the two addresses.",
+      "lead": "A link goes to the new address and to the current one. The address changes only once the link is opened from both.",
+      "new": "New email address",
+      "submit": "Change email",
+      "sent": "If this address can be used, a confirmation link has been sent to it (<strong></strong>). The same message goes to your current address: open the link from both. Until then, your address does not change.",
+      "state": {
+        "attente": "First confirmation received. Now open the link sent to the other address.",
+        "change": "Done: your account now uses this address.",
+        "lien": "This link is no longer valid (already used or expired). Start the change again if needed."
+      }
+    },
+    "errors": {
+      "wrongPassword": "Wrong current password.",
+      "captchaFailed": "The anti-bot check failed. Try again.",
+      "rateLimited": "Too many attempts. Try again in a few minutes.",
+      "tooManyChanges": "You have already made 3 changes of this kind in 24 hours. Try again later.",
+      "samePassword": "The new password must be different from the current one.",
+      "weakPassword": "This password is too easy to guess. Choose another one.",
+      "secondFactorRequired": "This account has two-factor authentication: sign in again with your code, then start again.",
+      "signInAgain": "For your security, sign in again, then start again.",
+      "sameEmail": "That is already the address of your account.",
+      "emailBanned": "This address can no longer be used on the site.",
+      "superAdmin": "The address of the super admin account is not changed from this page.",
+      "generic": "Something went wrong. Try again."
     }
   }
 }

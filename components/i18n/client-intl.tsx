@@ -20,6 +20,7 @@ const CLIENT_NAMESPACES = [
   "MyData",
   "AdminShell",
   "GreffeMail",
+  "AccountSecurity",
 ] as const;
 
 /**

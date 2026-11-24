@@ -333,6 +333,15 @@ export default async function MyFichePage() {
         <h2 id="account-title" className="font-display text-2xl tracking-wide uppercase">
           {t("accountTitle")}
         </h2>
+        {/* 10j (question 10-22): each on its own page, with the anti-robot check. */}
+        <div className="flex flex-wrap gap-3">
+          <ButtonLink href="/ma-fiche/mot-de-passe" variant="secondary">
+            {t("passwordLink")}
+          </ButtonLink>
+          <ButtonLink href="/ma-fiche/e-mail" variant="secondary">
+            {t("emailLink")}
+          </ButtonLink>
+        </div>
         <AccountSettings
           role={role}
           paused={profile.is_paused}

@@ -1,15 +1,14 @@
 "use server";
 
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { getLocale } from "next-intl/server";
 import * as z from "zod/mini";
 import type { ActionState } from "@/app/[locale]/(app)/relations-actions";
 import { redirect } from "@/i18n/navigation";
 import { captchaTokenFrom } from "@/lib/auth/captcha";
 import { requireMember } from "@/lib/auth/user";
+import { verifyPassword } from "@/lib/auth/verify-password";
 import { removeMemberFiles } from "@/lib/cleanup/files";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { supabaseConfig } from "@/lib/supabase/config";
 
 const schema = z.object({
   password: z.string().check(z.minLength(1), z.maxLength(200)),
@@ -32,21 +31,12 @@ export async function deleteAccountAction(
   const email = user.user?.email;
   if (!email || user.user?.id !== member.userId) return { status: "error", message: "generic" };
 
-  // The password is checked with a throw-away client: the current session is left as it is. It
-  // is a sign-in, so Supabase Auth asks for the anti-robot token when the captcha is on.
-  const { url, publishableKey } = supabaseConfig();
-  const checker = createSupabaseClient(url, publishableKey, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-  });
-  const { error: wrong } = await checker.auth.signInWithPassword({
-    email,
-    password: parsed.data.password,
-    options: { captchaToken: captchaTokenFrom(form) },
-  });
-  if (wrong) {
+  // The password is checked with a throw-away client: the current session is left as it is.
+  const check = await verifyPassword(email, parsed.data.password, captchaTokenFrom(form));
+  if (check !== "ok") {
     return {
       status: "error",
-      message: wrong.code === "captcha_failed" ? "captchaFailed" : "wrongPassword",
+      message: check === "captchaFailed" ? "captchaFailed" : "wrongPassword",
     };
   }
 
