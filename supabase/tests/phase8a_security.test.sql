@@ -25,6 +25,8 @@ create function pg_temp.expected_member_functions() returns text[] language sql 
     'admin_list_members(p_role member_role, p_state text, p_complete boolean, p_blocked boolean, p_page integer)',
     'admin_member(p_user uuid)',
     'admin_member_detail(p_user uuid)',
+    'admin_member_email(p_user uuid)',
+    'admin_member_extra(p_user uuid)',
     'admin_moderation_log(p_limit integer)',
     'admin_permission_keys()',
     'admin_photo_batch(p_limit integer)',
