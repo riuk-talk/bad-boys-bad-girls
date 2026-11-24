@@ -13,7 +13,9 @@
 
 **Site en ligne** (2026-11-06, par le conseiller) : domaine `bad-boys8bad-girls.fr`, inscriptions ouvertes ; voir la section « Lancement ». Reste à faire : passer le cron d'e-mails de l'app de Brevo à Resend (sous-phase dédiée).
 
-**Phase 10 close** (porteur, 2026-11-24) : **10a à 10h en production** (`main` = `7d3bd43`), toutes les décisions de la phase validées (10-1 à 10-55 ; 10-18 sans objet). Reste ouverte la **question 10-22** (changer d'e-mail et de mot de passe depuis Ma fiche : non codé). En attente de la suite.
+**Phase 10 close** (porteur, 2026-11-24) : **10a à 10h en production** (`main` = `7d3bd43`), toutes les décisions de la phase validées (10-1 à 10-55 ; 10-18 sans objet). Reste ouverte la **question 10-22** (changer d'e-mail et de mot de passe depuis Ma fiche : non codé).
+
+**10i (fiche membre complète dans l'admin, 2026-11-24)** : faite sur `phase-10`, migration appliquée à la preview, décisions 10-56 à 10-63 à valider ; voir la section 10i. En attente de validation.
 
 *Historique de cette section avant le 2026-11-04 :*
 
@@ -203,6 +205,38 @@ Demande du porteur : refonte de la navigation de `/admin` sur le modèle du pane
   - le lien du courriel « photos en attente » mène toujours au Greffe (`/admin/greffe`), puisqu'il désigne cette file ;
   - local : Vitest 279 ; Pixel 7 complet vert (47 réussis, 5 ignorés : les 3 tests du captcha, réservés à la CI) ; iPhone 14 (WebKit) : `super-admin`, `relations`, `moderation-rgpd`, `onboarding-complete`, `photo-cutout` et le parcours complet verts (32 réussis) ;
   - CI : verte, run 130 (`df8d43f`) : checks, e2e Pixel 7 (50 réussis, 2 ignorés), e2e iPhone 14 (41 réussis, 11 ignorés), aucun test instable (flaky).
+
+### 10i — Fiche membre complète dans l'admin (demande du porteur, 2026-11-24)
+
+Branche `phase-10` depuis `main` (`7d3bd43`). Commits : `d7caca2` (base), `2d8e7c2` (heures de France), `2b9b6d6` (page et tests), `1e05bbb` (types de la preview). **Terminé, en attente de validation.** Rien sur `main` ni sur la prod.
+
+**Fait**
+- **Base** (`20261124120000_member_record_10i.sql`) :
+  - `admin_member_extra(user)`, `security definer`, exige `members.detail` (aal2 compris, via `has_admin_permission`) : date de naissance exacte, N° d'écrou, rôle et date du dernier changement ; Interrogatoire (question, réponse, réponses acceptées, importance) ; activité (demandes envoyées et reçues par statut, les 20 dernières avec date, autre membre et statut, visites à venir / honorées / absences, Permis permanents en cours, Cavales proposées / acceptées, blocages faits / reçus, signalements faits / reçus / ouverts, historique des sanctions) ; réglages (pause et depuis quand, plafond, Parloir complet, fermeture manuelle, demandes en attente, préférences de notification sans le jeton de désinscription, appareils inscrits, code et nombre de parrainages). Le Casier reste celui de `admin_member_detail` : jamais `true_index`, super-admin compris.
+  - Permission **`members.email`** (lecture) : cochée pour Admin, décochée pour Modérateur et Observateur ; le super-admin l'a toujours. `admin_member_email(user)` renvoie l'e-mail et journalise chaque affichage dans `greffe_fiche_views` (contexte `email`, contrainte élargie). Aucune liste ni recherche partielle ne le renvoie.
+  - Les deux fonctions : exécution retirée à `public`, `anon`, `service_role`, accordée à `authenticated` (contrôle dans la fonction).
+- **Page Membres › fiche** : sections repliables (`<details>`, ouvertes par défaut) dans l'ordre demandé : Identité, Recherche, Fiche (présentation / motif, signes, Casier), Interrogatoire, Photos, Activité, Réglages, Consentements, Historique. E-mail : bouton « Afficher l'e-mail » seulement avec `members.email`, sinon « Masqué ». Lien vers la file des signalements s'il y en a d'ouverts ; chaque demande récente mène à la fiche de l'autre membre.
+- **3 bis — Genre** : libellé de la personne (« Homme », « Femme », « Non-binaire », « Autre »), plus le pluriel des critères.
+- **3 bis — Fuseau** : `timeZone: "Europe/Paris"` dans la configuration next-intl côté serveur (`lib/time-zone.ts`, `i18n/request.ts`) et transmis au fournisseur client (`ClientIntl`) ; les trois `Intl.DateTimeFormat` écrits à la main (Ma fiche, Fiche, Mes demandes) passent aussi le fuseau. Toutes les dates de l'admin et des pages membres (Parloir, Tableau des visites, Courrier, Messagerie) en profitent. Le sélecteur des Heures de visite reste en UTC volontairement : il ne manipule que des dates de calendrier.
+- **Tests** :
+  - pgTAP `phase10i_member_record.test.sql` : chaque appel refusé à anon, à un membre, sans aal2, avec seulement `members.view` ; e-mail refusé sans `members.email` (Modérateur), accordé à Admin et au super-admin, refusé pour un compte sans profil, chaque affichage journalisé ; contenu (date, écrou, rôle, réponses, activité, sanctions, pause, parrainage) ; ni `true_index` ni jeton de désinscription, y compris pour le super-admin. Listes de revue mises à jour (`phase4`, `phase8a`, `phase10f` : 20 permissions, Admin 19).
+  - e2e `admin-member-record.spec.ts` (Pixel 7 et iPhone 14, axe) : ordre des sections, « Femme », date exacte, écrou, compte créé à 06:20 UTC affiché **07:20** (jamais 06:20), Casier sans marque, e-mail absent de la page avant le clic puis affiché et journalisé une fois, repli d'une section ; Modérateur : « Masqué », pas de bouton ; page membre (Courrier du Greffe) en 07:20. **Vérifié : le test échoue sans le correctif du fuseau.**
+  - i18n fr/en complets (test de vocabulaire vert).
+
+**Résultats**
+- Local : typecheck, lint, format OK ; Vitest 309 ; pgTAP 36 fichiers / 197 tests ; e2e complets Pixel 7 (65 passés, 5 ignorés) et iPhone 14 (56 passés, 14 ignorés), aucun instable ; `admin-member-record` 3/3 sur les deux appareils.
+- Preview : migration appliquée par le connecteur (texte exact du fichier), historique ramené à la version du fichier `20261124120000` ; vérifié : 2 fonctions, `members.email` sur le rôle 1 seulement, contrainte de contexte avec `email`, anon sans droit d'exécution. Types régénérés depuis la preview (seul écart : les deux fonctions).
+- CI sur `2b9b6d6` : verte sur `phase-10` (4 jobs, sans relance). Sur `ccr-7f52246f-59ami6`, le même commit a échoué **avant tout test** : le runner avait déjà le port 54322 occupé au démarrage de Supabase (« address already in use »). Pas une cause du code ; le commit suivant relance la CI sur les deux branches (résultat ci-dessous).
+
+**Décisions à valider**
+- **10-56** Les nouveaux champs vivent dans une fonction voisine, `admin_member_extra`, appelée avec `admin_member_detail` ; pas de journal séparé (l'ouverture de la fiche l'est déjà).
+- **10-57** Afficher l'e-mail est refusé pour un compte sans profil (le journal référence un profil) ; ces comptes n'ont donc ni bouton ni e-mail.
+- **10-58** La recherche par e-mail **exact** existante est conservée : elle trouve le membre sans jamais renvoyer l'adresse. Aucune recherche partielle sur l'e-mail.
+- **10-59** Sections ouvertes par défaut (rien de caché à l'arrivée ; on replie à la main).
+- **10-60** `members.email` est une permission de lecture (affichée avec les lectures dans l'écran des rôles).
+- **10-61** Genre : « Non-binaire » et « Autre » restent deux libellés distincts (deux valeurs en base).
+- **10-62** Le formulaire de sanction garde sa place, juste avant Historique ; Historique regroupe l'historique d'identité, les actions de modération, les signalements reçus et les marquages.
+- **10-63** Blocages comptés : seulement les blocages en cours (non levés).
 
 ### 10h — Pages qui ne finissent pas de charger sous WebKit (demande du conseiller, 2026-11-23)
 Base : `main` = `c47c1d6` (10g en production). Types de la preview régénérés : **identiques** à ceux du dépôt (la migration `20261123120000` ne change aucune signature), donc rien à commiter.
