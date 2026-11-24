@@ -85,6 +85,7 @@ create function pg_temp.expected_member_functions() returns text[] language sql 
     'change_role(p_role member_role)',
     'choose_slot(p_slot uuid)',
     'choose_visit_end(p_visit uuid, p_prolong boolean)',
+    'claim_account_change(p_kind text)',
     'claim_referral(p_code text)',
     'close_after_absence(p_request uuid)',
     'close_conversation(p_conversation uuid)',

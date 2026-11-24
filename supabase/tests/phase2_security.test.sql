@@ -84,12 +84,15 @@ end $$;
 create function pg_temp.test_anon_has_no_table_privilege() returns setof text language plpgsql as $$
 begin
   return next is(
-    (select array_agg(t.table_name::text order by t.table_name) from information_schema.tables t
-     where t.table_schema = 'public' and (
-       has_table_privilege('anon', 'public.' || quote_ident(t.table_name), 'select')
-       or has_table_privilege('anon', 'public.' || quote_ident(t.table_name), 'insert')
-       or has_table_privilege('anon', 'public.' || quote_ident(t.table_name), 'update')
-       or has_table_privilege('anon', 'public.' || quote_ident(t.table_name), 'delete'))),
+    -- By oid: a name built from information_schema could be checked before its schema is
+    -- filtered (the planner's order), and fail on a view of another schema (vault).
+    (select array_agg(c.relname::text order by c.relname) from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+     where n.nspname = 'public' and c.relkind in ('r', 'p', 'v', 'm', 'f') and (
+       has_table_privilege('anon', c.oid, 'select')
+       or has_table_privilege('anon', c.oid, 'insert')
+       or has_table_privilege('anon', c.oid, 'update')
+       or has_table_privilege('anon', c.oid, 'delete'))),
     null, 'anon has no privilege on any public table');
 end $$;
 
